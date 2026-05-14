@@ -46,6 +46,63 @@ function getDateValue(date: string) {
   return Number.isNaN(time) ? 0 : time;
 }
 
+
+function getNotesQualityMessage(notes: string) {
+  const cleanNotes = notes.trim().toLowerCase();
+
+  if (cleanNotes.length === 0) {
+    return 'Missing notes';
+  }
+
+  const weakNotes = ['ok', 'okay', 'good', 'fine', 'grand', 'easy', 'hard', 'done', 'completed'];
+
+  if (weakNotes.includes(cleanNotes)) {
+    return 'Notes too brief';
+  }
+
+  if (cleanNotes.length < 15) {
+    return 'Notes need more detail';
+  }
+
+  return '';
+}
+
+function getWeakLogReasons(log: TrainingLog) {
+  const reasons: string[] = [];
+
+  if (!log.date || !/^\d{4}-\d{2}-\d{2}$/.test(log.date)) {
+    reasons.push('date');
+  }
+
+  if (!log.type || log.type.trim().length < 3) {
+    reasons.push('session type');
+  }
+
+  if (!log.duration || log.duration.trim().length < 3) {
+    reasons.push('duration');
+  }
+
+  if (!log.distanceLoad || log.distanceLoad.trim().length < 5) {
+    reasons.push('distance/load');
+  }
+
+  const notesIssue = getNotesQualityMessage(log.notes);
+  if (notesIssue) {
+    reasons.push(notesIssue.toLowerCase());
+  }
+
+  const readinessNumber = Number(log.readiness);
+  if (Number.isNaN(readinessNumber) || readinessNumber < 1 || readinessNumber > 10) {
+    reasons.push('readiness score');
+  }
+
+  return reasons;
+}
+
+function logNeedsImprovement(log: TrainingLog) {
+  return getWeakLogReasons(log).length > 0;
+}
+
 function buildSummary(logs: TrainingLog[]) {
   const readinessScores = logs
     .map((log) => getReadinessNumber(log.readiness))
@@ -64,6 +121,7 @@ function buildSummary(logs: TrainingLog[]) {
     run: logs.filter((log) => log.category === 'Run').length,
     recovery: logs.filter((log) => log.category === 'Recovery').length,
     fatigueWatch: logs.filter((log) => isFatigueWatch(log.readiness)).length,
+    weakLogs: logs.filter((log) => logNeedsImprovement(log)).length,
   };
 }
 
@@ -95,7 +153,9 @@ function filterAndSortLogs(
     return matchesFilter && matchesSearch;
   });
 
-  return filtered.sort((a, b) => {
+  const weakFiltered = filtered.filter((log) => !showWeakLogsOnly || logNeedsImprovement(log));
+
+  return weakFiltered.sort((a, b) => {
     if (sortMode === 'Oldest') {
       return getDateValue(a.date) - getDateValue(b.date) || a.id - b.id;
     }
@@ -119,18 +179,20 @@ export default function LogScreen() {
   const [activeFilter, setActiveFilter] = useState<TrainingFilter>('All');
   const [sortMode, setSortMode] = useState<SortMode>('Newest');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showWeakLogsOnly, setShowWeakLogsOnly] = useState(false);
 
   const summary = buildSummary(logs);
 
   const visibleLogs = useMemo(
     () => filterAndSortLogs(logs, activeFilter, searchQuery, sortMode),
-    [logs, activeFilter, searchQuery, sortMode]
+    [logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly]
   );
 
   function clearSearchAndFilters() {
     setActiveFilter('All');
     setSortMode('Newest');
     setSearchQuery('');
+    setShowWeakLogsOnly(false);
   }
 
   function confirmDeleteLog(log: TrainingLog) {
@@ -153,6 +215,8 @@ export default function LogScreen() {
 
   const renderLogItem = ({ item }: { item: TrainingLog }) => {
     const fatigueWatch = isFatigueWatch(item.readiness);
+    const weakLog = logNeedsImprovement(item);
+    const weakReasons = getWeakLogReasons(item);
 
     return (
       <View style={fatigueWatch ? styles.logCardWarning : styles.logCard}>
@@ -180,6 +244,15 @@ export default function LogScreen() {
         </View>
 
         <Text style={styles.logNotes}>{item.notes}</Text>
+
+        {weakLog ? (
+          <View style={styles.weakLogBox}>
+            <Text style={styles.weakLogTitle}>Weak Log</Text>
+            <Text style={styles.weakLogText}>
+              Improve: {weakReasons.join(', ')}
+            </Text>
+          </View>
+        ) : null}
 
         <View style={styles.statusRow}>
           <Text style={fatigueWatch ? styles.statusWarning : styles.status}>
@@ -249,10 +322,30 @@ export default function LogScreen() {
               </View>
             </View>
 
+            <View style={summary.weakLogs > 0 ? styles.weakSummaryCardWarning : styles.weakSummaryCard}>
+              <View>
+                <Text style={summary.weakLogs > 0 ? styles.weakSummaryNumberWarning : styles.weakSummaryNumber}>
+                  {summary.weakLogs}
+                </Text>
+                <Text style={summary.weakLogs > 0 ? styles.weakSummaryLabelWarning : styles.weakSummaryLabel}>
+                  Weak Logs Detected
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={showWeakLogsOnly ? styles.weakFilterButtonActive : styles.weakFilterButton}
+                onPress={() => setShowWeakLogsOnly((current) => !current)}
+              >
+                <Text style={showWeakLogsOnly ? styles.weakFilterButtonTextActive : styles.weakFilterButtonText}>
+                  {showWeakLogsOnly ? 'Showing Weak' : 'Show Weak'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.categorySummary}>
               <Text style={styles.categorySummaryTitle}>Training Split</Text>
               <Text style={styles.categorySummaryText}>
-                Ruck {summary.ruck} · Strength {summary.strength} · Run {summary.run} · Recovery {summary.recovery}
+                Ruck {summary.ruck} · Strength {summary.strength} · Run {summary.run} · Recovery {summary.recovery} · Weak {summary.weakLogs}
               </Text>
             </View>
 
@@ -307,7 +400,7 @@ export default function LogScreen() {
               </View>
 
               <Text style={styles.resultCount}>
-                Showing {visibleLogs.length} of {logs.length} logs
+                Showing {visibleLogs.length} of {logs.length} logs {showWeakLogsOnly ? '· Weak logs only' : ''}
               </Text>
             </View>
 
@@ -439,6 +532,75 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '900',
     marginTop: 4,
+  },
+  weakSummaryCard: {
+    backgroundColor: '#0d1812',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#203529',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  weakSummaryCardWarning: {
+    backgroundColor: '#21140b',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#7a4a1f',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  weakSummaryNumber: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  weakSummaryNumberWarning: {
+    color: '#ffb86b',
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  weakSummaryLabel: {
+    color: '#aeb8aa',
+    fontSize: 12,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  weakSummaryLabelWarning: {
+    color: '#ffb86b',
+    fontSize: 12,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  weakFilterButton: {
+    borderWidth: 1,
+    borderColor: '#35523e',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  weakFilterButtonActive: {
+    backgroundColor: '#ffb86b',
+    borderWidth: 1,
+    borderColor: '#ffb86b',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  weakFilterButtonText: {
+    color: '#c8d8c5',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  weakFilterButtonTextActive: {
+    color: '#07110c',
+    fontSize: 12,
+    fontWeight: '900',
   },
   categorySummary: {
     backgroundColor: '#0d1812',
@@ -676,6 +838,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  weakLogBox: {
+    backgroundColor: '#2a1a0d',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#7a4a1f',
+  },
+  weakLogTitle: {
+    color: '#ffb86b',
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  weakLogText: {
+    color: '#ffb86b',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '800',
+    marginTop: 4,
+  },
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -774,3 +956,4 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 });
+
