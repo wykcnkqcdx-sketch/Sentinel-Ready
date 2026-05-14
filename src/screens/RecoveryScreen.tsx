@@ -1,29 +1,59 @@
+import { useTraining } from '@/src/screens/TrainingContext';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-const recoveryItems = [
-  {
-    title: 'Sleep',
-    value: '7-8 hrs',
-    note: 'Aim for consistent sleep before heavy ruck or strength work.',
-  },
-  {
-    title: 'Hydration',
-    value: '2.5-3L',
-    note: 'Increase intake during loaded carries, heat or high-sweat sessions.',
-  },
-  {
-    title: 'Mobility',
-    value: '15 min',
-    note: 'Prioritise hips, calves, hamstrings, back and shoulders.',
-  },
-  {
-    title: 'Fatigue',
-    value: 'Moderate',
-    note: 'Keep intensity controlled if legs feel heavy or sleep is poor.',
-  },
-];
-
 export default function RecoveryScreen() {
+  const { logs } = useTraining();
+
+  // 1. Calculate Recovery Score (Same logic as Dashboard Readiness)
+  const recentLogs = logs.slice(0, 5);
+  const avgScore = recentLogs.length > 0 
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+    : 0;
+  const recoveryScore = recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+
+  let scoreText = 'Log a session to calculate your recovery score.';
+  let fatigueValue = 'Unknown';
+
+  if (recoveryScore >= 80) {
+    scoreText = 'Prime condition. Ready for high-intensity or heavy load.';
+    fatigueValue = 'Low';
+  } else if (recoveryScore >= 60) {
+    scoreText = 'Trainable, but avoid unnecessary max-effort work. Keep the session clean and controlled.';
+    fatigueValue = 'Moderate';
+  } else if (recoveryScore > 0) {
+    scoreText = 'High fatigue detected. Prioritise recovery, mobility, and rest today.';
+    fatigueValue = 'High';
+  }
+
+  // 2. Fetch the most recent Recovery session
+  const latestRecovery = logs.find((l) => l.category === 'Recovery');
+
+  // 3. Define the dynamic grid items inside the component
+  const recoveryItems = [
+    {
+      title: 'Sleep',
+      value: '7-8 hrs', // Static Target
+      note: 'Aim for consistent sleep before heavy ruck or strength work.',
+    },
+    {
+      title: 'Hydration',
+      value: '2.5-3L', // Static Target
+      note: 'Increase intake during loaded carries, heat or high-sweat sessions.',
+    },
+    {
+      title: 'Mobility',
+      value: latestRecovery ? latestRecovery.duration : '--',
+      note: latestRecovery ? `Last logged: ${latestRecovery.date}` : 'Prioritise hips, calves, hamstrings, back and shoulders.',
+    },
+    {
+      title: 'Fatigue',
+      value: recoveryScore === 0 ? 'No Data' : fatigueValue,
+      note: fatigueValue === 'High' 
+        ? 'Keep intensity very low. Focus heavily on rest and recovery.' 
+        : 'Keep intensity controlled if legs feel heavy or sleep is poor.',
+    },
+  ];
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>RECOVERY</Text>
@@ -34,9 +64,9 @@ export default function RecoveryScreen() {
 
       <View style={styles.mainCard}>
         <Text style={styles.mainTitle}>Today's Recovery Score</Text>
-        <Text style={styles.score}>74%</Text>
+        <Text style={styles.score}>{recoveryScore > 0 ? `${recoveryScore}%` : '--'}</Text>
         <Text style={styles.mainText}>
-          Trainable, but avoid unnecessary max-effort work. Keep the session clean and controlled.
+          {scoreText}
         </Text>
       </View>
 
