@@ -1008,6 +1008,51 @@ function getFormCompletionScore(items: { label: string; complete: boolean }[]) {
   return Math.round((completedItems / items.length) * 100);
 }
 
+
+function calculateTrainingLogHealthScore(
+  averageSessionQuality: number,
+  weakLogsCount: number,
+  totalLogs: number,
+  incompleteLogs: number
+) {
+  if (totalLogs === 0) {
+    return 0;
+  }
+
+  let score = averageSessionQuality;
+
+  const weakLogPenalty = Math.round((weakLogsCount / totalLogs) * 30);
+  const incompletePenalty = Math.round((incompleteLogs / totalLogs) * 25);
+
+  score = score - weakLogPenalty - incompletePenalty;
+
+  if (score > 100) {
+    return 100;
+  }
+
+  if (score < 0) {
+    return 0;
+  }
+
+  return score;
+}
+
+function getTrainingLogHealthLabel(score: number) {
+  if (score >= 85) {
+    return 'Excellent';
+  }
+
+  if (score >= 70) {
+    return 'Healthy';
+  }
+
+  if (score >= 50) {
+    return 'Needs Work';
+  }
+
+  return 'Poor Data';
+}
+
 export default function LogScreen() {
   const [date, setDate] = useState(getTodayDate());
   const [category, setCategory] = useState<TrainingCategory>('Ruck');
@@ -1122,6 +1167,13 @@ export default function LogScreen() {
     const weeklyQualityChange = weeklyAverageSessionQuality - averageSessionQuality;
     const dataHealth = getDataHealth(logs);
     const weakLogsCount = logs.filter((log) => logNeedsImprovement(log)).length;
+
+    const trainingLogHealthScore = calculateTrainingLogHealthScore(
+      averageSessionQuality,
+      weakLogsCount,
+      logs.length,
+      dataHealth.incompleteLogs
+    );
 
     const trainingBalanceStatus = getTrainingBalanceStatus(
       weeklyRuck,
@@ -3803,3 +3855,4 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 });
+
