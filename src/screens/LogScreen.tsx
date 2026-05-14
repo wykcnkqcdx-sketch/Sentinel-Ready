@@ -1,19 +1,8 @@
+import { TrainingCategory, TrainingLog, useTraining } from '@/src/context/TrainingContext';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
-type TrainingCategory = 'Ruck' | 'Strength' | 'Run' | 'Mobility' | 'Test' | 'Recovery';
 type TrainingFilter = 'All' | TrainingCategory;
 type SortMode = 'Newest' | 'Oldest' | 'Highest Readiness' | 'Lowest Readiness';
-
-type TrainingLog = {
-  id: number;
-  date: string;
-  category: TrainingCategory;
-  type: string;
-  duration: string;
-  distanceLoad: string;
-  readiness: string;
-  notes: string;
-};
 
 type QuickTemplate = {
   label: string;
@@ -32,7 +21,6 @@ type RecommendedSession = {
   plan: string;
 };
 
-const STORAGE_KEY = 'sentinel_training_logs';
 
 const categories: TrainingCategory[] = ['Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
 const filters: TrainingFilter[] = ['All', 'Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
@@ -44,10 +32,6 @@ const fallbackRecommendedSession = {
   reason: 'No recommendation is available yet. Add or update training logs to generate a better recommendation.',
   plan: 'Start with a controlled baseline session. Keep intensity moderate and record readiness afterwards.',
 };
-
-function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function isFatigueWatch(readiness: string) {
   const score = Number(readiness);
@@ -330,39 +314,6 @@ const quickTemplates: QuickTemplate[] = [
   },
 ];
 
-const starterLogs: TrainingLog[] = [
-  {
-    id: 1,
-    date: getTodayDate(),
-    category: 'Ruck',
-    type: 'Loaded Ruck',
-    duration: '1 hr 45 min',
-    distanceLoad: '12 km - 18 kg',
-    readiness: '7',
-    notes: 'Moderate effort. Good pace. Recovery required.',
-  },
-  {
-    id: 2,
-    date: getTodayDate(),
-    category: 'Strength',
-    type: 'Strength Session',
-    duration: '55 min',
-    distanceLoad: 'Squat - Press - Pull - Hinge',
-    readiness: '8',
-    notes: 'Controlled intensity. Solid movement quality.',
-  },
-  {
-    id: 3,
-    date: getTodayDate(),
-    category: 'Recovery',
-    type: 'Recovery Work',
-    duration: '25 min',
-    distanceLoad: 'Mobility - Stretching',
-    readiness: '5',
-    notes: 'Light recovery session. Hydration focus.',
-  },
-];
-
 function isWithinLastSevenDays(dateString: string) {
   const date = new Date(dateString).getTime();
   const now = new Date().getTime();
@@ -376,6 +327,8 @@ export function calculateTrainingStreak(logs: TrainingLog[]) {
 }
 
 export default function LogScreen() {
+  const { logs } = useTraining();
+
   const renderLogItem = ({ item }: { item: TrainingLog }) => (
     <View style={styles.logCard}>
       <View style={styles.logHeader}>
@@ -396,7 +349,7 @@ export default function LogScreen() {
   return (
     <View style={styles.screen}>
       <FlatList
-        data={starterLogs}
+        data={logs}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderLogItem}
         contentContainerStyle={styles.listContent}
