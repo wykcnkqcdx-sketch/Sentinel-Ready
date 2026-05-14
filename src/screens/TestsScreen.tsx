@@ -1,4 +1,6 @@
 ﻿import { ScrollView, StyleSheet, Text, View } from 'react-native';
+﻿import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 
 const tests = [
   {
@@ -30,8 +32,29 @@ const tests = [
     note: 'Monitor feet, calves, hips and lower back after each ruck.',
   },
 ];
+export default function TestsScreen() {
+  const { logs } = useTraining();
+  const testLogs = logs.filter((log) => log.category === 'Test');
+  const readinessPercentage = calculateReadinessPercentage(logs);
 
 export default function TestsScreen() {
+  let heroScore = 'GREEN';
+  let heroScoreColor = '#ffffff';
+  let heroText = 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.';
+
+  if (readinessPercentage > 0 && readinessPercentage < 60) {
+    heroScore = 'RED';
+    heroScoreColor = '#ffbfbf';
+    heroText = 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery.';
+  } else if (readinessPercentage >= 60 && readinessPercentage < 80) {
+    heroScore = 'AMBER';
+    heroScoreColor = '#ffdfbf';
+    heroText = 'Trainable, but not optimal for max-effort testing. Proceed with caution.';
+  } else if (readinessPercentage === 0) {
+    heroScore = 'NO DATA';
+    heroText = 'Log sessions to determine your testing readiness.';
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>TESTING</Text>
@@ -44,13 +67,16 @@ export default function TestsScreen() {
         <View>
           <Text style={styles.heroLabel}>Current Test Readiness</Text>
           <Text style={styles.heroScore}>GREEN</Text>
+          <Text style={[styles.heroScore, { color: heroScoreColor }]}>{heroScore}</Text>
           <Text style={styles.heroText}>
             Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.
+            {heroText}
           </Text>
         </View>
 
         <View style={styles.scoreBox}>
           <Text style={styles.scoreNumber}>4</Text>
+          <Text style={styles.scoreNumber}>{testLogs.length}</Text>
           <Text style={styles.scoreLabel}>Tests</Text>
         </View>
       </View>
@@ -67,6 +93,17 @@ export default function TestsScreen() {
               <Text style={styles.testName}>{test.name}</Text>
               <Text style={styles.testStandard}>{test.standard}</Text>
             </View>
+      {testLogs.length === 0 ? (
+        <View style={styles.testCard}>
+          <Text style={styles.testName}>No Tests Logged</Text>
+          <Text style={styles.note}>Log a session with the 'Test' category to see your results here.</Text>
+        </View>
+      ) : (
+        testLogs.map((log) => {
+          const score = Number(log.readiness) || 0;
+          let status = 'Develop';
+          if (score >= 8) status = 'Pass';
+          else if (score >= 6) status = 'Ready';
 
             <View style={styles.resultBlock}>
               <Text style={styles.resultScore}>{test.score}</Text>
@@ -78,8 +115,33 @@ export default function TestsScreen() {
               >
                 {test.status}
               </Text>
+          return (
+            <View key={log.id} style={styles.testCard}>
+              <View style={styles.testTop}>
+                <View style={styles.testNameBlock}>
+                  <Text style={styles.testName}>{log.type}</Text>
+                  <Text style={styles.testStandard}>{log.date}</Text>
+                </View>
+
+                <View style={styles.resultBlock}>
+                  <Text style={styles.resultScore}>{log.distanceLoad}</Text>
+                  <Text
+                    style={[
+                      styles.resultStatus,
+                      status === 'Develop' && styles.warningStatus,
+                    ]}
+                  >
+                    {status}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.note}>{log.notes}</Text>
             </View>
           </View>
+          );
+        })
+      )}
 
           <Text style={styles.note}>{test.note}</Text>
         </View>

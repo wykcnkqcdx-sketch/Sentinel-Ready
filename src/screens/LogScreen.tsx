@@ -26,22 +26,18 @@ function getDateValue(date: string) {
 
 function getReadinessLabel(readiness: string) {
   const score = Number(readiness);
-
   if (Number.isNaN(score)) return 'Unknown';
   if (score <= 3) return 'Low';
   if (score <= 5) return 'Fatigue Watch';
   if (score <= 7) return 'Moderate';
-
   return 'High';
 }
 
 function getNotesQualityMessage(notes: string) {
   const cleanNotes = notes.trim().toLowerCase();
-
   if (!cleanNotes) return 'missing notes';
 
   const weakNotes = ['ok', 'okay', 'good', 'fine', 'grand', 'easy', 'hard', 'done', 'completed'];
-
   if (weakNotes.includes(cleanNotes)) return 'notes too brief';
   if (cleanNotes.length < 15) return 'notes need more detail';
 
@@ -119,7 +115,6 @@ function getTrainingLogHealthLabel(score: number) {
   if (score >= 85) return 'Excellent';
   if (score >= 70) return 'Healthy';
   if (score >= 50) return 'Needs Work';
-
   return 'Poor Data';
 }
 
@@ -127,10 +122,8 @@ function getTrainingLogHealthMessage(score: number) {
   if (score >= 85) return 'Training data is strong enough for useful readiness and recovery review.';
   if (score >= 70) return 'Training data is usable. Improve weak notes and missing details to sharpen analysis.';
   if (score >= 50) return 'Training data needs work. Fix weak logs so the app can give better feedback.';
-
   return 'Training data is too weak for reliable analysis. Add clearer notes, duration, load and readiness scores.';
 }
-
 
 function buildReadinessTrend(logs: TrainingLog[]) {
   const sortedLogs = [...logs]
@@ -150,7 +143,6 @@ function buildReadinessTrend(logs: TrainingLog[]) {
 
   if (sortedLogs.length === 1) {
     const latest = getReadinessNumber(sortedLogs[0].readiness);
-
     return {
       latest,
       previous: 0,
@@ -226,18 +218,9 @@ function filterAndSortLogs(
   });
 
   return filtered.sort((a, b) => {
-    if (sortMode === 'Oldest') {
-      return getDateValue(a.date) - getDateValue(b.date) || a.id - b.id;
-    }
-
-    if (sortMode === 'Highest Readiness') {
-      return getReadinessNumber(b.readiness) - getReadinessNumber(a.readiness) || b.id - a.id;
-    }
-
-    if (sortMode === 'Lowest Readiness') {
-      return getReadinessNumber(a.readiness) - getReadinessNumber(b.readiness) || b.id - a.id;
-    }
-
+    if (sortMode === 'Oldest') return getDateValue(a.date) - getDateValue(b.date) || a.id - b.id;
+    if (sortMode === 'Highest Readiness') return getReadinessNumber(b.readiness) - getReadinessNumber(a.readiness) || b.id - a.id;
+    if (sortMode === 'Lowest Readiness') return getReadinessNumber(a.readiness) - getReadinessNumber(b.readiness) || b.id - a.id;
     return getDateValue(b.date) - getDateValue(a.date) || b.id - a.id;
   });
 }
@@ -270,18 +253,10 @@ export default function LogScreen() {
   }
 
   function confirmDeleteLog(log: TrainingLog) {
-    Alert.alert(
-      'Delete Training Log',
-      `Delete this ${log.category} log from ${log.date}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteLog(log.id),
-        },
-      ]
-    );
+    Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteLog(log.id) },
+    ]);
   }
 
   const renderLogItem = ({ item }: { item: TrainingLog }) => {
@@ -677,4 +652,3 @@ const styles = StyleSheet.create({
   fab: { position: 'absolute', bottom: 24, right: 24, backgroundColor: '#91e6a3', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
   fabIcon: { color: '#07110c', fontSize: 32, fontWeight: '400' },
 });
-
