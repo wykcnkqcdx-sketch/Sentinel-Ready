@@ -46,6 +46,12 @@ export default function DashboardScreen() {
   const cardioVal = latestRun ? latestRun.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
   const recoveryVal = latestRecovery ? `Score: ${latestRecovery.readiness}` : 'N/A';
 
+  // 3. Prepare Trend Data (last 7 logs with readiness)
+  const trendLogs = [...logs]
+    .filter((log) => Number(log.readiness) > 0)
+    .slice(0, 7)
+    .reverse();
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -78,6 +84,35 @@ export default function DashboardScreen() {
           <Text style={styles.detailText}>Strength: Stable</Text>
           <Text style={styles.detailText}>Endurance: Improving</Text>
           <Text style={styles.detailText}>Recovery: Moderate</Text>
+        </View>
+      </SentinelCard>
+
+      <SentinelCard title="Readiness Trend">
+        <View style={styles.chartContainer}>
+          {trendLogs.length > 0 ? (
+            trendLogs.map((log) => {
+              const score = Number(log.readiness);
+              const heightPercentage = `${(score / 10) * 100}%`;
+              let barColor = '#62d982'; // Green
+              if (score < 6) barColor = '#d96262'; // Red
+              else if (score < 8) barColor = '#d9a662'; // Amber
+
+              // Format date as MM/DD
+              const dateLabel = log.date.substring(5, 10).replace('-', '/');
+
+              return (
+                <View key={log.id} style={styles.barColumn}>
+                  <Text style={styles.barScore}>{score}</Text>
+                  <View style={styles.barBackground}>
+                    <View style={[styles.barFill, { height: heightPercentage, backgroundColor: barColor }]} />
+                  </View>
+                  <Text style={styles.barLabel}>{dateLabel}</Text>
+                </View>
+              );
+            })
+          ) : (
+            <Text style={styles.cardText}>No readiness data available.</Text>
+          )}
         </View>
       </SentinelCard>
 
@@ -303,6 +338,43 @@ const styles = StyleSheet.create({
     color: '#aeb8aa',
     fontSize: 14,
     lineHeight: 21,
+    marginTop: 8,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    height: 140,
+    marginTop: 4,
+  },
+  barColumn: {
+    alignItems: 'center',
+    width: 40,
+  },
+  barScore: {
+    color: '#aeb8aa',
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  barBackground: {
+    width: 24,
+    height: 100,
+    backgroundColor: '#0b1710',
+    borderRadius: 6,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#213c2b',
+  },
+  barFill: {
+    width: '100%',
+    borderRadius: 4,
+  },
+  barLabel: {
+    color: '#8fbf8f',
+    fontSize: 10,
+    fontWeight: '800',
     marginTop: 8,
   },
 });
