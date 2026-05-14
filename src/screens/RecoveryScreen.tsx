@@ -1,193 +1,292 @@
-import { useTraining } from '@/src/screens/TrainingContext';
+import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import {
+  buildReadinessTrend,
+  buildWeekSummary,
+  getDateValue,
+  getReadinessNumber,
+  isFatigueWatch,
+} from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+function daysSince(dateStr: string): number {
+  const then = new Date(dateStr + 'T00:00:00').getTime();
+  const now = new Date().setHours(0, 0, 0, 0);
+  return Math.floor((now - then) / 86400000);
+}
+
+function getRecoveryScore(logs: TrainingLog[]) {
+  const recent = [...logs]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .slice(0, 5);
+  if (recent.length === 0) return 0;
+  const avg = recent.reduce((sum, l) => sum + getReadinessNumber(l.readiness), 0) / recent.length;
+  return Math.round((avg / 10) * 100);
+}
+
+function getProtocol(score: number) {
+  if (score >= 75) {
+    return {
+      title: 'Maintenance Protocol',
+      steps: [
+        '5–10 min easy walk or light bike to flush legs.',
+        'Hip flexor, calf and hamstring mobility — 15–20 min.',
+        'Rehydrate. Aim for 2.5–3L across the day.',
+        'Eat protein within the next meal window.',
+        'Aim for 7–8 hours sleep tonight.',
+      ],
+    };
+  }
+  if (score >= 50) {
+    return {
+      title: 'Active Recovery Protocol',
+      steps: [
+        'No intensity today. Easy walk or full rest only.',
+        '20–30 min mobility — hips, calves, hamstrings and shoulders.',
+        'Breathing work to lower resting heart rate.',
+        'Increase hydration. Aim for 3L minimum.',
+        'Target 8+ hours sleep. Reduce screen time before bed.',
+      ],
+    };
+  }
+  if (score > 0) {
+    return {
+      title: 'Full Rest Protocol',
+      steps: [
+        'Complete rest today. No training of any kind.',
+        'Light stretching only if needed — 10 min max.',
+        'Prioritise sleep above everything else tonight.',
+        'Hydrate well throughout the day.',
+        'Reassess readiness tomorrow before returning to any load.',
+      ],
+    };
+  }
+  return {
+    title: 'Suggested Recovery Protocol',
+    steps: [
+      '5 min easy walk or bike.',
+      'Hip flexor, calf and hamstring mobility.',
+      'Light breathing work to bring heart rate down.',
+      'Rehydrate and eat protein within the next meal window.',
+    ],
+  };
+}
 
 export default function RecoveryScreen() {
   const { logs } = useTraining();
 
-  // 1. Calculate Recovery Score (Same logic as Dashboard Readiness)
-  const recentLogs = logs.slice(0, 5);
-  const avgScore = recentLogs.length > 0 
-    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
-    : 0;
-  const recoveryScore = recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+  const recoveryScore = getRecoveryScore(logs);
+  const trend = buildReadinessTrend(logs);
+  const thisWeek = buildWeekSummary(logs, 0);
 
-  let scoreText = 'Log a session to calculate your recovery score.';
-  let fatigueValue = 'Unknown';
+  const recentSorted = [...logs]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
 
-  if (recoveryScore >= 80) {
-    scoreText = 'Prime condition. Ready for high-intensity or heavy load.';
-    fatigueValue = 'Low';
-  } else if (recoveryScore >= 60) {
-    scoreText = 'Trainable, but avoid unnecessary max-effort work. Keep the session clean and controlled.';
-    fatigueValue = 'Moderate';
-  } else if (recoveryScore > 0) {
-    scoreText = 'High fatigue detected. Prioritise recovery, mobility, and rest today.';
-    fatigueValue = 'High';
-  }
+  const latestRecoveryLog = recentSorted.find((l) => l.category === 'Recovery');
+  const recentFatigueLogs = recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3);
+  const daysSinceRecovery = latestRecoveryLog ? daysSince(latestRecoveryLog.date) : null;
 
-  // 2. Fetch the most recent Recovery session
-  const latestRecovery = logs.find((l) => l.category === 'Recovery');
+  const isHighFatigue = recoveryScore > 0 && recoveryScore < 50;
+  const isModerate = recoveryScore >= 50 && recoveryScore < 75;
+  const isPrime = recoveryScore >= 75;
 
-  // 3. Define the dynamic grid items inside the component
-  const recoveryItems = [
-    {
-      title: 'Sleep',
-      value: '7-8 hrs', // Static Target
-      note: 'Aim for consistent sleep before heavy ruck or strength work.',
-    },
-    {
-      title: 'Hydration',
-      value: '2.5-3L', // Static Target
-      note: 'Increase intake during loaded carries, heat or high-sweat sessions.',
-    },
-    {
-      title: 'Mobility',
-      value: latestRecovery ? latestRecovery.duration : '--',
-      note: latestRecovery ? `Last logged: ${latestRecovery.date}` : 'Prioritise hips, calves, hamstrings, back and shoulders.',
-    },
-    {
-      title: 'Fatigue',
-      value: recoveryScore === 0 ? 'No Data' : fatigueValue,
-      note: fatigueValue === 'High' 
-        ? 'Keep intensity very low. Focus heavily on rest and recovery.' 
-        : 'Keep intensity controlled if legs feel heavy or sleep is poor.',
-    },
-  ];
+  const scoreLabel = isPrime ? 'Prime' : isModerate ? 'Moderate' : recoveryScore > 0 ? 'High Fatigue' : 'No Data';
+  const scoreMessage = isPrime
+    ? 'Readiness is strong. You are ready for high-intensity or heavy load.'
+    : isModerate
+    ? 'Trainable, but avoid unnecessary max-effort work. Keep intensity controlled.'
+    : recoveryScore > 0
+    ? 'High fatigue detected. Prioritise recovery, mobility and rest today.'
+    : 'Log a session with a readiness score to calculate your recovery status.';
+
+  const mainCardStyle = isHighFatigue ? styles.mainCardWarning : isModerate ? styles.mainCardModerate : styles.mainCard;
+  const scoreStyle = isHighFatigue ? styles.scoreWarning : styles.score;
+  const badgeStyle = isHighFatigue ? styles.badgeWarning : isModerate ? styles.badgeModerate : styles.badge;
+  const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : styles.badgeText;
+
+  const protocol = getProtocol(recoveryScore);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>RECOVERY</Text>
+      <Text style={styles.kicker}>SENTINEL READY</Text>
       <Text style={styles.title}>Recovery Status</Text>
       <Text style={styles.subtitle}>
-        Monitor fatigue, readiness and recovery habits so training stays sustainable.
+        Fatigue, readiness trend and recovery habits reviewed from your training logs.
       </Text>
 
-      <View style={styles.mainCard}>
-        <Text style={styles.mainTitle}>Today's Recovery Score</Text>
-        <Text style={styles.score}>{recoveryScore > 0 ? `${recoveryScore}%` : '--'}</Text>
-        <Text style={styles.mainText}>
-          {scoreText}
-        </Text>
+      <View style={mainCardStyle}>
+        <View style={styles.scoreHeader}>
+          <View>
+            <Text style={styles.cardKicker}>RECOVERY SCORE</Text>
+            <Text style={scoreStyle}>{recoveryScore > 0 ? `${recoveryScore}%` : '--'}</Text>
+          </View>
+          <View style={badgeStyle}>
+            <Text style={badgeTextStyle}>{scoreLabel}</Text>
+          </View>
+        </View>
+        <Text style={styles.scoreMessage}>{scoreMessage}</Text>
       </View>
 
-      <View style={styles.grid}>
-        {recoveryItems.map((item) => (
-          <View key={item.title} style={styles.card}>
-            <Text style={styles.cardLabel}>{item.title}</Text>
-            <Text style={styles.cardValue}>{item.value}</Text>
-            <Text style={styles.cardNote}>{item.note}</Text>
+      <View style={styles.statGrid}>
+        <View style={styles.statCard}>
+          <Text style={styles.statKicker}>FATIGUE WATCH</Text>
+          <Text style={thisWeek.fatigueWatch > 0 ? styles.statNumberWarn : styles.statNumber}>
+            {thisWeek.fatigueWatch}
+          </Text>
+          <Text style={styles.statLabel}>
+            {thisWeek.fatigueWatch === 1 ? 'session this week' : 'sessions this week'}
+          </Text>
+        </View>
+
+        <View style={styles.statCard}>
+          <Text style={styles.statKicker}>READINESS TREND</Text>
+          <Text style={
+            trend.status === 'warning' ? styles.statNumberWarn
+            : trend.status === 'good' ? styles.statNumberGood
+            : styles.statNumber
+          }>
+            {trend.label}
+          </Text>
+          <Text style={styles.statLabel}>
+            {trend.latest > 0 ? `Latest ${trend.latest}/10` : 'No data'}
+          </Text>
+        </View>
+
+        <View style={styles.statCard}>
+          <Text style={styles.statKicker}>LAST RECOVERY</Text>
+          <Text style={daysSinceRecovery !== null && daysSinceRecovery > 4 ? styles.statNumberWarn : styles.statNumber}>
+            {daysSinceRecovery !== null ? `${daysSinceRecovery}d` : '--'}
+          </Text>
+          <Text style={styles.statLabel}>
+            {latestRecoveryLog ? latestRecoveryLog.date : 'No recovery logged'}
+          </Text>
+        </View>
+
+        <View style={styles.statCard}>
+          <Text style={styles.statKicker}>THIS WEEK</Text>
+          <Text style={styles.statNumber}>{thisWeek.total}</Text>
+          <Text style={styles.statLabel}>
+            {thisWeek.total === 1 ? 'session logged' : 'sessions logged'}
+          </Text>
+        </View>
+      </View>
+
+      {recentFatigueLogs.length > 0 ? (
+        <View style={styles.fatigueCard}>
+          <Text style={styles.fatigueKicker}>RECENT FATIGUE WATCH SESSIONS</Text>
+          <Text style={styles.fatigueTitle}>
+            {recentFatigueLogs.length} {recentFatigueLogs.length === 1 ? 'session' : 'sessions'} logged with readiness 5 or below
+          </Text>
+          {recentFatigueLogs.map((log) => (
+            <View key={log.id} style={styles.fatigueRow}>
+              <View style={styles.fatigueMeta}>
+                <Text style={styles.fatigueCategory}>{log.category}</Text>
+                <Text style={styles.fatigueDate}>{log.date}</Text>
+              </View>
+              <View style={styles.fatigueBadge}>
+                <Text style={styles.fatigueBadgeText}>{log.readiness}/10</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
+      {daysSinceRecovery !== null && daysSinceRecovery > 4 ? (
+        <View style={styles.alertCard}>
+          <Text style={styles.alertTitle}>No recovery session in {daysSinceRecovery} days</Text>
+          <Text style={styles.alertText}>
+            Add a mobility or recovery session to maintain soft tissue health and reduce injury risk.
+          </Text>
+        </View>
+      ) : null}
+
+      <View style={styles.protocolCard}>
+        <Text style={styles.protocolKicker}>PROTOCOL</Text>
+        <Text style={styles.protocolTitle}>{protocol.title}</Text>
+        {protocol.steps.map((step, i) => (
+          <View key={i} style={styles.protocolRow}>
+            <Text style={styles.protocolNumber}>{i + 1}</Text>
+            <Text style={styles.protocolText}>{step}</Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.protocolCard}>
-        <Text style={styles.protocolTitle}>Suggested Recovery Protocol</Text>
-        <Text style={styles.protocolText}>1. 5 minutes easy walk or bike.</Text>
-        <Text style={styles.protocolText}>2. Hip flexor, calf and hamstring mobility.</Text>
-        <Text style={styles.protocolText}>3. Light breathing work to bring heart rate down.</Text>
-        <Text style={styles.protocolText}>4. Rehydrate and eat protein within the next meal window.</Text>
+      <View style={styles.targetsCard}>
+        <Text style={styles.targetsTitle}>Daily Targets</Text>
+        <View style={styles.targetRow}>
+          <Text style={styles.targetLabel}>Sleep</Text>
+          <Text style={styles.targetValue}>7–8 hours</Text>
+        </View>
+        <View style={styles.targetRow}>
+          <Text style={styles.targetLabel}>Hydration</Text>
+          <Text style={styles.targetValue}>2.5–3 L</Text>
+        </View>
+        <View style={styles.targetRow}>
+          <Text style={styles.targetLabel}>Mobility</Text>
+          <Text style={styles.targetValue}>15–20 min daily</Text>
+        </View>
+        <View style={styles.targetRow}>
+          <Text style={styles.targetLabel}>Recovery sessions</Text>
+          <Text style={styles.targetValue}>1–2 per week</Text>
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#06100b',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 120,
-    gap: 16,
-  },
-  kicker: {
-    color: '#91e6a3',
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 3,
-  },
-  title: {
-    color: '#f4f7f0',
-    fontSize: 30,
-    fontWeight: '900',
-  },
-  subtitle: {
-    color: '#c4cec0',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  mainCard: {
-    backgroundColor: '#102016',
-    borderRadius: 24,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: '#2d6b3f',
-  },
-  mainTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  score: {
-    color: '#ffffff',
-    fontSize: 58,
-    fontWeight: '900',
-    marginTop: 8,
-  },
-  mainText: {
-    color: '#c4cec0',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  card: {
-    width: '47%',
-    backgroundColor: '#0d1812',
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#203529',
-  },
-  cardLabel: {
-    color: '#91e6a3',
-    fontSize: 13,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-  },
-  cardValue: {
-    color: '#ffffff',
-    fontSize: 22,
-    fontWeight: '900',
-    marginTop: 8,
-  },
-  cardNote: {
-    color: '#aeb8aa',
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 8,
-  },
-  protocolCard: {
-    backgroundColor: '#171509',
-    borderRadius: 22,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#4b4523',
-  },
-  protocolTitle: {
-    color: '#ffffff',
-    fontSize: 19,
-    fontWeight: '900',
-    marginBottom: 10,
-  },
-  protocolText: {
-    color: '#d7dfc9',
-    fontSize: 14,
-    lineHeight: 23,
-  },
+  screen: { flex: 1, backgroundColor: '#06100b' },
+  content: { padding: 20, paddingBottom: 120, gap: 14 },
+  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#f4f7f0', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#c4cec0', fontSize: 15, lineHeight: 22 },
+
+  mainCard: { backgroundColor: '#102016', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#2d6b3f', gap: 10 },
+  mainCardModerate: { backgroundColor: '#1a1a0d', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#4b4523', gap: 10 },
+  mainCardWarning: { backgroundColor: '#1a0f0b', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#7a4a1f', gap: 10 },
+  scoreHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  score: { color: '#ffffff', fontSize: 58, fontWeight: '900', marginTop: 4 },
+  scoreWarning: { color: '#ffb86b', fontSize: 58, fontWeight: '900', marginTop: 4 },
+  badge: { backgroundColor: '#143d22', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeModerate: { backgroundColor: '#2a2410', borderWidth: 1, borderColor: '#6b5020', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeWarning: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  badgeTextModerate: { color: '#f3d36b', fontSize: 12, fontWeight: '900' },
+  badgeTextWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  scoreMessage: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
+
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  statCard: { width: '47%', backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 4 },
+  statKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  statNumber: { color: '#ffffff', fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statNumberWarn: { color: '#ffb86b', fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statNumberGood: { color: '#91e6a3', fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
+
+  fatigueCard: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 10 },
+  fatigueKicker: { color: '#ffb86b', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  fatigueTitle: { color: '#ffb86b', fontSize: 15, fontWeight: '900' },
+  fatigueRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#2a1a0d', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#5a3a1f' },
+  fatigueMeta: { gap: 3 },
+  fatigueCategory: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  fatigueDate: { color: '#c8a070', fontSize: 12, fontWeight: '800' },
+  fatigueBadge: { backgroundColor: '#3a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  fatigueBadgeText: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+
+  alertCard: { backgroundColor: '#1c1408', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#6b5020', gap: 6 },
+  alertTitle: { color: '#f0c070', fontSize: 14, fontWeight: '900' },
+  alertText: { color: '#c8a070', fontSize: 13, lineHeight: 19 },
+
+  protocolCard: { backgroundColor: '#171509', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#4b4523', gap: 10 },
+  protocolKicker: { color: '#f3d36b', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  protocolTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  protocolRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  protocolNumber: { color: '#f3d36b', fontSize: 14, fontWeight: '900', width: 18 },
+  protocolText: { color: '#d7dfc9', fontSize: 14, lineHeight: 21, flex: 1 },
+
+  targetsCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 10 },
+  targetsTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  targetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#1a2c20' },
+  targetLabel: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
+  targetValue: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
 });
