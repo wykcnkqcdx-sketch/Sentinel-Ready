@@ -16,6 +16,14 @@ export type TrainingLog = {
 
 const STORAGE_KEY = 'sentinel_training_logs';
 
+export function calculateReadinessPercentage(logs: TrainingLog[]) {
+  const recentLogs = logs.slice(0, 5);
+  const avgScore = recentLogs.length > 0 
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+    : 0;
+  return recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+}
+
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -143,4 +151,3 @@ export function useTraining() {
   }
   return context;
 }
-

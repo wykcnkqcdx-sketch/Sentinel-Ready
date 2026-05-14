@@ -1,18 +1,13 @@
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
-import { useTraining } from '@/src/screens/TrainingContext';
+import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function DashboardScreen() {
   const { logs } = useTraining();
 
-  // 1. Calculate Readiness Score (Average of recent logs)
-  const recentLogs = logs.slice(0, 5);
-  const avgScore = recentLogs.length > 0 
-    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
-    : 0;
-  const readinessPercentage = recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+  const readinessPercentage = calculateReadinessPercentage(logs);
 
   let statusBadgeText = 'GREEN';
   let statusBadgeColor = '#143d22';

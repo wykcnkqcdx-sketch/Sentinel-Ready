@@ -280,7 +280,12 @@ export default function AddLogScreen() {
               style={category === item ? styles.categoryButtonActive : styles.categoryButton}
               onPress={() => {
                 setCategory(item);
-                setNotes(getNoteStarter(item));
+                
+                // Only auto-fill if empty or currently using an unmodified starter
+                const isDefault = categories.some((c) => notes === getNoteStarter(c));
+                if (notes.trim() === '' || isDefault) {
+                  setNotes(getNoteStarter(item));
+                }
               }}
             >
               <Text style={category === item ? styles.categoryTextActive : styles.categoryText}>{item}</Text>
