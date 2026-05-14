@@ -436,3 +436,130 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
     status: 'neutral',
   };
 }
+
+export type DayPlan = {
+  day: string;
+  focus: string;
+  session: string;
+  intensity: 'Rest' | 'Low' | 'Moderate' | 'High';
+  isRest: boolean;
+};
+
+export type WeekPlan = {
+  days: DayPlan[];
+  planType: 'recovery' | 'standard' | 'progressive';
+  rationale: string;
+};
+
+const RECOVERY_WEEK: DayPlan[] = [
+  { day: 'Monday',    focus: 'Active Recovery', session: '20–30 min mobility — hips, calves, shoulders and breathing work.', intensity: 'Low',  isRest: false },
+  { day: 'Tuesday',   focus: 'Rest',            session: 'Full rest. Prioritise sleep, hydration and nutrition.',              intensity: 'Rest', isRest: true  },
+  { day: 'Wednesday', focus: 'Mobility',         session: '20–25 min stretching and easy movement. No intensity.',             intensity: 'Low',  isRest: false },
+  { day: 'Thursday',  focus: 'Light Strength',   session: 'Bodyweight only — press-ups, rows, squats. Keep effort low.',       intensity: 'Low',  isRest: false },
+  { day: 'Friday',    focus: 'Active Recovery',  session: 'Easy walk 20–30 min. Focus on breathing and hydration.',            intensity: 'Low',  isRest: false },
+  { day: 'Saturday',  focus: 'Easy Ruck',        session: '4–6 km with a light pack (under 10 kg). Steady pace only.',         intensity: 'Low',  isRest: false },
+  { day: 'Sunday',    focus: 'Rest',             session: 'Full rest.',                                                        intensity: 'Rest', isRest: true  },
+];
+
+function buildStandardDays(gaps: { ruck: boolean; strength: boolean; run: boolean }): DayPlan[] {
+  const ruckSession: DayPlan = { day: '', focus: 'Ruck', session: '8–10 km loaded ruck at 12–15 kg. Steady tactical pace. Focus on posture and foot care.', intensity: 'Moderate', isRest: false };
+  const strengthSession: DayPlan = { day: '', focus: 'Strength', session: 'Squat, press, pull and hinge pattern. Controlled intensity. Leave 2 reps in reserve.', intensity: 'Moderate', isRest: false };
+  const runSession: DayPlan = { day: '', focus: 'Run', session: '5 km steady aerobic run. Keep effort conversational. Short cooldown after.', intensity: 'Moderate', isRest: false };
+  const condSession: DayPlan = { day: '', focus: 'Conditioning', session: 'Loaded carries, circuits or interval work. 30–40 min. Keep effort controlled.', intensity: 'Moderate', isRest: false };
+  const recoveryDay: DayPlan = { day: 'Wednesday', focus: 'Recovery', session: 'Mobility, easy walk and breathing work. No intensity.', intensity: 'Low', isRest: false };
+  const restDay: DayPlan = { day: 'Sunday', focus: 'Rest', session: 'Full rest or light mobility only.', intensity: 'Rest', isRest: true };
+
+  const priority: DayPlan[] = [];
+  if (gaps.ruck) priority.push(ruckSession);
+  if (gaps.strength) priority.push(strengthSession);
+  if (gaps.run) priority.push(runSession);
+
+  const slots = ['Monday', 'Tuesday', 'Thursday', 'Friday', 'Saturday'];
+  const filled: DayPlan[] = [recoveryDay, restDay];
+  const sessionPool = [...priority, strengthSession, ruckSession, runSession, condSession];
+
+  let poolIndex = 0;
+  for (const day of slots) {
+    const session = { ...sessionPool[poolIndex % sessionPool.length], day };
+    filled.push(session);
+    poolIndex++;
+  }
+
+  return filled.sort((a, b) => {
+    const order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return order.indexOf(a.day) - order.indexOf(b.day);
+  });
+}
+
+function buildProgressiveDays(gaps: { ruck: boolean; strength: boolean; run: boolean }): DayPlan[] {
+  const ruckSession: DayPlan = { day: '', focus: 'Ruck', session: '10–12 km loaded ruck at 15–18 kg. Push pace slightly from last session.', intensity: 'High', isRest: false };
+  const strengthSession: DayPlan = { day: '', focus: 'Strength', session: 'Squat, press, pull and hinge. Increase load by 5% or add one working set.', intensity: 'High', isRest: false };
+  const runSession: DayPlan = { day: '', focus: 'Run', session: '6–8 km with a tempo effort in the middle 3 km. Monitor breathing throughout.', intensity: 'High', isRest: false };
+  const condSession: DayPlan = { day: '', focus: 'Strength Endurance', session: 'Circuit: hinge, push, pull and loaded carry. 35–45 min at sustained effort.', intensity: 'High', isRest: false };
+  const recoveryDay: DayPlan = { day: 'Wednesday', focus: 'Recovery', session: 'Mobility, easy walk and breathing work. No intensity.', intensity: 'Low', isRest: false };
+  const restDay: DayPlan = { day: 'Sunday', focus: 'Rest', session: 'Full rest. Prioritise sleep and hydration.', intensity: 'Rest', isRest: true };
+
+  const priority: DayPlan[] = [];
+  if (gaps.ruck) priority.push(ruckSession);
+  if (gaps.strength) priority.push(strengthSession);
+  if (gaps.run) priority.push(runSession);
+
+  const slots = ['Monday', 'Tuesday', 'Thursday', 'Friday', 'Saturday'];
+  const filled: DayPlan[] = [recoveryDay, restDay];
+  const sessionPool = [...priority, strengthSession, ruckSession, runSession, condSession];
+
+  let poolIndex = 0;
+  for (const day of slots) {
+    const session = { ...sessionPool[poolIndex % sessionPool.length], day };
+    filled.push(session);
+    poolIndex++;
+  }
+
+  return filled.sort((a, b) => {
+    const order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return order.indexOf(a.day) - order.indexOf(b.day);
+  });
+}
+
+export function buildWeekPlan(logs: TrainingLog[]): WeekPlan {
+  const trend = buildReadinessTrend(logs);
+  const thisWeek = buildWeekSummary(logs, 0);
+
+  const recentLogs = [...logs]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .slice(0, 7);
+  const recentFatigueWatch = recentLogs.filter((log) => isFatigueWatch(log.readiness)).length;
+
+  const isRecoveryWeek = trend.status === 'warning' || recentFatigueWatch >= 2;
+  const isProgressiveWeek = trend.status === 'good' && thisWeek.total >= 3 && recentFatigueWatch === 0;
+
+  if (isRecoveryWeek) {
+    return {
+      days: RECOVERY_WEEK,
+      planType: 'recovery',
+      rationale: trend.status === 'warning'
+        ? 'Readiness is dropping. This week focuses on recovery and light work to restore capacity before returning to full load.'
+        : 'Multiple fatigue-watch sessions detected. Load is reduced this week to protect readiness and prevent overtraining.',
+    };
+  }
+
+  const gaps = {
+    ruck: thisWeek.ruck === 0,
+    strength: thisWeek.strength === 0,
+    run: thisWeek.run === 0,
+  };
+
+  if (isProgressiveWeek) {
+    return {
+      days: buildProgressiveDays(gaps),
+      planType: 'progressive',
+      rationale: 'Readiness is improving and last week was consistent. This week builds on that with increased intensity and load.',
+    };
+  }
+
+  return {
+    days: buildStandardDays(gaps),
+    planType: 'standard',
+    rationale: 'Readiness is stable. This week maintains current load and fills any gaps in the training split.',
+  };
+}
