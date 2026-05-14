@@ -3,6 +3,7 @@ import type { TrainingLog } from '@/src/screens/TrainingContext';
 import {
   buildReadinessTrend,
   buildSessionRecommendation,
+  buildWeeklyLoadRisk,
   buildWeekPlan,
   buildWeekSummary,
   calculateTrainingLogHealthScore,
@@ -117,6 +118,62 @@ describe('weekly summaries and health', () => {
     ]);
 
     expect(healthScore).toBe(46);
+  });
+});
+
+describe('weekly load risk', () => {
+  it('returns no data when no logs exist in the last 7 days', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    expect(buildWeeklyLoadRisk([makeLog({ id: 1, date: '2026-05-01' })])).toMatchObject({
+      status: 'no-data',
+      label: 'No Data',
+      totalSessions: 0,
+    });
+  });
+
+  it('marks high risk for multiple fatigue-watch sessions', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const risk = buildWeeklyLoadRisk([
+      makeLog({ id: 1, date: '2026-05-10', readiness: '5' }),
+      makeLog({ id: 2, date: '2026-05-11', readiness: '4' }),
+      makeLog({ id: 3, date: '2026-05-12', readiness: '7' }),
+    ]);
+
+    expect(risk).toMatchObject({
+      status: 'high',
+      label: 'High',
+      fatigueWatchSessions: 2,
+    });
+    expect(risk.factors).toContain('Multiple fatigue-watch sessions');
+  });
+
+  it('marks moderate risk when load is building without recovery', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    expect(
+      buildWeeklyLoadRisk([
+        makeLog({ id: 1, date: '2026-05-10', category: 'Strength', readiness: '7' }),
+        makeLog({ id: 2, date: '2026-05-11', category: 'Run', readiness: '7' }),
+        makeLog({ id: 3, date: '2026-05-12', category: 'Ruck', readiness: '7' }),
+      ]).status
+    ).toBe('moderate');
+  });
+
+  it('marks low risk when recent load is controlled', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    expect(
+      buildWeeklyLoadRisk([
+        makeLog({ id: 1, date: '2026-05-10', category: 'Strength', readiness: '8' }),
+        makeLog({ id: 2, date: '2026-05-12', category: 'Recovery', readiness: '8' }),
+      ]).status
+    ).toBe('low');
   });
 });
 

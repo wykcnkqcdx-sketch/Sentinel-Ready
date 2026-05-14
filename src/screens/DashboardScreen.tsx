@@ -1,8 +1,9 @@
+import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
-import { buildReadinessTrend, buildWeekSummary, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { DimensionValue, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
@@ -52,6 +53,7 @@ export default function DashboardScreen() {
   const readinessPercentage = calculateReadinessPercentage(logs);
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);
+  const weeklyLoadRisk = buildWeeklyLoadRisk(logs);
 
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness);
@@ -134,6 +136,8 @@ export default function DashboardScreen() {
           <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
         </View>
       </SentinelCard>
+
+      <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
 
       <SentinelCard title="Readiness Trend">
         <View style={styles.chartContainer}>
