@@ -891,6 +891,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
   },
+  improveButton: {
+    backgroundColor: '#ffb86b',
+    borderWidth: 1,
+    borderColor: '#ffb86b',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+  },
+  improveButtonText: {
+    color: '#07110c',
+    fontSize: 12,
+    fontWeight: '900',
+  },
   deleteButton: {
     borderWidth: 1,
     borderColor: '#7a4a1f',
@@ -956,4 +969,5 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 });
+
 
