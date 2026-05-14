@@ -1,275 +1,415 @@
-import { useTraining } from '@/src/screens/TrainingContext';
+import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+type RuckMetrics = {
+  distance: number;
+  load: number;
+  minutes: number;
+  pace: number;
+};
+
+function parseRuckMetrics(log: TrainingLog): RuckMetrics {
+  const distMatch = log.distanceLoad.match(/(\d+(?:\.\d+)?)\s*km/i);
+  const distance = distMatch ? parseFloat(distMatch[1]) : 0;
+
+  const loadMatch = log.distanceLoad.match(/(\d+(?:\.\d+)?)\s*kg/i);
+  const load = loadMatch ? parseFloat(loadMatch[1]) : 0;
+
+  let minutes = 0;
+  const colonMatch = log.duration.match(/(\d+):(\d+)/);
+  if (colonMatch) {
+    minutes = parseInt(colonMatch[1], 10) * 60 + parseInt(colonMatch[2], 10);
+  } else {
+    const hrMatch = log.duration.match(/(\d+)\s*hr/i);
+    if (hrMatch) minutes += parseInt(hrMatch[1], 10) * 60;
+    const minMatch = log.duration.match(/(\d+)\s*min/i);
+    if (minMatch) minutes += parseInt(minMatch[1], 10);
+    if (!hrMatch && !minMatch) {
+      const numMatch = log.duration.match(/(\d+)/);
+      if (numMatch) minutes += parseInt(numMatch[1], 10);
+    }
+  }
+
+  const pace = distance > 0 && minutes > 0 ? minutes / distance : 0;
+  return { distance, load, minutes, pace };
+}
+
+function formatPace(pace: number): string {
+  if (!pace) return '--';
+  const mins = Math.floor(pace);
+  const secs = Math.round((pace - mins) * 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}/km`;
+}
+
+function formatDuration(minutes: number): string {
+  if (!minutes) return '--';
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hrs > 0 && mins > 0) return `${hrs}h ${mins}m`;
+  if (hrs > 0) return `${hrs}h`;
+  return `${mins}m`;
+}
+
+function RuckSessionCard({ log, metrics }: { log: TrainingLog; metrics: RuckMetrics }) {
+  const fatigue = isFatigueWatch(log.readiness);
+  return (
+    <View style={fatigue ? styles.sessionCardWarn : styles.sessionCard}>
+      <View style={styles.sessionHeader}>
+        <View style={styles.sessionHeaderLeft}>
+          <Text style={styles.sessionDate}>{log.date}</Text>
+          <Text style={styles.sessionType}>{log.type}</Text>
+        </View>
+        <View style={fatigue ? styles.readinessBadgeWarn : styles.readinessBadge}>
+          <Text style={fatigue ? styles.readinessTextWarn : styles.readinessText}>
+            {log.readiness}/10
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.sessionStats}>
+        <View style={styles.sessionStat}>
+          <Text style={styles.sessionStatNumber}>
+            {metrics.distance > 0 ? `${metrics.distance}` : '--'}
+          </Text>
+          <Text style={styles.sessionStatLabel}>km</Text>
+        </View>
+
+        <View style={styles.sessionStatDivider} />
+
+        <View style={styles.sessionStat}>
+          <Text style={styles.sessionStatNumber}>
+            {metrics.load > 0 ? `${metrics.load}` : '--'}
+          </Text>
+          <Text style={styles.sessionStatLabel}>kg</Text>
+        </View>
+
+        <View style={styles.sessionStatDivider} />
+
+        <View style={styles.sessionStat}>
+          <Text style={styles.sessionStatNumber}>
+            {formatDuration(metrics.minutes)}
+          </Text>
+          <Text style={styles.sessionStatLabel}>time</Text>
+        </View>
+
+        <View style={styles.sessionStatDivider} />
+
+        <View style={styles.sessionStat}>
+          <Text style={styles.sessionStatNumber}>
+            {metrics.pace > 0 ? formatPace(metrics.pace) : '--'}
+          </Text>
+          <Text style={styles.sessionStatLabel}>pace</Text>
+        </View>
+      </View>
+
+      {log.notes ? (
+        <Text style={styles.sessionNotes} numberOfLines={2}>{log.notes}</Text>
+      ) : null}
+    </View>
+  );
+}
 
 export default function RuckScreen() {
   const { logs } = useTraining();
 
-  // 1. Filter for Ruck logs
-  const ruckLogs = logs.filter(l => l.category === 'Ruck');
+  const ruckLogs = [...logs.filter((l) => l.category === 'Ruck')]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
 
-  let maxDistance = 0;
-  let bestPace = Infinity;
-  let latestLoad = 0;
-  let latestDistance = 0;
+  const ruckMetrics = ruckLogs.map((log) => parseRuckMetrics(log));
 
-  // 2. Parse text fields to calculate metrics
-  ruckLogs.forEach(log => {
-    const distMatch = log.distanceLoad.match(/(\d+(?:\.\d+)?)\s*km/i);
-    const distance = distMatch ? parseFloat(distMatch[1]) : 0;
+  const totalSessions = ruckLogs.length;
+  const totalDistance = ruckMetrics.reduce((sum, m) => sum + m.distance, 0);
+  const longestRuck = Math.max(0, ...ruckMetrics.map((m) => m.distance));
+  const heaviestLoad = Math.max(0, ...ruckMetrics.map((m) => m.load));
+  const bestPace = ruckMetrics
+    .filter((m) => m.pace > 0)
+    .reduce((best, m) => (m.pace < best ? m.pace : best), Infinity);
 
-    let minutes = 0;
-    const colonMatch = log.duration.match(/(\d+):(\d+)/);
-    if (colonMatch) {
-      minutes = parseInt(colonMatch[1], 10) * 60 + parseInt(colonMatch[2], 10);
-    } else {
-      const hrMatch = log.duration.match(/(\d+)\s*hr/i);
-      if (hrMatch) minutes += parseInt(hrMatch[1], 10) * 60;
-      const minMatch = log.duration.match(/(\d+)\s*min/i);
-      if (minMatch) minutes += parseInt(minMatch[1], 10);
-      if (!hrMatch && !minMatch) {
-        const numMatch = log.duration.match(/(\d+)/); // Fallback: just grab the first number
-        if (numMatch) minutes += parseInt(numMatch[1], 10);
-      }
-    }
+  const latest = ruckLogs[0] ?? null;
+  const latestMetrics = ruckMetrics[0] ?? null;
+  const previousMetrics = ruckMetrics[1] ?? null;
 
-    if (distance > maxDistance) maxDistance = distance;
+  const distanceDelta =
+    latestMetrics && previousMetrics && latestMetrics.distance > 0 && previousMetrics.distance > 0
+      ? latestMetrics.distance - previousMetrics.distance
+      : null;
 
-    if (distance > 0 && minutes > 0) {
-      const pace = minutes / distance;
-      if (pace < bestPace) bestPace = pace;
-    }
-  });
+  const loadDelta =
+    latestMetrics && previousMetrics && latestMetrics.load > 0 && previousMetrics.load > 0
+      ? latestMetrics.load - previousMetrics.load
+      : null;
 
-  if (ruckLogs.length > 0) {
-    const latest = ruckLogs[0];
-    const loadMatch = latest.distanceLoad.match(/(\d+(?:\.\d+)?)\s*kg/i);
-    latestLoad = loadMatch ? parseFloat(loadMatch[1]) : 0;
-    
-    const distMatch = latest.distanceLoad.match(/(\d+(?:\.\d+)?)\s*km/i);
-    latestDistance = distMatch ? parseFloat(distMatch[1]) : 0;
-  }
+  const trend = buildReadinessTrend(ruckLogs);
+  const recentFatigue = ruckLogs.slice(0, 5).filter((l) => isFatigueWatch(l.readiness)).length;
 
-  // 3. Format Best Pace
-  let paceString = '--:--/km';
-  if (bestPace !== Infinity) {
-    const paceMins = Math.floor(bestPace);
-    const paceSecs = Math.round((bestPace - paceMins) * 60);
-    paceString = `${paceMins}:${paceSecs.toString().padStart(2, '0')}/km`;
-  }
+  const readinessGood = trend.status !== 'warning' && recentFatigue < 2;
+  const nextSessionAdvice = readinessGood
+    ? latestMetrics && latestMetrics.distance > 0
+      ? `Aim for ${(latestMetrics.distance + 1).toFixed(1)} km or increase load by 1–2 kg. Progress one variable only.`
+      : 'Start with 6–8 km at 10–15 kg. Steady pace, posture checks every 10 minutes.'
+    : 'Hold load and distance at current level. Focus on consistency and recovery before progressing.';
 
-  // 4. Calculate Readiness Status
-  const recentLogs = logs.slice(0, 5);
-  const avgScore = recentLogs.length > 0 
-    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
-    : 0;
-  const isFatigued = recentLogs.length > 0 && avgScore < 7;
-  const status = ruckLogs.length === 0 ? 'No Data' : (isFatigued ? 'Deload' : 'Ready');
+  const recentHistory = ruckLogs.slice(0, 5);
+  const recentMetrics = ruckMetrics.slice(0, 5);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>LOAD CARRIAGE</Text>
       <Text style={styles.title}>Ruck Performance</Text>
       <Text style={styles.subtitle}>
-        Track loaded movement, distance, pace, load weight and recovery impact.
+        Distance, load, pace and progression tracked from your logged ruck sessions.
       </Text>
 
-      <View style={styles.heroCard}>
-        <Text style={styles.cardTitle}>Current Ruck Standard</Text>
-        <Text style={styles.metric}>{maxDistance > 0 ? `${maxDistance} km` : '-- km'}</Text>
-        <Text style={styles.cardText}>
-          {maxDistance > 0 ? 'Controlled endurance base. Build progressively before increasing load or distance.' : 'Log a ruck session with "km" and "min" to establish your baseline.'}
+      <View style={styles.volumeCard}>
+        <View style={styles.volumeRow}>
+          <View style={styles.volumeStat}>
+            <Text style={styles.volumeNumber}>{totalSessions}</Text>
+            <Text style={styles.volumeLabel}>Sessions</Text>
+          </View>
+          <View style={styles.volumeDivider} />
+          <View style={styles.volumeStat}>
+            <Text style={styles.volumeNumber}>
+              {totalDistance > 0 ? `${totalDistance.toFixed(1)}` : '--'}
+            </Text>
+            <Text style={styles.volumeLabel}>Total km</Text>
+          </View>
+          <View style={styles.volumeDivider} />
+          <View style={styles.volumeStat}>
+            <Text style={styles.volumeNumber}>
+              {longestRuck > 0 ? `${longestRuck}` : '--'}
+            </Text>
+            <Text style={styles.volumeLabel}>Longest km</Text>
+          </View>
+          <View style={styles.volumeDivider} />
+          <View style={styles.volumeStat}>
+            <Text style={styles.volumeNumber}>
+              {heaviestLoad > 0 ? `${heaviestLoad}` : '--'}
+            </Text>
+            <Text style={styles.volumeLabel}>Max kg</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.pbRow}>
+        <View style={styles.pbCard}>
+          <Text style={styles.pbKicker}>BEST PACE</Text>
+          <Text style={styles.pbValue}>
+            {bestPace !== Infinity ? formatPace(bestPace) : '--'}
+          </Text>
+        </View>
+        <View style={styles.pbCard}>
+          <Text style={styles.pbKicker}>TREND</Text>
+          <Text style={
+            trend.status === 'warning' ? styles.pbValueWarn
+            : trend.status === 'good' ? styles.pbValueGood
+            : styles.pbValue
+          }>
+            {ruckLogs.length > 1 ? trend.label : 'Baseline'}
+          </Text>
+        </View>
+      </View>
+
+      {latest && latestMetrics ? (
+        <View style={styles.latestCard}>
+          <View style={styles.latestHeader}>
+            <Text style={styles.latestKicker}>LAST RUCK</Text>
+            <Text style={styles.latestDate}>{latest.date}</Text>
+          </View>
+
+          <View style={styles.latestStats}>
+            <View style={styles.latestStat}>
+              <Text style={styles.latestStatNumber}>
+                {latestMetrics.distance > 0 ? `${latestMetrics.distance} km` : '--'}
+              </Text>
+              <Text style={styles.latestStatLabel}>Distance</Text>
+              {distanceDelta !== null ? (
+                <Text style={distanceDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
+                  {distanceDelta > 0 ? '+' : ''}{distanceDelta.toFixed(1)} km
+                </Text>
+              ) : null}
+            </View>
+
+            <View style={styles.latestStat}>
+              <Text style={styles.latestStatNumber}>
+                {latestMetrics.load > 0 ? `${latestMetrics.load} kg` : '--'}
+              </Text>
+              <Text style={styles.latestStatLabel}>Load</Text>
+              {loadDelta !== null ? (
+                <Text style={loadDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
+                  {loadDelta > 0 ? '+' : ''}{loadDelta.toFixed(1)} kg
+                </Text>
+              ) : null}
+            </View>
+
+            <View style={styles.latestStat}>
+              <Text style={styles.latestStatNumber}>
+                {formatDuration(latestMetrics.minutes)}
+              </Text>
+              <Text style={styles.latestStatLabel}>Duration</Text>
+            </View>
+
+            <View style={styles.latestStat}>
+              <Text style={styles.latestStatNumber}>
+                {latestMetrics.pace > 0 ? formatPace(latestMetrics.pace) : '--'}
+              </Text>
+              <Text style={styles.latestStatLabel}>Pace</Text>
+            </View>
+          </View>
+        </View>
+      ) : null}
+
+      <View style={readinessGood ? styles.nextCard : styles.nextCardWarn}>
+        <Text style={styles.nextKicker}>NEXT SESSION</Text>
+        <Text style={styles.nextText}>{nextSessionAdvice}</Text>
+      </View>
+
+      {ruckLogs.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>No ruck sessions logged</Text>
+          <Text style={styles.emptyText}>
+            Log a ruck session with distance in km and load in kg to start tracking performance.
+          </Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Sessions</Text>
+            <Text style={styles.sectionTag}>{totalSessions} TOTAL</Text>
+          </View>
+
+          {recentHistory.map((log, i) => (
+            <RuckSessionCard key={log.id} log={log} metrics={recentMetrics[i]} />
+          ))}
+        </>
+      )}
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Ruck Builder</Text>
+        <Text style={styles.sectionTag}>SESSIONS</Text>
+      </View>
+
+      <View style={styles.builderCard}>
+        <Text style={styles.builderTitle}>Base Ruck</Text>
+        <Text style={styles.builderDetail}>6–8 km · 10–15 kg · Easy pace</Text>
+        <Text style={styles.builderText}>
+          Steady tactical pace. Posture check every 10 minutes. No running under load. Focus on foot care and breathing rhythm.
         </Text>
       </View>
 
-      <View style={styles.grid}>
-        <View style={styles.smallCard}>
-          <Text style={styles.label}>Load</Text>
-          <Text style={styles.value}>{latestLoad > 0 ? `${latestLoad} kg` : '--'}</Text>
-        </View>
-
-        <View style={styles.smallCard}>
-          <Text style={styles.label}>Best Pace</Text>
-          <Text style={styles.value}>{paceString}</Text>
-        </View>
-
-        <View style={styles.smallCard}>
-          <Text style={styles.label}>Latest Dist</Text>
-          <Text style={styles.value}>{latestDistance > 0 ? `${latestDistance} km` : '--'}</Text>
-        </View>
-
-        <View style={styles.smallCard}>
-          <Text style={styles.label}>Status</Text>
-          <Text style={[styles.value, status === 'Deload' && { color: '#f3d36b' }]}>{status}</Text>
-        </View>
+      <View style={styles.builderCard}>
+        <Text style={styles.builderTitle}>Interval Ruck</Text>
+        <Text style={styles.builderDetail}>5 × 4 min strong / 2 min easy</Text>
+        <Text style={styles.builderText}>
+          Builds work capacity without full aerobic load. Keep load moderate. Monitor lower-leg response after the session.
+        </Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ruck Builder</Text>
-
-        <View style={styles.planCard}>
-          <Text style={styles.planTitle}>Session 1: Base Ruck</Text>
-          <Text style={styles.planText}>
-            6–8 km at easy pace with light-to-moderate load. Focus on posture, breathing and foot care.
-          </Text>
-        </View>
-
-        <View style={styles.planCard}>
-          <Text style={styles.planTitle}>Session 2: Interval Ruck</Text>
-          <Text style={styles.planText}>
-            5 rounds of 4 minutes strong pace followed by 2 minutes easy pace. Keep load controlled.
-          </Text>
-        </View>
-
-        <View style={styles.planCard}>
-          <Text style={styles.planTitle}>Session 3: Long Ruck</Text>
-          <Text style={styles.planText}>
-            Build distance gradually. Increase either distance or load, not both in the same week.
-          </Text>
-        </View>
+      <View style={styles.builderCard}>
+        <Text style={styles.builderTitle}>Long Ruck</Text>
+        <Text style={styles.builderDetail}>10–15 km · Match last session load</Text>
+        <Text style={styles.builderText}>
+          Extend distance only. Hold load constant. Increase either load or distance — never both in the same week.
+        </Text>
       </View>
 
-      <View style={styles.section}>
+      <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Field Notes</Text>
+        <Text style={styles.sectionTag}>CHECKLIST</Text>
+      </View>
 
-        <View style={styles.noteCard}>
-          <Text style={styles.noteTitle}>Before</Text>
-          <Text style={styles.noteText}>
-            Check boots, socks, hydration, route, weather and pack fit before stepping off.
-          </Text>
-        </View>
+      <View style={styles.fieldCard}>
+        <Text style={styles.fieldLabel}>BEFORE</Text>
+        <Text style={styles.fieldText}>
+          Check boots, socks, blister kit, hydration, route, weather and pack fit before stepping off.
+        </Text>
+      </View>
 
-        <View style={styles.noteCard}>
-          <Text style={styles.noteTitle}>During</Text>
-          <Text style={styles.noteText}>
-            Keep shoulders relaxed, shorten stride on hills and avoid running under heavy load.
-          </Text>
-        </View>
+      <View style={styles.fieldCard}>
+        <Text style={styles.fieldLabel}>DURING</Text>
+        <Text style={styles.fieldText}>
+          Keep shoulders relaxed. Shorten stride on inclines. Avoid running under heavy load. Hydrate every 20–30 minutes.
+        </Text>
+      </View>
 
-        <View style={styles.noteCard}>
-          <Text style={styles.noteTitle}>After</Text>
-          <Text style={styles.noteText}>
-            Log distance, load, pace, hot spots, fatigue and any lower-leg pain.
-          </Text>
-        </View>
+      <View style={styles.fieldCard}>
+        <Text style={styles.fieldLabel}>AFTER</Text>
+        <Text style={styles.fieldText}>
+          Log distance, load, pace, readiness and any hot spots, blisters or lower-leg pain immediately after the session.
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#07110c',
-  },
-  content: {
-    padding: 20,
-    gap: 16,
-  },
-  kicker: {
-    color: '#8fbf8f',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 2,
-  },
-  title: {
-    color: '#f2f5ef',
-    fontSize: 30,
-    fontWeight: '900',
-  },
-  subtitle: {
-    color: '#aeb8aa',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  heroCard: {
-    backgroundColor: '#102018',
-    borderRadius: 22,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#365f3e',
-  },
-  cardTitle: {
-    color: '#dfe8da',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  metric: {
-    color: '#ffffff',
-    fontSize: 52,
-    fontWeight: '900',
-    marginTop: 8,
-  },
-  cardText: {
-    color: '#aeb8aa',
-    marginTop: 6,
-    lineHeight: 21,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  smallCard: {
-    backgroundColor: '#101a14',
-    borderRadius: 18,
-    padding: 16,
-    width: '47%',
-    borderWidth: 1,
-    borderColor: '#26382c',
-  },
-  label: {
-    color: '#8fbf8f',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  value: {
-    color: '#ffffff',
-    fontSize: 22,
-    fontWeight: '900',
-    marginTop: 8,
-  },
-  section: {
-    gap: 12,
-  },
-  sectionTitle: {
-    color: '#f2f5ef',
-    fontSize: 22,
-    fontWeight: '900',
-  },
-  planCard: {
-    backgroundColor: '#0d1812',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#203529',
-  },
-  planTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  planText: {
-    color: '#aeb8aa',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 6,
-  },
-  noteCard: {
-    backgroundColor: '#101a14',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#26382c',
-  },
-  noteTitle: {
-    color: '#8fbf8f',
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  noteText: {
-    color: '#aeb8aa',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 6,
-  },
+  screen: { flex: 1, backgroundColor: '#07110c' },
+  content: { padding: 20, paddingBottom: 120, gap: 14 },
+  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#aeb8aa', fontSize: 15, lineHeight: 22 },
+
+  volumeCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#2f6b3c' },
+  volumeRow: { flexDirection: 'row', alignItems: 'center' },
+  volumeStat: { flex: 1, alignItems: 'center', gap: 4 },
+  volumeNumber: { color: '#ffffff', fontSize: 24, fontWeight: '900' },
+  volumeLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900', textTransform: 'uppercase', textAlign: 'center' },
+  volumeDivider: { width: 1, height: 40, backgroundColor: '#203529' },
+
+  pbRow: { flexDirection: 'row', gap: 10 },
+  pbCard: { flex: 1, backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 6 },
+  pbKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  pbValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  pbValueGood: { color: '#91e6a3', fontSize: 20, fontWeight: '900' },
+  pbValueWarn: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
+
+  latestCard: { backgroundColor: '#102d1a', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 14 },
+  latestHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  latestKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  latestDate: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
+  latestStats: { flexDirection: 'row', gap: 8 },
+  latestStat: { flex: 1, gap: 3 },
+  latestStatNumber: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  latestStatLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800' },
+  deltaGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  deltaWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+
+  nextCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 6 },
+  nextCardWarn: { backgroundColor: '#21140b', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#7a4a1f', gap: 6 },
+  nextKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  nextText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
+
+  emptyCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#203529', gap: 8 },
+  emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  emptyText: { color: '#aeb8aa', fontSize: 14, lineHeight: 21 },
+
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  sectionTag: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#274b32', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+
+  sessionCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
+  sessionCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 12 },
+  sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  sessionHeaderLeft: { gap: 3 },
+  sessionDate: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
+  sessionType: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  readinessBadge: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  readinessBadgeWarn: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  readinessText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  readinessTextWarn: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  sessionStats: { flexDirection: 'row', alignItems: 'center' },
+  sessionStat: { flex: 1, alignItems: 'center', gap: 3 },
+  sessionStatNumber: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  sessionStatLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800' },
+  sessionStatDivider: { width: 1, height: 32, backgroundColor: '#203529' },
+  sessionNotes: { color: '#aeb8aa', fontSize: 12, lineHeight: 18 },
+
+  builderCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 6 },
+  builderTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  builderDetail: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  builderText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
+
+  fieldCard: { backgroundColor: '#101a14', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#26382c', gap: 6 },
+  fieldLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  fieldText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
 });
