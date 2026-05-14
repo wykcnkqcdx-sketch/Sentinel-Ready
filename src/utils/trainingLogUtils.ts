@@ -222,6 +222,85 @@ export function filterAndSortLogs(
   });
 }
 
+function getWeekBounds(weeksAgo: number): { start: string; end: string } {
+  const now = new Date();
+  const day = now.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday - weeksAgo * 7);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return {
+    start: monday.toISOString().slice(0, 10),
+    end: sunday.toISOString().slice(0, 10),
+  };
+}
+
+export type WeekSummary = {
+  weekStart: string;
+  weekEnd: string;
+  total: number;
+  averageReadiness: string;
+  fatigueWatch: number;
+  weakLogs: number;
+  ruck: number;
+  strength: number;
+  run: number;
+  mobility: number;
+  test: number;
+  recovery: number;
+};
+
+export function buildWeekSummary(logs: TrainingLog[], weeksAgo: number = 0): WeekSummary {
+  const { start, end } = getWeekBounds(weeksAgo);
+  const weekLogs = logs.filter((log) => log.date >= start && log.date <= end);
+  const summary = buildSummary(weekLogs);
+
+  return {
+    weekStart: start,
+    weekEnd: end,
+    total: summary.total,
+    averageReadiness: summary.averageReadiness,
+    fatigueWatch: summary.fatigueWatch,
+    weakLogs: summary.weakLogs,
+    ruck: summary.ruck,
+    strength: summary.strength,
+    run: summary.run,
+    mobility: weekLogs.filter((log) => log.category === 'Mobility').length,
+    test: weekLogs.filter((log) => log.category === 'Test').length,
+    recovery: summary.recovery,
+  };
+}
+
+export function buildNextWeekRecommendation(thisWeek: WeekSummary, lastWeek: WeekSummary): string {
+  const readiness = Number(thisWeek.averageReadiness);
+  const lastReadiness = Number(lastWeek.averageReadiness);
+  const readinessDrop = lastWeek.total > 0 && readiness < lastReadiness - 1;
+
+  if (thisWeek.total === 0) {
+    return 'No sessions logged this week. Aim for 3 to 4 sessions next week with at least one ruck or run and one strength session.';
+  }
+
+  if (thisWeek.fatigueWatch >= 2 || readiness > 0 && readiness < 5) {
+    return 'Prioritise recovery next week. Keep sessions short, add mobility work, and avoid increasing load until readiness recovers above 6.';
+  }
+
+  if (readinessDrop) {
+    return 'Hold current load next week. Readiness has dropped from last week. Keep intensity moderate and monitor fatigue before progressing.';
+  }
+
+  if (thisWeek.weakLogs > 0) {
+    return 'Improve log quality next week. Fix missing details in weak logs from this week. Clean data gives more accurate guidance.';
+  }
+
+  if (readiness >= 7 && thisWeek.fatigueWatch === 0) {
+    return 'Ready to progress next week. Readiness is strong and no fatigue flags. Consider adding one extra session or a small increase in load.';
+  }
+
+  return 'Continue at current load next week. Readiness is stable and no fatigue flags. Maintain session frequency and keep notes detailed.';
+}
+
 export type RecommendationStatus = 'good' | 'warning' | 'caution' | 'neutral';
 export type RecommendationActionType = 'add-log' | 'weak-logs';
 
