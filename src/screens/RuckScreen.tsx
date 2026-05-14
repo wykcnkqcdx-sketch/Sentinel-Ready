@@ -1,6 +1,65 @@
+import { useTraining } from '@/src/screens/TrainingContext';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function RuckScreen() {
+  const { logs } = useTraining();
+
+  // 1. Filter for Ruck logs
+  const ruckLogs = logs.filter(l => l.category === 'Ruck');
+
+  let maxDistance = 0;
+  let bestPace = Infinity;
+  let latestLoad = 0;
+  let latestDistance = 0;
+
+  // 2. Parse text fields to calculate metrics
+  ruckLogs.forEach(log => {
+    const distMatch = log.distanceLoad.match(/(\d+(?:\.\d+)?)\s*km/i);
+    const distance = distMatch ? parseFloat(distMatch[1]) : 0;
+
+    let minutes = 0;
+    const hrMatch = log.duration.match(/(\d+)\s*hr/i);
+    if (hrMatch) minutes += parseInt(hrMatch[1], 10) * 60;
+    const minMatch = log.duration.match(/(\d+)\s*min/i);
+    if (minMatch) minutes += parseInt(minMatch[1], 10);
+    if (!hrMatch && !minMatch) {
+      const numMatch = log.duration.match(/(\d+)/); // Fallback: just grab the first number
+      if (numMatch) minutes += parseInt(numMatch[1], 10);
+    }
+
+    if (distance > maxDistance) maxDistance = distance;
+
+    if (distance > 0 && minutes > 0) {
+      const pace = minutes / distance;
+      if (pace < bestPace) bestPace = pace;
+    }
+  });
+
+  if (ruckLogs.length > 0) {
+    const latest = ruckLogs[0];
+    const loadMatch = latest.distanceLoad.match(/(\d+(?:\.\d+)?)\s*kg/i);
+    latestLoad = loadMatch ? parseFloat(loadMatch[1]) : 0;
+    
+    const distMatch = latest.distanceLoad.match(/(\d+(?:\.\d+)?)\s*km/i);
+    latestDistance = distMatch ? parseFloat(distMatch[1]) : 0;
+  }
+
+  // 3. Format Best Pace
+  let paceString = '--:--/km';
+  if (bestPace !== Infinity) {
+    const paceMins = Math.floor(bestPace);
+    const paceSecs = Math.round((bestPace - paceMins) * 60);
+    paceString = `${paceMins}:${paceSecs.toString().padStart(2, '0')}/km`;
+  }
+
+  // 4. Calculate Readiness Status
+  const recentLogs = logs.slice(0, 5);
+  const avgScore = recentLogs.length > 0 
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+    : 0;
+  const isFatigued = recentLogs.length > 0 && avgScore < 7;
+  const status = ruckLogs.length === 0 ? 'No Data' : (isFatigued ? 'Deload' : 'Ready');
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>LOAD CARRIAGE</Text>
@@ -11,31 +70,31 @@ export default function RuckScreen() {
 
       <View style={styles.heroCard}>
         <Text style={styles.cardTitle}>Current Ruck Standard</Text>
-        <Text style={styles.metric}>12 km</Text>
+        <Text style={styles.metric}>{maxDistance > 0 ? `${maxDistance} km` : '-- km'}</Text>
         <Text style={styles.cardText}>
-          Controlled endurance base. Build progressively before increasing load or distance.
+          {maxDistance > 0 ? 'Controlled endurance base. Build progressively before increasing load or distance.' : 'Log a ruck session with "km" and "min" to establish your baseline.'}
         </Text>
       </View>
 
       <View style={styles.grid}>
         <View style={styles.smallCard}>
           <Text style={styles.label}>Load</Text>
-          <Text style={styles.value}>20 kg</Text>
+          <Text style={styles.value}>{latestLoad > 0 ? `${latestLoad} kg` : '--'}</Text>
         </View>
 
         <View style={styles.smallCard}>
-          <Text style={styles.label}>Pace</Text>
-          <Text style={styles.value}>9:15/km</Text>
+          <Text style={styles.label}>Best Pace</Text>
+          <Text style={styles.value}>{paceString}</Text>
         </View>
 
         <View style={styles.smallCard}>
-          <Text style={styles.label}>Distance</Text>
-          <Text style={styles.value}>12 km</Text>
+          <Text style={styles.label}>Latest Dist</Text>
+          <Text style={styles.value}>{latestDistance > 0 ? `${latestDistance} km` : '--'}</Text>
         </View>
 
         <View style={styles.smallCard}>
           <Text style={styles.label}>Status</Text>
-          <Text style={styles.value}>Ready</Text>
+          <Text style={[styles.value, status === 'Deload' && { color: '#f3d36b' }]}>{status}</Text>
         </View>
       </View>
 
