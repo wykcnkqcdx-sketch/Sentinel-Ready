@@ -1,4 +1,4 @@
-import { TrainingCategory, TrainingLog } from '@/src/screens/TrainingContext';
+import type { TrainingCategory, TrainingLog } from '@/src/screens/TrainingContext';
 
 export type TrainingFilter = 'All' | TrainingCategory;
 export type SortMode = 'Newest' | 'Oldest' | 'Highest Readiness' | 'Lowest Readiness';
@@ -273,9 +273,16 @@ function getWeekBounds(weeksAgo: number): { start: string; end: string } {
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   return {
-    start: monday.toISOString().slice(0, 10),
-    end: sunday.toISOString().slice(0, 10),
+    start: formatLocalDate(monday),
+    end: formatLocalDate(sunday),
   };
+}
+
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export type WeekSummary = {
