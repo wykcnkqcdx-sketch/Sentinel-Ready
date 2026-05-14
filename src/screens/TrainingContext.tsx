@@ -86,6 +86,16 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     loadLogs();
   }, []);
 
+  const deleteLog = async (id: number) => {
+    try {
+      const updatedLogs = logs.filter((log) => log.id !== id);
+      setLogs(updatedLogs);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+    } catch (error) {
+      console.error('Failed to delete log', error);
+    }
+  };
+
   const addLog = async (newLogData: Omit<TrainingLog, 'id'>) => {
     try {
       const newLog: TrainingLog = {
@@ -102,7 +112,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <TrainingContext.Provider value={{ logs, addLog, isLoading }}>
+    <TrainingContext.Provider value={{ logs, addLog, deleteLog, isLoading }}>
       {children}
     </TrainingContext.Provider>
   );

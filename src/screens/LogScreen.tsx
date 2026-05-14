@@ -1,6 +1,6 @@
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { useRouter } from 'expo-router';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function getReadinessNumber(readiness: string) {
   const score = Number(readiness);
@@ -56,11 +56,29 @@ function buildSummary(logs: TrainingLog[]) {
 }
 
 export default function LogScreen() {
-  const { logs, isLoading } = useTraining();
+  const { logs, isLoading, deleteLog } = useTraining();
   const router = useRouter();
 
   const sortedLogs = [...logs].sort((a, b) => b.id - a.id);
   const summary = buildSummary(sortedLogs);
+
+  function confirmDeleteLog(log: TrainingLog) {
+    Alert.alert(
+      'Delete Training Log',
+      Delete this  log from ?,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteLog(log.id),
+        },
+      ]
+    );
+  }
 
   const renderLogItem = ({ item }: { item: TrainingLog }) => {
     const fatigueWatch = isFatigueWatch(item.readiness);
@@ -96,6 +114,10 @@ export default function LogScreen() {
           <Text style={fatigueWatch ? styles.statusWarning : styles.status}>
             {getReadinessLabel(item.readiness)}
           </Text>
+
+          <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDeleteLog(item)}>
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -396,6 +418,9 @@ const styles = StyleSheet.create({
   },
   statusRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
   },
   status: {
     color: '#91e6a3',
@@ -403,6 +428,18 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   statusWarning: {
+    color: '#ffb86b',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  deleteButton: {
+    borderWidth: 1,
+    borderColor: '#7a4a1f',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+  },
+  deleteButtonText: {
     color: '#ffb86b',
     fontSize: 12,
     fontWeight: '900',
@@ -460,3 +497,4 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 });
+
