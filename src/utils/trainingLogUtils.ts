@@ -305,8 +305,9 @@ export type RecommendationStatus = 'good' | 'warning' | 'caution' | 'neutral';
 export type RecommendationActionType = 'add-log' | 'weak-logs';
 
 export type SessionRecommendation = {
-  title: string;
-  detail: string;
+  sessionType: string;
+  reason: string;
+  suggestion: string;
   actionLabel: string;
   actionType: RecommendationActionType;
   status: RecommendationStatus;
@@ -315,8 +316,9 @@ export type SessionRecommendation = {
 export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommendation {
   if (logs.length === 0) {
     return {
-      title: 'Start Logging',
-      detail: 'Add your first training session to start getting personalised session recommendations.',
+      sessionType: 'Start Logging',
+      reason: 'No training data has been recorded yet.',
+      suggestion: 'Add your first session to start getting personalised recommendations based on readiness and load.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
       status: 'neutral',
@@ -324,6 +326,7 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
   }
 
   const trend = buildReadinessTrend(logs);
+  const thisWeek = buildWeekSummary(logs, 0);
 
   const recentLogs = [...logs]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
@@ -335,8 +338,9 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
 
   if (trend.status === 'warning' && recentFatigueWatch >= 2) {
     return {
-      title: 'Prioritise Recovery',
-      detail: 'Readiness has dropped and multiple recent sessions show fatigue watch. Take a rest day or do light mobility work before adding load.',
+      sessionType: 'Active Recovery',
+      reason: 'Readiness has dropped and fatigue-watch logs are present.',
+      suggestion: '20–30 minutes of mobility work, an easy walk, hydration focus and early sleep. Avoid any intensity today.',
       actionLabel: 'Log Recovery Session',
       actionType: 'add-log',
       status: 'warning',
@@ -345,8 +349,9 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
 
   if (trend.status === 'warning') {
     return {
-      title: 'Reduce Load',
-      detail: 'Readiness is dropping. Hold intensity, reduce volume, and avoid adding load until scores recover.',
+      sessionType: 'Active Recovery',
+      reason: 'Readiness is dropping. Avoid adding load until scores recover.',
+      suggestion: '20–30 minutes of light mobility, stretching and breathing work. Focus on sleep and hydration.',
       actionLabel: 'Log Recovery Session',
       actionType: 'add-log',
       status: 'warning',
@@ -355,8 +360,9 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
 
   if (recentFatigueWatch >= 2) {
     return {
-      title: 'Recovery Session Recommended',
-      detail: 'Multiple recent sessions show low readiness. A recovery or mobility session will help restore capacity before the next hard block.',
+      sessionType: 'Active Recovery',
+      reason: 'Multiple recent sessions show low readiness scores.',
+      suggestion: '20–30 minutes of easy movement, hip and calf mobility, and a full rest from intensity.',
       actionLabel: 'Log Recovery Session',
       actionType: 'add-log',
       status: 'warning',
@@ -365,18 +371,56 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
 
   if (logs.length >= 3 && weakLogRatio > 0.5) {
     return {
-      title: 'Improve Your Logs',
-      detail: 'More than half your logs are missing key details. Fix them so the app can give you more accurate session guidance.',
+      sessionType: 'Fix Training Data',
+      reason: 'More than half your logs are missing key details.',
+      suggestion: 'Review recent logs and add missing notes, duration, load and readiness scores before making training decisions.',
       actionLabel: 'View Weak Logs',
       actionType: 'weak-logs',
       status: 'caution',
     };
   }
 
+  const readiness = Number(thisWeek.averageReadiness);
+  const readinessGood = readiness >= 6 || thisWeek.total === 0;
+
+  if (readinessGood && thisWeek.ruck === 0) {
+    return {
+      sessionType: 'Base Ruck',
+      reason: 'No ruck session logged this week and readiness is good.',
+      suggestion: '45–60 minutes at a steady tactical pace with 10–15 kg. Focus on posture, breathing and foot care.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'good',
+    };
+  }
+
+  if (readinessGood && thisWeek.strength === 0) {
+    return {
+      sessionType: 'Strength Session',
+      reason: 'No strength session logged this week and readiness is good.',
+      suggestion: '45–55 minutes covering squat, press, pull and hinge patterns. Keep intensity controlled and form strict.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'good',
+    };
+  }
+
+  if (readinessGood && thisWeek.run === 0) {
+    return {
+      sessionType: 'Steady Run',
+      reason: 'No run logged this week and readiness is good.',
+      suggestion: '30–40 minutes at a comfortable aerobic pace. Keep effort conversational and finish with a short cooldown.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'good',
+    };
+  }
+
   if (trend.status === 'good' && recentFatigueWatch === 0) {
     return {
-      title: 'Ready to Load',
-      detail: 'Readiness is improving and no recent fatigue watch sessions. You can increase training load this week.',
+      sessionType: 'Progressive Load',
+      reason: 'Readiness is improving and no recent fatigue watch sessions.',
+      suggestion: 'Choose a session that suits your weekly split. Consider a small increase in distance, load or session count.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
       status: 'good',
@@ -384,8 +428,9 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
   }
 
   return {
-    title: 'Continue Progression',
-    detail: 'Readiness is stable with no fatigue flags. Keep training at current load and maintain consistent logging.',
+    sessionType: 'Continue Progression',
+    reason: 'Readiness is stable with no fatigue flags.',
+    suggestion: 'Maintain current session frequency. Keep notes detailed and monitor readiness between sessions.',
     actionLabel: 'Add Training Log',
     actionType: 'add-log',
     status: 'neutral',
