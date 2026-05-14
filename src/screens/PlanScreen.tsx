@@ -31,7 +31,8 @@ function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
 }
 
 export default function PlanScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
+  if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);

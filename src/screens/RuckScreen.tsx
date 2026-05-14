@@ -154,7 +154,8 @@ function RuckSessionCard({ log, metrics, paceVsPb }: {
 }
 
 export default function RuckScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
+  if (isLoading) return <View style={styles.screen} />;
 
   const ruckLogs = [...logs.filter((l) => l.category === 'Ruck')]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);

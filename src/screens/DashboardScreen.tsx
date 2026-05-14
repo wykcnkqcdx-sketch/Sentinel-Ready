@@ -46,7 +46,8 @@ function getRecoveryStatus(logs: ReturnType<typeof useTraining>['logs']) {
 }
 
 export default function DashboardScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
+  if (isLoading) return <View style={styles.screen} />;
 
   const readinessPercentage = calculateReadinessPercentage(logs);
   const thisWeek = buildWeekSummary(logs, 0);

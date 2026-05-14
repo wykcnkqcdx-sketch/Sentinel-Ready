@@ -77,8 +77,9 @@ function DfiftRow({ label, standard, result, pass }: {
 }
 
 export default function TestsScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
   const { gender, testDate } = useUser();
+  if (isLoading) return <View style={styles.screen} />;
   const router = useRouter();
 
   const testLogs = [...logs.filter((log) => log.category === 'Test')]

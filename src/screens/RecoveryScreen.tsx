@@ -72,7 +72,8 @@ function getProtocol(score: number) {
 }
 
 export default function RecoveryScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
+  if (isLoading) return <View style={styles.screen} />;
 
   const recoveryScore = getRecoveryScore(logs);
   const trend = buildReadinessTrend(logs);

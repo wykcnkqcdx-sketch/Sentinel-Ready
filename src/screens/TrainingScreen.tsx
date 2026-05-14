@@ -36,7 +36,8 @@ function MiniDayRow({ item, isToday }: { item: DayPlan; isToday: boolean }) {
 }
 
 export default function TrainingScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
+  if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);

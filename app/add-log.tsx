@@ -1,4 +1,5 @@
 import { TrainingCategory, useTraining } from '@/src/screens/TrainingContext';
+import { getCompletionScore, getNoteStarter, getNotesQualityWarning } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -57,74 +58,6 @@ function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function getNotesQualityMessage(notes: string) {
-  const cleanNotes = notes.trim().toLowerCase();
-
-  if (cleanNotes.length === 0) {
-    return 'Add a short note about effort, fatigue, pain, pace, load or recovery.';
-  }
-
-  const weakNotes = ['ok', 'okay', 'good', 'fine', 'grand', 'easy', 'hard', 'done', 'completed'];
-
-  if (weakNotes.includes(cleanNotes)) {
-    return 'Note is too brief. Add effort, soreness, pace, load, breathing or recovery detail.';
-  }
-
-  if (cleanNotes.length < 15) {
-    return 'Note is short. Add one more useful detail about how the session felt.';
-  }
-
-  return '';
-}
-
-function getNoteStarter(category: TrainingCategory) {
-  if (category === 'Ruck') {
-    return 'Ruck notes: pace felt controlled, pack sat well, feet checked after session, shoulders manageable, breathing steady, no major hot spots.';
-  }
-
-  if (category === 'Run') {
-    return 'Run notes: pace controlled, breathing steady, legs felt good, calves monitored, finished with energy left, no unusual pain.';
-  }
-
-  if (category === 'Strength') {
-    return 'Strength notes: main lifts completed, form stayed solid, effort controlled, no grinding reps, joints felt comfortable, recovery needed.';
-  }
-
-  if (category === 'Recovery') {
-    return 'Recovery notes: mobility completed, hips/calves/hamstrings worked, stiffness reduced, hydration checked, sleep and soreness monitored.';
-  }
-
-  if (category === 'Test') {
-    return 'Test notes: result recorded, pacing reviewed, weak points identified, breathing controlled, fatigue noted, next improvement target set.';
-  }
-
-  return 'Session notes: effort level, fatigue, soreness, breathing, load, pace, recovery and anything unusual recorded.';
-}
-
-function getCompletionScore(
-  date: string,
-  category: TrainingCategory,
-  type: string,
-  duration: string,
-  distanceLoad: string,
-  readiness: string,
-  notes: string
-) {
-  const readinessNumber = Number(readiness);
-
-  const checks = [
-    date.trim().length > 0 && /^\d{4}-\d{2}-\d{2}$/.test(date.trim()),
-    Boolean(category),
-    type.trim().length >= 3,
-    duration.trim().length >= 3,
-    distanceLoad.trim().length >= 5,
-    !Number.isNaN(readinessNumber) && readinessNumber >= 1 && readinessNumber <= 10,
-    !getNotesQualityMessage(notes),
-  ];
-
-  const complete = checks.filter(Boolean).length;
-  return Math.round((complete / checks.length) * 100);
-}
 
 export default function AddLogScreen() {
   const router = useRouter();
@@ -139,7 +72,7 @@ export default function AddLogScreen() {
   const [notes, setNotes] = useState(getNoteStarter('Ruck'));
   const [saving, setSaving] = useState(false);
 
-  const notesWarning = getNotesQualityMessage(notes);
+  const notesWarning = getNotesQualityWarning(notes);
 
   const completionScore = useMemo(
     () => getCompletionScore(date, category, type, duration, distanceLoad, readiness, notes),
