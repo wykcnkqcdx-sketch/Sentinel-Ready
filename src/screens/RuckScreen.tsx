@@ -18,13 +18,18 @@ export default function RuckScreen() {
     const distance = distMatch ? parseFloat(distMatch[1]) : 0;
 
     let minutes = 0;
-    const hrMatch = log.duration.match(/(\d+)\s*hr/i);
-    if (hrMatch) minutes += parseInt(hrMatch[1], 10) * 60;
-    const minMatch = log.duration.match(/(\d+)\s*min/i);
-    if (minMatch) minutes += parseInt(minMatch[1], 10);
-    if (!hrMatch && !minMatch) {
-      const numMatch = log.duration.match(/(\d+)/); // Fallback: just grab the first number
-      if (numMatch) minutes += parseInt(numMatch[1], 10);
+    const colonMatch = log.duration.match(/(\d+):(\d+)/);
+    if (colonMatch) {
+      minutes = parseInt(colonMatch[1], 10) * 60 + parseInt(colonMatch[2], 10);
+    } else {
+      const hrMatch = log.duration.match(/(\d+)\s*hr/i);
+      if (hrMatch) minutes += parseInt(hrMatch[1], 10) * 60;
+      const minMatch = log.duration.match(/(\d+)\s*min/i);
+      if (minMatch) minutes += parseInt(minMatch[1], 10);
+      if (!hrMatch && !minMatch) {
+        const numMatch = log.duration.match(/(\d+)/); // Fallback: just grab the first number
+        if (numMatch) minutes += parseInt(numMatch[1], 10);
+      }
     }
 
     if (distance > maxDistance) maxDistance = distance;

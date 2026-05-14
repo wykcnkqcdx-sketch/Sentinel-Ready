@@ -1,4 +1,4 @@
-﻿﻿import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
+﻿import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function TestsScreen() {
