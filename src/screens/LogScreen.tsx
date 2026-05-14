@@ -131,6 +131,72 @@ function getTrainingLogHealthMessage(score: number) {
   return 'Training data is too weak for reliable analysis. Add clearer notes, duration, load and readiness scores.';
 }
 
+
+function buildReadinessTrend(logs: TrainingLog[]) {
+  const sortedLogs = [...logs]
+    .filter((log) => getReadinessNumber(log.readiness) > 0)
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
+
+  if (sortedLogs.length === 0) {
+    return {
+      latest: 0,
+      previous: 0,
+      change: 0,
+      label: 'No Data',
+      message: 'Add readiness scores to start tracking readiness trends.',
+      status: 'neutral',
+    };
+  }
+
+  if (sortedLogs.length === 1) {
+    const latest = getReadinessNumber(sortedLogs[0].readiness);
+
+    return {
+      latest,
+      previous: 0,
+      change: 0,
+      label: 'Baseline',
+      message: 'Only one readiness score is logged. Add more sessions to show a trend.',
+      status: 'neutral',
+    };
+  }
+
+  const latest = getReadinessNumber(sortedLogs[0].readiness);
+  const previous = getReadinessNumber(sortedLogs[1].readiness);
+  const change = latest - previous;
+
+  if (change >= 2) {
+    return {
+      latest,
+      previous,
+      change,
+      label: 'Improving',
+      message: 'Readiness is improving. Progress carefully and avoid increasing load too aggressively.',
+      status: 'good',
+    };
+  }
+
+  if (change <= -2) {
+    return {
+      latest,
+      previous,
+      change,
+      label: 'Dropping',
+      message: 'Readiness has dropped. Hold intensity, reduce volume, and prioritise recovery.',
+      status: 'warning',
+    };
+  }
+
+  return {
+    latest,
+    previous,
+    change,
+    label: 'Stable',
+    message: 'Readiness is stable. Continue controlled progression and keep logging session quality.',
+    status: 'neutral',
+  };
+}
+
 function filterAndSortLogs(
   logs: TrainingLog[],
   activeFilter: TrainingFilter,
@@ -189,6 +255,7 @@ export default function LogScreen() {
   const trainingLogHealthScore = calculateTrainingLogHealthScore(logs);
   const trainingLogHealthLabel = getTrainingLogHealthLabel(trainingLogHealthScore);
   const trainingLogHealthMessage = getTrainingLogHealthMessage(trainingLogHealthScore);
+  const readinessTrend = buildReadinessTrend(logs);
 
   const visibleLogs = useMemo(
     () => filterAndSortLogs(logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly),
@@ -377,6 +444,31 @@ export default function LogScreen() {
               </Text>
             </View>
 
+            <View style={readinessTrend.status === 'warning' ? styles.trendCardWarning : styles.trendCard}>
+              <View style={styles.trendHeader}>
+                <View>
+                  <Text style={styles.trendKicker}>READINESS TREND</Text>
+                  <Text style={readinessTrend.status === 'warning' ? styles.trendTitleWarning : styles.trendTitle}>
+                    {readinessTrend.label}
+                  </Text>
+                </View>
+
+                <View style={readinessTrend.status === 'warning' ? styles.trendPillWarning : styles.trendPill}>
+                  <Text style={readinessTrend.status === 'warning' ? styles.trendPillTextWarning : styles.trendPillText}>
+                    {readinessTrend.change > 0 ? '+' : ''}{readinessTrend.change}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={readinessTrend.status === 'warning' ? styles.trendTextWarning : styles.trendText}>
+                Latest {readinessTrend.latest}/10 · Previous {readinessTrend.previous}/10
+              </Text>
+
+              <Text style={readinessTrend.status === 'warning' ? styles.trendTextWarning : styles.trendText}>
+                {readinessTrend.message}
+              </Text>
+            </View>
+
             <View style={styles.categorySummary}>
               <Text style={styles.categorySummaryTitle}>Training Split</Text>
               <Text style={styles.categorySummaryText}>
@@ -514,6 +606,18 @@ const styles = StyleSheet.create({
   healthPillTextWarning: { color: '#ffb86b', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   healthMessage: { color: '#aeb8aa', fontSize: 13, lineHeight: 19 },
   healthMessageWarning: { color: '#ffb86b', fontSize: 13, lineHeight: 19, fontWeight: '800' },
+  trendCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 8 },
+  trendCardWarning: { backgroundColor: '#21140b', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#7a4a1f', gap: 8 },
+  trendHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  trendKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  trendTitle: { color: '#ffffff', fontSize: 24, fontWeight: '900', marginTop: 4 },
+  trendTitleWarning: { color: '#ffb86b', fontSize: 24, fontWeight: '900', marginTop: 4 },
+  trendPill: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  trendPillWarning: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  trendPillText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  trendPillTextWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  trendText: { color: '#aeb8aa', fontSize: 13, lineHeight: 19 },
+  trendTextWarning: { color: '#ffb86b', fontSize: 13, lineHeight: 19, fontWeight: '800' },
   categorySummary: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529' },
   categorySummaryTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   categorySummaryText: { color: '#aeb8aa', fontSize: 13, marginTop: 5 },
@@ -573,3 +677,4 @@ const styles = StyleSheet.create({
   fab: { position: 'absolute', bottom: 24, right: 24, backgroundColor: '#91e6a3', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
   fabIcon: { color: '#07110c', fontSize: 32, fontWeight: '400' },
 });
+
