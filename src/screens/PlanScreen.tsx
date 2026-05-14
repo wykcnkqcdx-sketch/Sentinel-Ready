@@ -22,7 +22,7 @@ const weekPlan = [
   {
     day: 'Thursday',
     focus: 'Ruck',
-    session: '8–12 km loaded movement',
+    session: '8-12 km loaded movement',
     intensity: 'Moderate',
   },
   {
@@ -76,7 +76,7 @@ export default function PlanScreen() {
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>Programming Rule</Text>
         <Text style={styles.noteText}>
-          If readiness drops below 70%, reduce load, distance or intensity by 20–30% and prioritise recovery.
+          If readiness drops below 70%, reduce load, distance or intensity by 20-30% and prioritise recovery.
         </Text>
       </View>
     </ScrollView>

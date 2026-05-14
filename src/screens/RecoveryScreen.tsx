@@ -3,12 +3,12 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 const recoveryItems = [
   {
     title: 'Sleep',
-    value: '7–8 hrs',
+    value: '7-8 hrs',
     note: 'Aim for consistent sleep before heavy ruck or strength work.',
   },
   {
     title: 'Hydration',
-    value: '2.5–3L',
+    value: '2.5-3L',
     note: 'Increase intake during loaded carries, heat or high-sweat sessions.',
   },
   {
@@ -33,7 +33,7 @@ export default function RecoveryScreen() {
       </Text>
 
       <View style={styles.mainCard}>
-        <Text style={styles.mainTitle}>Today’s Recovery Score</Text>
+        <Text style={styles.mainTitle}>Today's Recovery Score</Text>
         <Text style={styles.score}>74%</Text>
         <Text style={styles.mainText}>
           Trainable, but avoid unnecessary max-effort work. Keep the session clean and controlled.
