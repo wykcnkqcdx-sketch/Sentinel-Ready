@@ -1,3 +1,4 @@
+import dfift from '@/src/data/standards/dfift-standards.json';
 import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, getDateValue } from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -17,6 +18,62 @@ function daysSince(dateStr: string): number {
   return Math.floor((now - then) / 86400000);
 }
 
+function formatSeconds(s: number): string {
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function parseReps(str: string): number | null {
+  const m = str.match(/(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+function parseRunSeconds(distanceLoad: string, duration: string): number | null {
+  const combined = distanceLoad + ' ' + duration;
+  const mmss = combined.match(/(\d{1,2}):(\d{2})/);
+  if (mmss) return Number(mmss[1]) * 60 + Number(mmss[2]);
+  return null;
+}
+
+function parseMm(str: string): number | null {
+  const m = str.match(/(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+function findLatest(grouped: Record<string, TrainingLog[]>, ...keywords: string[]): TrainingLog | null {
+  for (const kw of keywords) {
+    const key = Object.keys(grouped).find((k) => k.toLowerCase().includes(kw));
+    if (key) return grouped[key][0];
+  }
+  return null;
+}
+
+function DfiftRow({ label, standard, result, pass }: {
+  label: string; standard: string; result: string | null; pass: boolean | null;
+}) {
+  return (
+    <View style={styles.dfiftRow}>
+      <View style={styles.dfiftRowLeft}>
+        <Text style={styles.dfiftLabel}>{label}</Text>
+        <Text style={styles.dfiftStandard}>{standard}</Text>
+      </View>
+      <View style={styles.dfiftRowRight}>
+        {result !== null && pass !== null ? (
+          <>
+            <Text style={styles.dfiftResult}>{result}</Text>
+            <View style={pass ? styles.dfiftBadgePass : styles.dfiftBadgeFail}>
+              <Text style={pass ? styles.dfiftBadgeTextPass : styles.dfiftBadgeTextFail}>
+                {pass ? 'PASS' : 'FAIL'}
+              </Text>
+            </View>
+          </>
+        ) : (
+          <Text style={styles.dfiftNoData}>--</Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
 export default function TestsScreen() {
   const { logs } = useTraining();
 
@@ -31,6 +88,19 @@ export default function TestsScreen() {
 
   const lastTestDate = testLogs[0]?.date ?? null;
   const daysSinceLast = lastTestDate ? daysSince(lastTestDate) : null;
+
+  // DFIFT matching — find latest logged result for each event by type keyword
+  const pushLog = findLatest(grouped, 'push');
+  const sitLog = findLatest(grouped, 'sit');
+  const runLog = findLatest(grouped, '2.4', 'run');
+  const skinfoldLog = findLatest(grouped, 'skin', 'fold');
+
+  const pushReps = pushLog ? parseReps(pushLog.distanceLoad) : null;
+  const sitReps = sitLog ? parseReps(sitLog.distanceLoad) : null;
+  const runSeconds = runLog ? parseRunSeconds(runLog.distanceLoad, runLog.duration) : null;
+  const skinfoldMm = skinfoldLog ? parseMm(skinfoldLog.distanceLoad) : null;
+
+  const { pushUps, sitUps, run, skinfold } = dfift.events;
 
   let readinessLabel = 'GREEN';
   let readinessColor = '#91e6a3';
@@ -164,6 +234,47 @@ export default function TestsScreen() {
       )}
 
       <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>DFIFT Standards</Text>
+        <Text style={styles.sectionTag}>REFERENCE</Text>
+      </View>
+
+      <View style={styles.dfiftCard}>
+        <Text style={styles.dfiftKicker}>DEFENCE FORCES INDUCTION FITNESS TEST</Text>
+
+        <DfiftRow
+          label="Push-ups"
+          standard={`${pushUps.male} reps in 60s`}
+          result={pushReps !== null ? `${pushReps} reps` : null}
+          pass={pushReps !== null ? pushReps >= pushUps.male : null}
+        />
+        <View style={styles.dfiftDivider} />
+        <DfiftRow
+          label="Sit-ups"
+          standard={`${sitUps.male} reps in 60s`}
+          result={sitReps !== null ? `${sitReps} reps` : null}
+          pass={sitReps !== null ? sitReps >= sitUps.male : null}
+        />
+        <View style={styles.dfiftDivider} />
+        <DfiftRow
+          label="2.4km Run"
+          standard={`Under ${formatSeconds(run.maleMaxSeconds)} (M) / ${formatSeconds(run.femaleMaxSeconds)} (F)`}
+          result={runSeconds !== null ? formatSeconds(runSeconds) : null}
+          pass={runSeconds !== null ? runSeconds <= run.maleMaxSeconds : null}
+        />
+        <View style={styles.dfiftDivider} />
+        <DfiftRow
+          label="Skinfold"
+          standard={`Under ${skinfold.maleMaxMm}mm (M) / ${skinfold.femaleMaxMm}mm (F)`}
+          result={skinfoldMm !== null ? `${skinfoldMm}mm` : null}
+          pass={skinfoldMm !== null ? skinfoldMm <= skinfold.maleMaxMm : null}
+        />
+
+        <Text style={styles.dfiftFootnote}>
+          Minimum induction requirements only. Verify against current official Defence Forces guidance before assessment.
+        </Text>
+      </View>
+
+      <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Testing Rules</Text>
         <Text style={styles.sectionTag}>GUIDANCE</Text>
       </View>
@@ -244,6 +355,22 @@ const styles = StyleSheet.create({
   testResultValueDim: { color: '#aeb8aa', fontSize: 15, fontWeight: '800' },
   testResultDate: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
   testNote: { color: '#c4cec0', fontSize: 13, lineHeight: 19 },
+
+  dfiftCard: { backgroundColor: '#0e1410', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2a3d2c', gap: 0 },
+  dfiftKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 14 },
+  dfiftRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingVertical: 12 },
+  dfiftRowLeft: { flex: 1, gap: 3 },
+  dfiftLabel: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
+  dfiftStandard: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
+  dfiftRowRight: { alignItems: 'flex-end', gap: 4 },
+  dfiftResult: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
+  dfiftBadgePass: { backgroundColor: '#0d2a14', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  dfiftBadgeTextPass: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  dfiftBadgeFail: { backgroundColor: '#2a1008', borderWidth: 1, borderColor: '#7a3a1f', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  dfiftBadgeTextFail: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  dfiftNoData: { color: '#4a5e4a', fontSize: 14, fontWeight: '900' },
+  dfiftDivider: { height: 1, backgroundColor: '#1a2c1e' },
+  dfiftFootnote: { color: '#4a5e4a', fontSize: 11, lineHeight: 16, marginTop: 12 },
 
   guidanceCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 6 },
   guidanceTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
