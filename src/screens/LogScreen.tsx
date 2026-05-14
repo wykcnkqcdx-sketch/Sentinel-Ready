@@ -1,13 +1,16 @@
 import LogControls from '@/src/components/log/LogControls';
 import LogSummaryCards from '@/src/components/log/LogSummaryCards';
 import ReadinessTrendCard from '@/src/components/log/ReadinessTrendCard';
+import SessionRecommendationCard from '@/src/components/log/SessionRecommendationCard';
 import TrainingLogCard from '@/src/components/log/TrainingLogCard';
 import TrainingLogHealthCard from '@/src/components/log/TrainingLogHealthCard';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import {
+  RecommendationActionType,
   SortMode,
   TrainingFilter,
   buildReadinessTrend,
+  buildSessionRecommendation,
   buildSummary,
   calculateTrainingLogHealthScore,
   filterAndSortLogs,
@@ -30,6 +33,15 @@ export default function LogScreen() {
   const summary = buildSummary(logs);
   const healthScore = calculateTrainingLogHealthScore(logs);
   const readinessTrend = buildReadinessTrend(logs);
+  const sessionRecommendation = buildSessionRecommendation(logs);
+
+  function handleRecommendationAction(actionType: RecommendationActionType) {
+    if (actionType === 'weak-logs') {
+      setShowWeakLogsOnly(true);
+    } else {
+      router.push('/add-log');
+    }
+  }
 
   const visibleLogs = useMemo(
     () => filterAndSortLogs(logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly),
@@ -89,6 +101,11 @@ export default function LogScreen() {
                 <Text style={styles.secondaryButtonText}>Weekly Report</Text>
               </TouchableOpacity>
             </View>
+
+            <SessionRecommendationCard
+              recommendation={sessionRecommendation}
+              onAction={handleRecommendationAction}
+            />
 
             <LogSummaryCards
               summary={summary}

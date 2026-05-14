@@ -221,3 +221,94 @@ export function filterAndSortLogs(
     return getDateValue(b.date) - getDateValue(a.date) || b.id - a.id;
   });
 }
+
+export type RecommendationStatus = 'good' | 'warning' | 'caution' | 'neutral';
+export type RecommendationActionType = 'add-log' | 'weak-logs';
+
+export type SessionRecommendation = {
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionType: RecommendationActionType;
+  status: RecommendationStatus;
+};
+
+export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommendation {
+  if (logs.length === 0) {
+    return {
+      title: 'Start Logging',
+      detail: 'Add your first training session to start getting personalised session recommendations.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'neutral',
+    };
+  }
+
+  const trend = buildReadinessTrend(logs);
+
+  const recentLogs = [...logs]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .slice(0, 7);
+
+  const recentFatigueWatch = recentLogs.filter((log) => isFatigueWatch(log.readiness)).length;
+  const weakLogsCount = logs.filter((log) => logNeedsImprovement(log)).length;
+  const weakLogRatio = weakLogsCount / logs.length;
+
+  if (trend.status === 'warning' && recentFatigueWatch >= 2) {
+    return {
+      title: 'Prioritise Recovery',
+      detail: 'Readiness has dropped and multiple recent sessions show fatigue watch. Take a rest day or do light mobility work before adding load.',
+      actionLabel: 'Log Recovery Session',
+      actionType: 'add-log',
+      status: 'warning',
+    };
+  }
+
+  if (trend.status === 'warning') {
+    return {
+      title: 'Reduce Load',
+      detail: 'Readiness is dropping. Hold intensity, reduce volume, and avoid adding load until scores recover.',
+      actionLabel: 'Log Recovery Session',
+      actionType: 'add-log',
+      status: 'warning',
+    };
+  }
+
+  if (recentFatigueWatch >= 2) {
+    return {
+      title: 'Recovery Session Recommended',
+      detail: 'Multiple recent sessions show low readiness. A recovery or mobility session will help restore capacity before the next hard block.',
+      actionLabel: 'Log Recovery Session',
+      actionType: 'add-log',
+      status: 'warning',
+    };
+  }
+
+  if (logs.length >= 3 && weakLogRatio > 0.5) {
+    return {
+      title: 'Improve Your Logs',
+      detail: 'More than half your logs are missing key details. Fix them so the app can give you more accurate session guidance.',
+      actionLabel: 'View Weak Logs',
+      actionType: 'weak-logs',
+      status: 'caution',
+    };
+  }
+
+  if (trend.status === 'good' && recentFatigueWatch === 0) {
+    return {
+      title: 'Ready to Load',
+      detail: 'Readiness is improving and no recent fatigue watch sessions. You can increase training load this week.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'good',
+    };
+  }
+
+  return {
+    title: 'Continue Progression',
+    detail: 'Readiness is stable with no fatigue flags. Keep training at current load and maintain consistent logging.',
+    actionLabel: 'Add Training Log',
+    actionType: 'add-log',
+    status: 'neutral',
+  };
+}
