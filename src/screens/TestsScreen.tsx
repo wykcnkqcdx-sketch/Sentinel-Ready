@@ -1,43 +1,11 @@
-﻿import { ScrollView, StyleSheet, Text, View } from 'react-native';
-﻿import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
+﻿﻿import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-const tests = [
-  {
-    name: '2 km Run',
-    standard: 'Aerobic Capacity',
-    score: '09:42',
-    status: 'Pass',
-    note: 'Good base. Aim to reduce by 15–30 seconds over the next block.',
-  },
-  {
-    name: 'Push-Up Test',
-    standard: 'Upper Body Endurance',
-    score: '42 reps',
-    status: 'Pass',
-    note: 'Maintain strict form. Add tempo work once per week.',
-  },
-  {
-    name: 'Loaded Carry',
-    standard: 'Grip / Trunk / Work Capacity',
-    score: '400 m',
-    status: 'Develop',
-    note: 'Progress distance gradually before adding load.',
-  },
-  {
-    name: 'Ruck Assessment',
-    standard: 'Operational Movement',
-    score: '12 km',
-    status: 'Ready',
-    note: 'Monitor feet, calves, hips and lower back after each ruck.',
-  },
-];
 export default function TestsScreen() {
   const { logs } = useTraining();
   const testLogs = logs.filter((log) => log.category === 'Test');
   const readinessPercentage = calculateReadinessPercentage(logs);
 
-export default function TestsScreen() {
   let heroScore = 'GREEN';
   let heroScoreColor = '#ffffff';
   let heroText = 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.';
@@ -66,16 +34,13 @@ export default function TestsScreen() {
       <View style={styles.heroCard}>
         <View>
           <Text style={styles.heroLabel}>Current Test Readiness</Text>
-          <Text style={styles.heroScore}>GREEN</Text>
           <Text style={[styles.heroScore, { color: heroScoreColor }]}>{heroScore}</Text>
           <Text style={styles.heroText}>
-            Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.
             {heroText}
           </Text>
         </View>
 
         <View style={styles.scoreBox}>
-          <Text style={styles.scoreNumber}>4</Text>
           <Text style={styles.scoreNumber}>{testLogs.length}</Text>
           <Text style={styles.scoreLabel}>Tests</Text>
         </View>
@@ -86,13 +51,6 @@ export default function TestsScreen() {
         <Text style={styles.sectionTag}>ACTIVE</Text>
       </View>
 
-      {tests.map((test) => (
-        <View key={test.name} style={styles.testCard}>
-          <View style={styles.testTop}>
-            <View style={styles.testNameBlock}>
-              <Text style={styles.testName}>{test.name}</Text>
-              <Text style={styles.testStandard}>{test.standard}</Text>
-            </View>
       {testLogs.length === 0 ? (
         <View style={styles.testCard}>
           <Text style={styles.testName}>No Tests Logged</Text>
@@ -105,16 +63,6 @@ export default function TestsScreen() {
           if (score >= 8) status = 'Pass';
           else if (score >= 6) status = 'Ready';
 
-            <View style={styles.resultBlock}>
-              <Text style={styles.resultScore}>{test.score}</Text>
-              <Text
-                style={[
-                  styles.resultStatus,
-                  test.status === 'Develop' && styles.warningStatus,
-                ]}
-              >
-                {test.status}
-              </Text>
           return (
             <View key={log.id} style={styles.testCard}>
               <View style={styles.testTop}>
@@ -138,14 +86,9 @@ export default function TestsScreen() {
 
               <Text style={styles.note}>{log.notes}</Text>
             </View>
-          </View>
           );
         })
       )}
-
-          <Text style={styles.note}>{test.note}</Text>
-        </View>
-      ))}
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Testing Guidance</Text>
