@@ -2,11 +2,11 @@ import dfift from '@/src/data/standards/dfift-standards.json';
 import { useUser } from '@/src/screens/UserContext';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 function formatSeconds(s: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileScreen() {
   const { gender, testDate, setGender, setTestDate } = useUser();

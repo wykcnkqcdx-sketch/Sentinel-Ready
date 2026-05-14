@@ -79,8 +79,8 @@ function DfiftRow({ label, standard, result, pass }: {
 export default function TestsScreen() {
   const { logs, isLoading } = useTraining();
   const { gender, testDate } = useUser();
-  if (isLoading) return <View style={styles.screen} />;
   const router = useRouter();
+  if (isLoading) return <View style={styles.screen} />;
 
   const testLogs = [...logs.filter((log) => log.category === 'Test')]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);

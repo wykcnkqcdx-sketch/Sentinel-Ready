@@ -20,23 +20,24 @@ export default function EditLogScreen() {
   const [readiness, setReadiness] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
-  const [logFound, setLogFound] = useState(false);
+
+  const logId = Number(Array.isArray(id) ? id[0] : id);
+  const logToEdit = useMemo(
+    () => logs.find((log) => log.id === logId),
+    [logs, logId]
+  );
 
   useEffect(() => {
-    if (id) {
-      const logToEdit = logs.find((log) => log.id === Number(id));
-      if (logToEdit) {
-        setDate(logToEdit.date);
-        setCategory(logToEdit.category);
-        setType(logToEdit.type);
-        setDuration(logToEdit.duration);
-        setDistanceLoad(logToEdit.distanceLoad);
-        setReadiness(logToEdit.readiness);
-        setNotes(logToEdit.notes);
-        setLogFound(true);
-      }
+    if (logToEdit) {
+      setDate(logToEdit.date);
+      setCategory(logToEdit.category);
+      setType(logToEdit.type);
+      setDuration(logToEdit.duration);
+      setDistanceLoad(logToEdit.distanceLoad);
+      setReadiness(logToEdit.readiness);
+      setNotes(logToEdit.notes);
     }
-  }, [id, logs]);
+  }, [logToEdit]);
 
   const notesWarning = getNotesQualityWarning(notes);
 
@@ -104,7 +105,7 @@ export default function EditLogScreen() {
     try {
       setSaving(true);
 
-      await updateLog(Number(id), {
+      await updateLog(logId, {
         date: date.trim(),
         category,
         type: type.trim(),
@@ -115,7 +116,7 @@ export default function EditLogScreen() {
       });
 
       router.replace('/log');
-    } catch (error) {
+    } catch {
       Alert.alert('Update Failed', 'The training log could not be updated. Please try again.');
     } finally {
       setSaving(false);
@@ -130,7 +131,7 @@ export default function EditLogScreen() {
     );
   }
 
-  if (!logFound) {
+  if (!logToEdit) {
     return (
       <View style={[styles.screen, { justifyContent: 'center', alignItems: 'center', gap: 16 }]}>
         <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '900' }}>Log not found</Text>

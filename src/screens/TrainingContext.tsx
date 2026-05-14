@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
 export type TrainingCategory = 'Ruck' | 'Strength' | 'Run' | 'Mobility' | 'Test' | 'Recovery';
 
@@ -102,15 +102,25 @@ const TrainingContext = createContext<TrainingContextType | undefined>(undefined
 export function TrainingProvider({ children }: { children: ReactNode }) {
   const [logs, setLogs] = useState<TrainingLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const logsRef = useRef<TrainingLog[]>([]);
+
+  const commitLogs = async (updatedLogs: TrainingLog[]) => {
+    logsRef.current = updatedLogs;
+    setLogs(updatedLogs);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+  };
 
   useEffect(() => {
     const loadLogs = async () => {
       try {
         const storedLogs = await AsyncStorage.getItem(STORAGE_KEY);
         if (storedLogs) {
-          setLogs(JSON.parse(storedLogs));
+          const parsedLogs = JSON.parse(storedLogs);
+          logsRef.current = parsedLogs;
+          setLogs(parsedLogs);
         } else {
           // First time opening the app, set the starter logs
+          logsRef.current = starterLogs;
           setLogs(starterLogs);
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(starterLogs));
         }
@@ -126,7 +136,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
 
   const updateLog = async (id: number, updatedLogData: Omit<TrainingLog, 'id'>) => {
     try {
-      const updatedLogs = logs.map((log) =>
+      const updatedLogs = logsRef.current.map((log) =>
         log.id === id
           ? {
               ...updatedLogData,
@@ -135,8 +145,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
           : log
       );
 
-      setLogs(updatedLogs);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+      await commitLogs(updatedLogs);
     } catch (error) {
       console.error('Failed to update log', error);
     }
@@ -144,9 +153,8 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
 
   const deleteLog = async (id: number) => {
     try {
-      const updatedLogs = logs.filter((log) => log.id !== id);
-      setLogs(updatedLogs);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+      const updatedLogs = logsRef.current.filter((log) => log.id !== id);
+      await commitLogs(updatedLogs);
     } catch (error) {
       console.error('Failed to delete log', error);
     }
@@ -159,9 +167,8 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
         id: Date.now(), // Generate a unique ID based on timestamp
       };
       // Insert new log at the top of the list
-      const updatedLogs = [newLog, ...logs];
-      setLogs(updatedLogs);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+      const updatedLogs = [newLog, ...logsRef.current];
+      await commitLogs(updatedLogs);
     } catch (error) {
       console.error('Failed to save log', error);
     }

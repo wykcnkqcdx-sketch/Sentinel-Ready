@@ -58,7 +58,7 @@ export default function PlanScreen() {
       <Text style={styles.kicker}>SENTINEL READY</Text>
       <Text style={styles.title}>7-Day Training Plan</Text>
       <Text style={styles.subtitle}>
-        Generated from your readiness, fatigue watch and this week's training split.
+        Generated from your readiness, fatigue watch and this week&apos;s training split.
       </Text>
 
       <View style={styles.thisWeekCard}>

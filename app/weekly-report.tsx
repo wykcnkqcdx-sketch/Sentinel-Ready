@@ -111,7 +111,7 @@ export default function WeeklyReportScreen() {
         <Text style={styles.kicker}>SENTINEL READY</Text>
         <Text style={styles.title}>Weekly Report</Text>
         <Text style={styles.subtitle}>
-          Session load, readiness and fatigue watch reviewed by week. Use this to pace next week's training.
+          Session load, readiness and fatigue watch reviewed by week. Use this to pace next week&apos;s training.
         </Text>
       </View>
 

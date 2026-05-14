@@ -158,7 +158,7 @@ export default function AddLogScreen() {
       });
 
       router.replace('/log');
-    } catch (error) {
+    } catch {
       Alert.alert('Save Failed', 'The training log could not be saved. Please try again.');
     } finally {
       setSaving(false);

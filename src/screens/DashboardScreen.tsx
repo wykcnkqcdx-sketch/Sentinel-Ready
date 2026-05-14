@@ -3,7 +3,7 @@ import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, buildWeekSummary, getReadinessNumber } from '@/src/utils/trainingLogUtils';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { DimensionValue, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
 
@@ -140,7 +140,7 @@ export default function DashboardScreen() {
           {trendLogs.length > 0 ? (
             trendLogs.map((log) => {
               const score = Number(log.readiness);
-              const heightPercentage = `${(score / 10) * 100}%`;
+              const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
               let barColor = '#62d982';
               if (score < 6) barColor = '#d96262';
               else if (score < 8) barColor = '#d9a662';
@@ -173,7 +173,7 @@ export default function DashboardScreen() {
       <View style={weekLoadStatus.isWarn ? styles.loadCardWarn : styles.loadCard}>
         <View style={styles.loadHeader}>
           <View>
-            <Text style={styles.loadKicker}>THIS WEEK'S LOAD</Text>
+            <Text style={styles.loadKicker}>THIS WEEK&apos;S LOAD</Text>
             <Text style={weekLoadStatus.isWarn ? styles.loadCountWarn : styles.loadCount}>
               {thisWeek.total} / {WEEKLY_TARGET} sessions
             </Text>
