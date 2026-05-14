@@ -1,7 +1,8 @@
 import AlertCard from '@/src/components/ui/AlertCard';
+import { useTraining } from '@/src/screens/TrainingContext';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-const sessions = [
+const baseSessions = [
   {
     title: 'Strength Base',
     type: 'Gym',
@@ -26,6 +27,68 @@ const sessions = [
 ];
 
 export default function TrainingScreen() {
+  const { logs } = useTraining();
+
+  // 1. Calculate Readiness
+  const recentLogs = logs.slice(0, 5);
+  const avgScore = recentLogs.length > 0 
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+    : 0;
+  const readinessPercentage = recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+  const isFatigued = readinessPercentage > 0 && readinessPercentage < 70;
+
+  // 2. Calculate Weekly Stats
+  const last7DaysLogs = logs.filter(log => {
+    const logDate = new Date(log.date).getTime();
+    const now = new Date().getTime();
+    return (now - logDate) <= 7 * 24 * 60 * 60 * 1000;
+  });
+  
+  const weeklyLoad = last7DaysLogs.length;
+  const recoveryLogs = last7DaysLogs.filter(l => l.category === 'Recovery');
+  const ruckLogs = last7DaysLogs.filter(l => l.category === 'Ruck');
+
+  // 3. Dynamic Priority Logic
+  let heroTitle = 'Tactical Conditioning';
+  let heroText = 'Keep the session controlled. Build capacity without carrying fatigue into tomorrow.';
+  let badgeText = 'READY';
+  let badgeBorder = '#58d77a';
+  let badgeBg = '#0b2a14';
+  let badgeTextColor = '#a8ffb8';
+
+  if (isFatigued) {
+    heroTitle = 'Active Recovery';
+    heroText = 'High fatigue detected. Prioritise mobility, hydration, and active rest today.';
+    badgeText = 'DELOAD';
+    badgeBorder = '#d9a662';
+    badgeBg = '#3d3014';
+    badgeTextColor = '#ffdfbf';
+  } else if (weeklyLoad < 2) {
+    heroTitle = 'Strength Base';
+    heroText = 'Weekly volume is low. Hit a full-body strength session to build durability.';
+    badgeText = 'BUILD';
+  } else if (recoveryLogs.length === 0 && weeklyLoad >= 3) {
+    heroTitle = 'Recovery Priority';
+    heroText = 'Training volume is building but no recovery is logged. Add a mobility session.';
+    badgeText = 'WATCH';
+    badgeBorder = '#d9a662';
+    badgeBg = '#3d3014';
+    badgeTextColor = '#ffdfbf';
+  }
+
+  // 4. Dynamic Training Blocks
+  const dynamicSessions = baseSessions.map((session) => {
+    if (isFatigued) {
+      return {
+        ...session,
+        title: `${session.title} (Deload)`,
+        time: '30 min',
+        detail: 'Intensity automatically reduced. Keep the session light and focus on movement quality rather than output.',
+      };
+    }
+    return session;
+  });
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>TRAINING</Text>
@@ -34,43 +97,45 @@ export default function TrainingScreen() {
         Structured sessions for strength, endurance, loaded movement and recovery.
       </Text>
 
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, isFatigued && styles.heroCardWarning]}>
         <View>
-          <Text style={styles.heroLabel}>Today&apos;s Priority</Text>
-          <Text style={styles.heroTitle}>Tactical Conditioning</Text>
+          <Text style={[styles.heroLabel, isFatigued && styles.warningText]}>Today&apos;s Priority</Text>
+          <Text style={styles.heroTitle}>{heroTitle}</Text>
           <Text style={styles.heroText}>
-            Keep the session controlled. Build capacity without carrying fatigue into tomorrow.
+            {heroText}
           </Text>
         </View>
 
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>READY</Text>
+        <View style={[styles.badge, { borderColor: badgeBorder, backgroundColor: badgeBg }]}>
+          <Text style={[styles.badgeText, { color: badgeTextColor }]}>{badgeText}</Text>
         </View>
       </View>
 
       <View style={styles.grid}>
         <View style={styles.smallCard}>
           <Text style={styles.label}>Weekly Load</Text>
-          <Text style={styles.value}>4 Sessions</Text>
-          <Text style={styles.note}>Balanced</Text>
+          <Text style={styles.value}>{weeklyLoad} {weeklyLoad === 1 ? 'Session' : 'Sessions'}</Text>
+          <Text style={styles.note}>{weeklyLoad > 4 ? 'High volume' : 'Balanced'}</Text>
         </View>
 
         <View style={styles.smallCard}>
           <Text style={styles.label}>Intensity</Text>
-          <Text style={styles.value}>Moderate</Text>
-          <Text style={styles.note}>Controlled</Text>
+          <Text style={styles.value}>{isFatigued ? 'Low' : 'Moderate'}</Text>
+          <Text style={styles.note}>{isFatigued ? 'Deload active' : 'Controlled'}</Text>
         </View>
 
         <View style={styles.smallCard}>
           <Text style={styles.label}>Recovery</Text>
-          <Text style={styles.value}>Active</Text>
-          <Text style={styles.note}>Mobility focus</Text>
+          <Text style={styles.value}>{recoveryLogs.length > 0 ? 'Active' : 'Missing'}</Text>
+          <Text style={[styles.note, recoveryLogs.length === 0 && styles.warningText]}>
+            {recoveryLogs.length > 0 ? 'Mobility focus' : 'Add recovery'}
+          </Text>
         </View>
 
         <View style={styles.smallCard}>
-          <Text style={styles.label}>Next Test</Text>
-          <Text style={styles.value}>7 Days</Text>
-          <Text style={styles.note}>Monitor readiness</Text>
+          <Text style={styles.label}>Ruck Volume</Text>
+          <Text style={styles.value}>{ruckLogs.length} {ruckLogs.length === 1 ? 'Session' : 'Sessions'}</Text>
+          <Text style={styles.note}>{ruckLogs.length > 2 ? 'Monitor feet/back' : 'On track'}</Text>
         </View>
       </View>
 
@@ -79,16 +144,16 @@ export default function TrainingScreen() {
         <Text style={styles.sectionPill}>THIS WEEK</Text>
       </View>
 
-      {sessions.map((session) => (
+      {dynamicSessions.map((session) => (
         <View key={session.title} style={styles.sessionCard}>
           <View style={styles.sessionTop}>
             <View>
               <Text style={styles.sessionTitle}>{session.title}</Text>
-              <Text style={styles.sessionFocus}>{session.focus}</Text>
+              <Text style={[styles.sessionFocus, isFatigued && styles.warningText]}>{session.focus}</Text>
             </View>
 
-            <View style={styles.timeBadge}>
-              <Text style={styles.timeText}>{session.time}</Text>
+            <View style={[styles.timeBadge, isFatigued && styles.timeBadgeWarning]}>
+              <Text style={[styles.timeText, isFatigued && styles.warningText]}>{session.time}</Text>
             </View>
           </View>
 
@@ -96,17 +161,25 @@ export default function TrainingScreen() {
 
           <View style={styles.tagRow}>
             <Text style={styles.tag}>{session.type}</Text>
-            <Text style={styles.tag}>Progressive</Text>
-            <Text style={styles.tag}>Logged</Text>
+            <Text style={styles.tag}>{isFatigued ? 'Deload' : 'Progressive'}</Text>
+            <Text style={styles.tag}>Planned</Text>
           </View>
         </View>
       ))}
 
-      <AlertCard 
-        type="warning"
-        title="Training Rule"
-        description="Do not increase distance, load and intensity in the same week. Progress one variable at a time."
-      />
+      {!isFatigued ? (
+        <AlertCard 
+          type="warning"
+          title="Training Rule"
+          description="Do not increase distance, load and intensity in the same week. Progress one variable at a time."
+        />
+      ) : (
+        <AlertCard 
+          type="alert"
+          title="Deload Active"
+          description="Training blocks have been automatically modified to lower intensity until readiness recovers."
+        />
+      )}
     </ScrollView>
   );
 }
@@ -145,6 +218,13 @@ const styles = StyleSheet.create({
     borderColor: '#2d6b3f',
     minHeight: 170,
     justifyContent: 'space-between',
+  },
+  heroCardWarning: {
+    backgroundColor: '#1a160d',
+    borderColor: '#4a3a1d',
+  },
+  warningText: {
+    color: '#f3d36b',
   },
   heroLabel: {
     color: '#91e6a3',
@@ -265,6 +345,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     height: 32,
+  },
+  timeBadgeWarning: {
+    borderColor: '#4a3a1d',
   },
   timeText: {
     color: '#a8ffb8',
