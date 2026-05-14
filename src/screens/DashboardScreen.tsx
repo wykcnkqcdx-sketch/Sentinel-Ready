@@ -1,9 +1,56 @@
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
+import { useTraining } from '@/src/screens/TrainingContext';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function DashboardScreen() {
+  const { logs } = useTraining();
+
+  // 1. Calculate Readiness Score (Average of recent logs)
+  const recentLogs = logs.slice(0, 5);
+  const avgScore = recentLogs.length > 0 
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+    : 0;
+  const readinessPercentage = recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+
+  let statusBadgeText = 'GREEN';
+  let statusBadgeColor = '#143d22';
+  let statusTextColor = '#bfffcf';
+  let progressColor = '#62d982';
+  let readinessMsg = 'Fit for training. Monitor fatigue and recovery.';
+
+  if (readinessPercentage > 0 && readinessPercentage < 60) {
+    statusBadgeText = 'RED';
+    statusBadgeColor = '#3d1414';
+    statusTextColor = '#ffbfbf';
+    progressColor = '#d96262';
+    readinessMsg = 'High fatigue detected. Prioritise recovery and rest today.';
+  } else if (readinessPercentage >= 60 && readinessPercentage < 75) {
+    statusBadgeText = 'AMBER';
+    statusBadgeColor = '#3d3014';
+    statusTextColor = '#ffdfbf';
+    progressColor = '#d9a662';
+    readinessMsg = 'Moderate fatigue. Keep training volume controlled.';
+  } else if (readinessPercentage === 0) {
+    statusBadgeText = 'NO DATA';
+    statusBadgeColor = '#1a1a1a';
+    statusTextColor = '#cccccc';
+    progressColor = '#333333';
+    readinessMsg = 'Log a session to calculate your readiness score.';
+  }
+
+  // 2. Extract Mission Stats from the latest logs
+  const latestRuck = logs.find((l) => l.category === 'Ruck');
+  const latestStrength = logs.find((l) => l.category === 'Strength');
+  const latestRun = logs.find((l) => l.category === 'Run');
+  const latestRecovery = logs.find((l) => l.category === 'Recovery');
+
+  const ruckVal = latestRuck ? latestRuck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
+  const strengthVal = latestStrength ? `Score: ${latestStrength.readiness}` : 'N/A';
+  const cardioVal = latestRun ? latestRun.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
+  const recoveryVal = latestRecovery ? `Score: ${latestRecovery.readiness}` : 'N/A';
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -17,19 +64,19 @@ export default function DashboardScreen() {
       <SentinelCard title="Readiness Status" variant="success">
         <View style={styles.readinessRow}>
           <View>
-            <Text style={styles.metric}>82%</Text>
+            <Text style={styles.metric}>{readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}</Text>
             <Text style={styles.cardText}>
-              Fit for training. Monitor fatigue and recovery.
+              {readinessMsg}
             </Text>
           </View>
 
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusBadgeText}>GREEN</Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusBadgeColor }]}>
+            <Text style={[styles.statusBadgeText, { color: statusTextColor }]}>{statusBadgeText}</Text>
           </View>
         </View>
 
         <View style={styles.progressTrack}>
-          <View style={styles.progressFill} />
+          <View style={[styles.progressFill, { width: `${readinessPercentage}%`, backgroundColor: progressColor }]} />
         </View>
 
         <View style={styles.readinessDetails}>
@@ -40,10 +87,10 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <View style={styles.grid}>
-        <MissionStat label="Ruck" value="12 km" status="Loaded movement" />
-        <MissionStat label="Strength" value="Good" status="Force output stable" />
-        <MissionStat label="Cardio" value="37.9 VO₂" status="Aerobic base" />
-        <MissionStat label="Recovery" value="Moderate" status="Monitor fatigue" />
+        <MissionStat label="Ruck" value={ruckVal} status={latestRuck ? 'Latest session' : 'Awaiting data'} />
+        <MissionStat label="Strength" value={strengthVal} status={latestStrength ? 'Force output' : 'Awaiting data'} />
+        <MissionStat label="Cardio" value={cardioVal} status={latestRun ? 'Aerobic base' : 'Awaiting data'} />
+        <MissionStat label="Recovery" value={recoveryVal} status={latestRecovery ? 'Latest session' : 'Awaiting data'} />
       </View>
 
       <View style={styles.section}>
@@ -89,17 +136,21 @@ export default function DashboardScreen() {
           <Text style={styles.sectionTag}>WATCH</Text>
         </View>
 
-        <AlertCard 
-          type="alert"
-          title="Recovery requires attention"
-          description="Keep the next session controlled if sleep, soreness or resting fatigue worsens."
-        />
+        {readinessPercentage > 0 && readinessPercentage < 60 ? (
+          <AlertCard 
+            type="alert"
+            title="Recovery requires attention"
+            description="Keep the next session controlled if sleep, soreness or resting fatigue worsens."
+          />
+        ) : null}
 
-        <AlertCard 
-          type="alert"
-          title="Ruck progression available"
-          description="Increase distance or load only if the previous ruck was completed without pain."
-        />
+        {latestRuck && Number(latestRuck.readiness) >= 7 && readinessPercentage >= 70 ? (
+          <AlertCard 
+            type="info"
+            title="Ruck progression available"
+            description="Readiness is solid. Increase distance or load only if the previous ruck was completed without pain."
+          />
+        ) : null}
       </View>
     </ScrollView>
   );
