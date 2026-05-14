@@ -173,7 +173,7 @@ export default function DashboardScreen() {
       <View style={weekLoadStatus.isWarn ? styles.loadCardWarn : styles.loadCard}>
         <View style={styles.loadHeader}>
           <View>
-            <Text style={styles.loadKicker}>THIS WEEK&apos;S LOAD</Text>
+            <Text style={styles.loadKicker}>{"THIS WEEK'S LOAD"}</Text>
             <Text style={weekLoadStatus.isWarn ? styles.loadCountWarn : styles.loadCount}>
               {thisWeek.total} / {WEEKLY_TARGET} sessions
             </Text>

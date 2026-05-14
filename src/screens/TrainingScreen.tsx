@@ -63,7 +63,7 @@ export default function TrainingScreen() {
       <Text style={styles.kicker}>SENTINEL READY</Text>
       <Text style={styles.title}>Mission Training</Text>
       <Text style={styles.subtitle}>
-        Today&apos;s session and weekly plan built from your readiness, load and training split.
+        {"Today's session and weekly plan built from your readiness, load and training split."}
       </Text>
 
       {todayPlan ? (

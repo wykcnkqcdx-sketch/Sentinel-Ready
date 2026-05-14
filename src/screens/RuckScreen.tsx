@@ -206,9 +206,9 @@ export default function RuckScreen() {
         <View style={styles.emptyCard}>
           <Text style={styles.emptyTitle}>No ruck sessions logged</Text>
           <Text style={styles.emptyText}>
-            Log a ruck session with category &quot;Ruck&quot; and include distance in km and load in kg to start tracking performance.
+            {'Log a ruck session with category "Ruck" and include distance in km and load in kg to start tracking performance.'}
           </Text>
-          <Text style={styles.emptyHint}>Example: &quot;12 km - 18 kg&quot;</Text>
+          <Text style={styles.emptyHint}>{'Example: "12 km - 18 kg"'}</Text>
         </View>
       ) : (
         <>
