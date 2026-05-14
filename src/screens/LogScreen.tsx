@@ -1,6 +1,13 @@
-import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { TrainingCategory, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { useRouter } from 'expo-router';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+type TrainingFilter = 'All' | TrainingCategory;
+type SortMode = 'Newest' | 'Oldest' | 'Highest Readiness' | 'Lowest Readiness';
+
+const filters: TrainingFilter[] = ['All', 'Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
+const sortModes: SortMode[] = ['Newest', 'Oldest', 'Highest Readiness', 'Lowest Readiness'];
 
 function getReadinessNumber(readiness: string) {
   const score = Number(readiness);
@@ -34,6 +41,11 @@ function getReadinessLabel(readiness: string) {
   return 'High';
 }
 
+function getDateValue(date: string) {
+  const time = new Date(date).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
 function buildSummary(logs: TrainingLog[]) {
   const readinessScores = logs
     .map((log) => getReadinessNumber(log.readiness))
@@ -55,17 +67,76 @@ function buildSummary(logs: TrainingLog[]) {
   };
 }
 
+function filterAndSortLogs(
+  logs: TrainingLog[],
+  activeFilter: TrainingFilter,
+  searchQuery: string,
+  sortMode: SortMode
+) {
+  const query = searchQuery.trim().toLowerCase();
+
+  const filtered = logs.filter((log) => {
+    const matchesFilter = activeFilter === 'All' || log.category === activeFilter;
+
+    const searchableText = [
+      log.date,
+      log.category,
+      log.type,
+      log.duration,
+      log.distanceLoad,
+      log.readiness,
+      log.notes,
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    const matchesSearch = query.length === 0 || searchableText.includes(query);
+
+    return matchesFilter && matchesSearch;
+  });
+
+  return filtered.sort((a, b) => {
+    if (sortMode === 'Oldest') {
+      return getDateValue(a.date) - getDateValue(b.date) || a.id - b.id;
+    }
+
+    if (sortMode === 'Highest Readiness') {
+      return getReadinessNumber(b.readiness) - getReadinessNumber(a.readiness) || b.id - a.id;
+    }
+
+    if (sortMode === 'Lowest Readiness') {
+      return getReadinessNumber(a.readiness) - getReadinessNumber(b.readiness) || b.id - a.id;
+    }
+
+    return getDateValue(b.date) - getDateValue(a.date) || b.id - a.id;
+  });
+}
+
 export default function LogScreen() {
   const { logs, isLoading, deleteLog } = useTraining();
   const router = useRouter();
 
-  const sortedLogs = [...logs].sort((a, b) => b.id - a.id);
-  const summary = buildSummary(sortedLogs);
+  const [activeFilter, setActiveFilter] = useState<TrainingFilter>('All');
+  const [sortMode, setSortMode] = useState<SortMode>('Newest');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const summary = buildSummary(logs);
+
+  const visibleLogs = useMemo(
+    () => filterAndSortLogs(logs, activeFilter, searchQuery, sortMode),
+    [logs, activeFilter, searchQuery, sortMode]
+  );
+
+  function clearSearchAndFilters() {
+    setActiveFilter('All');
+    setSortMode('Newest');
+    setSearchQuery('');
+  }
 
   function confirmDeleteLog(log: TrainingLog) {
     Alert.alert(
       'Delete Training Log',
-      Delete this  log from ?,
+      `Delete this ${log.category} log from ${log.date}?`,
       [
         {
           text: 'Cancel',
@@ -86,7 +157,7 @@ export default function LogScreen() {
     return (
       <View style={fatigueWatch ? styles.logCardWarning : styles.logCard}>
         <View style={styles.logHeader}>
-          <View>
+          <View style={styles.logHeaderText}>
             <Text style={styles.logCategory}>{item.category}</Text>
             <Text style={styles.logTitle}>{item.type}</Text>
           </View>
@@ -116,7 +187,7 @@ export default function LogScreen() {
           </Text>
 
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.editButton} onPress={() => router.push(/edit-log/)}>
+            <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/edit-log/${item.id}`)}>
               <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
 
@@ -140,10 +211,11 @@ export default function LogScreen() {
   return (
     <View style={styles.screen}>
       <FlatList
-        data={sortedLogs}
+        data={visibleLogs}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderLogItem}
         contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.kicker}>SENTINEL READY</Text>
@@ -184,19 +256,84 @@ export default function LogScreen() {
               </Text>
             </View>
 
+            <View style={styles.controlsCard}>
+              <View style={styles.controlsHeader}>
+                <View>
+                  <Text style={styles.controlsKicker}>MANAGE LOGS</Text>
+                  <Text style={styles.controlsTitle}>Search, Filter and Sort</Text>
+                </View>
+
+                <TouchableOpacity style={styles.clearButton} onPress={clearSearchAndFilters}>
+                  <Text style={styles.clearButtonText}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TextInput
+                style={styles.searchInput}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search date, ruck, run, notes, load..."
+                placeholderTextColor="#6f7d70"
+              />
+
+              <Text style={styles.controlLabel}>Filter</Text>
+              <View style={styles.chipRow}>
+                {filters.map((filter) => (
+                  <TouchableOpacity
+                    key={filter}
+                    style={activeFilter === filter ? styles.chipActive : styles.chip}
+                    onPress={() => setActiveFilter(filter)}
+                  >
+                    <Text style={activeFilter === filter ? styles.chipTextActive : styles.chipText}>
+                      {filter}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.controlLabel}>Sort</Text>
+              <View style={styles.chipRow}>
+                {sortModes.map((mode) => (
+                  <TouchableOpacity
+                    key={mode}
+                    style={sortMode === mode ? styles.sortChipActive : styles.sortChip}
+                    onPress={() => setSortMode(mode)}
+                  >
+                    <Text style={sortMode === mode ? styles.sortChipTextActive : styles.sortChipText}>
+                      {mode}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.resultCount}>
+                Showing {visibleLogs.length} of {logs.length} logs
+              </Text>
+            </View>
+
             <Text style={styles.sectionTitle}>Recent Logs</Text>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No logs saved yet</Text>
+            <Text style={styles.emptyTitle}>
+              {logs.length === 0 ? 'No logs saved yet' : 'No matching logs'}
+            </Text>
             <Text style={styles.emptyText}>
-              Add your first training log to start building readiness and recovery data.
+              {logs.length === 0
+                ? 'Add your first training log to start building readiness and recovery data.'
+                : 'Try clearing the search, changing the filter, or using a different sort option.'}
             </Text>
 
-            <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/add-log')}>
-              <Text style={styles.emptyButtonText}>Add First Log</Text>
-            </TouchableOpacity>
+            {logs.length === 0 ? (
+              <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/add-log')}>
+                <Text style={styles.emptyButtonText}>Add First Log</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.emptyButton} onPress={clearSearchAndFilters}>
+                <Text style={styles.emptyButtonText}>Clear Filters</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -320,6 +457,120 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 5,
   },
+  controlsCard: {
+    backgroundColor: '#0d1812',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#203529',
+    gap: 10,
+  },
+  controlsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    alignItems: 'center',
+  },
+  controlsKicker: {
+    color: '#91e6a3',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+  },
+  controlsTitle: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '900',
+    marginTop: 3,
+  },
+  clearButton: {
+    borderWidth: 1,
+    borderColor: '#35523e',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  clearButtonText: {
+    color: '#c8f7d0',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  searchInput: {
+    backgroundColor: '#07110c',
+    borderWidth: 1,
+    borderColor: '#35523e',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    color: '#ffffff',
+    fontSize: 14,
+  },
+  controlLabel: {
+    color: '#dfe8da',
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    borderWidth: 1,
+    borderColor: '#35523e',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+  },
+  chipActive: {
+    backgroundColor: '#91e6a3',
+    borderWidth: 1,
+    borderColor: '#91e6a3',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+  },
+  chipText: {
+    color: '#c8d8c5',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  chipTextActive: {
+    color: '#07110c',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  sortChip: {
+    borderWidth: 1,
+    borderColor: '#35523e',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+  },
+  sortChipActive: {
+    backgroundColor: '#1e3a27',
+    borderWidth: 1,
+    borderColor: '#91e6a3',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+  },
+  sortChipText: {
+    color: '#c8d8c5',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  sortChipTextActive: {
+    color: '#91e6a3',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  resultCount: {
+    color: '#8fbf8f',
+    fontSize: 12,
+    fontWeight: '800',
+  },
   sectionTitle: {
     color: '#ffffff',
     fontSize: 18,
@@ -346,6 +597,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  logHeaderText: {
+    flex: 1,
   },
   logCategory: {
     color: '#91e6a3',
@@ -520,5 +774,3 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 });
-
-
