@@ -1,7 +1,9 @@
 import dfift from '@/src/data/standards/dfift-standards.json';
 import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
 import { buildReadinessTrend, getDateValue } from '@/src/utils/trainingLogUtils';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function groupByType(testLogs: TrainingLog[]): Record<string, TrainingLog[]> {
   return testLogs.reduce<Record<string, TrainingLog[]>>((acc, log) => {
@@ -76,6 +78,8 @@ function DfiftRow({ label, standard, result, pass }: {
 
 export default function TestsScreen() {
   const { logs } = useTraining();
+  const { gender, testDate } = useUser();
+  const router = useRouter();
 
   const testLogs = [...logs.filter((log) => log.category === 'Test')]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
@@ -101,6 +105,12 @@ export default function TestsScreen() {
   const skinfoldMm = skinfoldLog ? parseMm(skinfoldLog.distanceLoad) : null;
 
   const { pushUps, sitUps, run, skinfold } = dfift.events;
+  const runLimit = gender === 'F' ? run.femaleMaxSeconds : run.maleMaxSeconds;
+  const skinfoldLimit = gender === 'F' ? skinfold.femaleMaxMm : skinfold.maleMaxMm;
+
+  const daysUntilTest = testDate
+    ? Math.ceil((new Date(testDate + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
+    : null;
 
   let readinessLabel = 'GREEN';
   let readinessColor = '#91e6a3';
@@ -121,7 +131,13 @@ export default function TestsScreen() {
   }
 
   const isReadyToTest = readinessPercentage >= 80;
-  const heroCardStyle = isReadyToTest ? styles.heroCardGood : readinessPercentage > 0 && readinessPercentage < 60 ? styles.heroCardWarn : styles.heroCard;
+  const heroCardStyle = isReadyToTest
+    ? styles.heroCardGood
+    : readinessPercentage > 0 && readinessPercentage < 60
+      ? styles.heroCardWarn
+      : readinessPercentage >= 60 && readinessPercentage < 80
+        ? styles.heroCardAmber
+        : styles.heroCard;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -130,6 +146,25 @@ export default function TestsScreen() {
       <Text style={styles.subtitle}>
         Track test results, monitor readiness for assessment and review performance history by test type.
       </Text>
+
+      {daysUntilTest !== null ? (
+        <View style={daysUntilTest <= 14 ? styles.countdownCardUrgent : styles.countdownCard}>
+          <View style={styles.countdownRow}>
+            <View>
+              <Text style={styles.countdownKicker}>DFIFT ASSESSMENT</Text>
+              <Text style={styles.countdownDate}>{testDate}</Text>
+            </View>
+            <View style={styles.countdownDaysBox}>
+              <Text style={daysUntilTest <= 14 ? styles.countdownNumUrgent : styles.countdownNum}>
+                {daysUntilTest > 0 ? daysUntilTest : daysUntilTest === 0 ? 0 : '--'}
+              </Text>
+              <Text style={styles.countdownUnit}>
+                {daysUntilTest > 0 ? 'days away' : daysUntilTest === 0 ? 'Today' : 'passed'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      ) : null}
 
       <View style={heroCardStyle}>
         <View style={styles.heroRow}>
@@ -239,7 +274,12 @@ export default function TestsScreen() {
       </View>
 
       <View style={styles.dfiftCard}>
-        <Text style={styles.dfiftKicker}>DEFENCE FORCES INDUCTION FITNESS TEST</Text>
+        <View style={styles.dfiftHeader}>
+          <Text style={styles.dfiftKicker}>DEFENCE FORCES INDUCTION FITNESS TEST</Text>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
+            <Text style={styles.dfiftProfileLink}>{gender} · Edit</Text>
+          </TouchableOpacity>
+        </View>
 
         <DfiftRow
           label="Push-ups"
@@ -257,16 +297,16 @@ export default function TestsScreen() {
         <View style={styles.dfiftDivider} />
         <DfiftRow
           label="2.4km Run"
-          standard={`Under ${formatSeconds(run.maleMaxSeconds)} (M) / ${formatSeconds(run.femaleMaxSeconds)} (F)`}
+          standard={`Under ${formatSeconds(runLimit)} (${gender})`}
           result={runSeconds !== null ? formatSeconds(runSeconds) : null}
-          pass={runSeconds !== null ? runSeconds <= run.maleMaxSeconds : null}
+          pass={runSeconds !== null ? runSeconds <= runLimit : null}
         />
         <View style={styles.dfiftDivider} />
         <DfiftRow
           label="Skinfold"
-          standard={`Under ${skinfold.maleMaxMm}mm (M) / ${skinfold.femaleMaxMm}mm (F)`}
+          standard={`Under ${skinfoldLimit}mm (${gender})`}
           result={skinfoldMm !== null ? `${skinfoldMm}mm` : null}
-          pass={skinfoldMm !== null ? skinfoldMm <= skinfold.maleMaxMm : null}
+          pass={skinfoldMm !== null ? skinfoldMm <= skinfoldLimit : null}
         />
 
         <Text style={styles.dfiftFootnote}>
@@ -312,6 +352,7 @@ const styles = StyleSheet.create({
 
   heroCard: { backgroundColor: '#102018', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
   heroCardGood: { backgroundColor: '#0d1812', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2f6b3c', gap: 10 },
+  heroCardAmber: { backgroundColor: '#1a1608', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#5a4a20', gap: 10 },
   heroCardWarn: { backgroundColor: '#21140b', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#7a4a1f', gap: 10 },
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 },
   heroLeft: { flex: 1, gap: 6 },
@@ -356,8 +397,20 @@ const styles = StyleSheet.create({
   testResultDate: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
   testNote: { color: '#c4cec0', fontSize: 13, lineHeight: 19 },
 
+  countdownCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#203529' },
+  countdownCardUrgent: { backgroundColor: '#21140b', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#7a4a1f' },
+  countdownRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  countdownKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 3 },
+  countdownDate: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  countdownDaysBox: { alignItems: 'flex-end' },
+  countdownNum: { color: '#ffffff', fontSize: 32, fontWeight: '900' },
+  countdownNumUrgent: { color: '#ffb86b', fontSize: 32, fontWeight: '900' },
+  countdownUnit: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
+
   dfiftCard: { backgroundColor: '#0e1410', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2a3d2c', gap: 0 },
-  dfiftKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 14 },
+  dfiftHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  dfiftKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  dfiftProfileLink: { color: '#4a9e6a', fontSize: 12, fontWeight: '900' },
   dfiftRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingVertical: 12 },
   dfiftRowLeft: { flex: 1, gap: 3 },
   dfiftLabel: { color: '#ffffff', fontSize: 14, fontWeight: '900' },

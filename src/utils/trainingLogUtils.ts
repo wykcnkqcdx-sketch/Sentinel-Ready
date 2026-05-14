@@ -282,7 +282,7 @@ export function buildNextWeekRecommendation(thisWeek: WeekSummary, lastWeek: Wee
     return 'No sessions logged this week. Aim for 3 to 4 sessions next week with at least one ruck or run and one strength session.';
   }
 
-  if (thisWeek.fatigueWatch >= 2 || readiness > 0 && readiness < 5) {
+  if (thisWeek.fatigueWatch >= 2 || (readiness > 0 && readiness < 5)) {
     return 'Prioritise recovery next week. Keep sessions short, add mobility work, and avoid increasing load until readiness recovers above 6.';
   }
 

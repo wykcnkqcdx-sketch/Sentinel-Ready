@@ -77,7 +77,7 @@ function getCompletionScore(
 export default function EditLogScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { logs, updateLog } = useTraining();
+  const { logs, updateLog, isLoading } = useTraining();
 
   const [date, setDate] = useState('');
   const [category, setCategory] = useState<TrainingCategory>('Ruck');
@@ -189,10 +189,21 @@ export default function EditLogScreen() {
     }
   }
 
-  if (!logFound) {
+  if (isLoading) {
     return (
       <View style={[styles.screen, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#fff' }}>Loading log data...</Text>
+        <Text style={{ color: '#8fbf8f', fontSize: 14, fontWeight: '800' }}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!logFound) {
+    return (
+      <View style={[styles.screen, { justifyContent: 'center', alignItems: 'center', gap: 16 }]}>
+        <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '900' }}>Log not found</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={{ color: '#91e6a3', fontSize: 14, fontWeight: '900' }}>← Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }

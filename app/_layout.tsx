@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { TrainingProvider } from '@/src/screens/TrainingContext';
+import { UserProvider } from '@/src/screens/UserContext';
 
 export default function RootLayout() {
   return (
+    <UserProvider>
     <TrainingProvider>
       <Stack
         screenOptions={{
@@ -18,5 +20,6 @@ export default function RootLayout() {
 
       <StatusBar style="light" />
     </TrainingProvider>
+    </UserProvider>
   );
 }

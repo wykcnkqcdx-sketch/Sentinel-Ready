@@ -34,7 +34,9 @@ export default function ReadinessTrendCard({ trend }: Props) {
       </View>
 
       <Text style={isWarning ? styles.trendTextWarning : styles.trendText}>
-        Latest {trend.latest}/10 · Previous {trend.previous}/10
+        {trend.label === 'Baseline'
+          ? `Latest ${trend.latest}/10`
+          : `Latest ${trend.latest}/10 · Previous ${trend.previous}/10`}
       </Text>
 
       <Text style={isWarning ? styles.trendTextWarning : styles.trendText}>

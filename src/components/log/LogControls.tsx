@@ -26,6 +26,8 @@ export default function LogControls({
   totalCount,
   showWeakLogsOnly,
 }: Props) {
+  const isDirty = searchQuery !== '' || activeFilter !== 'All' || sortMode !== 'Newest' || showWeakLogsOnly;
+
   return (
     <View style={styles.controlsCard}>
       <View style={styles.controlsHeader}>
@@ -34,9 +36,11 @@ export default function LogControls({
           <Text style={styles.controlsTitle}>Search, Filter and Sort</Text>
         </View>
 
-        <TouchableOpacity style={styles.clearButton} onPress={onClear}>
-          <Text style={styles.clearButtonText}>Clear</Text>
-        </TouchableOpacity>
+        {isDirty ? (
+          <TouchableOpacity style={styles.clearButton} onPress={onClear}>
+            <Text style={styles.clearButtonText}>Clear</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <TextInput

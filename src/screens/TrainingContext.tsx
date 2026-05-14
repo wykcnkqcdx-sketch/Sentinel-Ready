@@ -64,6 +64,8 @@ const starterLogs: TrainingLog[] = [
 interface TrainingContextType {
   logs: TrainingLog[];
   addLog: (log: Omit<TrainingLog, 'id'>) => Promise<void>;
+  updateLog: (id: number, log: Omit<TrainingLog, 'id'>) => Promise<void>;
+  deleteLog: (id: number) => Promise<void>;
   isLoading: boolean;
 }
 

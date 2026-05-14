@@ -100,8 +100,8 @@ export default function RecoveryScreen() {
 
   const mainCardStyle = isHighFatigue ? styles.mainCardWarning : isModerate ? styles.mainCardModerate : styles.mainCard;
   const scoreStyle = isHighFatigue ? styles.scoreWarning : styles.score;
-  const badgeStyle = isHighFatigue ? styles.badgeWarning : isModerate ? styles.badgeModerate : styles.badge;
-  const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : styles.badgeText;
+  const badgeStyle = isHighFatigue ? styles.badgeWarning : isModerate ? styles.badgeModerate : recoveryScore > 0 ? styles.badge : styles.badgeNeutral;
+  const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : recoveryScore > 0 ? styles.badgeText : styles.badgeTextNeutral;
 
   const protocol = getProtocol(recoveryScore);
 
@@ -250,9 +250,11 @@ const styles = StyleSheet.create({
   badge: { backgroundColor: '#143d22', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   badgeModerate: { backgroundColor: '#2a2410', borderWidth: 1, borderColor: '#6b5020', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   badgeWarning: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeNeutral: { backgroundColor: '#1a1a1a', borderWidth: 1, borderColor: '#3a3a3a', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   badgeText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
   badgeTextModerate: { color: '#f3d36b', fontSize: 12, fontWeight: '900' },
   badgeTextWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  badgeTextNeutral: { color: '#8fbf8f', fontSize: 12, fontWeight: '900' },
   scoreMessage: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },

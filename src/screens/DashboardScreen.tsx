@@ -62,24 +62,24 @@ export default function DashboardScreen() {
   let progressColor = '#62d982';
   let readinessMsg = 'Fit for training. Monitor fatigue and recovery.';
 
-  if (readinessPercentage > 0 && readinessPercentage < 60) {
-    statusBadgeText = 'RED';
-    statusBadgeColor = '#3d1414';
-    statusTextColor = '#ffbfbf';
-    progressColor = '#d96262';
-    readinessMsg = 'High fatigue detected. Prioritise recovery and rest today.';
-  } else if (readinessPercentage >= 60 && readinessPercentage < 75) {
-    statusBadgeText = 'AMBER';
-    statusBadgeColor = '#3d3014';
-    statusTextColor = '#ffdfbf';
-    progressColor = '#d9a662';
-    readinessMsg = 'Moderate fatigue. Keep training volume controlled.';
-  } else if (readinessPercentage === 0) {
+  if (readinessPercentage === 0) {
     statusBadgeText = 'NO DATA';
     statusBadgeColor = '#1a1a1a';
     statusTextColor = '#cccccc';
     progressColor = '#333333';
     readinessMsg = 'Log a session to calculate your readiness score.';
+  } else if (readinessPercentage < 60) {
+    statusBadgeText = 'RED';
+    statusBadgeColor = '#3d1414';
+    statusTextColor = '#ffbfbf';
+    progressColor = '#d96262';
+    readinessMsg = 'High fatigue detected. Prioritise recovery and rest today.';
+  } else if (readinessPercentage < 75) {
+    statusBadgeText = 'AMBER';
+    statusBadgeColor = '#3d3014';
+    statusTextColor = '#ffdfbf';
+    progressColor = '#d9a662';
+    readinessMsg = 'Moderate fatigue. Keep training volume controlled.';
   }
 
   const latestRuck = logs.find((l) => l.category === 'Ruck');
