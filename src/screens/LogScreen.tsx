@@ -4,6 +4,7 @@ import ReadinessTrendCard from '@/src/components/log/ReadinessTrendCard';
 import SessionRecommendationCard from '@/src/components/log/SessionRecommendationCard';
 import TrainingLogCard from '@/src/components/log/TrainingLogCard';
 import TrainingLogHealthCard from '@/src/components/log/TrainingLogHealthCard';
+import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import {
   RecommendationActionType,
@@ -12,6 +13,7 @@ import {
   buildReadinessTrend,
   buildSessionRecommendation,
   buildSummary,
+  buildWeeklyLoadRisk,
   calculateTrainingLogHealthScore,
   filterAndSortLogs,
   getTrainingLogHealthLabel,
@@ -34,6 +36,7 @@ export default function LogScreen() {
   const healthScore = calculateTrainingLogHealthScore(logs);
   const readinessTrend = buildReadinessTrend(logs);
   const sessionRecommendation = buildSessionRecommendation(logs);
+  const weeklyLoadRisk = buildWeeklyLoadRisk(logs);
 
   function handleRecommendationAction(actionType: RecommendationActionType) {
     if (actionType === 'weak-logs') {
@@ -118,6 +121,8 @@ export default function LogScreen() {
               label={getTrainingLogHealthLabel(healthScore)}
               message={getTrainingLogHealthMessage(healthScore)}
             />
+
+            <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
 
             <ReadinessTrendCard trend={readinessTrend} />
 
