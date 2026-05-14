@@ -17,47 +17,75 @@ export type TrainingLog = {
 const STORAGE_KEY = 'sentinel_training_logs';
 
 export function calculateReadinessPercentage(logs: TrainingLog[]) {
-  const recentLogs = logs.slice(0, 5);
-  const avgScore = recentLogs.length > 0 
-    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+  const recentLogs = [...logs]
+    .sort((a, b) => {
+      const ta = new Date(a.date + 'T00:00:00').getTime();
+      const tb = new Date(b.date + 'T00:00:00').getTime();
+      return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta) || b.id - a.id;
+    })
+    .slice(0, 5);
+  const avgScore = recentLogs.length > 0
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length
     : 0;
   return recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
 }
 
-function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
+function getDaysAgo(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
 }
 
 const starterLogs: TrainingLog[] = [
   {
     id: 1,
-    date: getTodayDate(),
+    date: getDaysAgo(1),
     category: 'Ruck',
     type: 'Loaded Ruck',
     duration: '1 hr 45 min',
     distanceLoad: '12 km - 18 kg',
     readiness: '7',
-    notes: 'Moderate effort. Good pace. Recovery required.',
+    notes: 'Steady tactical pace throughout. Pack sat well. Feet checked at 6 km — no hot spots. Breathing controlled. Recovery needed after.',
   },
   {
     id: 2,
-    date: getTodayDate(),
+    date: getDaysAgo(4),
     category: 'Strength',
-    type: 'Strength Session',
+    type: 'Full Body Strength',
     duration: '55 min',
     distanceLoad: 'Squat - Press - Pull - Hinge',
     readiness: '8',
-    notes: 'Controlled intensity. Solid movement quality.',
+    notes: 'Controlled intensity. Form stayed solid across all movements. Left two reps in reserve on every set. No joint discomfort.',
   },
   {
     id: 3,
-    date: getTodayDate(),
+    date: getDaysAgo(8),
+    category: 'Run',
+    type: 'Steady Run',
+    duration: '35 min',
+    distanceLoad: '5 km',
+    readiness: '7',
+    notes: 'Aerobic pace throughout. Breathing stayed controlled. Calves monitored — no unusual tightness. Finished with energy remaining.',
+  },
+  {
+    id: 4,
+    date: getDaysAgo(11),
+    category: 'Strength',
+    type: 'Full Body Strength',
+    duration: '50 min',
+    distanceLoad: 'Squat - Press - Pull - Hinge',
+    readiness: '6',
+    notes: 'Heavier session than last week. Effort was higher than expected. Form held on squats but press felt fatigued on final set.',
+  },
+  {
+    id: 5,
+    date: getDaysAgo(14),
     category: 'Recovery',
-    type: 'Recovery Work',
+    type: 'Recovery Mobility',
     duration: '25 min',
-    distanceLoad: 'Mobility - Stretching',
+    distanceLoad: 'Hips - Calves - Hamstrings - Shoulders',
     readiness: '5',
-    notes: 'Light recovery session. Hydration focus.',
+    notes: 'Light recovery after heavy week. Hips and calves worked. Stiffness reduced. Hydration and sleep prioritised. Felt better after.',
   },
 ];
 

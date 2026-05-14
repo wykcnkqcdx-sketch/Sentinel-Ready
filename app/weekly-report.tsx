@@ -87,8 +87,9 @@ function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummar
 }
 
 export default function WeeklyReportScreen() {
-  const { logs } = useTraining();
+  const { logs, isLoading } = useTraining();
   const router = useRouter();
+  if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const lastWeek = buildWeekSummary(logs, 1);
