@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { TrainingProvider } from '@/src/screens/TrainingContext';
 
 export default function RootLayout() {
   return (
-    <>
+    <TrainingProvider>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -16,6 +17,6 @@ export default function RootLayout() {
       </Stack>
 
       <StatusBar style="light" />
-    </>
+    </TrainingProvider>
   );
 }

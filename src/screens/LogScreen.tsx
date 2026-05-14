@@ -1,4 +1,4 @@
-import { TrainingCategory, TrainingLog, useTraining } from '@/src/context/TrainingContext';
+import { TrainingCategory, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 type TrainingFilter = 'All' | TrainingCategory;
@@ -308,7 +308,7 @@ const quickTemplates: QuickTemplate[] = [
     category: 'Test',
     sessionType: 'Fitness Test Prep',
     duration: '40 minutes',
-    distanceLoad: 'Run effort � Press-ups � Sit-ups � Carries',
+    distanceLoad: 'Run effort - Press-ups - Sit-ups - Carries',
     readiness: '8',
     notes: 'Record results clearly. Do not max out if fatigue is high.',
   },
