@@ -1,5 +1,6 @@
 import { TrainingCategory, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 type TrainingFilter = 'All' | TrainingCategory;
 type SortMode = 'Newest' | 'Oldest' | 'Highest Readiness' | 'Lowest Readiness';
@@ -328,6 +329,7 @@ export function calculateTrainingStreak(logs: TrainingLog[]) {
 
 export default function LogScreen() {
   const { logs } = useTraining();
+  const router = useRouter();
 
   const renderLogItem = ({ item }: { item: TrainingLog }) => (
     <View style={styles.logCard}>
@@ -360,6 +362,10 @@ export default function LogScreen() {
           </View>
         }
       />
+
+      <TouchableOpacity style={styles.fab} onPress={() => router.push('/add-log')}>
+        <Text style={styles.fabIcon}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -443,5 +449,26 @@ const styles = StyleSheet.create({
     color: '#91e6a3',
     fontSize: 12,
     fontWeight: '800',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    backgroundColor: '#91e6a3',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  fabIcon: {
+    color: '#07110c',
+    fontSize: 32,
+    fontWeight: '400',
   },
 });
