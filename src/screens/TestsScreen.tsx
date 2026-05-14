@@ -1,104 +1,177 @@
-﻿import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
+import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { buildReadinessTrend, getDateValue } from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+function groupByType(testLogs: TrainingLog[]): Record<string, TrainingLog[]> {
+  return testLogs.reduce<Record<string, TrainingLog[]>>((acc, log) => {
+    const key = log.type.trim();
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(log);
+    return acc;
+  }, {});
+}
+
+function daysSince(dateStr: string): number {
+  const then = new Date(dateStr + 'T00:00:00').getTime();
+  const now = new Date().setHours(0, 0, 0, 0);
+  return Math.floor((now - then) / 86400000);
+}
 
 export default function TestsScreen() {
   const { logs } = useTraining();
-  const testLogs = logs.filter((log) => log.category === 'Test');
-  const readinessPercentage = calculateReadinessPercentage(logs);
 
-  let heroScore = 'GREEN';
-  let heroScoreColor = '#ffffff';
-  let heroText = 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.';
+  const testLogs = [...logs.filter((log) => log.category === 'Test')]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
+
+  const readinessPercentage = calculateReadinessPercentage(logs);
+  const trend = buildReadinessTrend(logs);
+
+  const grouped = groupByType(testLogs);
+  const testTypes = Object.keys(grouped);
+
+  const lastTestDate = testLogs[0]?.date ?? null;
+  const daysSinceLast = lastTestDate ? daysSince(lastTestDate) : null;
+
+  let readinessLabel = 'GREEN';
+  let readinessColor = '#91e6a3';
+  let readinessMessage = 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.';
 
   if (readinessPercentage > 0 && readinessPercentage < 60) {
-    heroScore = 'RED';
-    heroScoreColor = '#ffbfbf';
-    heroText = 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery.';
+    readinessLabel = 'RED';
+    readinessColor = '#ffb86b';
+    readinessMessage = 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.';
   } else if (readinessPercentage >= 60 && readinessPercentage < 80) {
-    heroScore = 'AMBER';
-    heroScoreColor = '#ffdfbf';
-    heroText = 'Trainable, but not optimal for max-effort testing. Proceed with caution.';
+    readinessLabel = 'AMBER';
+    readinessColor = '#f3d36b';
+    readinessMessage = 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.';
   } else if (readinessPercentage === 0) {
-    heroScore = 'NO DATA';
-    heroText = 'Log sessions to determine your testing readiness.';
+    readinessLabel = 'NO DATA';
+    readinessColor = '#8fbf8f';
+    readinessMessage = 'Log sessions with readiness scores to determine your testing readiness.';
   }
+
+  const isReadyToTest = readinessPercentage >= 80;
+  const heroCardStyle = isReadyToTest ? styles.heroCardGood : readinessPercentage > 0 && readinessPercentage < 60 ? styles.heroCardWarn : styles.heroCard;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>TESTING</Text>
+      <Text style={styles.kicker}>SENTINEL READY</Text>
       <Text style={styles.title}>Fitness Test Centre</Text>
       <Text style={styles.subtitle}>
-        Track operational fitness standards across running, strength endurance, loaded movement and recovery risk.
+        Track test results, monitor readiness for assessment and review performance history by test type.
       </Text>
 
-      <View style={styles.heroCard}>
-        <View>
-          <Text style={styles.heroLabel}>Current Test Readiness</Text>
-          <Text style={[styles.heroScore, { color: heroScoreColor }]}>{heroScore}</Text>
-          <Text style={styles.heroText}>
-            {heroText}
-          </Text>
+      <View style={heroCardStyle}>
+        <View style={styles.heroRow}>
+          <View style={styles.heroLeft}>
+            <Text style={styles.heroLabel}>TEST READINESS</Text>
+            <Text style={[styles.heroScore, { color: readinessColor }]}>{readinessLabel}</Text>
+            <Text style={styles.heroMessage}>{readinessMessage}</Text>
+          </View>
+
+          <View style={styles.heroStats}>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroStatNumber}>{testLogs.length}</Text>
+              <Text style={styles.heroStatLabel}>Tests</Text>
+            </View>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroStatNumber}>
+                {daysSinceLast !== null ? `${daysSinceLast}d` : '--'}
+              </Text>
+              <Text style={styles.heroStatLabel}>Since last</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.scoreBox}>
-          <Text style={styles.scoreNumber}>{testLogs.length}</Text>
-          <Text style={styles.scoreLabel}>Tests</Text>
-        </View>
+        {trend.status !== 'neutral' ? (
+          <View style={styles.trendRow}>
+            <Text style={trend.status === 'warning' ? styles.trendTextWarn : styles.trendTextGood}>
+              Readiness trend: {trend.label} — Latest {trend.latest}/10, Previous {trend.previous}/10
+            </Text>
+          </View>
+        ) : null}
       </View>
 
+      {daysSinceLast !== null && daysSinceLast > 21 ? (
+        <View style={styles.alertCard}>
+          <Text style={styles.alertTitle}>No test logged in {daysSinceLast} days</Text>
+          <Text style={styles.alertText}>
+            Regular testing keeps performance data accurate. Log a test session when readiness is above 80%.
+          </Text>
+        </View>
+      ) : null}
+
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Assessment Battery</Text>
-        <Text style={styles.sectionTag}>ACTIVE</Text>
+        <Text style={styles.sectionTitle}>Test History</Text>
+        <Text style={styles.sectionTag}>{testLogs.length} TOTAL</Text>
       </View>
 
       {testLogs.length === 0 ? (
-        <View style={styles.testCard}>
-          <Text style={styles.testName}>No Tests Logged</Text>
-          <Text style={styles.note}>Log a session with the 'Test' category to see your results here.</Text>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>No tests logged yet</Text>
+          <Text style={styles.emptyText}>
+            Log a session with the Test category to start tracking performance history and results.
+          </Text>
         </View>
       ) : (
-        testLogs.map((log) => {
-          const score = Number(log.readiness) || 0;
-          let status = 'Develop';
-          if (score >= 8) status = 'Pass';
-          else if (score >= 6) status = 'Ready';
+        testTypes.map((type) => {
+          const typeLogs = grouped[type];
+          const latest = typeLogs[0];
+          const previous = typeLogs[1] ?? null;
+          const latestReadiness = Number(latest.readiness);
+          const prevReadiness = previous ? Number(previous.readiness) : null;
+          const readinessDelta = prevReadiness !== null ? latestReadiness - prevReadiness : null;
 
           return (
-            <View key={log.id} style={styles.testCard}>
-              <View style={styles.testTop}>
-                <View style={styles.testNameBlock}>
-                  <Text style={styles.testName}>{log.type}</Text>
-                  <Text style={styles.testStandard}>{log.date}</Text>
+            <View key={type} style={styles.testTypeCard}>
+              <View style={styles.testTypeHeader}>
+                <View style={styles.testTypeLeft}>
+                  <Text style={styles.testTypeName}>{type}</Text>
+                  <Text style={styles.testTypeCount}>{typeLogs.length} {typeLogs.length === 1 ? 'result' : 'results'}</Text>
                 </View>
-
-                <View style={styles.resultBlock}>
-                  <Text style={styles.resultScore}>{log.distanceLoad}</Text>
-                  <Text
-                    style={[
-                      styles.resultStatus,
-                      status === 'Develop' && styles.warningStatus,
-                    ]}
-                  >
-                    {status}
-                  </Text>
+                <View style={styles.testTypeRight}>
+                  <Text style={styles.testTypeReadiness}>{latest.readiness}/10</Text>
+                  {readinessDelta !== null ? (
+                    <Text style={readinessDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
+                      {readinessDelta > 0 ? '+' : ''}{readinessDelta} vs prev
+                    </Text>
+                  ) : null}
                 </View>
               </View>
 
-              <Text style={styles.note}>{log.notes}</Text>
+              <View style={styles.testResultRow}>
+                <View style={styles.testResultBox}>
+                  <Text style={styles.testResultLabel}>LATEST RESULT</Text>
+                  <Text style={styles.testResultValue}>{latest.distanceLoad}</Text>
+                  <Text style={styles.testResultDate}>{latest.date}</Text>
+                </View>
+
+                {previous ? (
+                  <View style={styles.testResultBox}>
+                    <Text style={styles.testResultLabel}>PREVIOUS</Text>
+                    <Text style={styles.testResultValueDim}>{previous.distanceLoad}</Text>
+                    <Text style={styles.testResultDate}>{previous.date}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {latest.notes ? (
+                <Text style={styles.testNote}>{latest.notes}</Text>
+              ) : null}
             </View>
           );
         })
       )}
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Testing Guidance</Text>
-        <Text style={styles.sectionTag}>RULES</Text>
+        <Text style={styles.sectionTitle}>Testing Rules</Text>
+        <Text style={styles.sectionTag}>GUIDANCE</Text>
       </View>
 
       <View style={styles.guidanceCard}>
         <Text style={styles.guidanceTitle}>Test fresh, not wrecked.</Text>
         <Text style={styles.guidanceText}>
-          Complete hard training at least 24–48 hours before a formal test. Fatigue can hide true performance.
+          Complete hard training at least 24–48 hours before a formal test. Fatigue hides true performance.
         </Text>
       </View>
 
@@ -108,172 +181,71 @@ export default function TestsScreen() {
           Note surface, weather, footwear, load weight and sleep quality so future scores can be compared fairly.
         </Text>
       </View>
+
+      <View style={styles.guidanceCard}>
+        <Text style={styles.guidanceTitle}>Readiness above 80% before max effort.</Text>
+        <Text style={styles.guidanceText}>
+          If readiness is below 80%, delay formal testing. A sub-optimal result under fatigue is not a true baseline.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#07110c',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 120,
-    gap: 16,
-  },
-  kicker: {
-    color: '#8fe89b',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 3,
-  },
-  title: {
-    color: '#f4f7f1',
-    fontSize: 30,
-    fontWeight: '900',
-  },
-  subtitle: {
-    color: '#c6d0c2',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  heroCard: {
-    backgroundColor: '#102018',
-    borderRadius: 24,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: '#2d6b3b',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  heroLabel: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '900',
-  },
-  heroScore: {
-    color: '#ffffff',
-    fontSize: 42,
-    fontWeight: '900',
-    marginTop: 12,
-  },
-  heroText: {
-    color: '#c6d0c2',
-    marginTop: 8,
-    lineHeight: 21,
-    maxWidth: 650,
-  },
-  scoreBox: {
-    width: 82,
-    height: 82,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#69df7b',
-    backgroundColor: '#123d22',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scoreNumber: {
-    color: '#ffffff',
-    fontSize: 30,
-    fontWeight: '900',
-  },
-  scoreLabel: {
-    color: '#b9ffc0',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  sectionHeader: {
-    marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    color: '#ffffff',
-    fontSize: 23,
-    fontWeight: '900',
-  },
-  sectionTag: {
-    color: '#9ee8a5',
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 2,
-    borderWidth: 1,
-    borderColor: '#264c32',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  testCard: {
-    backgroundColor: '#0e1812',
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#26382c',
-  },
-  testTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 14,
-  },
-  testNameBlock: {
-    flex: 1,
-  },
-  testName: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  testStandard: {
-    color: '#8fe89b',
-    fontSize: 12,
-    fontWeight: '800',
-    marginTop: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  resultBlock: {
-    alignItems: 'flex-end',
-  },
-  resultScore: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  resultStatus: {
-    color: '#aaffb1',
-    fontSize: 12,
-    fontWeight: '900',
-    marginTop: 6,
-  },
-  warningStatus: {
-    color: '#f3d36b',
-  },
-  note: {
-    color: '#c6d0c2',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 14,
-  },
-  guidanceCard: {
-    backgroundColor: '#111a10',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#31411f',
-  },
-  guidanceTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '900',
-  },
-  guidanceText: {
-    color: '#c6d0c2',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8,
-  },
+  screen: { flex: 1, backgroundColor: '#07110c' },
+  content: { padding: 20, paddingBottom: 120, gap: 14 },
+  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#f4f7f1', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#c6d0c2', fontSize: 15, lineHeight: 22 },
+
+  heroCard: { backgroundColor: '#102018', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
+  heroCardGood: { backgroundColor: '#0d1812', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2f6b3c', gap: 10 },
+  heroCardWarn: { backgroundColor: '#21140b', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#7a4a1f', gap: 10 },
+  heroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 },
+  heroLeft: { flex: 1, gap: 6 },
+  heroLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  heroScore: { fontSize: 36, fontWeight: '900' },
+  heroMessage: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
+  heroStats: { gap: 12, alignItems: 'flex-end' },
+  heroStat: { alignItems: 'center' },
+  heroStatNumber: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  heroStatLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800' },
+  trendRow: { borderTopWidth: 1, borderTopColor: '#203529', paddingTop: 10 },
+  trendTextGood: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  trendTextWarn: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+
+  alertCard: { backgroundColor: '#1c1408', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#6b5020', gap: 6 },
+  alertTitle: { color: '#f0c070', fontSize: 14, fontWeight: '900' },
+  alertText: { color: '#c8a070', fontSize: 13, lineHeight: 19 },
+
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  sectionTag: { color: '#9ee8a5', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#264c32', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+
+  emptyCard: { backgroundColor: '#0e1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#26382c', gap: 8 },
+  emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  emptyText: { color: '#aeb8aa', fontSize: 14, lineHeight: 21 },
+
+  testTypeCard: { backgroundColor: '#0e1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#26382c', gap: 12 },
+  testTypeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  testTypeLeft: { flex: 1, gap: 3 },
+  testTypeName: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  testTypeCount: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
+  testTypeRight: { alignItems: 'flex-end', gap: 4 },
+  testTypeReadiness: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  deltaGood: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  deltaWarn: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+
+  testResultRow: { flexDirection: 'row', gap: 10 },
+  testResultBox: { flex: 1, backgroundColor: '#07110c', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#1e2e22', gap: 4 },
+  testResultLabel: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  testResultValue: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  testResultValueDim: { color: '#aeb8aa', fontSize: 15, fontWeight: '800' },
+  testResultDate: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
+  testNote: { color: '#c4cec0', fontSize: 13, lineHeight: 19 },
+
+  guidanceCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 6 },
+  guidanceTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  guidanceText: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
 });
