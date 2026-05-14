@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import AlertCard from '@/src/components/ui/AlertCard';
 
 const weekPlan = [
   {
@@ -73,12 +74,11 @@ export default function PlanScreen() {
         </View>
       ))}
 
-      <View style={styles.noteCard}>
-        <Text style={styles.noteTitle}>Programming Rule</Text>
-        <Text style={styles.noteText}>
-          If readiness drops below 70%, reduce load, distance or intensity by 20-30% and prioritise recovery.
-        </Text>
-      </View>
+      <AlertCard 
+        type="info"
+        title="Programming Rule"
+        description="If readiness drops below 70%, reduce load, distance or intensity by 20-30% and prioritise recovery."
+      />
     </ScrollView>
   );
 }
@@ -161,23 +161,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     marginTop: 5,
-  },
-  noteCard: {
-    backgroundColor: '#171509',
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#4b4523',
-  },
-  noteTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  noteText: {
-    color: '#d7dfc9',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8,
   },
 });

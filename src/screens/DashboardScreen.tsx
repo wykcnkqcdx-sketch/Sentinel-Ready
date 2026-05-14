@@ -1,3 +1,4 @@
+import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -88,19 +89,17 @@ export default function DashboardScreen() {
           <Text style={styles.sectionTag}>WATCH</Text>
         </View>
 
-        <View style={styles.alertCard}>
-          <Text style={styles.alertTitle}>Recovery requires attention</Text>
-          <Text style={styles.alertText}>
-            Keep the next session controlled if sleep, soreness or resting fatigue worsens.
-          </Text>
-        </View>
+        <AlertCard 
+          type="alert"
+          title="Recovery requires attention"
+          description="Keep the next session controlled if sleep, soreness or resting fatigue worsens."
+        />
 
-        <View style={styles.alertCard}>
-          <Text style={styles.alertTitle}>Ruck progression available</Text>
-          <Text style={styles.alertText}>
-            Increase distance or load only if the previous ruck was completed without pain.
-          </Text>
-        </View>
+        <AlertCard 
+          type="alert"
+          title="Ruck progression available"
+          description="Increase distance or load only if the previous ruck was completed without pain."
+        />
       </View>
     </ScrollView>
   );
@@ -259,23 +258,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     marginTop: 8,
-  },
-  alertCard: {
-    backgroundColor: '#12180d',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#394323',
-  },
-  alertTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '900',
-  },
-  alertText: {
-    color: '#b8bfae',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 6,
   },
 });

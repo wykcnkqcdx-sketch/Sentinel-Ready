@@ -1,3 +1,4 @@
+import AlertCard from '@/src/components/ui/AlertCard';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const sessions = [
@@ -101,12 +102,11 @@ export default function TrainingScreen() {
         </View>
       ))}
 
-      <View style={styles.warningCard}>
-        <Text style={styles.warningTitle}>Training Rule</Text>
-        <Text style={styles.warningText}>
-          Do not increase distance, load and intensity in the same week. Progress one variable at a time.
-        </Text>
-      </View>
+      <AlertCard 
+        type="warning"
+        title="Training Rule"
+        description="Do not increase distance, load and intensity in the same week. Progress one variable at a time."
+      />
     </ScrollView>
   );
 }
@@ -293,23 +293,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 12,
     fontWeight: '800',
-  },
-  warningCard: {
-    backgroundColor: '#12190a',
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#4b5423',
-  },
-  warningTitle: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '900',
-  },
-  warningText: {
-    color: '#d7dfc9',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8,
   },
 });

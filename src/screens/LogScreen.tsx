@@ -1,4 +1,4 @@
-import { ScrollView, Text } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 type TrainingCategory = 'Ruck' | 'Strength' | 'Run' | 'Mobility' | 'Test' | 'Recovery';
 type TrainingFilter = 'All' | TrainingCategory;
@@ -376,9 +376,119 @@ export function calculateTrainingStreak(logs: TrainingLog[]) {
 }
 
 export default function LogScreen() {
+  const renderLogItem = ({ item }: { item: TrainingLog }) => (
+    <View style={styles.logCard}>
+      <View style={styles.logHeader}>
+        <Text style={styles.logCategory}>{item.category}</Text>
+        <Text style={styles.logDate}>{item.date}</Text>
+      </View>
+      
+      <Text style={styles.logTitle}>{item.type}</Text>
+      <Text style={styles.logDetail}>{item.distanceLoad} • {item.duration}</Text>
+      <Text style={styles.logNotes}>{item.notes}</Text>
+      
+      <View style={styles.readinessBadge}>
+        <Text style={styles.readinessText}>Readiness: {item.readiness}/10</Text>
+      </View>
+    </View>
+  );
+
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#07110c' }}>
-      <Text style={{ color: '#fff', padding: 20 }}>Log Screen Content Placeholder</Text>
-    </ScrollView>
+    <View style={styles.screen}>
+      <FlatList
+        data={starterLogs}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderLogItem}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.title}>Training Logs</Text>
+            <Text style={styles.subtitle}>Review your past sessions and track readiness.</Text>
+          </View>
+        }
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#07110c',
+  },
+  listContent: {
+    padding: 20,
+    paddingBottom: 100,
+    gap: 16,
+  },
+  header: {
+    marginBottom: 8,
+  },
+  title: {
+    color: '#f4f7f0',
+    fontSize: 30,
+    fontWeight: '900',
+  },
+  subtitle: {
+    color: '#c4cec0',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 8,
+  },
+  logCard: {
+    backgroundColor: '#0d1812',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#203529',
+  },
+  logHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  logCategory: {
+    color: '#91e6a3',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  logDate: {
+    color: '#8fbf8f',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  logTitle: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  logDetail: {
+    color: '#aeb8aa',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  logNotes: {
+    color: '#c4cec0',
+    fontSize: 14,
+    lineHeight: 21,
+    marginTop: 10,
+  },
+  readinessBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#102016',
+    borderWidth: 1,
+    borderColor: '#2d6b3f',
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginTop: 14,
+  },
+  readinessText: {
+    color: '#91e6a3',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+});
