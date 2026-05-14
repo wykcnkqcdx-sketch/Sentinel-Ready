@@ -1,7 +1,8 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import AlertCard from '@/src/components/ui/AlertCard';
+import { useTraining } from '@/src/screens/TrainingContext';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-const weekPlan = [
+const baseWeekPlan = [
   {
     day: 'Monday',
     focus: 'Strength',
@@ -47,6 +48,39 @@ const weekPlan = [
 ];
 
 export default function PlanScreen() {
+  const { logs } = useTraining();
+
+  // Calculate Readiness
+  const recentLogs = logs.slice(0, 5);
+  const avgScore = recentLogs.length > 0 
+    ? recentLogs.reduce((sum, log) => sum + (Number(log.readiness) || 0), 0) / recentLogs.length 
+    : 0;
+  const readinessPercentage = recentLogs.length > 0 ? Math.round((avgScore / 10) * 100) : 0;
+
+  const isFatigued = readinessPercentage > 0 && readinessPercentage < 70;
+
+  const dynamicWeekPlan = baseWeekPlan.map((item) => {
+    if (isFatigued) {
+      let newIntensity = item.intensity;
+      let newSession = item.session;
+
+      if (item.intensity.includes('High') || item.intensity.includes('Heavy')) {
+        newIntensity = 'Moderate';
+        newSession += ' (Reduce load/volume by 20-30%)';
+      } else if (item.intensity === 'Moderate') {
+        newIntensity = 'Low';
+        newSession += ' (Keep effort conversational. Stop before fatigue sets in.)';
+      }
+
+      return {
+        ...item,
+        intensity: newIntensity,
+        session: newSession,
+      };
+    }
+    return item;
+  });
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>TRAINING PLAN</Text>
@@ -55,18 +89,22 @@ export default function PlanScreen() {
         A balanced weekly structure for strength, ruck performance, conditioning, running and recovery.
       </Text>
 
-      <View style={styles.commandCard}>
-        <Text style={styles.commandTitle}>Current Objective</Text>
+      <View style={[styles.commandCard, isFatigued && styles.commandCardWarning]}>
+        <Text style={styles.commandTitle}>{isFatigued ? 'Recovery Priority Active' : 'Current Objective'}</Text>
         <Text style={styles.commandText}>
-          Build operational readiness without overloading the body. Keep hard days hard, easy days easy, and track fatigue.
+          {isFatigued 
+            ? 'Readiness is below 70%. The plan below has been automatically de-loaded. Reduce load and intensity, and prioritise recovery.'
+            : 'Build operational readiness without overloading the body. Keep hard days hard, easy days easy, and track fatigue.'}
         </Text>
       </View>
 
-      {weekPlan.map((item) => (
+      {dynamicWeekPlan.map((item) => (
         <View key={item.day} style={styles.dayCard}>
           <View style={styles.dayHeader}>
             <Text style={styles.day}>{item.day}</Text>
-            <Text style={styles.intensity}>{item.intensity}</Text>
+            <Text style={[styles.intensity, isFatigued && item.intensity !== 'Low' && styles.intensityWarning]}>
+              {item.intensity}
+            </Text>
           </View>
 
           <Text style={styles.focus}>{item.focus}</Text>
@@ -74,11 +112,19 @@ export default function PlanScreen() {
         </View>
       ))}
 
-      <AlertCard 
-        type="info"
-        title="Programming Rule"
-        description="If readiness drops below 70%, reduce load, distance or intensity by 20-30% and prioritise recovery."
-      />
+      {!isFatigued ? (
+        <AlertCard 
+          type="info"
+          title="Programming Rule"
+          description="If readiness drops below 70%, reduce load, distance or intensity by 20-30% and prioritise recovery."
+        />
+      ) : (
+        <AlertCard 
+          type="warning"
+          title="Plan Adjusted"
+          description="Your plan has been automatically de-loaded to accommodate for your current fatigue levels."
+        />
+      )}
     </ScrollView>
   );
 }
@@ -116,6 +162,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2d6b3f',
   },
+  commandCardWarning: {
+    backgroundColor: '#1a160d',
+    borderColor: '#4a3a1d',
+  },
   commandTitle: {
     color: '#ffffff',
     fontSize: 20,
@@ -149,6 +199,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
     textTransform: 'uppercase',
+  },
+  intensityWarning: {
+    color: '#f3d36b',
   },
   focus: {
     color: '#91e6a3',
