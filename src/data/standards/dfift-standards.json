@@ -1,0 +1,29 @@
+{
+  "name": "Defence Forces Induction Fitness Test",
+  "shortName": "DFIFT",
+  "status": "public-reference-required",
+  "note": "Verify against current official Defence Forces recruitment guidance before public release.",
+  "events": {
+    "pushUps": {
+      "male": 20,
+      "female": 20,
+      "unit": "reps",
+      "timeLimitSeconds": 60
+    },
+    "sitUps": {
+      "male": 20,
+      "female": 20,
+      "unit": "reps",
+      "timeLimitSeconds": 60
+    },
+    "run": {
+      "distanceKm": 2.4,
+      "maleMaxSeconds": 700,
+      "femaleMaxSeconds": 790
+    },
+    "skinfold": {
+      "maleMaxMm": 70,
+      "femaleMaxMm": 80
+    }
+  }
+}
