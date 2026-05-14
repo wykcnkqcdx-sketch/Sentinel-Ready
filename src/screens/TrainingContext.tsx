@@ -86,6 +86,24 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     loadLogs();
   }, []);
 
+  const updateLog = async (id: number, updatedLogData: Omit<TrainingLog, 'id'>) => {
+    try {
+      const updatedLogs = logs.map((log) =>
+        log.id === id
+          ? {
+              ...updatedLogData,
+              id,
+            }
+          : log
+      );
+
+      setLogs(updatedLogs);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+    } catch (error) {
+      console.error('Failed to update log', error);
+    }
+  };
+
   const deleteLog = async (id: number) => {
     try {
       const updatedLogs = logs.filter((log) => log.id !== id);
@@ -112,7 +130,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <TrainingContext.Provider value={{ logs, addLog, deleteLog, isLoading }}>
+    <TrainingContext.Provider value={{ logs, addLog, deleteLog, updateLog, isLoading }}>
       {children}
     </TrainingContext.Provider>
   );
@@ -125,3 +143,4 @@ export function useTraining() {
   }
   return context;
 }
+

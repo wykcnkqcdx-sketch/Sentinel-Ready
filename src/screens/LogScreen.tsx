@@ -115,9 +115,15 @@ export default function LogScreen() {
             {getReadinessLabel(item.readiness)}
           </Text>
 
-          <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDeleteLog(item)}>
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </TouchableOpacity>
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.editButton} onPress={() => router.push(/edit-log/)}>
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDeleteLog(item)}>
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -432,6 +438,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
   },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  editButton: {
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+  },
+  editButtonText: {
+    color: '#91e6a3',
+    fontSize: 12,
+    fontWeight: '900',
+  },
   deleteButton: {
     borderWidth: 1,
     borderColor: '#7a4a1f',
@@ -497,4 +520,5 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 });
+
 
