@@ -1,6 +1,10 @@
 import dfift from '@/src/data/standards/dfift-standards.json';
+import type { DfiftStandards } from '@/src/types/dfift';
 import { useUser } from '@/src/screens/UserContext';
+import { useTraining } from '@/src/screens/TrainingContext';
+import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -10,9 +14,14 @@ function formatSeconds(s: number): string {
 
 export default function ProfileScreen() {
   const { gender, testDate, age, role, trainingLevel, equipment, injuryNotes, setGender, setTestDate, updateProfile } = useUser();
+  const { logs, goals } = useTraining();
   const router = useRouter();
   const [dateInput, setDateInput] = useState(testDate ?? '');
   const [dateError, setDateError] = useState(false);
+  const dfiftStandards = dfift as DfiftStandards;
+  const milestones = useMemo(() => buildMilestones(logs, goals, { standards: dfiftStandards, gender }), [logs, goals, gender]);
+  const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
+  const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
 
   function handleSaveDate() {
     const trimmed = dateInput.trim();
@@ -182,6 +191,24 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.infoFootnote}>Verify against current official Defence Forces guidance before assessment.</Text>
       </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardKicker}>MILESTONES</Text>
+        <Text style={styles.milestoneScore}>{earnedMilestones.length} / {milestones.length} earned</Text>
+        {nextMilestone ? (
+          <Text style={styles.cardLabel}>Next: {nextMilestone.title} · {nextMilestone.progress}%</Text>
+        ) : (
+          <Text style={styles.cardLabel}>All current milestones earned.</Text>
+        )}
+        <View style={styles.milestoneGrid}>
+          {milestones.map((milestone) => (
+            <View key={milestone.id} style={milestone.earned ? styles.milestoneItemEarned : styles.milestoneItem}>
+              <Text style={milestone.earned ? styles.milestoneTitleEarned : styles.milestoneTitle}>{milestone.title}</Text>
+              <Text style={styles.milestoneDescription}>{milestone.description}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -228,4 +255,11 @@ const styles = StyleSheet.create({
   infoLabel: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
   infoValue: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   infoFootnote: { color: '#4a5e4a', fontSize: 11, lineHeight: 16, marginTop: 4 },
+  milestoneScore: { color: '#ffffff', fontSize: 26, fontWeight: '900' },
+  milestoneGrid: { gap: 8 },
+  milestoneItem: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
+  milestoneItemEarned: { backgroundColor: '#102d1a', borderRadius: 12, borderWidth: 1, borderColor: '#2f6b3c', padding: 12, gap: 3 },
+  milestoneTitle: { color: '#dfe8da', fontSize: 13, fontWeight: '900' },
+  milestoneTitleEarned: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+  milestoneDescription: { color: '#8fbf8f', fontSize: 12, lineHeight: 17 },
 });

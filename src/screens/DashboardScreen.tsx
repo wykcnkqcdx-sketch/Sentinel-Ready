@@ -9,6 +9,7 @@ import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildTrainingInsights } from '@/src/utils/insightUtils';
+import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -71,6 +72,9 @@ export default function DashboardScreen() {
   const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const forecast = useMemo(() => buildReadinessForecast(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
+  const milestones = useMemo(() => buildMilestones(logs, goals), [logs, goals]);
+  const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
+  const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -240,6 +244,30 @@ export default function DashboardScreen() {
             <Text style={styles.insightText}>{insight.message}</Text>
           </View>
         ))}
+      </SentinelCard>
+
+      <SentinelCard title="Milestones">
+        <View style={styles.milestoneHeader}>
+          <View>
+            <Text style={styles.milestoneCount}>{earnedMilestones.length} / {milestones.length}</Text>
+            <Text style={styles.cardText}>Milestones earned</Text>
+          </View>
+          {nextMilestone ? (
+            <View style={styles.milestoneNext}>
+              <Text style={styles.milestoneNextLabel}>NEXT</Text>
+              <Text style={styles.milestoneNextTitle}>{nextMilestone.title}</Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.milestoneRow}>
+          {milestones.slice(0, 4).map((milestone) => (
+            <View key={milestone.id} style={milestone.earned ? styles.milestonePillEarned : styles.milestonePill}>
+              <Text style={milestone.earned ? styles.milestonePillTextEarned : styles.milestonePillText}>
+                {milestone.title}
+              </Text>
+            </View>
+          ))}
+        </View>
       </SentinelCard>
 
       <SentinelCard title="Performance Snapshot">
@@ -497,6 +525,16 @@ const styles = StyleSheet.create({
   insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
   insightTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
   insightText: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
+  milestoneCount: { color: '#ffffff', fontSize: 28, fontWeight: '900' },
+  milestoneNext: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 10, maxWidth: '48%' },
+  milestoneNextLabel: { color: '#91e6a3', fontSize: 10, fontWeight: '900' },
+  milestoneNextTitle: { color: '#dfe8da', fontSize: 12, fontWeight: '900', marginTop: 2 },
+  milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  milestonePill: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
+  milestonePillEarned: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
+  milestonePillText: { color: '#8fbf8f', fontSize: 11, fontWeight: '900' },
+  milestonePillTextEarned: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },

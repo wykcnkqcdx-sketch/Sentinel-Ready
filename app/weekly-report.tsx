@@ -7,6 +7,7 @@ import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildTrainingInsights } from '@/src/utils/insightUtils';
+import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
@@ -123,6 +124,9 @@ export default function WeeklyReportScreen() {
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes });
   const forecast = buildReadinessForecast(logs, goals, { injuryNotes });
   const insights = buildTrainingInsights(logs);
+  const milestones = buildMilestones(logs, goals, { standards: dfiftStandards, gender });
+  const earnedMilestones = getEarnedMilestones(milestones);
+  const nextMilestone = getNextMilestone(milestones);
   const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
@@ -211,6 +215,14 @@ export default function WeeklyReportScreen() {
         {insights.slice(0, 3).map((insight) => (
           <Text key={insight.title} style={styles.goalAction}>{insight.title}: {insight.message}</Text>
         ))}
+      </View>
+
+      <View style={styles.performanceCard}>
+        <Text style={styles.cardKicker}>MILESTONES</Text>
+        <Text style={styles.goalTitle}>{earnedMilestones.length} / {milestones.length} earned</Text>
+        <Text style={styles.goalAction}>
+          {nextMilestone ? `Next: ${nextMilestone.title} (${nextMilestone.progress}%)` : 'All current milestones earned.'}
+        </Text>
       </View>
 
       <View style={styles.goalCard}>
