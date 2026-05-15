@@ -16,6 +16,9 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    mapRoute: '#FF6B35',     // High-visibility orange for ruck routes
+    mapMarker: '#0a7ea4',    // Standard marker color
+    mapBackground: '#E5E5EA',
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +27,9 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    mapRoute: '#FF8A5B',     // Lighter orange for dark mode contrast
+    mapMarker: '#4A90E2',
+    mapBackground: '#2A2A2A',
   },
 };
 
