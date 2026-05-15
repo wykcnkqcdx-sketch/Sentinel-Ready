@@ -6,21 +6,37 @@ export type Gender = 'M' | 'F';
 type UserProfile = {
   gender: Gender;
   testDate: string | null;
+  age: string;
+  role: string;
+  trainingLevel: 'Foundation' | 'Intermediate' | 'Advanced';
+  equipment: string;
+  injuryNotes: string;
 };
 
 type UserContextType = UserProfile & {
   setGender: (g: Gender) => void;
   setTestDate: (d: string | null) => void;
+  updateProfile: (updates: Partial<UserProfile>) => void;
   isLoaded: boolean;
+};
+
+const defaultProfile: UserProfile = {
+  gender: 'M',
+  testDate: null,
+  age: '',
+  role: 'General readiness',
+  trainingLevel: 'Intermediate',
+  equipment: 'Ruck, running shoes, basic gym access',
+  injuryNotes: '',
 };
 
 const STORAGE_KEY = 'sentinel_user_profile';
 
 const UserContext = createContext<UserContextType>({
-  gender: 'M',
-  testDate: null,
+  ...defaultProfile,
   setGender: () => {},
   setTestDate: () => {},
+  updateProfile: () => {},
   isLoaded: false,
 });
 
@@ -33,13 +49,17 @@ export function useUser() {
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [profile, setProfile] = useState<UserProfile>({ gender: 'M', testDate: null });
+  const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
       if (raw) {
-        try { setProfile(JSON.parse(raw)); } catch (e) { console.error('UserContext: failed to parse stored profile', e); }
+        try {
+          setProfile({ ...defaultProfile, ...JSON.parse(raw) });
+        } catch (e) {
+          console.error('UserContext: failed to parse stored profile', e);
+        }
       }
       setIsLoaded(true);
     });
@@ -57,6 +77,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       ...profile,
       setGender: (gender) => save({ ...profile, gender }),
       setTestDate: (testDate) => save({ ...profile, testDate }),
+      updateProfile: (updates) => save({ ...profile, ...updates }),
       isLoaded,
     }}>
       {children}

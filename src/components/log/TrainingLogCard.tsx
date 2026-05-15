@@ -5,10 +5,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 type Props = {
   log: TrainingLog;
   onEdit: (id: number) => void;
+  onDuplicate: (id: number) => void;
   onDelete: (log: TrainingLog) => void;
 };
 
-export default function TrainingLogCard({ log, onEdit, onDelete }: Props) {
+export default function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: Props) {
   const fatigueWatch = isFatigueWatch(log.readiness);
   const weakLog = logNeedsImprovement(log);
   const weakReasons = getWeakLogReasons(log);
@@ -55,6 +56,10 @@ export default function TrainingLogCard({ log, onEdit, onDelete }: Props) {
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.editButton} onPress={() => onEdit(log.id)}>
             <Text style={styles.editButtonText}>Edit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.editButton} onPress={() => onDuplicate(log.id)}>
+            <Text style={styles.editButtonText}>Duplicate</Text>
           </TouchableOpacity>
 
           {weakLog ? (

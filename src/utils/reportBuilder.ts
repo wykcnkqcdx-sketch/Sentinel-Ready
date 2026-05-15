@@ -1,5 +1,6 @@
-import type { TrainingLog } from '@/src/screens/TrainingContext';
+import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import {
+  buildGoalSummary,
   buildReadinessTrend,
   buildSessionRecommendation,
   buildSummary,
@@ -39,7 +40,7 @@ function buildKeyNotes(logs: TrainingLog[]): string[] {
     .map((log) => `${log.date} ${log.category}: ${sanitiseField(log.notes)}`);
 }
 
-export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date()): WeeklyReport {
+export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), goals: TrainingGoal[] = []): WeeklyReport {
   const thisWeek = buildWeekSummary(logs, 0);
   const summary = buildSummary(logs);
   const healthScore = calculateTrainingLogHealthScore(logs);
@@ -47,6 +48,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date()): 
   const readinessTrend = buildReadinessTrend(logs);
   const weeklyLoadRisk = buildWeeklyLoadRisk(logs, now);
   const recommendation = buildSessionRecommendation(logs);
+  const goalSummary = buildGoalSummary(goals);
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -65,6 +67,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date()): 
     `Readiness Trend: ${readinessTrend.label} (${readinessTrend.latest}/10 latest, ${readinessTrend.previous}/10 previous)`,
     `Weekly Load Risk: ${weeklyLoadRisk.label}`,
     `Recommended Next Session: ${recommendation.sessionType}`,
+    `Active Goals: ${goalSummary.active}`,
     '',
     'TRAINING SPLIT',
     `Total Logs: ${summary.total}`,
@@ -80,6 +83,12 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date()): 
     `Weak Logs: ${weakLogs.length}`,
     `Fatigue Watch Logs: ${fatigueWatchLogs.length}`,
     `Load Risk Factors: ${weeklyLoadRisk.factors.join(', ')}`,
+    '',
+    'GOALS',
+    goalSummary.message,
+    ...(goals.length > 0
+      ? goals.slice(0, 5).map((goal) => `${goal.status.toUpperCase()} | ${goal.category} | ${goal.title} | Target: ${sanitiseField(goal.target)} | Current: ${sanitiseField(goal.current || 'Not recorded')}`)
+      : ['No goals recorded.']),
     '',
     'NEXT SESSION GUIDANCE',
     `Reason: ${recommendation.reason}`,

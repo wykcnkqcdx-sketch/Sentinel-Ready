@@ -21,10 +21,10 @@ import {
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LogScreen() {
-  const { logs, isLoading, deleteLog } = useTraining();
+  const { logs, goals, isLoading, deleteLog, duplicateLog, exportLogsCsv } = useTraining();
   const router = useRouter();
 
   const [activeFilter, setActiveFilter] = useState<TrainingFilter>('All');
@@ -56,6 +56,25 @@ export default function LogScreen() {
     setSortMode('Newest');
     setSearchQuery('');
     setShowWeakLogsOnly(false);
+  }
+
+  async function handleDuplicateLog(id: number) {
+    try {
+      await duplicateLog(id);
+    } catch {
+      Alert.alert('Duplicate Failed', 'The log could not be duplicated. Please try again.');
+    }
+  }
+
+  async function shareCsvExport() {
+    try {
+      await Share.share({
+        title: 'Sentinel Ready Training Logs CSV',
+        message: exportLogsCsv(),
+      });
+    } catch {
+      Alert.alert('Export Failed', 'The CSV export could not be shared.');
+    }
   }
 
   function confirmDeleteLog(log: TrainingLog) {
@@ -92,6 +111,7 @@ export default function LogScreen() {
           <TrainingLogCard
             log={item}
             onEdit={(id) => router.push(`/edit-log/${id}`)}
+            onDuplicate={handleDuplicateLog}
             onDelete={confirmDeleteLog}
           />
         )}
@@ -112,6 +132,14 @@ export default function LogScreen() {
 
               <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/weekly-report')}>
                 <Text style={styles.secondaryButtonText}>Weekly Report</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/goals')}>
+                <Text style={styles.secondaryButtonText}>Goals ({goals.filter((goal) => goal.status === 'active').length})</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={shareCsvExport}>
+                <Text style={styles.secondaryButtonText}>Export CSV</Text>
               </TouchableOpacity>
             </View>
 

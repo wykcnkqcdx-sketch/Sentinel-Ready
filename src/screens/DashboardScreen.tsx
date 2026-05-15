@@ -3,9 +3,10 @@ import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
-import { buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { buildGoalSummary, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { DimensionValue, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
 
@@ -48,12 +49,14 @@ function getRecoveryStatus(logs: ReturnType<typeof useTraining>['logs']) {
 }
 
 export default function DashboardScreen() {
-  const { logs, isLoading } = useTraining();
+  const { logs, goals, isLoading } = useTraining();
+  const router = useRouter();
 
   const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
   const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
+  const goalSummary = useMemo(() => buildGoalSummary(goals), [goals]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -139,6 +142,23 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
+
+      <SentinelCard title="Goal Tracking">
+        <View style={styles.goalHeader}>
+          <View style={styles.goalStat}>
+            <Text style={styles.goalNumber}>{goalSummary.active}</Text>
+            <Text style={styles.goalLabel}>Active Goals</Text>
+          </View>
+          <View style={styles.goalStat}>
+            <Text style={styles.goalNumberComplete}>{goalSummary.complete}</Text>
+            <Text style={styles.goalLabel}>Complete</Text>
+          </View>
+          <TouchableOpacity style={styles.goalButton} onPress={() => router.push('/goals')}>
+            <Text style={styles.goalButtonText}>Manage</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.cardText}>{goalSummary.message}</Text>
+      </SentinelCard>
 
       <SentinelCard title="Readiness Trend">
         <View style={styles.chartContainer}>
@@ -298,6 +318,13 @@ const styles = StyleSheet.create({
   progressFill: { width: '82%', height: '100%', backgroundColor: '#62d982', borderRadius: 999 },
   readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   detailText: { color: '#d8e6d4', backgroundColor: '#0b1710', borderWidth: 1, borderColor: '#213c2b', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
+  goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  goalStat: { flex: 1 },
+  goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },
+  goalNumberComplete: { color: '#91e6a3', fontSize: 26, fontWeight: '900' },
+  goalLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '800', marginTop: 2 },
+  goalButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
+  goalButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   section: { marginTop: 8, gap: 12 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

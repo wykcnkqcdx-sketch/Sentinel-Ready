@@ -1,9 +1,11 @@
 import { useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
 import {
   buildReadinessTrend,
   buildWeekPlan,
   buildWeekSummary,
   DayPlan,
+  getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -37,15 +39,17 @@ function MiniDayRow({ item, isToday, planType }: { item: DayPlan; isToday: boole
 }
 
 export default function TrainingScreen() {
-  const { logs, isLoading } = useTraining();
+  const { logs, goals, isLoading } = useTraining();
+  const profile = useUser();
   if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);
-  const { days, planType, rationale } = buildWeekPlan(logs);
+  const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
 
   const todayName = getTodayName();
   const todayPlan = days.find((d) => d.day === todayName);
+  const todayDetails = todayPlan ? getDayPlanDetails(todayPlan) : null;
   const remainingDays = days.filter((d) => d.day !== todayName);
 
   const isRecovery = planType === 'recovery';
@@ -77,6 +81,14 @@ export default function TrainingScreen() {
           </View>
           <Text style={[styles.heroFocus, { color: focusLabelColor }]}>{todayPlan.focus}</Text>
           <Text style={styles.heroSession}>{todayPlan.session}</Text>
+          {todayDetails ? (
+            <View style={styles.detailBox}>
+              <Text style={styles.detailLine}>Warm-up: {todayDetails.warmup}</Text>
+              <Text style={styles.detailLine}>Main: {todayDetails.mainWork}</Text>
+              <Text style={styles.detailLine}>Cooldown: {todayDetails.cooldown}</Text>
+              <Text style={styles.detailLine}>Adjust: {todayDetails.adjustment}</Text>
+            </View>
+          ) : null}
           <Text style={[styles.heroIntensity, { color: intensityColor(todayPlan.intensity, planType) }]}>
             Intensity: {todayPlan.intensity}
           </Text>
@@ -138,6 +150,7 @@ export default function TrainingScreen() {
         <Text style={styles.ruleTitle}>Training Rule</Text>
         <Text style={styles.ruleText}>
           Do not increase distance, load and intensity in the same week. Progress one variable at a time and monitor readiness between sessions.
+          {goals.length > 0 ? ` Current active goals are used to prioritise the weekly split.` : ''}
         </Text>
       </View>
     </ScrollView>
@@ -159,6 +172,8 @@ const styles = StyleSheet.create({
   heroFocus: { fontSize: 24, fontWeight: '900' },
   heroSession: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
   heroIntensity: { fontSize: 12, fontWeight: '900' },
+  detailBox: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 5, marginTop: 4 },
+  detailLine: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: { width: '47%', backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 4 },

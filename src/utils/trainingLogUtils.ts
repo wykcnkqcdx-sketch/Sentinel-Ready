@@ -1,4 +1,4 @@
-import type { TrainingCategory, TrainingLog } from '@/src/screens/TrainingContext';
+import type { GoalCategory, TrainingCategory, TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 
 export type TrainingFilter = 'All' | TrainingCategory;
 export type SortMode = 'Newest' | 'Oldest' | 'Highest Readiness' | 'Lowest Readiness';
@@ -638,6 +638,10 @@ export type DayPlan = {
   day: string;
   focus: string;
   session: string;
+  warmup?: string;
+  mainWork?: string;
+  cooldown?: string;
+  adjustment?: string;
   intensity: 'Rest' | 'Low' | 'Moderate' | 'High';
   isRest: boolean;
 };
@@ -647,6 +651,100 @@ export type WeekPlan = {
   planType: 'recovery' | 'standard' | 'progressive';
   rationale: string;
 };
+
+export type TrainingProfileInput = {
+  trainingLevel?: 'Foundation' | 'Intermediate' | 'Advanced';
+  equipment?: string;
+  injuryNotes?: string;
+  role?: string;
+};
+
+export type GoalSummary = {
+  active: number;
+  complete: number;
+  priority: TrainingGoal | null;
+  byCategory: Record<GoalCategory, number>;
+  message: string;
+};
+
+function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'> & Partial<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>>): DayPlan {
+  return {
+    warmup: input.isRest ? 'No formal warm-up needed.' : '5-10 min easy movement, joint prep and breathing check.',
+    mainWork: input.session,
+    cooldown: input.isRest ? 'Keep hydration and sleep consistent.' : '5-10 min easy cooldown, foot or joint check and notes.',
+    adjustment: 'If readiness is 5 or below, reduce volume by 30-50% and keep effort easy.',
+    ...input,
+  };
+}
+
+export function getDayPlanDetails(plan: DayPlan): Required<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>> {
+  const defaults = createDayPlan({
+    day: plan.day,
+    focus: plan.focus,
+    session: plan.session,
+    intensity: plan.intensity,
+    isRest: plan.isRest,
+  });
+
+  return {
+    warmup: plan.warmup ?? defaults.warmup ?? '5-10 min easy movement and readiness check.',
+    mainWork: plan.mainWork ?? defaults.mainWork ?? plan.session,
+    cooldown: plan.cooldown ?? defaults.cooldown ?? 'Cooldown, check feet or joints, and log notes.',
+    adjustment: plan.adjustment ?? defaults.adjustment ?? 'If readiness is low, reduce volume and keep effort easy.',
+  };
+}
+
+export function buildGoalSummary(goals: TrainingGoal[]): GoalSummary {
+  const activeGoals = goals.filter((goal) => goal.status === 'active');
+  const completeGoals = goals.filter((goal) => goal.status === 'complete');
+  const byCategory = goals.reduce<Record<GoalCategory, number>>((counts, goal) => {
+    counts[goal.category] = (counts[goal.category] ?? 0) + 1;
+    return counts;
+  }, {
+    Ruck: 0,
+    Run: 0,
+    Strength: 0,
+    Recovery: 0,
+    Test: 0,
+    Consistency: 0,
+  });
+
+  const datedGoals = activeGoals
+    .filter((goal) => /^\d{4}-\d{2}-\d{2}$/.test(goal.deadline))
+    .sort((a, b) => getDateValue(a.deadline) - getDateValue(b.deadline));
+  const priority = datedGoals[0] ?? activeGoals[0] ?? null;
+
+  return {
+    active: activeGoals.length,
+    complete: completeGoals.length,
+    priority,
+    byCategory,
+    message: priority
+      ? `Priority: ${priority.title}. Target ${priority.target}.`
+      : completeGoals.length > 0
+        ? 'All goals are complete. Add the next target when ready.'
+        : 'Set one active goal to anchor the next plan.',
+  };
+}
+
+function getGoalGaps(goals: TrainingGoal[]) {
+  const active = goals.filter((goal) => goal.status === 'active');
+  return {
+    ruck: active.some((goal) => goal.category === 'Ruck'),
+    strength: active.some((goal) => goal.category === 'Strength'),
+    run: active.some((goal) => goal.category === 'Run'),
+  };
+}
+
+function profileAdjustment(profile?: TrainingProfileInput) {
+  if (!profile) return '';
+  const notes: string[] = [];
+  if (profile.trainingLevel === 'Foundation') notes.push('keep progress conservative');
+  if (profile.trainingLevel === 'Advanced') notes.push('use upper targets only when readiness is green');
+  if (profile.injuryNotes?.trim()) notes.push(`respect injury note: ${profile.injuryNotes.trim()}`);
+  if (profile.equipment?.trim()) notes.push(`available kit: ${profile.equipment.trim()}`);
+  return notes.length > 0 ? ` Profile adjustment: ${notes.join('; ')}.` : '';
+}
 
 const RECOVERY_WEEK: DayPlan[] = [
   { day: 'Monday',    focus: 'Active Recovery', session: '20–30 min mobility — hips, calves, shoulders and breathing work.', intensity: 'Low',  isRest: false },
@@ -724,7 +822,7 @@ function buildProgressiveDays(gaps: { ruck: boolean; strength: boolean; run: boo
   });
 }
 
-export function buildWeekPlan(logs: TrainingLog[]): WeekPlan {
+export function buildWeekPlan(logs: TrainingLog[], goals: TrainingGoal[] = [], profile?: TrainingProfileInput): WeekPlan {
   const trend = buildReadinessTrend(logs);
   const thisWeek = buildWeekSummary(logs, 0);
 
@@ -746,23 +844,27 @@ export function buildWeekPlan(logs: TrainingLog[]): WeekPlan {
     };
   }
 
+  const goalGaps = getGoalGaps(goals);
+  const goalSummary = buildGoalSummary(goals);
+  const goalRationale = goalSummary.priority ? ` Priority goal: ${goalSummary.priority.title}.` : '';
+  const profileNote = profileAdjustment(profile);
   const gaps = {
-    ruck: thisWeek.ruck === 0,
-    strength: thisWeek.strength === 0,
-    run: thisWeek.run === 0,
+    ruck: thisWeek.ruck === 0 || goalGaps.ruck,
+    strength: thisWeek.strength === 0 || goalGaps.strength,
+    run: thisWeek.run === 0 || goalGaps.run,
   };
 
   if (isProgressiveWeek) {
     return {
       days: buildProgressiveDays(gaps),
       planType: 'progressive',
-      rationale: 'Readiness is improving and last week was consistent. This week builds on that with increased intensity and load.',
+      rationale: `Readiness is improving and last week was consistent. This week builds on that with increased intensity and load.${goalRationale}${profileNote}`,
     };
   }
 
   return {
     days: buildStandardDays(gaps),
     planType: 'standard',
-    rationale: 'Readiness is stable. This week maintains current load and fills any gaps in the training split.',
+    rationale: `Readiness is stable. This week maintains current load and fills any gaps in the training split.${goalRationale}${profileNote}`,
   };
 }

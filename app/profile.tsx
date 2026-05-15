@@ -9,7 +9,7 @@ function formatSeconds(s: number): string {
 }
 
 export default function ProfileScreen() {
-  const { gender, testDate, setGender, setTestDate } = useUser();
+  const { gender, testDate, age, role, trainingLevel, equipment, injuryNotes, setGender, setTestDate, updateProfile } = useUser();
   const router = useRouter();
   const [dateInput, setDateInput] = useState(testDate ?? '');
   const [dateError, setDateError] = useState(false);
@@ -97,6 +97,63 @@ export default function ProfileScreen() {
         ) : null}
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardKicker}>TRAINING PROFILE</Text>
+        <Text style={styles.cardLabel}>Used to adjust training plan targets and recovery cautions.</Text>
+
+        <Text style={styles.inputLabel}>Age</Text>
+        <TextInput
+          style={styles.input}
+          value={age}
+          onChangeText={(value) => updateProfile({ age: value })}
+          placeholder="Age"
+          placeholderTextColor="#4a5e4a"
+          keyboardType="numeric"
+          maxLength={3}
+        />
+
+        <Text style={styles.inputLabel}>Role / focus</Text>
+        <TextInput
+          style={styles.input}
+          value={role}
+          onChangeText={(value) => updateProfile({ role: value })}
+          placeholder="General readiness, selection prep, return to fitness"
+          placeholderTextColor="#4a5e4a"
+        />
+
+        <Text style={styles.inputLabel}>Training level</Text>
+        <View style={styles.levelRow}>
+          {(['Foundation', 'Intermediate', 'Advanced'] as const).map((level) => (
+            <TouchableOpacity
+              key={level}
+              style={trainingLevel === level ? styles.levelBtnActive : styles.levelBtn}
+              onPress={() => updateProfile({ trainingLevel: level })}
+            >
+              <Text style={trainingLevel === level ? styles.levelTextActive : styles.levelText}>{level}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.inputLabel}>Equipment access</Text>
+        <TextInput
+          style={styles.input}
+          value={equipment}
+          onChangeText={(value) => updateProfile({ equipment: value })}
+          placeholder="Ruck, gym, pull-up bar, running route"
+          placeholderTextColor="#4a5e4a"
+        />
+
+        <Text style={styles.inputLabel}>Injury notes</Text>
+        <TextInput
+          style={[styles.input, styles.notesInput]}
+          value={injuryNotes}
+          onChangeText={(value) => updateProfile({ injuryNotes: value })}
+          placeholder="Anything the plan should respect"
+          placeholderTextColor="#4a5e4a"
+          multiline
+        />
+      </View>
+
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>DFIFT Standards (current)</Text>
         <View style={styles.infoRow}>
@@ -141,6 +198,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: '#0e1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#26382c', gap: 10 },
   cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   cardLabel: { color: '#8fbf8f', fontSize: 13, lineHeight: 19 },
+  inputLabel: { color: '#dfe8da', fontSize: 12, fontWeight: '900', marginTop: 4 },
 
   toggleRow: { flexDirection: 'row', gap: 10 },
   toggleBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#26382c', alignItems: 'center', backgroundColor: '#0a1410' },
@@ -150,6 +208,7 @@ const styles = StyleSheet.create({
 
   inputRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   input: { flex: 1, backgroundColor: '#07110c', borderRadius: 10, borderWidth: 1, borderColor: '#26382c', color: '#ffffff', fontSize: 16, fontWeight: '800', paddingHorizontal: 14, paddingVertical: 12 },
+  notesInput: { minHeight: 80, textAlignVertical: 'top' },
   inputError: { borderColor: '#7a3a1f' },
   saveBtn: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12 },
   saveBtnText: { color: '#91e6a3', fontSize: 14, fontWeight: '900' },
@@ -157,6 +216,11 @@ const styles = StyleSheet.create({
   savedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   savedText: { color: '#8fbf8f', fontSize: 13, fontWeight: '800' },
   clearText: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+  levelRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  levelBtn: { flexGrow: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#26382c', alignItems: 'center', backgroundColor: '#0a1410' },
+  levelBtnActive: { flexGrow: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#2f6b3c', alignItems: 'center', backgroundColor: '#102d1a' },
+  levelText: { color: '#4a5e4a', fontSize: 13, fontWeight: '900' },
+  levelTextActive: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
 
   infoCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 8 },
   infoTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900', marginBottom: 4 },

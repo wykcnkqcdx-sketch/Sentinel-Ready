@@ -1,9 +1,11 @@
 import { useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
 import {
   buildWeekPlan,
   buildWeekSummary,
   DayPlan,
   buildReadinessTrend,
+  getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -16,6 +18,7 @@ function intensityColor(intensity: DayPlan['intensity'], planType: string) {
 
 function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
   const isRest = item.isRest;
+  const details = getDayPlanDetails(item);
   return (
     <View style={isRest ? styles.dayCardRest : styles.dayCard}>
       <View style={styles.dayHeader}>
@@ -26,17 +29,24 @@ function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
       </View>
       <Text style={isRest ? styles.focusRest : styles.focus}>{item.focus}</Text>
       <Text style={styles.session}>{item.session}</Text>
+      <View style={styles.detailGrid}>
+        <Text style={styles.detailText}>Warm-up: {details.warmup}</Text>
+        <Text style={styles.detailText}>Main: {details.mainWork}</Text>
+        <Text style={styles.detailText}>Cooldown: {details.cooldown}</Text>
+        <Text style={styles.detailText}>Adjust: {details.adjustment}</Text>
+      </View>
     </View>
   );
 }
 
 export default function PlanScreen() {
-  const { logs, isLoading } = useTraining();
+  const { logs, goals, isLoading } = useTraining();
+  const profile = useUser();
   if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);
-  const { days, planType, rationale } = buildWeekPlan(logs);
+  const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
 
   const planTypeLabel =
     planType === 'recovery' ? 'Recovery Week'
@@ -139,4 +149,6 @@ const styles = StyleSheet.create({
   focus: { color: '#91e6a3', fontSize: 14, fontWeight: '900' },
   focusRest: { color: '#4a5e4a', fontSize: 14, fontWeight: '900' },
   session: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
+  detailGrid: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 10, gap: 4, marginTop: 4 },
+  detailText: { color: '#aeb8aa', fontSize: 12, lineHeight: 17, fontWeight: '700' },
 });

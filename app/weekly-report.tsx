@@ -1,6 +1,7 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import {
+  buildGoalSummary,
   buildNextWeekRecommendation,
   buildWeekSummary,
   calculateTrainingLogHealthScore,
@@ -88,7 +89,7 @@ function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummar
 }
 
 export default function WeeklyReportScreen() {
-  const { logs, isLoading } = useTraining();
+  const { logs, goals, isLoading } = useTraining();
   const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
@@ -98,7 +99,8 @@ export default function WeeklyReportScreen() {
   const healthScore = calculateTrainingLogHealthScore(logs);
   const healthLabel = getTrainingLogHealthLabel(healthScore);
   const nextWeekAdvice = buildNextWeekRecommendation(thisWeek, lastWeek);
-  const report = buildWeeklyReport(logs);
+  const goalSummary = buildGoalSummary(goals);
+  const report = buildWeeklyReport(logs, new Date(), goals);
 
   const healthIsWarn = healthScore < 60;
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
@@ -167,6 +169,12 @@ export default function WeeklyReportScreen() {
         <Text style={nextWeekIsWarn ? styles.adviceTextWarning : styles.adviceText}>
           {nextWeekAdvice}
         </Text>
+      </View>
+
+      <View style={styles.goalCard}>
+        <Text style={styles.cardKicker}>GOALS</Text>
+        <Text style={styles.goalTitle}>{goalSummary.active} active / {goalSummary.complete} complete</Text>
+        <Text style={styles.adviceText}>{goalSummary.message}</Text>
       </View>
 
       <View style={styles.exportCard}>
@@ -241,6 +249,8 @@ const styles = StyleSheet.create({
   adviceTitleWarning: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
   adviceText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
   adviceTextWarning: { color: '#c8a070', fontSize: 13, lineHeight: 20 },
+  goalCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 8 },
+  goalTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
 
   exportCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
   exportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
