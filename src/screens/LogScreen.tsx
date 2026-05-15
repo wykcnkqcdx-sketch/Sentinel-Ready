@@ -19,6 +19,7 @@ import {
   getTrainingLogHealthLabel,
   getTrainingLogHealthMessage,
 } from '@/src/utils/trainingLogUtils';
+import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, FlatList, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -37,6 +38,7 @@ export default function LogScreen() {
   const readinessTrend = useMemo(() => buildReadinessTrend(logs), [logs]);
   const sessionRecommendation = useMemo(() => buildSessionRecommendation(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
+  const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
 
   function handleRecommendationAction(actionType: RecommendationActionType) {
     if (actionType === 'weak-logs') {
@@ -168,6 +170,16 @@ export default function LogScreen() {
 
             <ReadinessTrendCard trend={readinessTrend} />
 
+            <View style={styles.insightsCard}>
+              <Text style={styles.categorySummaryTitle}>Training Insights</Text>
+              {insights.slice(0, 3).map((insight) => (
+                <View key={insight.title} style={insight.severity === 'warning' ? styles.insightRowWarn : styles.insightRow}>
+                  <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
+                  <Text style={styles.insightText}>{insight.message}</Text>
+                </View>
+              ))}
+            </View>
+
             <View style={styles.categorySummary}>
               <Text style={styles.categorySummaryTitle}>Training Split</Text>
               <Text style={styles.categorySummaryText}>
@@ -237,6 +249,12 @@ const styles = StyleSheet.create({
   categorySummary: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529' },
   categorySummaryTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   categorySummaryText: { color: '#aeb8aa', fontSize: 13, marginTop: 5 },
+  insightsCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
+  insightRow: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 10, gap: 3 },
+  insightRowWarn: { backgroundColor: '#21140b', borderRadius: 12, borderWidth: 1, borderColor: '#7a4a1f', padding: 10, gap: 3 },
+  insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  insightTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+  insightText: { color: '#aeb8aa', fontSize: 12, lineHeight: 18 },
   sectionTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900', marginTop: 4 },
   emptyCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#203529', alignItems: 'flex-start', gap: 8 },
   emptyTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },

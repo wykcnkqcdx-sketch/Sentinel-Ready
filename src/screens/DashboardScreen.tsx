@@ -8,6 +8,7 @@ import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
+import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -69,6 +70,7 @@ export default function DashboardScreen() {
   const trainingBalance = useMemo(() => buildTrainingBalance(logs), [logs]);
   const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const forecast = useMemo(() => buildReadinessForecast(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
+  const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -225,6 +227,19 @@ export default function DashboardScreen() {
             </View>
           ))}
         </View>
+      </SentinelCard>
+
+      <SentinelCard title="Training Insights">
+        {insights.slice(0, 3).map((insight) => (
+          <View key={insight.title} style={
+            insight.severity === 'warning' ? styles.insightItemWarn
+            : insight.severity === 'good' ? styles.insightItemGood
+            : styles.insightItem
+          }>
+            <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
+            <Text style={styles.insightText}>{insight.message}</Text>
+          </View>
+        ))}
       </SentinelCard>
 
       <SentinelCard title="Performance Snapshot">
@@ -476,6 +491,12 @@ const styles = StyleSheet.create({
   forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#91e6a3' },
   forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#f3d36b' },
   forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffb86b' },
+  insightItem: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4 },
+  insightItemGood: { backgroundColor: '#102d1a', borderRadius: 14, borderWidth: 1, borderColor: '#2f6b3c', padding: 12, gap: 4 },
+  insightItemWarn: { backgroundColor: '#21140b', borderRadius: 14, borderWidth: 1, borderColor: '#7a4a1f', padding: 12, gap: 4 },
+  insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  insightTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+  insightText: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },

@@ -6,6 +6,7 @@ import type { DfiftStandards } from '@/src/types/dfift';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
+import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
@@ -121,6 +122,7 @@ export default function WeeklyReportScreen() {
   const trainingBalance = buildTrainingBalance(logs);
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes });
   const forecast = buildReadinessForecast(logs, goals, { injuryNotes });
+  const insights = buildTrainingInsights(logs);
   const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
@@ -202,6 +204,13 @@ export default function WeeklyReportScreen() {
         <Text style={styles.cardKicker}>READINESS FORECAST</Text>
         <Text style={forecast.status === 'red' ? styles.recoveryTitleWarn : styles.goalTitle}>{forecast.label}</Text>
         <Text style={styles.goalAction}>{forecast.summary}</Text>
+      </View>
+
+      <View style={styles.performanceCard}>
+        <Text style={styles.cardKicker}>TRAINING INSIGHTS</Text>
+        {insights.slice(0, 3).map((insight) => (
+          <Text key={insight.title} style={styles.goalAction}>{insight.title}: {insight.message}</Text>
+        ))}
       </View>
 
       <View style={styles.goalCard}>
