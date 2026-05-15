@@ -141,6 +141,10 @@ export default function LogScreen() {
               <TouchableOpacity style={styles.secondaryButton} onPress={shareCsvExport}>
                 <Text style={styles.secondaryButtonText}>Export CSV</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/import-logs')}>
+                <Text style={styles.secondaryButtonText}>Import CSV</Text>
+              </TouchableOpacity>
             </View>
 
             <SessionRecommendationCard
