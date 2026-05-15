@@ -10,6 +10,7 @@ import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildTrainingInsights } from '@/src/utils/insightUtils';
+import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
 import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
@@ -74,6 +75,7 @@ export default function DashboardScreen() {
   const forecast = useMemo(() => buildReadinessForecast(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
   const adherence = useMemo(() => buildPlanAdherence(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
+  const injuryWatch = useMemo(() => buildInjuryWatch(logs, injuryNotes), [logs, injuryNotes]);
   const milestones = useMemo(() => buildMilestones(logs, goals), [logs, goals]);
   const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
@@ -197,6 +199,23 @@ export default function DashboardScreen() {
           </View>
         </View>
         <Text style={styles.recoveryDebtAction}>{recoveryDebt.action}</Text>
+      </SentinelCard>
+
+      <SentinelCard title="Injury Watch" variant={injuryWatch.status === 'high' ? 'warning' : 'default'}>
+        <View style={styles.injuryHeader}>
+          <View>
+            <Text style={injuryWatch.status === 'high' ? styles.injuryScoreWarn : styles.injuryScore}>
+              {injuryWatch.status === 'no-data' ? '--' : `${injuryWatch.score}%`}
+            </Text>
+            <Text style={styles.cardText}>{injuryWatch.message}</Text>
+          </View>
+          <View style={injuryWatch.status === 'high' ? styles.injuryBadgeWarn : styles.injuryBadge}>
+            <Text style={injuryWatch.status === 'high' ? styles.injuryBadgeTextWarn : styles.injuryBadgeText}>
+              {injuryWatch.label}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.injuryAction}>{injuryWatch.action}</Text>
       </SentinelCard>
 
       <SentinelCard title="Training Balance" variant={trainingBalance.status === 'overload' ? 'warning' : 'default'}>
@@ -524,6 +543,14 @@ const styles = StyleSheet.create({
   recoveryDebtBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   recoveryDebtBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
   recoveryDebtAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  injuryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  injuryScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
+  injuryScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
+  injuryBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
+  injuryBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
+  injuryBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  injuryBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  injuryAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   balanceScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
   balanceScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },

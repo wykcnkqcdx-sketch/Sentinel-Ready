@@ -6,6 +6,7 @@ import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildTrainingInsights } from '@/src/utils/insightUtils';
+import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
 import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
@@ -79,6 +80,7 @@ export function buildWeeklyReport(
   const forecast = buildReadinessForecast(logs, goals, { injuryNotes: profile?.injuryNotes });
   const insights = buildTrainingInsights(logs);
   const adherence = buildPlanAdherence(logs, goals, { injuryNotes: profile?.injuryNotes });
+  const injuryWatch = buildInjuryWatch(logs, profile?.injuryNotes ?? '');
   const milestones = buildMilestones(logs, goals, dfift);
   const earnedMilestones = getEarnedMilestones(milestones);
   const nextMilestone = getNextMilestone(milestones);
@@ -105,6 +107,7 @@ export function buildWeeklyReport(
     `Top Insight: ${insights[0]?.title ?? 'None'}`,
     `Milestones: ${earnedMilestones.length}/${milestones.length}`,
     `Plan Adherence: ${adherence.label}`,
+    `Injury Watch: ${injuryWatch.label}`,
     `Active Goals: ${goalSummary.active}`,
     `Suggested Goals: ${goalSuggestions.length}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
@@ -175,6 +178,12 @@ export function buildWeeklyReport(
     `Recovery Debt: ${recoveryDebt.label}`,
     `Recovery Action: ${recoveryDebt.action}`,
     `Recovery Factors: ${recoveryDebt.factors.join(', ')}`,
+    '',
+    'INJURY WATCH',
+    `Status: ${injuryWatch.label}`,
+    `Score: ${injuryWatch.status === 'no-data' ? 'No Data' : `${injuryWatch.score}%`}`,
+    `Action: ${injuryWatch.action}`,
+    `Flags: ${injuryWatch.flags.join(', ')}`,
     '',
     'WATCH ITEMS',
     `Weak Logs: ${weakLogs.length}`,

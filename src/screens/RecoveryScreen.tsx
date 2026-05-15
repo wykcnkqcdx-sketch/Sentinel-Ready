@@ -1,5 +1,6 @@
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildReadinessTrend,
@@ -83,6 +84,7 @@ export default function RecoveryScreen() {
   const trend = buildReadinessTrend(logs);
   const thisWeek = buildWeekSummary(logs, 0);
   const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
+  const injuryWatch = buildInjuryWatch(logs, injuryNotes);
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id),
@@ -158,6 +160,35 @@ export default function RecoveryScreen() {
           {recoveryDebt.factors.slice(0, 3).map((factor) => (
             <View key={factor} style={styles.debtFactor}>
               <Text style={styles.debtFactorText}>{factor}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={
+        injuryWatch.status === 'high' ? styles.debtCardRed
+        : injuryWatch.status === 'monitor' ? styles.debtCardAmber
+        : styles.debtCard
+      }>
+        <View style={styles.debtHeader}>
+          <View>
+            <Text style={injuryWatch.status === 'high' ? styles.debtScoreRed : styles.debtScore}>
+              {injuryWatch.status === 'no-data' ? '--' : `${injuryWatch.score}%`}
+            </Text>
+            <Text style={styles.cardKicker}>INJURY WATCH</Text>
+          </View>
+          <View style={injuryWatch.status === 'high' ? styles.badgeWarning : injuryWatch.status === 'monitor' ? styles.badgeModerate : styles.badge}>
+            <Text style={injuryWatch.status === 'high' ? styles.badgeTextWarning : injuryWatch.status === 'monitor' ? styles.badgeTextModerate : styles.badgeText}>
+              {injuryWatch.label}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.scoreMessage}>{injuryWatch.message}</Text>
+        <Text style={styles.debtAction}>{injuryWatch.action}</Text>
+        <View style={styles.debtFactorRow}>
+          {injuryWatch.flags.slice(0, 4).map((flag) => (
+            <View key={flag} style={styles.debtFactor}>
+              <Text style={styles.debtFactorText}>{flag}</Text>
             </View>
           ))}
         </View>

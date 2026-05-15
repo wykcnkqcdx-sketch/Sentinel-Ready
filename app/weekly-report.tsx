@@ -7,6 +7,7 @@ import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildTrainingInsights } from '@/src/utils/insightUtils';
+import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
 import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
@@ -129,6 +130,7 @@ export default function WeeklyReportScreen() {
   const earnedMilestones = getEarnedMilestones(milestones);
   const nextMilestone = getNextMilestone(milestones);
   const adherence = buildPlanAdherence(logs, goals, { injuryNotes });
+  const injuryWatch = buildInjuryWatch(logs, injuryNotes);
   const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
@@ -269,6 +271,14 @@ export default function WeeklyReportScreen() {
           {recoveryDebt.label} {recoveryDebt.status === 'no-data' ? '' : `· ${recoveryDebt.score}%`}
         </Text>
         <Text style={styles.goalAction}>{recoveryDebt.action}</Text>
+      </View>
+
+      <View style={injuryWatch.status === 'high' ? styles.recoveryCardWarn : styles.performanceCard}>
+        <Text style={styles.cardKicker}>INJURY WATCH</Text>
+        <Text style={injuryWatch.status === 'high' ? styles.recoveryTitleWarn : styles.goalTitle}>
+          {injuryWatch.label} {injuryWatch.status === 'no-data' ? '' : `· ${injuryWatch.score}%`}
+        </Text>
+        <Text style={styles.goalAction}>{injuryWatch.action}</Text>
       </View>
 
       <View style={trainingBalance.status === 'overload' ? styles.recoveryCardWarn : styles.performanceCard}>
