@@ -1,6 +1,7 @@
 import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import type { DfiftStandards } from '@/src/types/dfift';
 import type { Gender } from '@/src/screens/UserContext';
+import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
@@ -77,6 +78,7 @@ export function buildWeeklyReport(
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile?.injuryNotes });
   const forecast = buildReadinessForecast(logs, goals, { injuryNotes: profile?.injuryNotes });
   const insights = buildTrainingInsights(logs);
+  const adherence = buildPlanAdherence(logs, goals, { injuryNotes: profile?.injuryNotes });
   const milestones = buildMilestones(logs, goals, dfift);
   const earnedMilestones = getEarnedMilestones(milestones);
   const nextMilestone = getNextMilestone(milestones);
@@ -102,6 +104,7 @@ export function buildWeeklyReport(
     `Readiness Forecast: ${forecast.label}`,
     `Top Insight: ${insights[0]?.title ?? 'None'}`,
     `Milestones: ${earnedMilestones.length}/${milestones.length}`,
+    `Plan Adherence: ${adherence.label}`,
     `Active Goals: ${goalSummary.active}`,
     `Suggested Goals: ${goalSuggestions.length}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
@@ -132,6 +135,13 @@ export function buildWeeklyReport(
     `Forecast: ${forecast.label}`,
     `Summary: ${forecast.summary}`,
     ...forecast.days.map((day) => `${day.day}: ${day.focus} | ${day.status.toUpperCase()} | ${day.message}`),
+    '',
+    'PLAN ADHERENCE',
+    `Adherence: ${adherence.label} (${adherence.status === 'no-data' ? 'No Data' : `${adherence.score}%`})`,
+    `Matched: ${adherence.matched.length > 0 ? adherence.matched.join(', ') : 'None'}`,
+    `Missing: ${adherence.missing.length > 0 ? adherence.missing.join(', ') : 'None'}`,
+    `Extra: ${adherence.extra.length > 0 ? adherence.extra.join(', ') : 'None'}`,
+    `Next Action: ${adherence.nextAction}`,
     '',
     'TRAINING INSIGHTS',
     ...insights.map((insight) => `${insight.severity.toUpperCase()} | ${insight.title}: ${insight.message}`),

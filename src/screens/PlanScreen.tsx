@@ -1,5 +1,6 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import {
@@ -51,6 +52,7 @@ export default function PlanScreen() {
   const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
   const balance = buildTrainingBalance(logs);
   const forecast = buildReadinessForecast(logs, goals, profile);
+  const adherence = buildPlanAdherence(logs, goals, profile);
 
   const planTypeLabel =
     planType === 'recovery' ? 'Recovery Week'
@@ -145,6 +147,26 @@ export default function PlanScreen() {
         </View>
       </View>
 
+      <View style={adherence.status === 'off-track' ? styles.balanceCardWarn : styles.balanceCard}>
+        <View style={styles.commandHeader}>
+          <Text style={styles.commandKicker}>PLAN ADHERENCE</Text>
+          <Text style={adherence.status === 'off-track' ? styles.balanceLabelWarn : styles.balanceLabel}>
+            {adherence.label} {adherence.status === 'no-data' ? '' : `${adherence.score}%`}
+          </Text>
+        </View>
+        <Text style={styles.commandText}>{adherence.message}</Text>
+        <Text style={styles.balanceFocus}>{adherence.nextAction}</Text>
+        {adherence.missing.length > 0 ? (
+          <View style={styles.adherencePills}>
+            {adherence.missing.map((item) => (
+              <View key={item} style={styles.adherencePill}>
+                <Text style={styles.adherencePillText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </View>
+
       {days.map((item) => (
         <DayCard key={item.day} item={item} planType={planType} />
       ))}
@@ -187,6 +209,9 @@ const styles = StyleSheet.create({
   forecastStatusGreen: { color: '#91e6a3', fontSize: 10, fontWeight: '900' },
   forecastStatusAmber: { color: '#f3d36b', fontSize: 10, fontWeight: '900' },
   forecastStatusRed: { color: '#ffb86b', fontSize: 10, fontWeight: '900' },
+  adherencePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  adherencePill: { backgroundColor: '#07110c', borderRadius: 999, borderWidth: 1, borderColor: '#26382c', paddingHorizontal: 10, paddingVertical: 6 },
+  adherencePillText: { color: '#8fbf8f', fontSize: 11, fontWeight: '900' },
 
   dayCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 6 },
   dayCardRest: { backgroundColor: '#080f0a', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#161f18', gap: 6 },

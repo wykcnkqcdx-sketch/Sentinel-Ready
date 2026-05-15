@@ -11,6 +11,7 @@ import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/ut
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
+import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import {
   buildGoalSummary,
   buildGoalAction,
@@ -127,6 +128,7 @@ export default function WeeklyReportScreen() {
   const milestones = buildMilestones(logs, goals, { standards: dfiftStandards, gender });
   const earnedMilestones = getEarnedMilestones(milestones);
   const nextMilestone = getNextMilestone(milestones);
+  const adherence = buildPlanAdherence(logs, goals, { injuryNotes });
   const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
@@ -208,6 +210,14 @@ export default function WeeklyReportScreen() {
         <Text style={styles.cardKicker}>READINESS FORECAST</Text>
         <Text style={forecast.status === 'red' ? styles.recoveryTitleWarn : styles.goalTitle}>{forecast.label}</Text>
         <Text style={styles.goalAction}>{forecast.summary}</Text>
+      </View>
+
+      <View style={adherence.status === 'off-track' ? styles.recoveryCardWarn : styles.performanceCard}>
+        <Text style={styles.cardKicker}>PLAN ADHERENCE</Text>
+        <Text style={adherence.status === 'off-track' ? styles.recoveryTitleWarn : styles.goalTitle}>
+          {adherence.label} {adherence.status === 'no-data' ? '' : `· ${adherence.score}%`}
+        </Text>
+        <Text style={styles.goalAction}>{adherence.nextAction}</Text>
       </View>
 
       <View style={styles.performanceCard}>

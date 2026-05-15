@@ -4,6 +4,7 @@ import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
@@ -72,6 +73,7 @@ export default function DashboardScreen() {
   const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const forecast = useMemo(() => buildReadinessForecast(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
+  const adherence = useMemo(() => buildPlanAdherence(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const milestones = useMemo(() => buildMilestones(logs, goals), [logs, goals]);
   const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
@@ -231,6 +233,26 @@ export default function DashboardScreen() {
             </View>
           ))}
         </View>
+      </SentinelCard>
+
+      <SentinelCard title="Plan Adherence" variant={adherence.status === 'off-track' ? 'warning' : 'default'}>
+        <View style={styles.adherenceHeader}>
+          <View>
+            <Text style={adherence.status === 'off-track' ? styles.adherenceScoreWarn : styles.adherenceScore}>
+              {adherence.status === 'no-data' ? '--' : `${adherence.score}%`}
+            </Text>
+            <Text style={styles.cardText}>{adherence.message}</Text>
+          </View>
+          <View style={adherence.status === 'off-track' ? styles.adherenceBadgeWarn : styles.adherenceBadge}>
+            <Text style={adherence.status === 'off-track' ? styles.adherenceBadgeTextWarn : styles.adherenceBadgeText}>
+              {adherence.label}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.adherenceAction}>{adherence.nextAction}</Text>
+        {adherence.missing.length > 0 ? (
+          <Text style={styles.adherenceMissing}>Missing: {adherence.missing.join(', ')}</Text>
+        ) : null}
       </SentinelCard>
 
       <SentinelCard title="Training Insights">
@@ -519,6 +541,15 @@ const styles = StyleSheet.create({
   forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#91e6a3' },
   forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#f3d36b' },
   forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffb86b' },
+  adherenceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  adherenceScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
+  adherenceScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
+  adherenceBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
+  adherenceBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
+  adherenceBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  adherenceBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  adherenceAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  adherenceMissing: { color: '#8fbf8f', fontSize: 12, lineHeight: 18, fontWeight: '800' },
   insightItem: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4 },
   insightItemGood: { backgroundColor: '#102d1a', borderRadius: 14, borderWidth: 1, borderColor: '#2f6b3c', padding: 12, gap: 4 },
   insightItemWarn: { backgroundColor: '#21140b', borderRadius: 14, borderWidth: 1, borderColor: '#7a4a1f', padding: 12, gap: 4 },
