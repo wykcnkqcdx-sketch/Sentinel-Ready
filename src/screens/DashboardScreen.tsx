@@ -5,6 +5,7 @@ import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
+import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
@@ -65,6 +66,7 @@ export default function DashboardScreen() {
   const performance = useMemo(() => buildPerformanceSnapshot(logs), [logs]);
   const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
   const trainingBalance = useMemo(() => buildTrainingBalance(logs), [logs]);
+  const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -147,6 +149,25 @@ export default function DashboardScreen() {
           <Text style={styles.detailText}>Endurance: {enduranceStatus}</Text>
           <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
         </View>
+      </SentinelCard>
+
+      <SentinelCard title="Mission Brief" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
+        <View style={styles.briefHeader}>
+          <View style={styles.briefTitleBlock}>
+            <Text style={missionBrief.status === 'red' ? styles.briefTitleWarn : styles.briefTitle}>{missionBrief.title}</Text>
+            <Text style={styles.cardText}>{missionBrief.summary}</Text>
+          </View>
+          <View style={missionBrief.status === 'red' ? styles.briefBadgeWarn : styles.briefBadge}>
+            <Text style={missionBrief.status === 'red' ? styles.briefBadgeTextWarn : styles.briefBadgeText}>
+              {missionBrief.status.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.briefActionBox}>
+          <Text style={styles.briefActionLabel}>Primary action</Text>
+          <Text style={styles.briefActionText}>{missionBrief.primaryAction}</Text>
+        </View>
+        <Text style={styles.briefSecondary}>{missionBrief.secondaryAction}</Text>
       </SentinelCard>
 
       <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
@@ -393,6 +414,18 @@ const styles = StyleSheet.create({
   progressFill: { width: '82%', height: '100%', backgroundColor: '#62d982', borderRadius: 999 },
   readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   detailText: { color: '#d8e6d4', backgroundColor: '#0b1710', borderWidth: 1, borderColor: '#213c2b', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
+  briefHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  briefTitleBlock: { flex: 1 },
+  briefTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  briefTitleWarn: { color: '#ffb86b', fontSize: 22, fontWeight: '900' },
+  briefBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
+  briefBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
+  briefBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  briefBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  briefActionBox: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4, marginTop: 10 },
+  briefActionLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  briefActionText: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  briefSecondary: { color: '#aeb8aa', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   performanceItem: { width: '47%', backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
   performanceValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },

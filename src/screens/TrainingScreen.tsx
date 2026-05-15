@@ -1,5 +1,6 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import {
   buildReadinessTrend,
   buildWeekPlan,
@@ -46,6 +47,7 @@ export default function TrainingScreen() {
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);
   const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
+  const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile.injuryNotes });
 
   const todayName = getTodayName();
   const todayPlan = days.find((d) => d.day === todayName);
@@ -94,6 +96,18 @@ export default function TrainingScreen() {
           </Text>
         </View>
       ) : null}
+
+      <View style={missionBrief.status === 'red' ? styles.briefCardWarn : styles.briefCard}>
+        <View style={styles.heroTopRow}>
+          <Text style={styles.heroLabel}>MISSION BRIEF</Text>
+          <Text style={missionBrief.status === 'red' ? styles.briefStatusWarn : styles.briefStatus}>
+            {missionBrief.status.toUpperCase()}
+          </Text>
+        </View>
+        <Text style={missionBrief.status === 'red' ? styles.briefTitleWarn : styles.briefTitle}>{missionBrief.title}</Text>
+        <Text style={styles.briefText}>{missionBrief.primaryAction}</Text>
+        <Text style={styles.briefSubText}>{missionBrief.secondaryAction}</Text>
+      </View>
 
       <View style={styles.statGrid}>
         <View style={styles.statCard}>
@@ -174,6 +188,14 @@ const styles = StyleSheet.create({
   heroIntensity: { fontSize: 12, fontWeight: '900' },
   detailBox: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 5, marginTop: 4 },
   detailLine: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  briefCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 7 },
+  briefCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 7 },
+  briefStatus: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
+  briefStatusWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
+  briefTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  briefTitleWarn: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
+  briefText: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  briefSubText: { color: '#aeb8aa', fontSize: 12, lineHeight: 18 },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: { width: '47%', backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 4 },

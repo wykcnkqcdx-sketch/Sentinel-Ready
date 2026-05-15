@@ -3,6 +3,7 @@ import type { DfiftStandards } from '@/src/types/dfift';
 import type { Gender } from '@/src/screens/UserContext';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildGoalSummary,
@@ -68,6 +69,7 @@ export function buildWeeklyReport(
   const dfiftSnapshot = dfift ? buildDfiftSnapshot(logs, dfift.standards, dfift.gender) : null;
   const recoveryDebt = buildRecoveryDebt(logs, profile?.injuryNotes ?? '', now);
   const trainingBalance = buildTrainingBalance(logs);
+  const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile?.injuryNotes });
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -86,6 +88,7 @@ export function buildWeeklyReport(
     `Readiness Trend: ${readinessTrend.label} (${readinessTrend.latest}/10 latest, ${readinessTrend.previous}/10 previous)`,
     `Weekly Load Risk: ${weeklyLoadRisk.label}`,
     `Recommended Next Session: ${recommendation.sessionType}`,
+    `Mission Brief: ${missionBrief.title}`,
     `Active Goals: ${goalSummary.active}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
     `Next Goal Action: ${goalAction.title}`,
@@ -103,6 +106,13 @@ export function buildWeeklyReport(
     `Mobility: ${thisWeek.mobility}`,
     `Test: ${thisWeek.test}`,
     `Recovery: ${thisWeek.recovery}`,
+    '',
+    'MISSION BRIEF',
+    `Status: ${missionBrief.status.toUpperCase()}`,
+    `Summary: ${missionBrief.summary}`,
+    `Primary Action: ${missionBrief.primaryAction}`,
+    `Secondary Action: ${missionBrief.secondaryAction}`,
+    `Reasons: ${missionBrief.reasons.join(', ')}`,
     '',
     'PERFORMANCE SNAPSHOT',
     `Best Ruck: ${performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : 'No ruck distance logged'}`,

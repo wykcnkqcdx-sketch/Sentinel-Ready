@@ -5,6 +5,7 @@ import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import type { DfiftStandards } from '@/src/types/dfift';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildGoalSummary,
@@ -115,6 +116,7 @@ export default function WeeklyReportScreen() {
   const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
   const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
   const trainingBalance = buildTrainingBalance(logs);
+  const missionBrief = buildMissionBrief(logs, goals, { injuryNotes });
   const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
@@ -184,6 +186,12 @@ export default function WeeklyReportScreen() {
         <Text style={nextWeekIsWarn ? styles.adviceTextWarning : styles.adviceText}>
           {nextWeekAdvice}
         </Text>
+      </View>
+
+      <View style={missionBrief.status === 'red' ? styles.recoveryCardWarn : styles.performanceCard}>
+        <Text style={styles.cardKicker}>MISSION BRIEF</Text>
+        <Text style={missionBrief.status === 'red' ? styles.recoveryTitleWarn : styles.goalTitle}>{missionBrief.title}</Text>
+        <Text style={styles.goalAction}>{missionBrief.primaryAction}</Text>
       </View>
 
       <View style={styles.goalCard}>
