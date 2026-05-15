@@ -53,7 +53,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
+      if (!isMounted) return;
+
       if (raw) {
         try {
           setProfile({ ...defaultProfile, ...JSON.parse(raw) });
@@ -63,6 +67,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
       setIsLoaded(true);
     });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   function save(updated: UserProfile) {

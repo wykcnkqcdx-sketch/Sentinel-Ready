@@ -194,12 +194,17 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadData() {
       try {
         const [logsData, goalsData] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEY),
           AsyncStorage.getItem(GOALS_STORAGE_KEY),
         ]);
+
+        if (!isMounted) return;
+
         if (logsData) {
           const parsed = JSON.parse(logsData);
           if (isValidLogArray(parsed)) {
@@ -223,13 +228,18 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Failed to load training data', error);
+        if (!isMounted) return;
         setLogs(starterLogs);
         setGoals(starterGoals);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
     loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const updateAndSaveLogs = useCallback((updater: (prev: TrainingLog[]) => TrainingLog[]) => {
