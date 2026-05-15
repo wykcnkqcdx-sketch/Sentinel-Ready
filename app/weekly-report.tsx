@@ -1,4 +1,5 @@
 import { useTraining } from '@/src/screens/TrainingContext';
+import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import {
   buildNextWeekRecommendation,
   buildWeekSummary,
@@ -7,7 +8,7 @@ import {
   WeekSummary,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function formatWeekRange(start: string, end: string) {
   const s = new Date(start + 'T00:00:00');
@@ -97,10 +98,22 @@ export default function WeeklyReportScreen() {
   const healthScore = calculateTrainingLogHealthScore(logs);
   const healthLabel = getTrainingLogHealthLabel(healthScore);
   const nextWeekAdvice = buildNextWeekRecommendation(thisWeek, lastWeek);
+  const report = buildWeeklyReport(logs);
 
   const healthIsWarn = healthScore < 60;
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
   const nextWeekIsGood = nextWeekAdvice.toLowerCase().includes('ready to progress');
+
+  async function shareReport() {
+    try {
+      await Share.share({
+        title: report.title,
+        message: report.text,
+      });
+    } catch {
+      Alert.alert('Share Failed', 'The weekly report could not be shared. You can still select the report text below.');
+    }
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -154,6 +167,20 @@ export default function WeeklyReportScreen() {
         <Text style={nextWeekIsWarn ? styles.adviceTextWarning : styles.adviceText}>
           {nextWeekAdvice}
         </Text>
+      </View>
+
+      <View style={styles.exportCard}>
+        <View style={styles.exportHeader}>
+          <View style={styles.exportHeaderText}>
+            <Text style={styles.cardKicker}>EXPORT REPORT</Text>
+            <Text style={styles.exportTitle}>Copy-ready weekly report</Text>
+          </View>
+          <TouchableOpacity style={styles.shareButton} onPress={shareReport}>
+            <Text style={styles.shareButtonText}>Share</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text selectable style={styles.reportText}>{report.text}</Text>
       </View>
 
       <TouchableOpacity style={styles.addButton} onPress={() => router.push('/add-log')}>
@@ -214,6 +241,14 @@ const styles = StyleSheet.create({
   adviceTitleWarning: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
   adviceText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
   adviceTextWarning: { color: '#c8a070', fontSize: 13, lineHeight: 20 },
+
+  exportCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
+  exportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  exportHeaderText: { flex: 1 },
+  exportTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900', marginTop: 3 },
+  shareButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
+  shareButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
+  reportText: { color: '#dfe8da', backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, fontSize: 12, lineHeight: 18, fontFamily: 'monospace' },
 
   addButton: { backgroundColor: '#91e6a3', borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   addButtonText: { color: '#07110c', fontSize: 15, fontWeight: '900' },

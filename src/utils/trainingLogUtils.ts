@@ -336,15 +336,15 @@ export type WeeklyLoadRisk = {
   fatigueWatchSessions: number;
 };
 
-function getDateDaysAgo(daysAgo: number): string {
-  const date = new Date();
+function getDateDaysAgo(daysAgo: number, now: Date = new Date()): string {
+  const date = new Date(now);
   date.setDate(date.getDate() - daysAgo);
   return formatLocalDate(date);
 }
 
-export function buildWeeklyLoadRisk(logs: TrainingLog[]): WeeklyLoadRisk {
-  const start = getDateDaysAgo(6);
-  const end = getDateDaysAgo(0);
+export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date()): WeeklyLoadRisk {
+  const start = getDateDaysAgo(6, now);
+  const end = getDateDaysAgo(0, now);
   const recentLogs = logs.filter((log) => log.date >= start && log.date <= end);
   const trend = buildReadinessTrend(recentLogs);
 
