@@ -3,6 +3,7 @@ import {
   buildGoalSummary,
   buildGoalAction,
   buildReadinessTrend,
+  buildPerformanceSnapshot,
   buildSessionRecommendation,
   buildSummary,
   buildWeekSummary,
@@ -52,6 +53,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
   const recommendation = buildSessionRecommendation(logs);
   const goalSummary = buildGoalSummary(goals);
   const goalAction = buildGoalAction(goals, logs);
+  const performance = buildPerformanceSnapshot(logs);
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -73,6 +75,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     `Active Goals: ${goalSummary.active}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
     `Next Goal Action: ${goalAction.title}`,
+    `Performance Highlight: ${performance.highlight}`,
     '',
     'TRAINING SPLIT',
     `Total Logs: ${summary.total}`,
@@ -83,6 +86,12 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     `Mobility: ${thisWeek.mobility}`,
     `Test: ${thisWeek.test}`,
     `Recovery: ${thisWeek.recovery}`,
+    '',
+    'PERFORMANCE SNAPSHOT',
+    `Best Ruck: ${performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : 'No ruck distance logged'}`,
+    `Best Run: ${performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : 'No run distance logged'}`,
+    `Longest Session: ${performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : 'No duration logged'}`,
+    `Consistency: ${performance.consistencyLabel}`,
     '',
     'WATCH ITEMS',
     `Weak Logs: ${weakLogs.length}`,

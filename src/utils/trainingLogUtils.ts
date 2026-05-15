@@ -681,6 +681,17 @@ export type GoalAction = {
   status: RecommendationStatus;
 };
 
+export type PerformanceSnapshot = {
+  totalSessions: number;
+  currentWeekSessions: number;
+  averageReadiness: string;
+  bestRuckDistanceKm: number;
+  bestRunDistanceKm: number;
+  longestSessionMinutes: number;
+  consistencyLabel: string;
+  highlight: string;
+};
+
 function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'> & Partial<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>>): DayPlan {
   return {
     warmup: input.isRest ? 'No formal warm-up needed.' : '5-10 min easy movement, joint prep and breathing check.',
@@ -856,6 +867,66 @@ export function buildGoalAction(goals: TrainingGoal[], logs: TrainingLog[]): Goa
     reason: `Priority goal is ${priority.title}.`,
     action: 'Complete the next planned session and keep the log detailed enough to review.',
     status: 'neutral',
+  };
+}
+
+function getFirstDistanceKm(value: string) {
+  const lower = value.toLowerCase();
+  const kmMatch = lower.match(/(\d+(\.\d+)?)\s*km/);
+  if (kmMatch) return Number(kmMatch[1]);
+
+  const mileMatch = lower.match(/(\d+(\.\d+)?)\s*(mi|mile|miles)/);
+  if (mileMatch) return Number((Number(mileMatch[1]) * 1.60934).toFixed(1));
+
+  return 0;
+}
+
+function getDurationMinutes(value: string) {
+  const lower = value.toLowerCase();
+  const hourMatch = lower.match(/(\d+(\.\d+)?)\s*(hr|hour|hours|h)/);
+  const minMatch = lower.match(/(\d+)\s*(min|mins|minute|minutes|m)/);
+  const colonMatch = lower.match(/^(\d+):(\d{2})$/);
+
+  if (colonMatch) return Number(colonMatch[1]) * 60 + Number(colonMatch[2]);
+
+  const hours = hourMatch ? Number(hourMatch[1]) * 60 : 0;
+  const minutes = minMatch ? Number(minMatch[1]) : 0;
+  return Math.round(hours + minutes);
+}
+
+export function buildPerformanceSnapshot(logs: TrainingLog[]): PerformanceSnapshot {
+  const summary = buildSummary(logs);
+  const thisWeek = buildWeekSummary(logs, 0);
+  const bestRuckDistanceKm = Math.max(0, ...logs.filter((log) => log.category === 'Ruck').map((log) => getFirstDistanceKm(log.distanceLoad)));
+  const bestRunDistanceKm = Math.max(0, ...logs.filter((log) => log.category === 'Run').map((log) => getFirstDistanceKm(log.distanceLoad)));
+  const longestSessionMinutes = Math.max(0, ...logs.map((log) => getDurationMinutes(log.duration)));
+
+  const consistencyLabel =
+    thisWeek.total >= 4 ? 'On target'
+    : thisWeek.total >= 2 ? 'Building'
+    : thisWeek.total === 1 ? 'Started'
+    : 'No sessions';
+
+  let highlight = 'Add sessions to build a performance baseline.';
+  if (thisWeek.total >= 4) {
+    highlight = 'Weekly consistency target is on track.';
+  } else if (bestRuckDistanceKm > 0 && bestRunDistanceKm > 0) {
+    highlight = `Best logged ruck ${bestRuckDistanceKm} km and run ${bestRunDistanceKm} km.`;
+  } else if (bestRuckDistanceKm > 0) {
+    highlight = `Best logged ruck distance is ${bestRuckDistanceKm} km.`;
+  } else if (bestRunDistanceKm > 0) {
+    highlight = `Best logged run distance is ${bestRunDistanceKm} km.`;
+  }
+
+  return {
+    totalSessions: summary.total,
+    currentWeekSessions: thisWeek.total,
+    averageReadiness: summary.averageReadiness,
+    bestRuckDistanceKm,
+    bestRunDistanceKm,
+    longestSessionMinutes,
+    consistencyLabel,
+    highlight,
   };
 }
 

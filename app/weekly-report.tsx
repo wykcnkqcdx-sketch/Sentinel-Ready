@@ -3,6 +3,7 @@ import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import {
   buildGoalSummary,
   buildGoalAction,
+  buildPerformanceSnapshot,
   buildNextWeekRecommendation,
   buildWeekSummary,
   calculateTrainingLogHealthScore,
@@ -102,6 +103,7 @@ export default function WeeklyReportScreen() {
   const nextWeekAdvice = buildNextWeekRecommendation(thisWeek, lastWeek);
   const goalSummary = buildGoalSummary(goals);
   const goalAction = buildGoalAction(goals, logs);
+  const performance = buildPerformanceSnapshot(logs);
   const report = buildWeeklyReport(logs, new Date(), goals);
 
   const healthIsWarn = healthScore < 60;
@@ -181,6 +183,15 @@ export default function WeeklyReportScreen() {
         <Text style={styles.goalAction}>{goalAction.title}: {goalAction.action}</Text>
       </View>
 
+      <View style={styles.performanceCard}>
+        <Text style={styles.cardKicker}>PERFORMANCE SNAPSHOT</Text>
+        <Text style={styles.goalTitle}>{performance.consistencyLabel}</Text>
+        <Text style={styles.goalAction}>{performance.highlight}</Text>
+        <Text style={styles.adviceText}>
+          Best ruck {performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'} · Best run {performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : '--'} · Longest {performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : '--'}
+        </Text>
+      </View>
+
       <View style={styles.exportCard}>
         <View style={styles.exportHeader}>
           <View style={styles.exportHeaderText}>
@@ -257,6 +268,7 @@ const styles = StyleSheet.create({
   goalTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
   goalProgress: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   goalAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  performanceCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 8 },
 
   exportCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
   exportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },

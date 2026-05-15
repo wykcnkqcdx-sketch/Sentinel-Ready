@@ -3,7 +3,7 @@ import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
-import { buildGoalAction, buildGoalSummary, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -58,6 +58,7 @@ export default function DashboardScreen() {
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
   const goalSummary = useMemo(() => buildGoalSummary(goals), [goals]);
   const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
+  const performance = useMemo(() => buildPerformanceSnapshot(logs), [logs]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -143,6 +144,28 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
+
+      <SentinelCard title="Performance Snapshot">
+        <View style={styles.performanceGrid}>
+          <View style={styles.performanceItem}>
+            <Text style={styles.performanceValue}>{performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'}</Text>
+            <Text style={styles.performanceLabel}>Best Ruck</Text>
+          </View>
+          <View style={styles.performanceItem}>
+            <Text style={styles.performanceValue}>{performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : '--'}</Text>
+            <Text style={styles.performanceLabel}>Best Run</Text>
+          </View>
+          <View style={styles.performanceItem}>
+            <Text style={styles.performanceValue}>{performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes}m` : '--'}</Text>
+            <Text style={styles.performanceLabel}>Longest</Text>
+          </View>
+          <View style={styles.performanceItem}>
+            <Text style={styles.performanceValue}>{performance.consistencyLabel}</Text>
+            <Text style={styles.performanceLabel}>Consistency</Text>
+          </View>
+        </View>
+        <Text style={styles.cardText}>{performance.highlight}</Text>
+      </SentinelCard>
 
       <SentinelCard title="Goal Tracking">
         <View style={styles.goalHeader}>
@@ -330,6 +353,10 @@ const styles = StyleSheet.create({
   progressFill: { width: '82%', height: '100%', backgroundColor: '#62d982', borderRadius: 999 },
   readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   detailText: { color: '#d8e6d4', backgroundColor: '#0b1710', borderWidth: 1, borderColor: '#213c2b', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
+  performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  performanceItem: { width: '47%', backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
+  performanceValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  performanceLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },

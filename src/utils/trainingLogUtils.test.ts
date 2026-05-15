@@ -5,6 +5,7 @@ import { calculateReadinessPercentage } from '@/src/screens/TrainingContext';
 import {
   buildReadinessTrend,
   buildGoalAction,
+  buildPerformanceSnapshot,
   buildSessionRecommendation,
   buildWeeklyLoadRisk,
   buildWeekPlan,
@@ -335,6 +336,39 @@ describe('goal action', () => {
       status: 'good',
     });
     expect(action.action).toContain('controlled ruck');
+  });
+});
+
+describe('performance snapshot', () => {
+  it('extracts best ruck/run distances and longest duration', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const snapshot = buildPerformanceSnapshot([
+      makeLog({ id: 1, date: '2026-05-11', category: 'Ruck', distanceLoad: '8 km with 15 kg', duration: '1 hr 20 min' }),
+      makeLog({ id: 2, date: '2026-05-12', category: 'Run', distanceLoad: '5 miles', duration: '45 minutes' }),
+      makeLog({ id: 3, date: '2026-05-13', category: 'Ruck', distanceLoad: '10 km with 18 kg', duration: '90 minutes' }),
+    ]);
+
+    expect(snapshot.bestRuckDistanceKm).toBe(10);
+    expect(snapshot.bestRunDistanceKm).toBe(8);
+    expect(snapshot.longestSessionMinutes).toBe(90);
+    expect(snapshot.consistencyLabel).toBe('Building');
+  });
+
+  it('marks weekly consistency on target at four sessions', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const snapshot = buildPerformanceSnapshot([
+      makeLog({ id: 1, date: '2026-05-11' }),
+      makeLog({ id: 2, date: '2026-05-12' }),
+      makeLog({ id: 3, date: '2026-05-13' }),
+      makeLog({ id: 4, date: '2026-05-14' }),
+    ]);
+
+    expect(snapshot.consistencyLabel).toBe('On target');
+    expect(snapshot.highlight).toBe('Weekly consistency target is on track.');
   });
 });
 
