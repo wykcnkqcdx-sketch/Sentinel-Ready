@@ -490,6 +490,7 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
 
   const trend = buildReadinessTrend(logs);
   const thisWeek = buildWeekSummary(logs, 0);
+  const weeklyLoadRisk = buildWeeklyLoadRisk(logs);
 
   const recentLogs = [...logs]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
@@ -539,6 +540,39 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
       suggestion: 'Review recent logs and add missing notes, duration, load and readiness scores before making training decisions.',
       actionLabel: 'View Weak Logs',
       actionType: 'weak-logs',
+      status: 'caution',
+    };
+  }
+
+  if (weeklyLoadRisk.status === 'high') {
+    return {
+      sessionType: 'Deload Day',
+      reason: `Weekly load risk is high: ${weeklyLoadRisk.factors.slice(0, 2).join(', ').toLowerCase()}.`,
+      suggestion: 'Keep today easy. Use mobility, walking, hydration and sleep focus. Avoid adding ruck, run or strength volume.',
+      actionLabel: 'Log Recovery Session',
+      actionType: 'add-log',
+      status: 'warning',
+    };
+  }
+
+  if (weeklyLoadRisk.status === 'moderate' && weeklyLoadRisk.recoverySessions === 0) {
+    return {
+      sessionType: 'Mobility Session',
+      reason: 'Weekly load is building and no recovery or mobility session is logged.',
+      suggestion: '20-30 minutes of mobility, easy walking and breathing work. Keep intensity low before adding more load.',
+      actionLabel: 'Log Recovery Session',
+      actionType: 'add-log',
+      status: 'caution',
+    };
+  }
+
+  if (weeklyLoadRisk.status === 'moderate') {
+    return {
+      sessionType: 'Controlled Session',
+      reason: 'Weekly load risk is moderate. Progression is possible, but only with controlled intensity.',
+      suggestion: 'Choose a short ruck, steady run or strength session without increasing distance, load and intensity together.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
       status: 'caution',
     };
   }

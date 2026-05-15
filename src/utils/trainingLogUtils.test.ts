@@ -179,6 +179,9 @@ describe('weekly load risk', () => {
 
 describe('recommendations and plans', () => {
   it('recommends recovery when readiness drops and fatigue watch is recent', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
     const recommendation = buildSessionRecommendation([
       makeLog({ id: 1, date: '2026-05-09', readiness: '8' }),
       makeLog({ id: 2, date: '2026-05-10', readiness: '5' }),
@@ -192,7 +195,44 @@ describe('recommendations and plans', () => {
     });
   });
 
+  it('recommends a deload day when weekly load risk is high', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const recommendation = buildSessionRecommendation([
+      makeLog({ id: 1, date: '2026-05-10', category: 'Ruck', readiness: '7' }),
+      makeLog({ id: 2, date: '2026-05-11', category: 'Ruck', readiness: '7' }),
+      makeLog({ id: 3, date: '2026-05-12', category: 'Ruck', readiness: '7' }),
+    ]);
+
+    expect(recommendation).toMatchObject({
+      sessionType: 'Deload Day',
+      actionType: 'add-log',
+      status: 'warning',
+    });
+  });
+
+  it('recommends mobility when weekly load is moderate without recovery', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const recommendation = buildSessionRecommendation([
+      makeLog({ id: 1, date: '2026-05-10', category: 'Strength', readiness: '7' }),
+      makeLog({ id: 2, date: '2026-05-11', category: 'Run', readiness: '7' }),
+      makeLog({ id: 3, date: '2026-05-12', category: 'Ruck', readiness: '7' }),
+    ]);
+
+    expect(recommendation).toMatchObject({
+      sessionType: 'Mobility Session',
+      actionType: 'add-log',
+      status: 'caution',
+    });
+  });
+
   it('points users to weak logs when most saved logs need improvement', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
     const recommendation = buildSessionRecommendation([
       makeLog({ id: 1, date: '2026-05-09', readiness: '7', notes: 'ok' }),
       makeLog({ id: 2, date: '2026-05-10', readiness: '7', duration: '' }),
@@ -207,6 +247,9 @@ describe('recommendations and plans', () => {
   });
 
   it('builds a recovery week when readiness is dropping', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
     const plan = buildWeekPlan([
       makeLog({ id: 1, date: '2026-05-10', readiness: '8' }),
       makeLog({ id: 2, date: '2026-05-11', readiness: '5' }),
