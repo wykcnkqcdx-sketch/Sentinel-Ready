@@ -1,5 +1,6 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildSmartLogDraft } from '@/src/utils/logDraftUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import {
   buildReadinessTrend,
@@ -8,7 +9,8 @@ import {
   DayPlan,
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -42,12 +44,29 @@ function MiniDayRow({ item, isToday, planType }: { item: DayPlan; isToday: boole
 export default function TrainingScreen() {
   const { logs, goals, isLoading } = useTraining();
   const profile = useUser();
+  const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);
   const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile.injuryNotes });
+  const smartDraft = buildSmartLogDraft(logs, goals, { injuryNotes: profile.injuryNotes });
+
+  function logSuggestedSession() {
+    router.push({
+      pathname: '/add-log',
+      params: {
+        date: smartDraft.date,
+        category: smartDraft.category,
+        type: smartDraft.type,
+        duration: smartDraft.duration,
+        distanceLoad: smartDraft.distanceLoad,
+        readiness: smartDraft.readiness,
+        notes: smartDraft.notes,
+      },
+    });
+  }
 
   const todayName = getTodayName();
   const todayPlan = days.find((d) => d.day === todayName);
@@ -107,6 +126,11 @@ export default function TrainingScreen() {
         <Text style={missionBrief.status === 'red' ? styles.briefTitleWarn : styles.briefTitle}>{missionBrief.title}</Text>
         <Text style={styles.briefText}>{missionBrief.primaryAction}</Text>
         <Text style={styles.briefSubText}>{missionBrief.secondaryAction}</Text>
+        <TouchableOpacity style={missionBrief.status === 'red' ? styles.briefButtonWarn : styles.briefButton} onPress={logSuggestedSession}>
+          <Text style={missionBrief.status === 'red' ? styles.briefButtonTextWarn : styles.briefButtonText}>
+            Log Suggested Session
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.statGrid}>
@@ -196,6 +220,10 @@ const styles = StyleSheet.create({
   briefTitleWarn: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
   briefText: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
   briefSubText: { color: '#aeb8aa', fontSize: 12, lineHeight: 18 },
+  briefButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
+  briefButtonWarn: { backgroundColor: '#ffb86b', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
+  briefButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
+  briefButtonTextWarn: { color: '#21140b', fontSize: 12, fontWeight: '900' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: { width: '47%', backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 4 },
