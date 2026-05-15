@@ -17,7 +17,7 @@ export function isFatigueWatch(readiness: string) {
 }
 
 export function getDateValue(date: string) {
-  const time = new Date(date).getTime();
+  const time = new Date(date + 'T00:00:00').getTime();
   return Number.isNaN(time) ? 0 : time;
 }
 

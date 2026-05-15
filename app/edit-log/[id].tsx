@@ -9,7 +9,7 @@ export default function EditLogScreen() {
   const { id } = useLocalSearchParams();
   const { logs, updateLog, isLoading } = useTraining();
 
-  const logId = Number(Array.isArray(id) ? id[0] : id);
+  const logId = Number(Array.isArray(id) ? (id[0] ?? '') : id);
   const logToEdit = useMemo(
     () => logs.find((log) => log.id === logId),
     [logs, logId]
@@ -17,7 +17,7 @@ export default function EditLogScreen() {
 
   async function handleSubmit(values: TrainingLogFormValues) {
     await updateLog(logId, values);
-    router.replace('/log');
+    router.back();
   }
 
   if (isLoading) {

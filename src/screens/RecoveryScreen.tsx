@@ -6,6 +6,7 @@ import {
   getReadinessNumber,
   isFatigueWatch,
 } from '@/src/utils/trainingLogUtils';
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 function daysSince(dateStr: string): number {
@@ -79,8 +80,10 @@ export default function RecoveryScreen() {
   const trend = buildReadinessTrend(logs);
   const thisWeek = buildWeekSummary(logs, 0);
 
-  const recentSorted = [...logs]
-    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
+  const recentSorted = useMemo(
+    () => [...logs].sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id),
+    [logs]
+  );
 
   const latestRecoveryLog = recentSorted.find((l) => l.category === 'Recovery');
   const recentFatigueLogs = recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3);

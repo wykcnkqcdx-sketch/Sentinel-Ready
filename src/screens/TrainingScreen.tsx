@@ -13,13 +13,14 @@ function getTodayName(): string {
   return DAY_NAMES[new Date().getDay()];
 }
 
-function intensityColor(intensity: DayPlan['intensity']) {
+function intensityColor(intensity: DayPlan['intensity'], planType: string) {
   if (intensity === 'Rest' || intensity === 'Low') return '#8fbf8f';
+  if (planType === 'recovery') return '#8fbf8f';
   if (intensity === 'High') return '#f3d36b';
   return '#91e6a3';
 }
 
-function MiniDayRow({ item, isToday }: { item: DayPlan; isToday: boolean }) {
+function MiniDayRow({ item, isToday, planType }: { item: DayPlan; isToday: boolean; planType: string }) {
   return (
     <View style={isToday ? styles.miniRowToday : item.isRest ? styles.miniRowRest : styles.miniRow}>
       <View style={styles.miniLeft}>
@@ -28,7 +29,7 @@ function MiniDayRow({ item, isToday }: { item: DayPlan; isToday: boolean }) {
         </Text>
         <Text style={item.isRest ? styles.miniFocusRest : styles.miniFocus}>{item.focus}</Text>
       </View>
-      <Text style={[styles.miniIntensity, { color: intensityColor(item.intensity) }]}>
+      <Text style={[styles.miniIntensity, { color: intensityColor(item.intensity, planType) }]}>
         {item.intensity}
       </Text>
     </View>
@@ -76,7 +77,7 @@ export default function TrainingScreen() {
           </View>
           <Text style={[styles.heroFocus, { color: focusLabelColor }]}>{todayPlan.focus}</Text>
           <Text style={styles.heroSession}>{todayPlan.session}</Text>
-          <Text style={[styles.heroIntensity, { color: intensityColor(todayPlan.intensity) }]}>
+          <Text style={[styles.heroIntensity, { color: intensityColor(todayPlan.intensity, planType) }]}>
             Intensity: {todayPlan.intensity}
           </Text>
         </View>
@@ -129,7 +130,7 @@ export default function TrainingScreen() {
 
       <View style={styles.weekList}>
         {remainingDays.map((item) => (
-          <MiniDayRow key={item.day} item={item} isToday={false} />
+          <MiniDayRow key={item.day} item={item} isToday={false} planType={planType} />
         ))}
       </View>
 

@@ -32,11 +32,11 @@ export default function LogScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showWeakLogsOnly, setShowWeakLogsOnly] = useState(false);
 
-  const summary = buildSummary(logs);
-  const healthScore = calculateTrainingLogHealthScore(logs);
-  const readinessTrend = buildReadinessTrend(logs);
-  const sessionRecommendation = buildSessionRecommendation(logs);
-  const weeklyLoadRisk = buildWeeklyLoadRisk(logs);
+  const summary = useMemo(() => buildSummary(logs), [logs]);
+  const healthScore = useMemo(() => calculateTrainingLogHealthScore(logs), [logs]);
+  const readinessTrend = useMemo(() => buildReadinessTrend(logs), [logs]);
+  const sessionRecommendation = useMemo(() => buildSessionRecommendation(logs), [logs]);
+  const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
 
   function handleRecommendationAction(actionType: RecommendationActionType) {
     if (actionType === 'weak-logs') {
@@ -61,7 +61,17 @@ export default function LogScreen() {
   function confirmDeleteLog(log: TrainingLog) {
     Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteLog(log.id) },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteLog(log.id);
+          } catch {
+            Alert.alert('Error', 'Failed to delete log. Please try again.');
+          }
+        },
+      },
     ]);
   }
 

@@ -1,5 +1,8 @@
-import dfift from '@/src/data/standards/dfift-standards.json';
+import type { DfiftStandards } from '@/src/types/dfift';
+import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+
+const dfiftStandards = dfiftJson as DfiftStandards;
 import { useUser } from '@/src/screens/UserContext';
 import { buildReadinessTrend, getDateValue } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
@@ -29,9 +32,8 @@ function parseReps(str: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-function parseRunSeconds(distanceLoad: string, duration: string): number | null {
-  const combined = distanceLoad + ' ' + duration;
-  const mmss = combined.match(/(\d{1,2}):(\d{2})/);
+function parseRunSeconds(_distanceLoad: string, duration: string): number | null {
+  const mmss = duration.match(/(\d{1,2}):(\d{2})/);
   if (mmss) return Number(mmss[1]) * 60 + Number(mmss[2]);
   return null;
 }
@@ -105,7 +107,7 @@ export default function TestsScreen() {
   const runSeconds = runLog ? parseRunSeconds(runLog.distanceLoad, runLog.duration) : null;
   const skinfoldMm = skinfoldLog ? parseMm(skinfoldLog.distanceLoad) : null;
 
-  const { pushUps, sitUps, run, skinfold } = dfift.events;
+  const { pushUps, sitUps, run, skinfold } = dfiftStandards.events;
   const pushLimit = gender === 'F' ? pushUps.female : pushUps.male;
   const sitLimit = gender === 'F' ? sitUps.female : sitUps.male;
   const runLimit = gender === 'F' ? run.femaleMaxSeconds : run.maleMaxSeconds;

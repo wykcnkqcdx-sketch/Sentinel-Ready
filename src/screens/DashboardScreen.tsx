@@ -4,6 +4,7 @@ import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { useMemo } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
@@ -48,12 +49,16 @@ function getRecoveryStatus(logs: ReturnType<typeof useTraining>['logs']) {
 
 export default function DashboardScreen() {
   const { logs, isLoading } = useTraining();
-  if (isLoading) return <View style={styles.screen} />;
 
-  const readinessPercentage = calculateReadinessPercentage(logs);
-  const thisWeek = buildWeekSummary(logs, 0);
-  const trend = buildReadinessTrend(logs);
-  const weeklyLoadRisk = buildWeeklyLoadRisk(logs);
+  const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
+  const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
+  const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
+  const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
+  const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
+  const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
+  const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness);
@@ -95,12 +100,8 @@ export default function DashboardScreen() {
   const cardioVal = latestRun ? latestRun.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
   const recoveryVal = latestRecovery ? `Score: ${latestRecovery.readiness}` : 'N/A';
 
-  const strengthStatus = getStrengthStatus(logs);
-  const enduranceStatus = getEnduranceStatus(logs);
-  const recoveryStatus = getRecoveryStatus(logs);
-
   const trendLogs = [...logs]
-    .filter((log) => Number(log.readiness) > 0)
+    .filter((log) => getReadinessNumber(log.readiness) > 0)
     .slice(0, 7)
     .reverse();
 
@@ -143,7 +144,7 @@ export default function DashboardScreen() {
         <View style={styles.chartContainer}>
           {trendLogs.length > 0 ? (
             trendLogs.map((log) => {
-              const score = Number(log.readiness);
+              const score = getReadinessNumber(log.readiness);
               const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
               let barColor = '#62d982';
               if (score < 6) barColor = '#d96262';
@@ -253,7 +254,7 @@ export default function DashboardScreen() {
           />
         ) : null}
 
-        {latestRuck && Number(latestRuck.readiness) >= 7 && readinessPercentage >= 70 ? (
+        {latestRuck && getReadinessNumber(latestRuck.readiness) >= 7 && readinessPercentage >= 70 ? (
           <AlertCard
             type="info"
             title="Ruck progression available"

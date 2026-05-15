@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -140,7 +141,12 @@ function RuckSessionCard({ log, metrics, paceVsPb }: {
           <Text style={styles.sessionStatLabel}>pace</Text>
           {paceVsPb !== null ? (
             <Text style={paceVsPb <= 0 ? styles.deltaGood : styles.deltaWarn}>
-              {paceVsPb > 0 ? '+' : ''}{Math.abs(Math.floor(paceVsPb))}:{Math.abs(Math.round((Math.abs(paceVsPb) % 1) * 60)).toString().padStart(2, '0')} vs PB
+              {(() => {
+                const absDelta = Math.abs(paceVsPb);
+                const mins = Math.floor(absDelta);
+                const secs = Math.round((absDelta % 1) * 60);
+                return `${paceVsPb > 0 ? '+' : ''}${mins}:${secs.toString().padStart(2, '0')} vs PB`;
+              })()}
             </Text>
           ) : null}
         </View>
@@ -157,42 +163,63 @@ export default function RuckScreen() {
   const { logs, isLoading } = useTraining();
   if (isLoading) return <View style={styles.screen} />;
 
-  const ruckLogs = [...logs.filter((l) => l.category === 'Ruck')]
-    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
+  const ruckLogs = useMemo(
+    () =>
+      [...logs.filter((l) => l.category === 'Ruck')].sort(
+        (a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id
+      ),
+    [logs]
+  );
 
-  const ruckMetrics = ruckLogs.map((log) => parseRuckMetrics(log));
+  const ruckMetrics = useMemo(() => ruckLogs.map((log) => parseRuckMetrics(log)), [ruckLogs]);
 
-  const totalSessions = ruckLogs.length;
-  const totalDistance = ruckMetrics.reduce((sum, m) => sum + m.distance, 0);
-  const longestRuck = Math.max(0, ...ruckMetrics.map((m) => m.distance));
-  const heaviestLoad = Math.max(0, ...ruckMetrics.map((m) => m.load));
-  const bestPace = ruckMetrics
-    .filter((m) => m.pace > 0)
-    .reduce((best, m) => (m.pace < best ? m.pace : best), Infinity);
+  const totalSessions = useMemo(() => ruckLogs.length, [ruckLogs]);
+  const totalDistance = useMemo(() => ruckMetrics.reduce((sum, m) => sum + m.distance, 0), [ruckMetrics]);
+  const longestRuck = useMemo(() => Math.max(0, ...ruckMetrics.map((m) => m.distance)), [ruckMetrics]);
+  const heaviestLoad = useMemo(() => Math.max(0, ...ruckMetrics.map((m) => m.load)), [ruckMetrics]);
+  const bestPace = useMemo(
+    () => ruckMetrics.filter((m) => m.pace > 0).reduce((best, m) => (m.pace < best ? m.pace : best), Infinity),
+    [ruckMetrics]
+  );
 
-  const latest = ruckLogs[0] ?? null;
-  const latestMetrics = ruckMetrics[0] ?? null;
-  const previousMetrics = ruckMetrics[1] ?? null;
+  const latest = useMemo(() => ruckLogs[0] ?? null, [ruckLogs]);
+  const latestMetrics = useMemo(() => ruckMetrics[0] ?? null, [ruckMetrics]);
+  const previousMetrics = useMemo(() => ruckMetrics[1] ?? null, [ruckMetrics]);
 
-  const distanceDelta =
-    latestMetrics && previousMetrics && latestMetrics.distance > 0 && previousMetrics.distance > 0
-      ? latestMetrics.distance - previousMetrics.distance
-      : null;
+  const distanceDelta = useMemo(
+    () =>
+      latestMetrics && previousMetrics && latestMetrics.distance > 0 && previousMetrics.distance > 0
+        ? latestMetrics.distance - previousMetrics.distance
+        : null,
+    [latestMetrics, previousMetrics]
+  );
 
-  const loadDelta =
-    latestMetrics && previousMetrics && latestMetrics.load > 0 && previousMetrics.load > 0
-      ? latestMetrics.load - previousMetrics.load
-      : null;
+  const loadDelta = useMemo(
+    () =>
+      latestMetrics && previousMetrics && latestMetrics.load > 0 && previousMetrics.load > 0
+        ? latestMetrics.load - previousMetrics.load
+        : null,
+    [latestMetrics, previousMetrics]
+  );
 
-  const trend = buildReadinessTrend(ruckLogs);
-  const recentFatigue = ruckLogs.slice(0, 5).filter((l) => isFatigueWatch(l.readiness)).length;
-  const readinessGood = trend.status !== 'warning' && recentFatigue < 2;
+  const trend = useMemo(() => buildReadinessTrend(ruckLogs), [ruckLogs]);
+  const recentFatigue = useMemo(
+    () => ruckLogs.slice(0, 5).filter((l) => isFatigueWatch(l.readiness)).length,
+    [ruckLogs]
+  );
+  const readinessGood = useMemo(
+    () => trend.status !== 'warning' && recentFatigue < 2,
+    [trend, recentFatigue]
+  );
 
-  const weekStats = getThisWeekKm(ruckLogs, ruckMetrics);
-  const nextSessionAdvice = getNextSessionAdvice(latestMetrics, distanceDelta, loadDelta, readinessGood);
+  const weekStats = useMemo(() => getThisWeekKm(ruckLogs, ruckMetrics), [ruckLogs, ruckMetrics]);
+  const nextSessionAdvice = useMemo(
+    () => getNextSessionAdvice(latestMetrics, distanceDelta, loadDelta, readinessGood),
+    [latestMetrics, distanceDelta, loadDelta, readinessGood]
+  );
 
-  const recentHistory = ruckLogs.slice(0, 5);
-  const recentMetricsSlice = ruckMetrics.slice(0, 5);
+  const recentHistory = useMemo(() => ruckLogs.slice(0, 5), [ruckLogs]);
+  const recentMetricsSlice = useMemo(() => ruckMetrics.slice(0, 5), [ruckMetrics]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

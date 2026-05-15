@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-05-15T14:24:48.711Z",
+  "mode": "headless",
+  "workerType": "optimize",
+  "model": "sonnet",
+  "durationMs": 45873,
+  "executionId": "optimize_1778855042838_6dl7oc",
+  "success": true,
+  "findings": {
+    "sections": [
+      {
+        "title": "Performance Analysis",
+        "content": "\n",
+        "level": 2
+      },
+      {
+        "title": "1. Redundant Computations (Highest Priority)",
+        "content": "\n**`LogScreen.tsx` — Multiple analytics computed outside `useMemo`**\n\n```tsx\n// Current — recomputes on every render\nconst summary = buildSummary(logs);\nconst healthScore = calculateTrainingLogHealthScore(logs);\nconst readinessTrend = buildReadinessTrend(logs);\nconst sessionRecommendation = buildSessionRecommendation(logs);\nconst weeklyLoadRisk = buildWeeklyLoadRisk(logs);\n```\n\n```tsx\n// Fix — memoize all derived values together\nconst { summary, healthScore, readinessTrend, sessionRecommendation, weeklyLoadRisk } = useMemo(() => ({\n  summary: buildSummary(logs),\n  healthScore: calculateTrainingLogHealthScore(logs),\n  readinessTrend: buildReadinessTrend(logs),\n  sessionRecommendation: buildSessionRecommendation(logs),\n  weeklyLoadRisk: buildWeeklyLoadRisk(logs),\n}), [logs]);\n```\n\nThese functions iterate over the `logs` array multiple times — each independently. Memoizing eliminates redundant passes on every state change (filter, sort, search query).\n\n---\n\n**`DashboardScreen.tsx` — Same `logs` array iterated 7+ times**\n\n`buildWeekSummary`, `buildReadinessTrend`, `buildWeeklyLoadRisk`, `getStrengthStatus`, `getEnduranceStatus`, `getRecoveryStatus`, plus `logs.find(...)` called 4 times — all on every render. Apply the same `useMemo` pattern.\n\n---\n\n",
+        "level": 3
+      },
+      {
+        "title": "2. Unnecessary Re-renders",
+        "content": "\n**`TrainingLogCard.tsx` — Not memoized; re-renders on every list update**\n\n```tsx\n// Fix — wrap in React.memo\nexport default React.memo(function TrainingLogCard({ log, onEdit, onDelete }: Props) {\n  ...\n});\n```\n\nSince it's rendered inside a `FlatList`, every parent state change (search query keystroke, filter toggle) re-renders all visible cards. Combine with stable `onEdit`/`onDelete` callbacks using `useCallback` in `LogScreen`.\n\n```tsx\n// LogScreen.tsx\nconst handleEdit = useCallback((id: number) => router.push(`/edit-log/${id}`), [router]);\nconst handleDelete = useCallback((log: TrainingLog) => confirmDeleteLog(log), []);\n```\n\n---\n\n**`TrainingLogForm.tsx` — `notesWarning` not memoized**\n\n```tsx\n// Current\nconst notesWarning = getNotesQualityWarning(notes);\n\n// Fix\nconst notesWarning = useMemo(() => getNotesQualityWarning(notes), [notes]);\n```\n\n`getNotesQualityWarning` runs string ops on every render. Minor, but it fires on every keystroke across all fields.\n\n---\n\n",
+        "level": 3
+      },
+      {
+        "title": "3. Multiple Passes Over the Same Array (`reportBuilder.ts`)",
+        "content": "\n`buildWeeklyReport` calls 8 separate functions, each iterating `logs`:\n\n```ts\n// Current — ~8 separate filter/map passes over logs\nconst thisWeek = buildWeekSummary(logs, 0);\nconst summary = buildSummary(logs);\nconst healthScore = calculateTrainingLogHealthScore(logs);\n// ...\nconst weakLogs = logs.filter((log) => getWeakLogReasons(log).length > 0);\nconst fatigueWatchLogs = logs.filter((log) => isFatigueWatch(log.readiness));\n```\n\nFor report generation (a one-shot call), this is acceptable — but `getWeakLogReasons` is called twice per log (once in `calculateTrainingLogHealthScore` inside `trainingLogUtils`, once in the `weakLogs` filter). If `trainingLogUtils` exposes those intermediate results, pass them through rather than recomputing.\n\n---\n\n",
+        "level": 3
+      },
+      {
+        "title": "4. No N+1 Patterns Found",
+        "content": "\nThis is a local state app with no async queries per list item — no N+1 concerns in the traditional sense.\n\n---\n\n",
+        "level": 3
+      },
+      {
+        "title": "5. Memory Leak Risk",
+        "content": "\n**`TrainingLogForm.tsx` — `useEffect` syncing `initialValues`**\n\n```tsx\nuseEffect(() => {\n  setDate(initialValues.date);\n  setCategory(initialValues.category);\n  // ...6 setState calls\n}, [initialValues]);\n```\n\nThis triggers 6 synchronous state updates in sequence, causing 6 re-renders. Consolidate into a single state object, or use a `useReducer`:\n\n```tsx\n// Simpler fix — single state reset\nconst [values, setValues] = useState(initialValues);\nuseEffect(() => { setValues(initialValues); }, [initialValues]);\n```\n\n---\n\n",
+        "level": 3
+      },
+      {
+        "title": "Summary Table",
+        "content": "| Issue | File | Impact | Fix |\n|---|---|---|---|\n| Unmemorized analytics | `LogScreen.tsx` | High — fires on search keystrokes | `useMemo` all 5 computed values |\n| Repeated `logs` iteration | `DashboardScreen.tsx` | High — 7+ passes per render | `useMemo` block |\n| `FlatList` item re-renders | `TrainingLogCard.tsx` | Medium — scales with log count | `React.memo` + `useCallback` |\n| 6 sequential `setState` calls | `TrainingLogForm.tsx` | Medium — 6 renders per edit open | Single state object |\n| `notesWarning` on every keystroke | `TrainingLogForm.tsx` | Low | `useMemo` |",
+        "level": 3
+      }
+    ],
+    "codeBlocks": [
+      {
+        "language": "tsx",
+        "code": "// Current — recomputes on every render\nconst summary = buildSummary(logs);\nconst healthScore = calculateTrainingLogHealthScore(logs);\nconst readinessTrend = buildReadinessTrend(logs);\nconst sessionRecommendation = buildSessionRecommendation(logs);\nconst weeklyLoadRisk = buildWeeklyLoadRisk(logs);"
+      },
+      {
+        "language": "tsx",
+        "code": "// Fix — memoize all derived values together\nconst { summary, healthScore, readinessTrend, sessionRecommendation, weeklyLoadRisk } = useMemo(() => ({\n  summary: buildSummary(logs),\n  healthScore: calculateTrainingLogHealthScore(logs),\n  readinessTrend: buildReadinessTrend(logs),\n  sessionRecommendation: buildSessionRecommendation(logs),\n  weeklyLoadRisk: buildWeeklyLoadRisk(logs),\n}), [logs]);"
+      },
+      {
+        "language": "tsx",
+        "code": "// Fix — wrap in React.memo\nexport default React.memo(function TrainingLogCard({ log, onEdit, onDelete }: Props) {\n  ...\n});"
+      },
+      {
+        "language": "tsx",
+        "code": "// LogScreen.tsx\nconst handleEdit = useCallback((id: number) => router.push(`/edit-log/${id}`), [router]);\nconst handleDelete = useCallback((log: TrainingLog) => confirmDeleteLog(log), []);"
+      },
+      {
+        "language": "tsx",
+        "code": "// Current\nconst notesWarning = getNotesQualityWarning(notes);\n\n// Fix\nconst notesWarning = useMemo(() => getNotesQualityWarning(notes), [notes]);"
+      },
+      {
+        "language": "ts",
+        "code": "// Current — ~8 separate filter/map passes over logs\nconst thisWeek = buildWeekSummary(logs, 0);\nconst summary = buildSummary(logs);\nconst healthScore = calculateTrainingLogHealthScore(logs);\n// ...\nconst weakLogs = logs.filter((log) => getWeakLogReasons(log).length > 0);\nconst fatigueWatchLogs = logs.filter((log) => isFatigueWatch(log.readiness));"
+      },
+      {
+        "language": "tsx",
+        "code": "useEffect(() => {\n  setDate(initialValues.date);\n  setCategory(initialValues.category);\n  // ...6 setState calls\n}, [initialValues]);"
+      },
+      {
+        "language": "tsx",
+        "code": "// Simpler fix — single state reset\nconst [values, setValues] = useState(initialValues);\nuseEffect(() => { setValues(initialValues); }, [initialValues]);"
+      }
+    ]
+  },
+  "rawOutputPreview": "## Performance Analysis\n\n### 1. Redundant Computations (Highest Priority)\n\n**`LogScreen.tsx` — Multiple analytics computed outside `useMemo`**\n\n```tsx\n// Current — recomputes on every render\nconst summary = buildSummary(logs);\nconst healthScore = calculateTrainingLogHealthScore(logs);\nconst readinessTrend = buildReadinessTrend(logs);\nconst sessionRecommendation = buildSessionRecommendation(logs);\nconst weeklyLoadRisk = buildWeeklyLoadRisk(logs);\n```\n\n```tsx\n// Fix — memoize all derived values together\nconst { summary, healthScore, readinessTrend, sessionRecommendation, weeklyLoadRisk } = useMemo(() => ({\n  summary: buildSummary(logs),\n  healthScore: calculateTrainingLogHealthScore(logs),\n  readinessTrend: buildReadinessTrend(logs),\n  sessionRecommendation: buildSessionRecommendation(logs),\n  weeklyLoadRisk: buildWeeklyLoadRisk(logs),\n}), [logs]);\n```\n\nThese functions iterate over the `logs` array multiple times — each independently. Memoizing eliminates redundant passes on every state change (filter, sort, search query).\n\n---\n\n**`DashboardScreen.tsx` — Same `logs` array iterated 7+ times**\n\n`buildWeekSummary`, `buildReadinessTrend`, `buildWeeklyLoadRisk`, `getStrengthStatus`, `getEnduranceStatus`, `getRecoveryStatus`, plus `logs.find(...)` called 4 times — all on every render. Apply the same `useMemo` pattern.\n\n---\n\n### 2. Unnecessary Re-renders\n\n**`TrainingLogCard.tsx` — Not memoized; re-renders on every list update**\n\n```tsx\n// Fix — wrap in React.memo\nexport default React.memo(function TrainingLogCard({ log, onEdit, onDelete }: Props) {\n  ...\n});\n```\n\nSince it's rendered inside a `FlatList`, every parent state change (search query keystroke, filter toggle) re-renders all visible cards. Combine with stable `onEdit`/`onDelete` callbacks using `useCallback` in `LogScreen`.\n\n```tsx\n// LogScreen.tsx\nconst handleEdit = useCallback((id: number) => router.push(`/edit-log/${id}`), [router]);\nconst handleDelete = useCallback((log: TrainingLog) => confirmDeleteLog(log), [])",
+  "rawOutputLength": 4457
+}

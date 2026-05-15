@@ -270,19 +270,19 @@ export default function TrainingLogForm({
         </View>
 
         <Text style={styles.label}>Date</Text>
-        <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" placeholderTextColor="#6f7d70" />
+        <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" placeholderTextColor="#6f7d70" maxLength={10} />
 
         <Text style={styles.label}>Session Type</Text>
-        <TextInput style={styles.input} value={type} onChangeText={setType} placeholder="Loaded Ruck, Steady Run, Strength Session" placeholderTextColor="#6f7d70" />
+        <TextInput style={styles.input} value={type} onChangeText={setType} placeholder="Loaded Ruck, Steady Run, Strength Session" placeholderTextColor="#6f7d70" maxLength={100} />
 
         <Text style={styles.label}>Duration</Text>
-        <TextInput style={styles.input} value={duration} onChangeText={setDuration} placeholder="45 minutes" placeholderTextColor="#6f7d70" />
+        <TextInput style={styles.input} value={duration} onChangeText={setDuration} placeholder="45 minutes" placeholderTextColor="#6f7d70" maxLength={50} />
 
         <Text style={styles.label}>Distance / Load</Text>
-        <TextInput style={styles.input} value={distanceLoad} onChangeText={setDistanceLoad} placeholder="5 km, 20 kg, Squat - Press - Pull" placeholderTextColor="#6f7d70" />
+        <TextInput style={styles.input} value={distanceLoad} onChangeText={setDistanceLoad} placeholder="5 km, 20 kg, Squat - Press - Pull" placeholderTextColor="#6f7d70" maxLength={100} />
 
         <Text style={styles.label}>Readiness 1-10</Text>
-        <TextInput style={styles.input} value={readiness} onChangeText={setReadiness} keyboardType="numeric" placeholder="7" placeholderTextColor="#6f7d70" />
+        <TextInput style={styles.input} value={readiness} onChangeText={setReadiness} keyboardType="numeric" placeholder="7" placeholderTextColor="#6f7d70" maxLength={2} />
 
         <Text style={styles.label}>Notes</Text>
         <View style={styles.noteHelperBox}>
@@ -301,6 +301,7 @@ export default function TrainingLogForm({
           multiline
           placeholder="How did the session feel?"
           placeholderTextColor="#6f7d70"
+          maxLength={500}
         />
 
         {notesWarning ? (
