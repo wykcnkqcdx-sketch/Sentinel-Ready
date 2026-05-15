@@ -24,15 +24,19 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function sanitiseField(value: string): string {
+  return value.replace(/\n+/g, ' ').replace(/\|/g, '-').trim();
+}
+
 function formatLogLine(log: TrainingLog): string {
-  return `${log.date} | ${log.category} | ${log.type} | ${log.duration} | ${log.distanceLoad} | R${log.readiness}/10`;
+  return `${log.date} | ${log.category} | ${log.type} | ${log.duration} | ${sanitiseField(log.distanceLoad)} | R${log.readiness}/10`;
 }
 
 function buildKeyNotes(logs: TrainingLog[]): string[] {
   return logs
     .filter((log) => log.notes.trim().length > 0)
     .slice(0, 3)
-    .map((log) => `${log.date} ${log.category}: ${log.notes.trim()}`);
+    .map((log) => `${log.date} ${log.category}: ${sanitiseField(log.notes)}`);
 }
 
 export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date()): WeeklyReport {

@@ -25,7 +25,11 @@ const UserContext = createContext<UserContextType>({
 });
 
 export function useUser() {
-  return useContext(UserContext);
+  const ctx = useContext(UserContext);
+  if (__DEV__ && !ctx.isLoaded && ctx.gender === 'M' && ctx.testDate === null) {
+    console.warn('UserContext used outside UserProvider or before load');
+  }
+  return ctx;
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {

@@ -1,13 +1,16 @@
 import TrainingLogForm, { TrainingLogFormValues } from '@/src/components/log/TrainingLogForm';
 import { useTraining } from '@/src/screens/TrainingContext';
+import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function EditLogScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { id } = useLocalSearchParams();
   const { logs, updateLog, isLoading } = useTraining();
+  const submitted = useRef(false);
 
   const logId = Number(Array.isArray(id) ? (id[0] ?? '') : id);
   const logToEdit = useMemo(
@@ -15,8 +18,29 @@ export default function EditLogScreen() {
     [logs, logId]
   );
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (submitted.current) return;
+      e.preventDefault();
+      Alert.alert(
+        'Discard changes?',
+        'You have unsaved changes. Are you sure you want to go back?',
+        [
+          { text: 'Keep editing', style: 'cancel' },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   async function handleSubmit(values: TrainingLogFormValues) {
     await updateLog(logId, values);
+    submitted.current = true;
     router.back();
   }
 

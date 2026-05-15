@@ -24,68 +24,73 @@ type Props = {
 
 const categories: TrainingCategory[] = ['Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
 
-export const defaultTrainingLogValues: TrainingLogFormValues = {
-  date: new Date().toISOString().slice(0, 10),
-  category: 'Ruck',
-  type: 'Loaded Ruck',
-  duration: '60 minutes',
-  distanceLoad: '6 km with 15 kg',
-  readiness: '7',
-  notes: getNoteStarter('Ruck'),
-};
-
-export const quickTrainingLogTemplates: QuickTemplate[] = [
-  {
-    label: 'Ruck',
+export function getDefaultTrainingLogValues(): TrainingLogFormValues {
+  return {
+    date: new Date().toISOString().slice(0, 10),
     category: 'Ruck',
     type: 'Loaded Ruck',
     duration: '60 minutes',
     distanceLoad: '6 km with 15 kg',
     readiness: '7',
-    notes: 'Steady tactical pace. Monitor feet, shoulders, breathing and posture.',
-    date: defaultTrainingLogValues.date,
-  },
-  {
-    label: 'Run',
-    category: 'Run',
-    type: 'Steady Run',
-    duration: '35 minutes',
-    distanceLoad: '5 km',
-    readiness: '7',
-    notes: 'Controlled aerobic pace. Keep the effort comfortable and consistent.',
-    date: defaultTrainingLogValues.date,
-  },
-  {
-    label: 'Strength',
-    category: 'Strength',
-    type: 'Full Body Strength',
-    duration: '50 minutes',
-    distanceLoad: 'Squat - Press - Pull - Hinge - Carry',
-    readiness: '8',
-    notes: 'Keep form strict. Avoid grinding reps. Leave one or two reps in reserve.',
-    date: defaultTrainingLogValues.date,
-  },
-  {
-    label: 'Recovery',
-    category: 'Recovery',
-    type: 'Recovery Mobility',
-    duration: '25 minutes',
-    distanceLoad: 'Hips - Calves - Hamstrings - Shoulders',
-    readiness: '5',
-    notes: 'Low intensity. Focus on breathing, mobility and reducing stiffness.',
-    date: defaultTrainingLogValues.date,
-  },
-  {
-    label: 'Test',
-    category: 'Test',
-    type: 'Fitness Test Prep',
-    duration: '40 minutes',
-    distanceLoad: 'Run effort - Press-ups - Sit-ups - Carries',
-    readiness: '8',
-    notes: 'Record results clearly. Do not max out if fatigue is high.',
-    date: defaultTrainingLogValues.date,
-  },
-];
+    notes: getNoteStarter('Ruck'),
+  };
+}
+
+export function getQuickTemplates(): QuickTemplate[] {
+  const today = new Date().toISOString().slice(0, 10);
+  return [
+    {
+      label: 'Ruck',
+      category: 'Ruck',
+      type: 'Loaded Ruck',
+      duration: '60 minutes',
+      distanceLoad: '6 km with 15 kg',
+      readiness: '7',
+      notes: 'Steady tactical pace. Monitor feet, shoulders, breathing and posture.',
+      date: today,
+    },
+    {
+      label: 'Run',
+      category: 'Run',
+      type: 'Steady Run',
+      duration: '35 minutes',
+      distanceLoad: '5 km',
+      readiness: '7',
+      notes: 'Controlled aerobic pace. Keep the effort comfortable and consistent.',
+      date: today,
+    },
+    {
+      label: 'Strength',
+      category: 'Strength',
+      type: 'Full Body Strength',
+      duration: '50 minutes',
+      distanceLoad: 'Squat - Press - Pull - Hinge - Carry',
+      readiness: '8',
+      notes: 'Keep form strict. Avoid grinding reps. Leave one or two reps in reserve.',
+      date: today,
+    },
+    {
+      label: 'Recovery',
+      category: 'Recovery',
+      type: 'Recovery Mobility',
+      duration: '25 minutes',
+      distanceLoad: 'Hips - Calves - Hamstrings - Shoulders',
+      readiness: '5',
+      notes: 'Low intensity. Focus on breathing, mobility and reducing stiffness.',
+      date: today,
+    },
+    {
+      label: 'Test',
+      category: 'Test',
+      type: 'Fitness Test Prep',
+      duration: '40 minutes',
+      distanceLoad: 'Run effort - Press-ups - Sit-ups - Carries',
+      readiness: '8',
+      notes: 'Record results clearly. Do not max out if fatigue is high.',
+      date: today,
+    },
+  ];
+}
 
 export default function TrainingLogForm({
   title,

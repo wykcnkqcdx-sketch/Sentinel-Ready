@@ -1,6 +1,6 @@
 import TrainingLogForm, {
-  defaultTrainingLogValues,
-  quickTrainingLogTemplates,
+  getDefaultTrainingLogValues,
+  getQuickTemplates,
   TrainingLogFormValues,
 } from '@/src/components/log/TrainingLogForm';
 import { useTraining } from '@/src/screens/TrainingContext';
@@ -23,8 +23,8 @@ export default function AddLogScreen() {
       savingLabel="Saving..."
       saveErrorTitle="Save Failed"
       saveErrorMessage="The training log could not be saved. Please try again."
-      initialValues={defaultTrainingLogValues}
-      quickTemplates={quickTrainingLogTemplates}
+      initialValues={getDefaultTrainingLogValues()}
+      quickTemplates={getQuickTemplates()}
       onBack={() => router.back()}
       onSubmit={handleSubmit}
     />
