@@ -674,6 +674,13 @@ export type GoalProgress = {
   hasNumericProgress: boolean;
 };
 
+export type GoalAction = {
+  title: string;
+  reason: string;
+  action: string;
+  status: RecommendationStatus;
+};
+
 function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'> & Partial<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>>): DayPlan {
   return {
     warmup: input.isRest ? 'No formal warm-up needed.' : '5-10 min easy movement, joint prep and breathing check.',
@@ -767,6 +774,88 @@ export function getGoalProgress(goal: TrainingGoal): GoalProgress {
     percent: 0,
     label: goal.current.trim() ? goal.current.trim() : 'Progress not quantified',
     hasNumericProgress: false,
+  };
+}
+
+export function buildGoalAction(goals: TrainingGoal[], logs: TrainingLog[]): GoalAction {
+  const summary = buildGoalSummary(goals);
+  const priority = summary.priority;
+
+  if (!priority) {
+    return {
+      title: 'Set Priority Goal',
+      reason: 'No active goal is available to guide the next training decision.',
+      action: 'Create one specific goal with a target and current status.',
+      status: 'neutral',
+    };
+  }
+
+  const recentLogs = [...logs]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .slice(0, 5);
+  const recentFatigue = recentLogs.filter((log) => isFatigueWatch(log.readiness)).length;
+  const trend = buildReadinessTrend(logs);
+  const progress = getGoalProgress(priority);
+
+  if (recentFatigue >= 2 || trend.status === 'warning') {
+    return {
+      title: 'Protect Readiness',
+      reason: `Priority goal is ${priority.title}, but recent fatigue risk is elevated.`,
+      action: 'Use recovery or low-intensity work before pushing goal progress again.',
+      status: 'warning',
+    };
+  }
+
+  if (priority.category === 'Ruck') {
+    return {
+      title: 'Goal Ruck Session',
+      reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
+      action: 'Plan a controlled ruck. Progress only distance, load or pace, not all three.',
+      status: progress.percent >= 80 ? 'good' : 'neutral',
+    };
+  }
+
+  if (priority.category === 'Run') {
+    return {
+      title: 'Goal Run Session',
+      reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
+      action: 'Use a steady run or tempo segment that supports the target without turning it into a test.',
+      status: progress.percent >= 80 ? 'good' : 'neutral',
+    };
+  }
+
+  if (priority.category === 'Strength') {
+    return {
+      title: 'Goal Strength Session',
+      reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
+      action: 'Choose the main lift or movement tied to the goal and add one conservative progression.',
+      status: progress.percent >= 80 ? 'good' : 'neutral',
+    };
+  }
+
+  if (priority.category === 'Recovery') {
+    return {
+      title: 'Recovery Goal',
+      reason: `Priority goal is ${priority.title}.`,
+      action: 'Schedule recovery work early in the week and log sleep, soreness and readiness clearly.',
+      status: 'caution',
+    };
+  }
+
+  if (priority.category === 'Test') {
+    return {
+      title: 'Test Prep Action',
+      reason: `Priority goal is ${priority.title}.`,
+      action: 'Run a submaximal practice or standards check. Record exact results and weak points.',
+      status: 'caution',
+    };
+  }
+
+  return {
+    title: 'Consistency Action',
+    reason: `Priority goal is ${priority.title}.`,
+    action: 'Complete the next planned session and keep the log detailed enough to review.',
+    status: 'neutral',
   };
 }
 

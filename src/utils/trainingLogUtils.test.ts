@@ -4,6 +4,7 @@ import type { TrainingGoal } from '@/src/screens/TrainingContext';
 import { calculateReadinessPercentage } from '@/src/screens/TrainingContext';
 import {
   buildReadinessTrend,
+  buildGoalAction,
   buildSessionRecommendation,
   buildWeeklyLoadRisk,
   buildWeekPlan,
@@ -300,6 +301,40 @@ describe('goal progress', () => {
       label: 'Building baseline',
       hasNumericProgress: false,
     });
+  });
+});
+
+describe('goal action', () => {
+  it('asks for a priority goal when no active goals exist', () => {
+    expect(buildGoalAction([], [])).toMatchObject({
+      title: 'Set Priority Goal',
+      status: 'neutral',
+    });
+  });
+
+  it('protects readiness when fatigue risk is elevated', () => {
+    const action = buildGoalAction(
+      [makeGoal()],
+      [
+        makeLog({ id: 1, date: '2026-05-11', readiness: '5' }),
+        makeLog({ id: 2, date: '2026-05-12', readiness: '4' }),
+      ]
+    );
+
+    expect(action).toMatchObject({
+      title: 'Protect Readiness',
+      status: 'warning',
+    });
+  });
+
+  it('builds category-specific guidance for ruck goals', () => {
+    const action = buildGoalAction([makeGoal()], [makeLog({ readiness: '8' })]);
+
+    expect(action).toMatchObject({
+      title: 'Goal Ruck Session',
+      status: 'good',
+    });
+    expect(action.action).toContain('controlled ruck');
   });
 });
 

@@ -1,5 +1,5 @@
 import { GoalCategory, GoalStatus, TrainingGoal, useTraining } from '@/src/screens/TrainingContext';
-import { buildGoalSummary, getGoalProgress } from '@/src/utils/trainingLogUtils';
+import { buildGoalAction, buildGoalSummary, getGoalProgress } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -67,10 +67,11 @@ function GoalCard({
 
 export default function GoalsScreen() {
   const router = useRouter();
-  const { goals, addGoal, updateGoal, deleteGoal, isLoading } = useTraining();
+  const { logs, goals, addGoal, updateGoal, deleteGoal, isLoading } = useTraining();
   const [draft, setDraft] = useState(blankGoal);
   const [editingId, setEditingId] = useState<number | null>(null);
   const summary = useMemo(() => buildGoalSummary(goals), [goals]);
+  const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
 
   async function saveGoal() {
     if (draft.title.trim().length < 3 || draft.target.trim().length < 3) {
@@ -134,6 +135,13 @@ export default function GoalsScreen() {
         <Text style={styles.summaryText}>{summary.message}</Text>
       </View>
 
+      <View style={goalAction.status === 'warning' ? styles.actionCardWarning : styles.actionCard}>
+        <Text style={styles.cardKicker}>NEXT GOAL ACTION</Text>
+        <Text style={goalAction.status === 'warning' ? styles.actionTitleWarning : styles.actionTitle}>{goalAction.title}</Text>
+        <Text style={styles.summaryText}>{goalAction.reason}</Text>
+        <Text style={styles.actionText}>{goalAction.action}</Text>
+      </View>
+
       <View style={styles.formCard}>
         <Text style={styles.cardKicker}>{editingId ? 'EDIT GOAL' : 'NEW GOAL'}</Text>
         <View style={styles.categoryRow}>
@@ -183,6 +191,11 @@ const styles = StyleSheet.create({
   summaryNumber: { color: '#ffffff', fontSize: 24, fontWeight: '900' },
   summaryProgress: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   summaryText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
+  actionCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 7 },
+  actionCardWarning: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 7 },
+  actionTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  actionTitleWarning: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
+  actionText: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
   formCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   categoryButton: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },

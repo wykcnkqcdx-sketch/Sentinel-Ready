@@ -2,6 +2,7 @@ import { useTraining } from '@/src/screens/TrainingContext';
 import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import {
   buildGoalSummary,
+  buildGoalAction,
   buildNextWeekRecommendation,
   buildWeekSummary,
   calculateTrainingLogHealthScore,
@@ -100,6 +101,7 @@ export default function WeeklyReportScreen() {
   const healthLabel = getTrainingLogHealthLabel(healthScore);
   const nextWeekAdvice = buildNextWeekRecommendation(thisWeek, lastWeek);
   const goalSummary = buildGoalSummary(goals);
+  const goalAction = buildGoalAction(goals, logs);
   const report = buildWeeklyReport(logs, new Date(), goals);
 
   const healthIsWarn = healthScore < 60;
@@ -176,6 +178,7 @@ export default function WeeklyReportScreen() {
         <Text style={styles.goalTitle}>{goalSummary.active} active / {goalSummary.complete} complete</Text>
         <Text style={styles.goalProgress}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}% average measured progress` : 'No measured progress yet'}</Text>
         <Text style={styles.adviceText}>{goalSummary.message}</Text>
+        <Text style={styles.goalAction}>{goalAction.title}: {goalAction.action}</Text>
       </View>
 
       <View style={styles.exportCard}>
@@ -253,6 +256,7 @@ const styles = StyleSheet.create({
   goalCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 8 },
   goalTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
   goalProgress: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+  goalAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
 
   exportCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
   exportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },

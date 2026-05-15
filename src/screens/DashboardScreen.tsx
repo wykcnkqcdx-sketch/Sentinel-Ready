@@ -3,7 +3,7 @@ import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
-import { buildGoalSummary, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { buildGoalAction, buildGoalSummary, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -57,6 +57,7 @@ export default function DashboardScreen() {
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
   const goalSummary = useMemo(() => buildGoalSummary(goals), [goals]);
+  const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -165,6 +166,10 @@ export default function DashboardScreen() {
           <View style={[styles.goalFill, { width: `${goalSummary.averageProgress}%` }]} />
         </View>
         <Text style={styles.cardText}>{goalSummary.message}</Text>
+        <View style={goalAction.status === 'warning' ? styles.goalActionWarn : styles.goalAction}>
+          <Text style={goalAction.status === 'warning' ? styles.goalActionTitleWarn : styles.goalActionTitle}>{goalAction.title}</Text>
+          <Text style={styles.goalActionText}>{goalAction.action}</Text>
+        </View>
       </SentinelCard>
 
       <SentinelCard title="Readiness Trend">
@@ -334,6 +339,11 @@ const styles = StyleSheet.create({
   goalButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
   goalTrack: { height: 8, backgroundColor: '#07110c', borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: '#26382c', marginTop: 12 },
   goalFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 999 },
+  goalAction: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4, marginTop: 12 },
+  goalActionWarn: { backgroundColor: '#21140b', borderRadius: 14, borderWidth: 1, borderColor: '#7a4a1f', padding: 12, gap: 4, marginTop: 12 },
+  goalActionTitle: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+  goalActionTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+  goalActionText: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   section: { marginTop: 8, gap: 12 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

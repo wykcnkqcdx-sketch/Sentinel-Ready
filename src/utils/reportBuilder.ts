@@ -1,6 +1,7 @@
 import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import {
   buildGoalSummary,
+  buildGoalAction,
   buildReadinessTrend,
   buildSessionRecommendation,
   buildSummary,
@@ -50,6 +51,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
   const weeklyLoadRisk = buildWeeklyLoadRisk(logs, now);
   const recommendation = buildSessionRecommendation(logs);
   const goalSummary = buildGoalSummary(goals);
+  const goalAction = buildGoalAction(goals, logs);
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -70,6 +72,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     `Recommended Next Session: ${recommendation.sessionType}`,
     `Active Goals: ${goalSummary.active}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
+    `Next Goal Action: ${goalAction.title}`,
     '',
     'TRAINING SPLIT',
     `Total Logs: ${summary.total}`,
@@ -88,6 +91,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     '',
     'GOALS',
     goalSummary.message,
+    `Next Action: ${goalAction.action}`,
     ...(goals.length > 0
       ? goals.slice(0, 5).map((goal) => {
           const progress = getGoalProgress(goal);
