@@ -16,6 +16,22 @@ export type TrainingLog = {
 
 const STORAGE_KEY = 'sentinel_training_logs';
 
+function isValidLogArray(parsed: unknown): parsed is TrainingLog[] {
+  if (!Array.isArray(parsed)) return false;
+  return parsed.every(
+    (item) =>
+      typeof item === 'object' &&
+      item !== null &&
+      typeof (item as TrainingLog).id === 'number' &&
+      typeof (item as TrainingLog).date === 'string' &&
+      typeof (item as TrainingLog).category === 'string' &&
+      typeof (item as TrainingLog).type === 'string' &&
+      typeof (item as TrainingLog).duration === 'string' &&
+      typeof (item as TrainingLog).readiness === 'string' &&
+      typeof (item as TrainingLog).notes === 'string'
+  );
+}
+
 export function calculateReadinessPercentage(logs: TrainingLog[]) {
   const recentLogs = [...logs]
     .sort((a, b) => {
@@ -105,9 +121,9 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   const logsRef = useRef<TrainingLog[]>([]);
 
   const commitLogs = async (updatedLogs: TrainingLog[]) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
     logsRef.current = updatedLogs;
     setLogs(updatedLogs);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
   };
 
   useEffect(() => {
@@ -115,9 +131,21 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
       try {
         const storedLogs = await AsyncStorage.getItem(STORAGE_KEY);
         if (storedLogs) {
-          const parsedLogs = JSON.parse(storedLogs);
-          logsRef.current = parsedLogs;
-          setLogs(parsedLogs);
+          let parsedLogs: unknown;
+          try {
+            parsedLogs = JSON.parse(storedLogs);
+          } catch {
+            parsedLogs = null;
+          }
+          if (isValidLogArray(parsedLogs)) {
+            logsRef.current = parsedLogs;
+            setLogs(parsedLogs);
+          } else {
+            console.warn('Stored logs failed validation — loading starter logs');
+            logsRef.current = starterLogs;
+            setLogs(starterLogs);
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(starterLogs));
+          }
         } else {
           // First time opening the app, set the starter logs
           logsRef.current = starterLogs;
@@ -148,6 +176,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
       await commitLogs(updatedLogs);
     } catch (error) {
       console.error('Failed to update log', error);
+      throw error;
     }
   };
 
@@ -157,20 +186,24 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
       await commitLogs(updatedLogs);
     } catch (error) {
       console.error('Failed to delete log', error);
+      throw error;
     }
   };
 
   const addLog = async (newLogData: Omit<TrainingLog, 'id'>) => {
     try {
+      const currentLogs = logsRef.current;
+      const newId = currentLogs.length > 0 ? Math.max(...currentLogs.map(l => l.id)) + 1 : Date.now();
       const newLog: TrainingLog = {
         ...newLogData,
-        id: Date.now(), // Generate a unique ID based on timestamp
+        id: newId,
       };
       // Insert new log at the top of the list
-      const updatedLogs = [newLog, ...logsRef.current];
+      const updatedLogs = [newLog, ...currentLogs];
       await commitLogs(updatedLogs);
     } catch (error) {
       console.error('Failed to save log', error);
+      throw error;
     }
   };
 

@@ -6,7 +6,7 @@
   "events": {
     "pushUps": {
       "male": 20,
-      "female": 20,
+      "female": 6,
       "unit": "reps",
       "timeLimitSeconds": 60
     },

@@ -11,6 +11,7 @@ type UserProfile = {
 type UserContextType = UserProfile & {
   setGender: (g: Gender) => void;
   setTestDate: (d: string | null) => void;
+  isLoaded: boolean;
 };
 
 const STORAGE_KEY = 'sentinel_user_profile';
@@ -20,6 +21,7 @@ const UserContext = createContext<UserContextType>({
   testDate: null,
   setGender: () => {},
   setTestDate: () => {},
+  isLoaded: false,
 });
 
 export function useUser() {
@@ -28,12 +30,14 @@ export function useUser() {
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>({ gender: 'M', testDate: null });
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
       if (raw) {
-        try { setProfile(JSON.parse(raw)); } catch {}
+        try { setProfile(JSON.parse(raw)); } catch (e) { console.error('UserContext: failed to parse stored profile', e); }
       }
+      setIsLoaded(true);
     });
   }, []);
 
@@ -49,6 +53,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       ...profile,
       setGender: (gender) => save({ ...profile, gender }),
       setTestDate: (testDate) => save({ ...profile, testDate }),
+      isLoaded,
     }}>
       {children}
     </UserContext.Provider>

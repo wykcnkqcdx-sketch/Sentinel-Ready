@@ -106,6 +106,8 @@ export default function TestsScreen() {
   const skinfoldMm = skinfoldLog ? parseMm(skinfoldLog.distanceLoad) : null;
 
   const { pushUps, sitUps, run, skinfold } = dfift.events;
+  const pushLimit = gender === 'F' ? pushUps.female : pushUps.male;
+  const sitLimit = gender === 'F' ? sitUps.female : sitUps.male;
   const runLimit = gender === 'F' ? run.femaleMaxSeconds : run.maleMaxSeconds;
   const skinfoldLimit = gender === 'F' ? skinfold.femaleMaxMm : skinfold.maleMaxMm;
 
@@ -117,18 +119,18 @@ export default function TestsScreen() {
   let readinessColor = '#91e6a3';
   let readinessMessage = 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.';
 
-  if (readinessPercentage > 0 && readinessPercentage < 60) {
-    readinessLabel = 'RED';
-    readinessColor = '#ffb86b';
-    readinessMessage = 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.';
-  } else if (readinessPercentage >= 60 && readinessPercentage < 80) {
-    readinessLabel = 'AMBER';
-    readinessColor = '#f3d36b';
-    readinessMessage = 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.';
-  } else if (readinessPercentage === 0) {
+  if (readinessPercentage === 0) {
     readinessLabel = 'NO DATA';
     readinessColor = '#8fbf8f';
     readinessMessage = 'Log sessions with readiness scores to determine your testing readiness.';
+  } else if (readinessPercentage < 60) {
+    readinessLabel = 'RED';
+    readinessColor = '#ffb86b';
+    readinessMessage = 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.';
+  } else if (readinessPercentage < 80) {
+    readinessLabel = 'AMBER';
+    readinessColor = '#f3d36b';
+    readinessMessage = 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.';
   }
 
   const isReadyToTest = readinessPercentage >= 80;
@@ -284,16 +286,16 @@ export default function TestsScreen() {
 
         <DfiftRow
           label="Push-ups"
-          standard={`${pushUps.male} reps in 60s`}
+          standard={`${pushLimit} reps in 60s (${gender})`}
           result={pushReps !== null ? `${pushReps} reps` : null}
-          pass={pushReps !== null ? pushReps >= pushUps.male : null}
+          pass={pushReps !== null ? pushReps >= pushLimit : null}
         />
         <View style={styles.dfiftDivider} />
         <DfiftRow
           label="Sit-ups"
-          standard={`${sitUps.male} reps in 60s`}
+          standard={`${sitLimit} reps in 60s (${gender})`}
           result={sitReps !== null ? `${sitReps} reps` : null}
-          pass={sitReps !== null ? sitReps >= sitUps.male : null}
+          pass={sitReps !== null ? sitReps >= sitLimit : null}
         />
         <View style={styles.dfiftDivider} />
         <DfiftRow
