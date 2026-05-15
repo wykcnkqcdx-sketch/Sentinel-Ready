@@ -1,6 +1,7 @@
+import RuckMap from '@/src/components/log/RuckMap';
 import { TrainingLog } from '@/src/screens/TrainingContext';
 import { getReadinessLabel, getWeakLogReasons, isFatigueWatch, logNeedsImprovement } from '@/src/utils/trainingLogUtils';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 type Props = {
   log: TrainingLog;
@@ -13,6 +14,7 @@ export default function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: 
   const fatigueWatch = isFatigueWatch(log.readiness);
   const weakLog = logNeedsImprovement(log);
   const weakReasons = getWeakLogReasons(log);
+  const colorScheme = useColorScheme() ?? 'dark';
 
   return (
     <View style={fatigueWatch ? styles.logCardWarning : styles.logCard}>
@@ -38,6 +40,12 @@ export default function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: 
         <Text style={styles.detailLabel}>Distance / Load</Text>
         <Text style={styles.detailText}>{log.distanceLoad}</Text>
       </View>
+
+      {log.category === 'Ruck' && log.route ? (
+        <View style={styles.mapContainer}>
+          <RuckMap route={log.route} colorScheme={colorScheme} />
+        </View>
+      ) : null}
 
       <Text style={styles.logNotes}>{log.notes}</Text>
 
@@ -107,4 +115,5 @@ const styles = StyleSheet.create({
   improveButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
   deleteButton: { borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
   deleteButtonText: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  mapContainer: { marginTop: 8, marginBottom: 4, borderRadius: 12, overflow: 'hidden' },
 });

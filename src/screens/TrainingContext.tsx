@@ -1,5 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import type { RouteData } from '@/src/utils/trainingLogUtils';
 
 export type TrainingCategory = 'Ruck' | 'Strength' | 'Run' | 'Mobility' | 'Test' | 'Recovery';
 
@@ -12,6 +11,7 @@ export type TrainingLog = {
   distanceLoad: string;
   readiness: string;
   notes: string;
+  route?: RouteData;
 };
 
 export type GoalCategory = 'Ruck' | 'Run' | 'Strength' | 'Recovery' | 'Test' | 'Consistency';
@@ -43,7 +43,8 @@ function isValidLogArray(parsed: unknown): parsed is TrainingLog[] {
       typeof (item as TrainingLog).type === 'string' &&
       typeof (item as TrainingLog).duration === 'string' &&
       typeof (item as TrainingLog).readiness === 'string' &&
-      typeof (item as TrainingLog).notes === 'string'
+      typeof (item as TrainingLog).notes === 'string' &&
+      (typeof (item as TrainingLog).route === 'undefined' || typeof (item as TrainingLog).route === 'object')
   );
 }
 
@@ -94,6 +95,12 @@ const starterLogs: TrainingLog[] = [
     distanceLoad: '12 km - 18 kg',
     readiness: '7',
     notes: 'Steady tactical pace throughout. Pack sat well. Feet checked at 6 km — no hot spots. Breathing controlled. Recovery needed after.',
+    route: {
+      distanceKm: 12,
+      elevationGainMeters: 150,
+      packWeightKg: 18,
+      polyline: 'g_q~Fv_o{Om@gC_@sBw@kDe@}Bm@qDq@mEo@cEo@yD}@yCs@}Bq@aBs@mAu@aAo@cA_@s@',
+    },
   },
   {
     id: 2,
@@ -175,224 +182,4 @@ interface TrainingContextType {
   isLoading: boolean;
 }
 
-const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
-
-export function TrainingProvider({ children }: { children: ReactNode }) {
-  const [logs, setLogs] = useState<TrainingLog[]>([]);
-  const [goals, setGoals] = useState<TrainingGoal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const logsRef = useRef<TrainingLog[]>([]);
-  const goalsRef = useRef<TrainingGoal[]>([]);
-
-  const commitLogs = async (updatedLogs: TrainingLog[]) => {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-    logsRef.current = updatedLogs;
-    setLogs(updatedLogs);
-  };
-
-  const commitGoals = async (updatedGoals: TrainingGoal[]) => {
-    await AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(updatedGoals));
-    goalsRef.current = updatedGoals;
-    setGoals(updatedGoals);
-  };
-
-  useEffect(() => {
-    const loadLogs = async () => {
-      try {
-        const storedLogs = await AsyncStorage.getItem(STORAGE_KEY);
-        const storedGoals = await AsyncStorage.getItem(GOALS_STORAGE_KEY);
-        if (storedLogs) {
-          let parsedLogs: unknown;
-          try {
-            parsedLogs = JSON.parse(storedLogs);
-          } catch {
-            parsedLogs = null;
-          }
-          if (isValidLogArray(parsedLogs)) {
-            logsRef.current = parsedLogs;
-            setLogs(parsedLogs);
-          } else {
-            console.warn('Stored logs failed validation — loading starter logs');
-            logsRef.current = starterLogs;
-            setLogs(starterLogs);
-            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(starterLogs));
-          }
-        } else {
-          // First time opening the app, set the starter logs
-          logsRef.current = starterLogs;
-          setLogs(starterLogs);
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(starterLogs));
-        }
-
-        if (storedGoals) {
-          let parsedGoals: unknown;
-          try {
-            parsedGoals = JSON.parse(storedGoals);
-          } catch {
-            parsedGoals = null;
-          }
-          if (isValidGoalArray(parsedGoals)) {
-            goalsRef.current = parsedGoals;
-            setGoals(parsedGoals);
-          } else {
-            goalsRef.current = starterGoals;
-            setGoals(starterGoals);
-            await AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(starterGoals));
-          }
-        } else {
-          goalsRef.current = starterGoals;
-          setGoals(starterGoals);
-          await AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(starterGoals));
-        }
-      } catch (error) {
-        console.error('Failed to load logs', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadLogs();
-  }, []);
-
-  const updateLog = async (id: number, updatedLogData: Omit<TrainingLog, 'id'>) => {
-    try {
-      const updatedLogs = logsRef.current.map((log) =>
-        log.id === id
-          ? {
-              ...updatedLogData,
-              id,
-            }
-          : log
-      );
-
-      await commitLogs(updatedLogs);
-    } catch (error) {
-      console.error('Failed to update log', error);
-      throw error;
-    }
-  };
-
-  const deleteLog = async (id: number) => {
-    try {
-      const updatedLogs = logsRef.current.filter((log) => log.id !== id);
-      await commitLogs(updatedLogs);
-    } catch (error) {
-      console.error('Failed to delete log', error);
-      throw error;
-    }
-  };
-
-  const addLog = async (newLogData: Omit<TrainingLog, 'id'>) => {
-    try {
-      const currentLogs = logsRef.current;
-      const newId = currentLogs.length > 0 ? Math.max(...currentLogs.map(l => l.id)) + 1 : Date.now();
-      const newLog: TrainingLog = {
-        ...newLogData,
-        id: newId,
-      };
-      // Insert new log at the top of the list
-      const updatedLogs = [newLog, ...currentLogs];
-      await commitLogs(updatedLogs);
-    } catch (error) {
-      console.error('Failed to save log', error);
-      throw error;
-    }
-  };
-
-  const duplicateLog = async (id: number) => {
-    const source = logsRef.current.find((log) => log.id === id);
-    if (!source) return;
-
-    await addLog({
-      ...source,
-      date: new Date().toISOString().slice(0, 10),
-      notes: `${source.notes} Duplicated from ${source.date}.`.trim(),
-    });
-  };
-
-  const addGoal = async (goalData: Omit<TrainingGoal, 'id'>) => {
-    const currentGoals = goalsRef.current;
-    const newId = currentGoals.length > 0 ? Math.max(...currentGoals.map((goal) => goal.id)) + 1 : Date.now();
-    await commitGoals([{ ...goalData, id: newId }, ...currentGoals]);
-  };
-
-  const updateGoal = async (id: number, goalData: Omit<TrainingGoal, 'id'>) => {
-    await commitGoals(goalsRef.current.map((goal) => (goal.id === id ? { ...goalData, id } : goal)));
-  };
-
-  const deleteGoal = async (id: number) => {
-    await commitGoals(goalsRef.current.filter((goal) => goal.id !== id));
-  };
-
-  const exportLogsCsv = () => {
-    const escapeCsv = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
-    const header = ['id', 'date', 'category', 'type', 'duration', 'distanceLoad', 'readiness', 'notes'];
-    const rows = logsRef.current.map((log) =>
-      [log.id, log.date, log.category, log.type, log.duration, log.distanceLoad, log.readiness, log.notes]
-        .map(escapeCsv)
-        .join(',')
-    );
-    return [header.join(','), ...rows].join('\n');
-  };
-
-  const importLogsCsv = async (csv: string) => {
-    const lines = csv.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-    if (lines.length < 2) return 0;
-
-    const imported: TrainingLog[] = [];
-    const categories: TrainingCategory[] = ['Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
-
-    for (const line of lines.slice(1)) {
-      const fields = line.match(/("([^"]|"")*"|[^,]+)/g)?.map((field) =>
-        field.replace(/^"|"$/g, '').replace(/""/g, '"')
-      );
-      if (!fields || fields.length < 8) continue;
-      const category = categories.includes(fields[2] as TrainingCategory) ? fields[2] as TrainingCategory : 'Ruck';
-      imported.push({
-        id: Number(fields[0]) || Date.now() + imported.length,
-        date: fields[1],
-        category,
-        type: fields[3],
-        duration: fields[4],
-        distanceLoad: fields[5],
-        readiness: fields[6],
-        notes: fields[7],
-      });
-    }
-
-    const existingIds = new Set(logsRef.current.map((log) => log.id));
-    const normalised = imported.map((log, index) => ({
-      ...log,
-      id: existingIds.has(log.id) ? Date.now() + index : log.id,
-    }));
-    await commitLogs([...normalised, ...logsRef.current]);
-    return normalised.length;
-  };
-
-  return (
-    <TrainingContext.Provider value={{
-      logs,
-      goals,
-      addLog,
-      deleteLog,
-      updateLog,
-      duplicateLog,
-      addGoal,
-      updateGoal,
-      deleteGoal,
-      exportLogsCsv,
-      importLogsCsv,
-      isLoading,
-    }}>
-      {children}
-    </TrainingContext.Provider>
-  );
-}
-
-export function useTraining() {
-  const context = useContext(TrainingContext);
-  if (context === undefined) {
-    throw new Error('useTraining must be used within a TrainingProvider');
-  }
-  return context;
-}
+const TrainingContext 
