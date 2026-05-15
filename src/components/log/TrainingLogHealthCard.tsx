@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 type Props = {
@@ -6,7 +7,7 @@ type Props = {
   message: string;
 };
 
-export default function TrainingLogHealthCard({ score, label, message }: Props) {
+const TrainingLogHealthCard = memo(function TrainingLogHealthCard({ score, label, message }: Props) {
   const isWarning = score < 60;
 
   return (
@@ -31,7 +32,9 @@ export default function TrainingLogHealthCard({ score, label, message }: Props) 
       </Text>
     </View>
   );
-}
+});
+
+export default TrainingLogHealthCard;
 
 const styles = StyleSheet.create({
   healthCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#2f6b3c', gap: 10 },

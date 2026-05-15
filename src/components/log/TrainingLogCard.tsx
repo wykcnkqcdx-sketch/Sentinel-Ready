@@ -1,6 +1,7 @@
 import RuckMap from '@/src/components/log/RuckMap';
 import { TrainingLog } from '@/src/screens/TrainingContext';
 import { getReadinessLabel, getWeakLogReasons, isFatigueWatch, logNeedsImprovement } from '@/src/utils/trainingLogUtils';
+import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
   onDelete: (log: TrainingLog) => void;
 };
 
-export default function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: Props) {
+const TrainingLogCard = memo(function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: Props) {
   const fatigueWatch = isFatigueWatch(log.readiness);
   const weakLog = logNeedsImprovement(log);
   const weakReasons = getWeakLogReasons(log);
@@ -83,7 +84,9 @@ export default function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: 
       </View>
     </View>
   );
-}
+});
+
+export default TrainingLogCard;
 
 const styles = StyleSheet.create({
   logCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 10 },

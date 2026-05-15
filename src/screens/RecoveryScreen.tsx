@@ -5,7 +5,6 @@ import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildReadinessTrend,
   buildWeekSummary,
-  getDateValue,
   getReadinessNumber,
   isFatigueWatch,
 } from '@/src/utils/trainingLogUtils';
@@ -20,7 +19,12 @@ function daysSince(dateStr: string): number {
 
 function getRecoveryScore(logs: TrainingLog[]) {
   const recent = [...logs]
-    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .sort((a, b) => {
+      if (a.date !== b.date) {
+        return a.date < b.date ? 1 : -1;
+      }
+      return b.id - a.id;
+    })
     .slice(0, 5);
   if (recent.length === 0) return 0;
   const avg = recent.reduce((sum, l) => sum + getReadinessNumber(l.readiness), 0) / recent.length;
@@ -87,7 +91,12 @@ export default function RecoveryScreen() {
   const injuryWatch = buildInjuryWatch(logs, injuryNotes);
 
   const recentSorted = useMemo(
-    () => [...logs].sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id),
+    () => [...logs].sort((a, b) => {
+      if (a.date !== b.date) {
+        return a.date < b.date ? 1 : -1;
+      }
+      return b.id - a.id;
+    }),
     [logs]
   );
 

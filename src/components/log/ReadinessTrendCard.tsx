@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 type Trend = {
@@ -13,7 +14,7 @@ type Props = {
   trend: Trend;
 };
 
-export default function ReadinessTrendCard({ trend }: Props) {
+const ReadinessTrendCard = memo(function ReadinessTrendCard({ trend }: Props) {
   const isWarning = trend.status === 'warning';
 
   return (
@@ -44,7 +45,9 @@ export default function ReadinessTrendCard({ trend }: Props) {
       </Text>
     </View>
   );
-}
+});
+
+export default ReadinessTrendCard;
 
 const styles = StyleSheet.create({
   trendCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 8 },

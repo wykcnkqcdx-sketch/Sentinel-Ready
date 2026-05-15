@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Summary = {
@@ -13,7 +14,7 @@ type Props = {
   onToggleWeakLogs: () => void;
 };
 
-export default function LogSummaryCards({ summary, showWeakLogsOnly, onToggleWeakLogs }: Props) {
+const LogSummaryCards = memo(function LogSummaryCards({ summary, showWeakLogsOnly, onToggleWeakLogs }: Props) {
   return (
     <>
       <View style={styles.summaryGrid}>
@@ -58,7 +59,9 @@ export default function LogSummaryCards({ summary, showWeakLogsOnly, onToggleWea
       </View>
     </>
   );
-}
+});
+
+export default LogSummaryCards;
 
 const styles = StyleSheet.create({
   summaryGrid: { flexDirection: 'row', gap: 10 },

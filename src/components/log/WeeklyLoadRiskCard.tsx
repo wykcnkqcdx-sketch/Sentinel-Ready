@@ -1,11 +1,12 @@
 import { WeeklyLoadRisk } from '@/src/utils/trainingLogUtils';
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 type Props = {
   risk: WeeklyLoadRisk;
 };
 
-export default function WeeklyLoadRiskCard({ risk }: Props) {
+const WeeklyLoadRiskCard = memo(function WeeklyLoadRiskCard({ risk }: Props) {
   const isHigh = risk.status === 'high';
   const isModerate = risk.status === 'moderate';
   const isNoData = risk.status === 'no-data';
@@ -46,7 +47,9 @@ export default function WeeklyLoadRiskCard({ risk }: Props) {
       </View>
     </View>
   );
-}
+});
+
+export default WeeklyLoadRiskCard;
 
 const styles = StyleSheet.create({
   card: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },

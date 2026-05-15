@@ -1,13 +1,14 @@
-import type { DfiftStandards } from '@/src/types/dfift';
 import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
+import type { DfiftStandards } from '@/src/types/dfift';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildReadinessTrend } from '@/src/utils/trainingLogUtils';
+import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const dfiftStandards = dfiftJson as DfiftStandards;
-import { useUser } from '@/src/screens/UserContext';
-import { buildReadinessTrend, getDateValue } from '@/src/utils/trainingLogUtils';
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function groupByType(testLogs: TrainingLog[]): Record<string, TrainingLog[]> {
   return testLogs.reduce<Record<string, TrainingLog[]>>((acc, log) => {
@@ -85,23 +86,42 @@ export default function TestsScreen() {
   const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
-  const testLogs = [...logs.filter((log) => log.category === 'Test')]
-    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
+  const {
+    testLogs,
+    grouped,
+    testTypes,
+    lastTestDate,
+    daysSinceLast,
+    pushLog,
+    sitLog,
+    runLog,
+    skinfoldLog,
+  } = useMemo(() => {
+    const tLogs = logs
+      .filter((log) => log.category === 'Test')
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+        return b.id - a.id;
+      });
 
-  const readinessPercentage = calculateReadinessPercentage(logs);
-  const trend = buildReadinessTrend(logs);
+    const groups = groupByType(tLogs);
+    const lastDate = tLogs[0]?.date ?? null;
 
-  const grouped = groupByType(testLogs);
-  const testTypes = Object.keys(grouped);
+    return {
+      testLogs: tLogs,
+      grouped: groups,
+      testTypes: Object.keys(groups),
+      lastTestDate: lastDate,
+      daysSinceLast: lastDate ? daysSince(lastDate) : null,
+      pushLog: findLatest(groups, 'push'),
+      sitLog: findLatest(groups, 'sit'),
+      runLog: findLatest(groups, '2.4', 'run'),
+      skinfoldLog: findLatest(groups, 'skin', 'fold'),
+    };
+  }, [logs]);
 
-  const lastTestDate = testLogs[0]?.date ?? null;
-  const daysSinceLast = lastTestDate ? daysSince(lastTestDate) : null;
-
-  // DFIFT matching — find latest logged result for each event by type keyword
-  const pushLog = findLatest(grouped, 'push');
-  const sitLog = findLatest(grouped, 'sit');
-  const runLog = findLatest(grouped, '2.4', 'run');
-  const skinfoldLog = findLatest(grouped, 'skin', 'fold');
+  const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
+  const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
 
   const pushReps = pushLog ? parseReps(pushLog.distanceLoad) : null;
   const sitReps = sitLog ? parseReps(sitLog.distanceLoad) : null;
@@ -113,7 +133,7 @@ export default function TestsScreen() {
   const sitLimit = gender === 'F' ? sitUps.female : sitUps.male;
   const runLimit = gender === 'F' ? run.femaleMaxSeconds : run.maleMaxSeconds;
   const skinfoldLimit = gender === 'F' ? skinfold.femaleMaxMm : skinfold.maleMaxMm;
-  const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
+  const dfiftSnapshot = useMemo(() => buildDfiftSnapshot(logs, dfiftStandards, gender), [logs, gender]);
 
   const daysUntilTest = testDate
     ? Math.ceil((new Date(testDate + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)

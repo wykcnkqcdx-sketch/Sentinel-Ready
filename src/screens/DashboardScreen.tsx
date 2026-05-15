@@ -6,12 +6,12 @@ import { calculateReadinessPercentage, useTraining } from '@/src/screens/Trainin
 import { useUser } from '@/src/screens/UserContext';
 import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
+import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
+import { buildTrainingInsights } from '@/src/utils/insightUtils';
+import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
-import { buildTrainingInsights } from '@/src/utils/insightUtils';
-import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
-import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -115,20 +115,42 @@ export default function DashboardScreen() {
     readinessMsg = 'Moderate fatigue. Keep training volume controlled.';
   }
 
-  const latestRuck = logs.find((l) => l.category === 'Ruck');
-  const latestStrength = logs.find((l) => l.category === 'Strength');
-  const latestRun = logs.find((l) => l.category === 'Run');
-  const latestRecovery = logs.find((l) => l.category === 'Recovery');
+  const { latestRuck, latestStrength, latestRun, latestRecovery, trendLogs } = useMemo(() => {
+    let ruck: typeof logs[0] | undefined;
+    let strength: typeof logs[0] | undefined;
+    let run: typeof logs[0] | undefined;
+    let recovery: typeof logs[0] | undefined;
+    const recentTrendLogs: typeof logs = [];
+
+    for (const log of logs) {
+      if (!ruck && log.category === 'Ruck') ruck = log;
+      if (!strength && log.category === 'Strength') strength = log;
+      if (!run && log.category === 'Run') run = log;
+      if (!recovery && log.category === 'Recovery') recovery = log;
+
+      if (recentTrendLogs.length < 7 && getReadinessNumber(log.readiness) > 0) {
+        recentTrendLogs.push(log);
+      }
+
+      // Once all latest specific logs are found and we have 7 trend logs, break the loop early
+      if (ruck && strength && run && recovery && recentTrendLogs.length === 7) {
+        break;
+      }
+    }
+
+    return {
+      latestRuck: ruck,
+      latestStrength: strength,
+      latestRun: run,
+      latestRecovery: recovery,
+      trendLogs: recentTrendLogs.reverse(),
+    };
+  }, [logs]);
 
   const ruckVal = latestRuck ? latestRuck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
   const strengthVal = latestStrength ? `Score: ${latestStrength.readiness}` : 'N/A';
   const cardioVal = latestRun ? latestRun.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
   const recoveryVal = latestRecovery ? `Score: ${latestRecovery.readiness}` : 'N/A';
-
-  const trendLogs = [...logs]
-    .filter((log) => getReadinessNumber(log.readiness) > 0)
-    .slice(0, 7)
-    .reverse();
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

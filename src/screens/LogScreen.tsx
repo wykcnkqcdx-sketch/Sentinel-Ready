@@ -6,6 +6,7 @@ import TrainingLogCard from '@/src/components/log/TrainingLogCard';
 import TrainingLogHealthCard from '@/src/components/log/TrainingLogHealthCard';
 import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import {
   RecommendationActionType,
   SortMode,
@@ -19,9 +20,8 @@ import {
   getTrainingLogHealthLabel,
   getTrainingLogHealthMessage,
 } from '@/src/utils/trainingLogUtils';
-import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LogScreen() {
@@ -40,13 +40,17 @@ export default function LogScreen() {
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
   const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
 
-  function handleRecommendationAction(actionType: RecommendationActionType) {
+  const handleRecommendationAction = useCallback((actionType: RecommendationActionType) => {
     if (actionType === 'weak-logs') {
       setShowWeakLogsOnly(true);
     } else {
       router.push('/add-log');
     }
-  }
+  }, [router]);
+
+  const handleToggleWeakLogs = useCallback(() => {
+    setShowWeakLogsOnly((current) => !current);
+  }, []);
 
   const visibleLogs = useMemo(
     () => filterAndSortLogs(logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly),
@@ -60,13 +64,13 @@ export default function LogScreen() {
     setShowWeakLogsOnly(false);
   }
 
-  async function handleDuplicateLog(id: number) {
+  const handleDuplicateLog = useCallback(async (id: number) => {
     try {
       await duplicateLog(id);
     } catch {
       Alert.alert('Duplicate Failed', 'The log could not be duplicated. Please try again.');
     }
-  }
+  }, [duplicateLog]);
 
   async function shareCsvExport() {
     try {
@@ -79,7 +83,7 @@ export default function LogScreen() {
     }
   }
 
-  function confirmDeleteLog(log: TrainingLog) {
+  const confirmDeleteLog = useCallback((log: TrainingLog) => {
     Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -94,7 +98,9 @@ export default function LogScreen() {
         },
       },
     ]);
-  }
+  }, [deleteLog]);
+
+  const handleEditLog = useCallback((id: number) => router.push(`/edit-log/${id}`), [router]);
 
   if (isLoading) {
     return (
@@ -112,7 +118,7 @@ export default function LogScreen() {
         renderItem={({ item }) => (
           <TrainingLogCard
             log={item}
-            onEdit={(id) => router.push(`/edit-log/${id}`)}
+            onEdit={handleEditLog}
             onDuplicate={handleDuplicateLog}
             onDelete={confirmDeleteLog}
           />
@@ -157,7 +163,7 @@ export default function LogScreen() {
             <LogSummaryCards
               summary={summary}
               showWeakLogsOnly={showWeakLogsOnly}
-              onToggleWeakLogs={() => setShowWeakLogsOnly((current) => !current)}
+              onToggleWeakLogs={handleToggleWeakLogs}
             />
 
             <TrainingLogHealthCard

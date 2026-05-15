@@ -1,6 +1,6 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RouteData } from '@/src/utils/trainingLogUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type TrainingCategory = 'Ruck' | 'Strength' | 'Run' | 'Mobility' | 'Test' | 'Recovery';
 
@@ -70,9 +70,11 @@ function isValidGoalArray(parsed: unknown): parsed is TrainingGoal[] {
 export function calculateReadinessPercentage(logs: TrainingLog[]) {
   const recentLogs = [...logs]
     .sort((a, b) => {
-      const ta = new Date(a.date + 'T00:00:00').getTime();
-      const tb = new Date(b.date + 'T00:00:00').getTime();
-      return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta) || b.id - a.id;
+      if (a.date !== b.date) {
+        // ISO date strings perfectly sort lexicographically, skipping expensive Date instantiation
+        return a.date < b.date ? 1 : -1;
+      }
+      return b.id - a.id;
     })
     .slice(0, 5);
   const avgScore = recentLogs.length > 0
@@ -230,60 +232,70 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     loadData();
   }, []);
 
-  async function saveLogs(newLogs: TrainingLog[]) {
-    setLogs(newLogs);
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newLogs));
-    } catch (error) {
-      console.error('Failed to save logs', error);
-    }
-  }
+  const updateAndSaveLogs = useCallback((updater: (prev: TrainingLog[]) => TrainingLog[]) => {
+    return new Promise<void>((resolve) => {
+      setLogs((prev) => {
+        const next = updater(prev);
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+          .catch((error) => console.error('Failed to save logs', error))
+          .finally(resolve);
+        return next;
+      });
+    });
+  }, []);
 
-  async function saveGoals(newGoals: TrainingGoal[]) {
-    setGoals(newGoals);
-    try {
-      await AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(newGoals));
-    } catch (error) {
-      console.error('Failed to save goals', error);
-    }
-  }
+  const updateAndSaveGoals = useCallback((updater: (prev: TrainingGoal[]) => TrainingGoal[]) => {
+    return new Promise<void>((resolve) => {
+      setGoals((prev) => {
+        const next = updater(prev);
+        AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(next))
+          .catch((error) => console.error('Failed to save goals', error))
+          .finally(resolve);
+        return next;
+      });
+    });
+  }, []);
 
-  async function addLog(log: Omit<TrainingLog, 'id'>) {
+  const addLog = useCallback(async (log: Omit<TrainingLog, 'id'>) => {
     const newLog: TrainingLog = { ...log, id: Date.now() };
-    await saveLogs([newLog, ...logs]);
-  }
+    await updateAndSaveLogs((prev) => [newLog, ...prev]);
+  }, [updateAndSaveLogs]);
 
-  async function updateLog(id: number, logUpdates: Omit<TrainingLog, 'id'>) {
-    const updated = logs.map((log) => (log.id === id ? { ...logUpdates, id } : log));
-    await saveLogs(updated);
-  }
+  const updateLog = useCallback(async (id: number, logUpdates: Omit<TrainingLog, 'id'>) => {
+    await updateAndSaveLogs((prev) =>
+      prev.map((log) => (log.id === id ? { ...logUpdates, id } : log))
+    );
+  }, [updateAndSaveLogs]);
 
-  async function deleteLog(id: number) {
-    await saveLogs(logs.filter((log) => log.id !== id));
-  }
+  const deleteLog = useCallback(async (id: number) => {
+    await updateAndSaveLogs((prev) => prev.filter((log) => log.id !== id));
+  }, [updateAndSaveLogs]);
 
-  async function duplicateLog(id: number) {
-    const toDuplicate = logs.find((log) => log.id === id);
-    if (!toDuplicate) return;
-    const newLog: TrainingLog = { ...toDuplicate, id: Date.now() };
-    await saveLogs([newLog, ...logs]);
-  }
+  const duplicateLog = useCallback(async (id: number) => {
+    await updateAndSaveLogs((prev) => {
+      const toDuplicate = prev.find((log) => log.id === id);
+      if (!toDuplicate) return prev;
+      const newLog: TrainingLog = { ...toDuplicate, id: Date.now() };
+      return [newLog, ...prev];
+    });
+  }, [updateAndSaveLogs]);
 
-  async function addGoal(goal: Omit<TrainingGoal, 'id'>) {
+  const addGoal = useCallback(async (goal: Omit<TrainingGoal, 'id'>) => {
     const newGoal: TrainingGoal = { ...goal, id: Date.now() };
-    await saveGoals([newGoal, ...goals]);
-  }
+    await updateAndSaveGoals((prev) => [newGoal, ...prev]);
+  }, [updateAndSaveGoals]);
 
-  async function updateGoal(id: number, goalUpdates: Omit<TrainingGoal, 'id'>) {
-    const updated = goals.map((goal) => (goal.id === id ? { ...goalUpdates, id } : goal));
-    await saveGoals(updated);
-  }
+  const updateGoal = useCallback(async (id: number, goalUpdates: Omit<TrainingGoal, 'id'>) => {
+    await updateAndSaveGoals((prev) =>
+      prev.map((goal) => (goal.id === id ? { ...goalUpdates, id } : goal))
+    );
+  }, [updateAndSaveGoals]);
 
-  async function deleteGoal(id: number) {
-    await saveGoals(goals.filter((goal) => goal.id !== id));
-  }
+  const deleteGoal = useCallback(async (id: number) => {
+    await updateAndSaveGoals((prev) => prev.filter((goal) => goal.id !== id));
+  }, [updateAndSaveGoals]);
 
-  function exportLogsCsv() {
+  const exportLogsCsv = useCallback(() => {
     if (logs.length === 0) return 'Date,Category,Type,Duration,DistanceLoad,Readiness,Notes';
     const header = ['Date', 'Category', 'Type', 'Duration', 'DistanceLoad', 'Readiness', 'Notes'].join(',');
     const rows = logs.map(log => 
@@ -298,15 +310,15 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
       ].join(',')
     );
     return [header, ...rows].join('\n');
-  }
+  }, [logs]);
 
-  async function importLogsCsv(csv: string) {
-    const lines = csv.split('\n').filter(l => l.trim().length > 0);
+  const importLogsCsv = useCallback(async (csv: string) => {
+    const lines = csv.split('\n').filter((l) => l.trim().length > 0);
     if (lines.length < 2) return 0;
     
     const newLogs: TrainingLog[] = [];
     for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(',').map(s => s.replace(/^"|"$/g, '').replace(/""/g, '"'));
+      const parts = lines[i].split(',').map((s) => s.replace(/^"|"$/g, '').replace(/""/g, '"'));
       if (parts.length >= 7) {
         newLogs.push({
           id: Date.now() + i,
@@ -322,28 +334,43 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     }
     
     if (newLogs.length > 0) {
-      await saveLogs([...newLogs, ...logs]);
+      await updateAndSaveLogs((prev) => [...newLogs, ...prev]);
     }
     
     return newLogs.length;
-  }
+  }, [updateAndSaveLogs]);
+
+  const contextValue = useMemo(() => ({
+    logs,
+    goals,
+    addLog,
+    updateLog,
+    deleteLog,
+    duplicateLog,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    exportLogsCsv,
+    importLogsCsv,
+    isLoading,
+  }), [
+    logs,
+    goals,
+    isLoading,
+    addLog,
+    updateLog,
+    deleteLog,
+    duplicateLog,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    exportLogsCsv,
+    importLogsCsv,
+  ]);
 
   return (
     <TrainingContext.Provider
-      value={{
-        logs,
-        goals,
-        addLog,
-        updateLog,
-        deleteLog,
-        duplicateLog,
-        addGoal,
-        updateGoal,
-        deleteGoal,
-        exportLogsCsv,
-        importLogsCsv,
-        isLoading,
-      }}
+      value={contextValue}
     >
       {children}
     </TrainingContext.Provider>

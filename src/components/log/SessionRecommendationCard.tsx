@@ -1,4 +1,5 @@
 import { RecommendationActionType, SessionRecommendation } from '@/src/utils/trainingLogUtils';
+import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
@@ -6,7 +7,7 @@ type Props = {
   onAction: (actionType: RecommendationActionType) => void;
 };
 
-export default function SessionRecommendationCard({ recommendation, onAction }: Props) {
+const SessionRecommendationCard = memo(function SessionRecommendationCard({ recommendation, onAction }: Props) {
   const { sessionType, reason, suggestion, actionLabel, actionType, status } = recommendation;
 
   const isWarning = status === 'warning';
@@ -40,7 +41,9 @@ export default function SessionRecommendationCard({ recommendation, onAction }: 
       </TouchableOpacity>
     </View>
   );
-}
+});
+
+export default SessionRecommendationCard;
 
 const styles = StyleSheet.create({
   card: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 6 },
