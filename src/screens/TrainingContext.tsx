@@ -182,4 +182,176 @@ interface TrainingContextType {
   isLoading: boolean;
 }
 
-const TrainingContext 
+const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
+
+export function TrainingProvider({ children }: { children: ReactNode }) {
+  const [logs, setLogs] = useState<TrainingLog[]>([]);
+  const [goals, setGoals] = useState<TrainingGoal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [logsData, goalsData] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(GOALS_STORAGE_KEY),
+        ]);
+        if (logsData) {
+          const parsed = JSON.parse(logsData);
+          if (isValidLogArray(parsed)) {
+            setLogs(parsed);
+          } else {
+            setLogs(starterLogs);
+          }
+        } else {
+          setLogs(starterLogs);
+        }
+
+        if (goalsData) {
+          const parsed = JSON.parse(goalsData);
+          if (isValidGoalArray(parsed)) {
+            setGoals(parsed);
+          } else {
+            setGoals(starterGoals);
+          }
+        } else {
+          setGoals(starterGoals);
+        }
+      } catch (error) {
+        console.error('Failed to load training data', error);
+        setLogs(starterLogs);
+        setGoals(starterGoals);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  async function saveLogs(newLogs: TrainingLog[]) {
+    setLogs(newLogs);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newLogs));
+    } catch (error) {
+      console.error('Failed to save logs', error);
+    }
+  }
+
+  async function saveGoals(newGoals: TrainingGoal[]) {
+    setGoals(newGoals);
+    try {
+      await AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(newGoals));
+    } catch (error) {
+      console.error('Failed to save goals', error);
+    }
+  }
+
+  async function addLog(log: Omit<TrainingLog, 'id'>) {
+    const newLog: TrainingLog = { ...log, id: Date.now() };
+    await saveLogs([newLog, ...logs]);
+  }
+
+  async function updateLog(id: number, logUpdates: Omit<TrainingLog, 'id'>) {
+    const updated = logs.map((log) => (log.id === id ? { ...logUpdates, id } : log));
+    await saveLogs(updated);
+  }
+
+  async function deleteLog(id: number) {
+    await saveLogs(logs.filter((log) => log.id !== id));
+  }
+
+  async function duplicateLog(id: number) {
+    const toDuplicate = logs.find((log) => log.id === id);
+    if (!toDuplicate) return;
+    const newLog: TrainingLog = { ...toDuplicate, id: Date.now() };
+    await saveLogs([newLog, ...logs]);
+  }
+
+  async function addGoal(goal: Omit<TrainingGoal, 'id'>) {
+    const newGoal: TrainingGoal = { ...goal, id: Date.now() };
+    await saveGoals([newGoal, ...goals]);
+  }
+
+  async function updateGoal(id: number, goalUpdates: Omit<TrainingGoal, 'id'>) {
+    const updated = goals.map((goal) => (goal.id === id ? { ...goalUpdates, id } : goal));
+    await saveGoals(updated);
+  }
+
+  async function deleteGoal(id: number) {
+    await saveGoals(goals.filter((goal) => goal.id !== id));
+  }
+
+  function exportLogsCsv() {
+    if (logs.length === 0) return 'Date,Category,Type,Duration,DistanceLoad,Readiness,Notes';
+    const header = ['Date', 'Category', 'Type', 'Duration', 'DistanceLoad', 'Readiness', 'Notes'].join(',');
+    const rows = logs.map(log => 
+      [
+        log.date,
+        log.category,
+        `"${log.type.replace(/"/g, '""')}"`,
+        `"${log.duration.replace(/"/g, '""')}"`,
+        `"${log.distanceLoad.replace(/"/g, '""')}"`,
+        log.readiness,
+        `"${log.notes.replace(/"/g, '""')}"`
+      ].join(',')
+    );
+    return [header, ...rows].join('\n');
+  }
+
+  async function importLogsCsv(csv: string) {
+    const lines = csv.split('\n').filter(l => l.trim().length > 0);
+    if (lines.length < 2) return 0;
+    
+    const newLogs: TrainingLog[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',').map(s => s.replace(/^"|"$/g, '').replace(/""/g, '"'));
+      if (parts.length >= 7) {
+        newLogs.push({
+          id: Date.now() + i,
+          date: parts[0],
+          category: parts[1] as TrainingCategory,
+          type: parts[2],
+          duration: parts[3],
+          distanceLoad: parts[4],
+          readiness: parts[5],
+          notes: parts[6]
+        });
+      }
+    }
+    
+    if (newLogs.length > 0) {
+      await saveLogs([...newLogs, ...logs]);
+    }
+    
+    return newLogs.length;
+  }
+
+  return (
+    <TrainingContext.Provider
+      value={{
+        logs,
+        goals,
+        addLog,
+        updateLog,
+        deleteLog,
+        duplicateLog,
+        addGoal,
+        updateGoal,
+        deleteGoal,
+        exportLogsCsv,
+        importLogsCsv,
+        isLoading,
+      }}
+    >
+      {children}
+    </TrainingContext.Provider>
+  );
+}
+
+export function useTraining() {
+  const context = useContext(TrainingContext);
+  if (context === undefined) {
+    throw new Error('useTraining must be used within a TrainingProvider');
+  }
+  return context;
+}
