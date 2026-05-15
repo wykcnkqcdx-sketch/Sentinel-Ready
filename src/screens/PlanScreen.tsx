@@ -4,12 +4,13 @@ import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import {
+  buildReadinessTrend,
   buildWeekPlan,
   buildWeekSummary,
   DayPlan,
-  buildReadinessTrend,
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
@@ -47,12 +48,17 @@ export default function PlanScreen() {
   const profile = useUser();
   if (isLoading) return <View style={styles.screen} />;
 
-  const thisWeek = buildWeekSummary(logs, 0);
-  const trend = buildReadinessTrend(logs);
-  const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
-  const balance = buildTrainingBalance(logs);
-  const forecast = buildReadinessForecast(logs, goals, profile);
-  const adherence = buildPlanAdherence(logs, goals, profile);
+  const { thisWeek, trend, balance } = useMemo(() => ({
+    thisWeek: buildWeekSummary(logs, 0),
+    trend: buildReadinessTrend(logs),
+    balance: buildTrainingBalance(logs),
+  }), [logs]);
+
+  const { days, planType, rationale, forecast, adherence } = useMemo(() => ({
+    ...buildWeekPlan(logs, goals, profile),
+    forecast: buildReadinessForecast(logs, goals, profile),
+    adherence: buildPlanAdherence(logs, goals, profile),
+  }), [logs, goals, profile]);
 
   const planTypeLabel =
     planType === 'recovery' ? 'Recovery Week'
