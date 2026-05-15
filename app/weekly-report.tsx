@@ -151,7 +151,12 @@ export default function WeeklyReportScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.kicker}>SENTINEL READY</Text>
@@ -295,7 +300,12 @@ export default function WeeklyReportScreen() {
             <Text style={styles.cardKicker}>EXPORT REPORT</Text>
             <Text style={styles.exportTitle}>Copy-ready weekly report</Text>
           </View>
-          <TouchableOpacity style={styles.shareButton} onPress={shareReport}>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={shareReport}
+            accessibilityRole="button"
+            accessibilityLabel="Share weekly report"
+          >
             <Text style={styles.shareButtonText}>Share</Text>
           </TouchableOpacity>
         </View>
@@ -303,7 +313,12 @@ export default function WeeklyReportScreen() {
         <Text selectable style={styles.reportText}>{report.text}</Text>
       </View>
 
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/add-log')}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => router.push('/add-log')}
+        accessibilityRole="button"
+        accessibilityLabel="Add training log"
+      >
         <Text style={styles.addButtonText}>Add Training Log</Text>
       </TouchableOpacity>
     </ScrollView>

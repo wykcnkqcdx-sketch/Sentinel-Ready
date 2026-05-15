@@ -1,51 +1,56 @@
 {
-  "timestamp": "2026-05-15T14:29:40.885Z",
+  "timestamp": "2026-05-15T21:21:06.178Z",
   "mode": "headless",
   "workerType": "audit",
   "model": "haiku",
-  "durationMs": 39452,
-  "executionId": "audit_1778855341433_tg24vn",
+  "durationMs": 37459,
+  "executionId": "audit_1778880028719_1t7upz",
   "success": true,
   "findings": {
     "vulnerabilities": [
       {
         "severity": "medium",
-        "file": ".claude/helpers/session.js",
-        "line": 24,
-        "description": "Session context and metrics stored in plaintext JSON files without encryption. Sensitive data in .claude-flow/sessions/ directory is unencrypted and could be read if filesystem is compromised."
+        "file": ".claude/helpers/memory.js",
+        "line": 7,
+        "description": "Sensitive data stored in plain text. Memory is persisted as unencrypted JSON without access controls. If used to store API tokens, credentials, or configuration secrets, this is a credential exposure risk."
       },
       {
         "severity": "medium",
-        "file": ".claude/helpers/memory.js",
-        "line": 15,
-        "description": "Memory data stored in plaintext JSON at .claude-flow/data/memory.json. No encryption of potentially sensitive key-value pairs. File permissions not explicitly restricted."
+        "file": ".claude/helpers/session.js",
+        "line": 9,
+        "description": "Session context data stored unencrypted in JSON files without access controls. Arbitrary key-value data can be stored in session.context with no validation, potentially exposing sensitive information if misused."
       },
       {
         "severity": "low",
-        "file": ".claude/helpers/statusline.js",
-        "line": 88,
-        "description": "File descriptor access to .swarm/memory.db and .claude/memory.db via fs.statSync without permission checks. Database files may contain sensitive patterns and learning data."
+        "file": ".claude/helpers/memory.js",
+        "line": 1,
+        "description": "No input validation on key names or values. Malformed or specially-crafted keys could be written to memory.json without sanitization."
+      },
+      {
+        "severity": "low",
+        "file": ".claude/helpers/github-safe.js",
+        "line": 90,
+        "description": "Temp file cleanup errors are silently ignored. If unlinkSync fails, orphaned temp files could accumulate on disk, though execFileSync protection prevents injection."
       },
       {
         "severity": "low",
         "file": "scripts/reset-project.js",
-        "line": 33,
-        "description": "Potential race condition: mkdir with recursive option followed by file writes. If filesystem is concurrent, files could be created with overly permissive defaults."
+        "line": 48,
+        "description": "User input validation only checks for 'y' or 'n', but no protection against path traversal or directory name manipulation. However, actual directories manipulated are hardcoded, so risk is minimal."
       }
     ],
     "riskScore": 28,
     "recommendations": [
-      "Encrypt sensitive session data before storing to disk. Use authenticated encryption (AES-256-GCM) for .claude-flow/sessions/ directory with a key derived from environment or secure storage.",
-      "Restrict file permissions on memory.json and database files to user-only read/write (mode 0600). Use fs.writeFileSync with {mode: 0o600} flag.",
-      "Add explicit file permission checks or use a secrets manager for any future authentication tokens or API credentials.",
-      "For the statusline.js database estimates, validate that paths exist and are regular files before accessing stats—add fs.lstatSync checks.",
-      "Add try-catch error handling in reset-project.js for file system operations with explicit error logging.",
-      "No hardcoded secrets found ✓",
-      "No SQL injection risks found ✓",
-      "No XSS vulnerabilities found ✓",
-      "Command injection mitigated properly ✓ (execFileSync with shell: false)"
+      "Encrypt sensitive data stored in memory.js using a library like crypto/libsodium before persisting to disk",
+      "Add strict validation to memory.js: whitelist allowed key names, reject suspicious input patterns",
+      "Implement access control (file permissions, ownership checks) for .claude-flow/data and .claude-flow/sessions directories",
+      "For session.js and memory.js: add schema validation or type checking to prevent arbitrary data structures",
+      "Consider using environment-specific storage (e.g., OS keychain for credentials, separate encrypted cache for session state)",
+      "Add explicit warnings in documentation: these helpers should NOT store secrets, tokens, or PII",
+      "The github-safe.js command whitelisting is good — maintain it and audit new commands before adding to ALLOWED_COMMANDS",
+      "Audit dependencies for known vulnerabilities: run `npm audit` and update dependencies regularly"
     ]
   },
-  "rawOutputPreview": "```json\n{\n  \"vulnerabilities\": [\n    {\n      \"severity\": \"medium\",\n      \"file\": \".claude/helpers/session.js\",\n      \"line\": 24,\n      \"description\": \"Session context and metrics stored in plaintext JSON files without encryption. Sensitive data in .claude-flow/sessions/ directory is unencrypted and could be read if filesystem is compromised.\"\n    },\n    {\n      \"severity\": \"medium\",\n      \"file\": \".claude/helpers/memory.js\",\n      \"line\": 15,\n      \"description\": \"Memory data stored in plaintext JSON at .claude-flow/data/memory.json. No encryption of potentially sensitive key-value pairs. File permissions not explicitly restricted.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \".claude/helpers/statusline.js\",\n      \"line\": 88,\n      \"description\": \"File descriptor access to .swarm/memory.db and .claude/memory.db via fs.statSync without permission checks. Database files may contain sensitive patterns and learning data.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \"scripts/reset-project.js\",\n      \"line\": 33,\n      \"description\": \"Potential race condition: mkdir with recursive option followed by file writes. If filesystem is concurrent, files could be created with overly permissive defaults.\"\n    }\n  ],\n  \"riskScore\": 28,\n  \"recommendations\": [\n    \"Encrypt sensitive session data before storing to disk. Use authenticated encryption (AES-256-GCM) for .claude-flow/sessions/ directory with a key derived from environment or secure storage.\",\n    \"Restrict file permissions on memory.json and database files to user-only read/write (mode 0600). Use fs.writeFileSync with {mode: 0o600} flag.\",\n    \"Add explicit file permission checks or use a secrets manager for any future authentication tokens or API credentials.\",\n    \"For the statusline.js database estimates, validate that paths exist and are regular files before accessing stats—add fs.lstatSync checks.\",\n    \"Add try-catch error handling in reset-project.js for file system operations with explicit error logg",
-  "rawOutputLength": 2453
+  "rawOutputPreview": "```json\n{\n  \"vulnerabilities\": [\n    {\n      \"severity\": \"medium\",\n      \"file\": \".claude/helpers/memory.js\",\n      \"line\": 7,\n      \"description\": \"Sensitive data stored in plain text. Memory is persisted as unencrypted JSON without access controls. If used to store API tokens, credentials, or configuration secrets, this is a credential exposure risk.\"\n    },\n    {\n      \"severity\": \"medium\",\n      \"file\": \".claude/helpers/session.js\",\n      \"line\": 9,\n      \"description\": \"Session context data stored unencrypted in JSON files without access controls. Arbitrary key-value data can be stored in session.context with no validation, potentially exposing sensitive information if misused.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \".claude/helpers/memory.js\",\n      \"line\": 1,\n      \"description\": \"No input validation on key names or values. Malformed or specially-crafted keys could be written to memory.json without sanitization.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \".claude/helpers/github-safe.js\",\n      \"line\": 90,\n      \"description\": \"Temp file cleanup errors are silently ignored. If unlinkSync fails, orphaned temp files could accumulate on disk, though execFileSync protection prevents injection.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \"scripts/reset-project.js\",\n      \"line\": 48,\n      \"description\": \"User input validation only checks for 'y' or 'n', but no protection against path traversal or directory name manipulation. However, actual directories manipulated are hardcoded, so risk is minimal.\"\n    }\n  ],\n  \"riskScore\": 28,\n  \"recommendations\": [\n    \"Encrypt sensitive data stored in memory.js using a library like crypto/libsodium before persisting to disk\",\n    \"Add strict validation to memory.js: whitelist allowed key names, reject suspicious input patterns\",\n    \"Implement access control (file permissions, ownership checks) for .claude-flow/data and .claude-flow/sessions directories\",\n    \"For session.js and memory.js: add s",
+  "rawOutputLength": 3341
 }

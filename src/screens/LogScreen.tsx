@@ -128,11 +128,21 @@ export default function LogScreen() {
             </Text>
 
             <View style={styles.topButtonRow}>
-              <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/add-log')}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={() => router.push('/add-log')}
+                accessibilityRole="button"
+                accessibilityLabel="Add training log"
+              >
                 <Text style={styles.primaryButtonText}>Add Training Log</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/weekly-report')}>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => router.push('/weekly-report')}
+                accessibilityRole="button"
+                accessibilityLabel="View weekly report"
+              >
                 <Text style={styles.secondaryButtonText}>Weekly Report</Text>
               </TouchableOpacity>
 
@@ -213,11 +223,21 @@ export default function LogScreen() {
             </Text>
 
             {logs.length === 0 ? (
-              <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/add-log')}>
+              <TouchableOpacity
+                style={styles.emptyButton}
+                onPress={() => router.push('/add-log')}
+                accessibilityRole="button"
+                accessibilityLabel="Add first log"
+              >
                 <Text style={styles.emptyButtonText}>Add First Log</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.emptyButton} onPress={clearSearchAndFilters}>
+              <TouchableOpacity
+                style={styles.emptyButton}
+                onPress={clearSearchAndFilters}
+                accessibilityRole="button"
+                accessibilityLabel="Clear filters"
+              >
                 <Text style={styles.emptyButtonText}>Clear Filters</Text>
               </TouchableOpacity>
             )}
@@ -225,7 +245,12 @@ export default function LogScreen() {
         }
       />
 
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/add-log')}>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/add-log')}
+        accessibilityRole="button"
+        accessibilityLabel="Add training log"
+      >
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
     </View>

@@ -46,7 +46,12 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.back}>
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={styles.back}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
         <Text style={styles.backText}>← Back</Text>
       </TouchableOpacity>
 
@@ -63,12 +68,16 @@ export default function ProfileScreen() {
           <TouchableOpacity
             style={gender === 'M' ? styles.toggleBtnActive : styles.toggleBtn}
             onPress={() => setGender('M')}
+            accessibilityRole="button"
+            accessibilityLabel="Male"
           >
             <Text style={gender === 'M' ? styles.toggleTextActive : styles.toggleText}>Male</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={gender === 'F' ? styles.toggleBtnActive : styles.toggleBtn}
             onPress={() => setGender('F')}
+            accessibilityRole="button"
+            accessibilityLabel="Female"
           >
             <Text style={gender === 'F' ? styles.toggleTextActive : styles.toggleText}>Female</Text>
           </TouchableOpacity>
@@ -88,8 +97,14 @@ export default function ProfileScreen() {
             onBlur={handleSaveDate}
             keyboardType="numeric"
             maxLength={10}
+            accessibilityLabel="Target test date"
           />
-          <TouchableOpacity style={styles.saveBtn} onPress={handleSaveDate}>
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={handleSaveDate}
+            accessibilityRole="button"
+            accessibilityLabel="Save date"
+          >
             <Text style={styles.saveBtnText}>Save</Text>
           </TouchableOpacity>
         </View>
@@ -99,7 +114,11 @@ export default function ProfileScreen() {
         {testDate && !dateError ? (
           <View style={styles.savedRow}>
             <Text style={styles.savedText}>Saved: {testDate}</Text>
-            <TouchableOpacity onPress={handleClearDate}>
+            <TouchableOpacity
+              onPress={handleClearDate}
+              accessibilityRole="button"
+              accessibilityLabel="Clear date"
+            >
               <Text style={styles.clearText}>Clear</Text>
             </TouchableOpacity>
           </View>

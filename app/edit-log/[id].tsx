@@ -56,7 +56,11 @@ export default function EditLogScreen() {
     return (
       <View style={styles.centerScreen}>
         <Text style={styles.notFoundTitle}>Log not found</Text>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Text style={styles.backLink}>Back</Text>
         </TouchableOpacity>
       </View>
