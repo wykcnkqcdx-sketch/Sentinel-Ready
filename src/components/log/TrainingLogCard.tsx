@@ -63,7 +63,12 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, onEdit, onDuplicate
         </Text>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.editButton} onPress={() => onEdit(log.id)}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => onEdit(log.id)}
+            accessibilityRole="button"
+            accessibilityLabel="Edit log"
+          >
             <Text style={styles.editButtonText}>Edit</Text>
           </TouchableOpacity>
 
@@ -72,12 +77,22 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, onEdit, onDuplicate
           </TouchableOpacity>
 
           {weakLog ? (
-            <TouchableOpacity style={styles.improveButton} onPress={() => onEdit(log.id)}>
+            <TouchableOpacity
+              style={styles.improveButton}
+              onPress={() => onEdit(log.id)}
+              accessibilityRole="button"
+              accessibilityLabel="Improve log"
+            >
               <Text style={styles.improveButtonText}>Improve</Text>
             </TouchableOpacity>
           ) : null}
 
-          <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(log)}>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => onDelete(log)}
+            accessibilityRole="button"
+            accessibilityLabel="Delete log"
+          >
             <Text style={styles.deleteButtonText}>Delete</Text>
           </TouchableOpacity>
         </View>

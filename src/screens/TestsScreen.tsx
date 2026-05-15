@@ -326,7 +326,11 @@ export default function TestsScreen() {
       <View style={styles.dfiftCard}>
         <View style={styles.dfiftHeader}>
           <Text style={styles.dfiftKicker}>DEFENCE FORCES INDUCTION FITNESS TEST</Text>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
+          <TouchableOpacity
+            onPress={() => router.push('/profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Edit profile gender setting"
+          >
             <Text style={styles.dfiftProfileLink}>{gender} · Edit</Text>
           </TouchableOpacity>
         </View>
