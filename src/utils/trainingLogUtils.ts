@@ -948,12 +948,14 @@ export function buildWeekPlan(
   return {
     planType: 'standard',
     rationale: 'Readiness is stable. Follow the standard progression.',
-    days: Array.from({ length: 7 }).map((_, i) => ({
-      day: `Day ${i + 1}`,
-      focus: 'Base',
-      session: 'Standard Session',
-      intensity: 'Moderate',
-      isRest: false,
-    })),
+    days: [
+      { day: 'Day 1', focus: 'Strength', session: 'Full Body Strength', intensity: 'Moderate', isRest: false },
+      { day: 'Day 2', focus: 'Run', session: 'Aerobic Base Run', intensity: 'Moderate', isRest: false },
+      { day: 'Day 3', focus: 'Recovery', session: 'Mobility and Core', intensity: 'Low', isRest: true },
+      { day: 'Day 4', focus: 'Strength', session: 'Full Body Strength', intensity: 'Moderate', isRest: false },
+      { day: 'Day 5', focus: 'Ruck', session: 'Loaded Ruck Progression', intensity: 'High', isRest: false },
+      { day: 'Day 6', focus: 'Recovery', session: 'Active Recovery', intensity: 'Low', isRest: false },
+      { day: 'Day 7', focus: 'Rest', session: 'Complete Rest', intensity: 'Rest', isRest: true },
+    ],
   };
 }

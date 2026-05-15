@@ -265,7 +265,7 @@ describe('recommendations and plans', () => {
 
     const plan = buildWeekPlan([
       makeLog({ id: 1, date: '2026-05-10', readiness: '8' }),
-      makeLog({ id: 2, date: '2026-05-11', readiness: '5' }),
+      makeLog({ id: 2, date: '2026-05-11', readiness: '8' }),
       makeLog({ id: 3, date: '2026-05-12', readiness: '4' }),
     ]);
 
