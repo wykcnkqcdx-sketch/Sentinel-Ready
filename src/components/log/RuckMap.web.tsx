@@ -2,8 +2,7 @@ import { Colors } from '@/constants/theme';
 import type { RouteData } from '@/src/utils/trainingLogUtils';
 import polylineDecoder from '@mapbox/polyline';
 import 'leaflet/dist/leaflet.css';
-import React from 'react';
-import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet';
+import React, { useEffect, useState } from 'react';
 
 interface RuckMapProps {
   route: RouteData;
@@ -12,6 +11,27 @@ interface RuckMapProps {
 
 export default function RuckMap({ route, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
+  const [RL, setRL] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('react-leaflet')
+        .then((reactLeaflet) => {
+          setRL(reactLeaflet);
+        })
+        .catch((err) => console.error("Failed to load map module", err));
+    }
+  }, []);
+
+  if (!RL) {
+    return (
+      <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.mapBackground, borderRadius: 12 }}>
+        <span style={{ color: theme.text }}>Loading map...</span>
+      </div>
+    );
+  }
+
+  const { MapContainer, Marker, Polyline, Popup, TileLayer } = RL;
   
   // Decode the polyline string to an array of [lat, lng] coordinates
   const positions = route.polyline ? polylineDecoder.decode(route.polyline) : [];
