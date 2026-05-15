@@ -104,26 +104,16 @@ export default function TrainingLogForm({
   onBack,
   onSubmit,
 }: Props) {
-  const [date, setDate] = useState(initialValues.date);
-  const [category, setCategory] = useState<TrainingCategory>(initialValues.category);
-  const [type, setType] = useState(initialValues.type);
-  const [duration, setDuration] = useState(initialValues.duration);
-  const [distanceLoad, setDistanceLoad] = useState(initialValues.distanceLoad);
-  const [readiness, setReadiness] = useState(initialValues.readiness);
-  const [notes, setNotes] = useState(initialValues.notes);
+  const [values, setValues] = useState<TrainingLogFormValues>(initialValues);
   const [saving, setSaving] = useState(false);
 
+  const { date, category, type, duration, distanceLoad, readiness, notes } = values;
+
   useEffect(() => {
-    setDate(initialValues.date);
-    setCategory(initialValues.category);
-    setType(initialValues.type);
-    setDuration(initialValues.duration);
-    setDistanceLoad(initialValues.distanceLoad);
-    setReadiness(initialValues.readiness);
-    setNotes(initialValues.notes);
+    setValues(initialValues);
   }, [initialValues]);
 
-  const notesWarning = getNotesQualityWarning(notes);
+  const notesWarning = useMemo(() => getNotesQualityWarning(notes), [notes]);
 
   const completionScore = useMemo(
     () => getCompletionScore(date, category, type, duration, distanceLoad, readiness, notes),
@@ -131,12 +121,15 @@ export default function TrainingLogForm({
   );
 
   function applyTemplate(template: QuickTemplate) {
-    setCategory(template.category);
-    setType(template.type);
-    setDuration(template.duration);
-    setDistanceLoad(template.distanceLoad);
-    setReadiness(template.readiness);
-    setNotes(template.notes);
+    setValues((prev) => ({
+      ...prev,
+      category: template.category,
+      type: template.type,
+      duration: template.duration,
+      distanceLoad: template.distanceLoad,
+      readiness: template.readiness,
+      notes: template.notes,
+    }));
   }
 
   function validateForm() {
@@ -261,12 +254,14 @@ export default function TrainingLogForm({
               key={item}
               style={category === item ? styles.categoryButtonActive : styles.categoryButton}
               onPress={() => {
-                setCategory(item);
-
-                const isDefault = categories.some((c) => notes === getNoteStarter(c));
-                if (notes.trim() === '' || isDefault) {
-                  setNotes(getNoteStarter(item));
-                }
+              setValues((prev) => {
+                const isDefault = categories.some((c) => prev.notes === getNoteStarter(c));
+                return {
+                  ...prev,
+                  category: item,
+                  notes: prev.notes.trim() === '' || isDefault ? getNoteStarter(item) : prev.notes,
+                };
+              });
               }}
             >
               <Text style={category === item ? styles.categoryTextActive : styles.categoryText}>{item}</Text>
@@ -275,26 +270,26 @@ export default function TrainingLogForm({
         </View>
 
         <Text style={styles.label}>Date</Text>
-        <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" placeholderTextColor="#6f7d70" maxLength={10} />
+        <TextInput style={styles.input} value={date} onChangeText={(text) => setValues((prev) => ({ ...prev, date: text }))} placeholder="YYYY-MM-DD" placeholderTextColor="#6f7d70" maxLength={10} />
 
         <Text style={styles.label}>Session Type</Text>
-        <TextInput style={styles.input} value={type} onChangeText={setType} placeholder="Loaded Ruck, Steady Run, Strength Session" placeholderTextColor="#6f7d70" maxLength={100} />
+        <TextInput style={styles.input} value={type} onChangeText={(text) => setValues((prev) => ({ ...prev, type: text }))} placeholder="Loaded Ruck, Steady Run, Strength Session" placeholderTextColor="#6f7d70" maxLength={100} />
 
         <Text style={styles.label}>Duration</Text>
-        <TextInput style={styles.input} value={duration} onChangeText={setDuration} placeholder="45 minutes" placeholderTextColor="#6f7d70" maxLength={50} />
+        <TextInput style={styles.input} value={duration} onChangeText={(text) => setValues((prev) => ({ ...prev, duration: text }))} placeholder="45 minutes" placeholderTextColor="#6f7d70" maxLength={50} />
 
         <Text style={styles.label}>Distance / Load</Text>
-        <TextInput style={styles.input} value={distanceLoad} onChangeText={setDistanceLoad} placeholder="5 km, 20 kg, Squat - Press - Pull" placeholderTextColor="#6f7d70" maxLength={100} />
+        <TextInput style={styles.input} value={distanceLoad} onChangeText={(text) => setValues((prev) => ({ ...prev, distanceLoad: text }))} placeholder="5 km, 20 kg, Squat - Press - Pull" placeholderTextColor="#6f7d70" maxLength={100} />
 
         <Text style={styles.label}>Readiness 1-10</Text>
-        <TextInput style={styles.input} value={readiness} onChangeText={setReadiness} keyboardType="numeric" placeholder="7" placeholderTextColor="#6f7d70" maxLength={2} />
+        <TextInput style={styles.input} value={readiness} onChangeText={(text) => setValues((prev) => ({ ...prev, readiness: text }))} keyboardType="numeric" placeholder="7" placeholderTextColor="#6f7d70" maxLength={2} />
 
         <Text style={styles.label}>Notes</Text>
         <View style={styles.noteHelperBox}>
           <Text style={styles.noteHelperTitle}>Note Starter</Text>
           <Text style={styles.noteHelperText}>{getNoteStarter(category)}</Text>
 
-          <TouchableOpacity style={styles.noteStarterButton} onPress={() => setNotes(getNoteStarter(category))}>
+          <TouchableOpacity style={styles.noteStarterButton} onPress={() => setValues((prev) => ({ ...prev, notes: getNoteStarter(category) }))}>
             <Text style={styles.noteStarterButtonText}>Use Note Starter</Text>
           </TouchableOpacity>
         </View>
@@ -302,7 +297,7 @@ export default function TrainingLogForm({
         <TextInput
           style={[styles.input, styles.notes]}
           value={notes}
-          onChangeText={setNotes}
+          onChangeText={(text) => setValues((prev) => ({ ...prev, notes: text }))}
           multiline
           placeholder="How did the session feel?"
           placeholderTextColor="#6f7d70"
