@@ -1,6 +1,7 @@
 import type { DfiftStandards } from '@/src/types/dfift';
 import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 
 const dfiftStandards = dfiftJson as DfiftStandards;
 import { useUser } from '@/src/screens/UserContext';
@@ -112,6 +113,7 @@ export default function TestsScreen() {
   const sitLimit = gender === 'F' ? sitUps.female : sitUps.male;
   const runLimit = gender === 'F' ? run.femaleMaxSeconds : run.maleMaxSeconds;
   const skinfoldLimit = gender === 'F' ? skinfold.femaleMaxMm : skinfold.maleMaxMm;
+  const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
 
   const daysUntilTest = testDate
     ? Math.ceil((new Date(testDate + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
@@ -210,6 +212,29 @@ export default function TestsScreen() {
           </Text>
         </View>
       ) : null}
+
+      <View style={styles.dfiftSnapshotCard}>
+        <View style={styles.dfiftSnapshotHeader}>
+          <View>
+            <Text style={styles.dfiftSnapshotKicker}>DFIFT SNAPSHOT</Text>
+            <Text style={styles.dfiftSnapshotScore}>
+              {dfiftSnapshot.passedEvents} / {dfiftSnapshot.rows.length} passing
+            </Text>
+          </View>
+          <View style={dfiftSnapshot.passedEvents === dfiftSnapshot.rows.length ? styles.dfiftSnapshotBadgeGood : styles.dfiftSnapshotBadge}>
+            <Text style={dfiftSnapshot.passedEvents === dfiftSnapshot.rows.length ? styles.dfiftSnapshotBadgeTextGood : styles.dfiftSnapshotBadgeText}>
+              {dfiftSnapshot.loggedEvents} logged
+            </Text>
+          </View>
+        </View>
+
+        {dfiftSnapshot.weakPoint ? (
+          <Text style={styles.dfiftSnapshotWeak}>
+            Weak point: {dfiftSnapshot.weakPoint.label} {dfiftSnapshot.weakPoint.result ? `(${dfiftSnapshot.weakPoint.result})` : '(missing result)'}
+          </Text>
+        ) : null}
+        <Text style={styles.dfiftSnapshotText}>{dfiftSnapshot.recommendation}</Text>
+      </View>
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Test History</Text>
@@ -375,6 +400,16 @@ const styles = StyleSheet.create({
   alertCard: { backgroundColor: '#1c1408', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#6b5020', gap: 6 },
   alertTitle: { color: '#f0c070', fontSize: 14, fontWeight: '900' },
   alertText: { color: '#c8a070', fontSize: 13, lineHeight: 19 },
+  dfiftSnapshotCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 10 },
+  dfiftSnapshotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  dfiftSnapshotKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  dfiftSnapshotScore: { color: '#ffffff', fontSize: 26, fontWeight: '900', marginTop: 3 },
+  dfiftSnapshotBadge: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  dfiftSnapshotBadgeGood: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  dfiftSnapshotBadgeText: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  dfiftSnapshotBadgeTextGood: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
+  dfiftSnapshotWeak: { color: '#ffb86b', fontSize: 13, fontWeight: '900', lineHeight: 19 },
+  dfiftSnapshotText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },

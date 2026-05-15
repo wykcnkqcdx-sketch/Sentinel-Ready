@@ -1,4 +1,7 @@
 import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
+import type { DfiftStandards } from '@/src/types/dfift';
+import type { Gender } from '@/src/screens/UserContext';
+import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import {
   buildGoalSummary,
   buildGoalAction,
@@ -43,7 +46,12 @@ function buildKeyNotes(logs: TrainingLog[]): string[] {
     .map((log) => `${log.date} ${log.category}: ${sanitiseField(log.notes)}`);
 }
 
-export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), goals: TrainingGoal[] = []): WeeklyReport {
+export function buildWeeklyReport(
+  logs: TrainingLog[],
+  now: Date = new Date(),
+  goals: TrainingGoal[] = [],
+  dfift?: { standards: DfiftStandards; gender: Gender }
+): WeeklyReport {
   const thisWeek = buildWeekSummary(logs, 0);
   const summary = buildSummary(logs);
   const healthScore = calculateTrainingLogHealthScore(logs);
@@ -54,6 +62,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
   const goalSummary = buildGoalSummary(goals);
   const goalAction = buildGoalAction(goals, logs);
   const performance = buildPerformanceSnapshot(logs);
+  const dfiftSnapshot = dfift ? buildDfiftSnapshot(logs, dfift.standards, dfift.gender) : null;
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -76,6 +85,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
     `Next Goal Action: ${goalAction.title}`,
     `Performance Highlight: ${performance.highlight}`,
+    ...(dfiftSnapshot ? [`DFIFT Passing: ${dfiftSnapshot.passedEvents}/${dfiftSnapshot.rows.length}`] : []),
     '',
     'TRAINING SPLIT',
     `Total Logs: ${summary.total}`,
@@ -93,6 +103,14 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     `Longest Session: ${performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : 'No duration logged'}`,
     `Consistency: ${performance.consistencyLabel}`,
     '',
+    ...(dfiftSnapshot ? [
+      'DFIFT SNAPSHOT',
+      `Events Logged: ${dfiftSnapshot.loggedEvents}/${dfiftSnapshot.rows.length}`,
+      `Events Passing: ${dfiftSnapshot.passedEvents}/${dfiftSnapshot.rows.length}`,
+      `Weak Point: ${dfiftSnapshot.weakPoint ? dfiftSnapshot.weakPoint.label : 'None'}`,
+      `Recommendation: ${dfiftSnapshot.recommendation}`,
+      '',
+    ] : []),
     'WATCH ITEMS',
     `Weak Logs: ${weakLogs.length}`,
     `Fatigue Watch Logs: ${fatigueWatchLogs.length}`,

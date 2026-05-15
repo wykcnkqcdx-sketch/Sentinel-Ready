@@ -1,5 +1,9 @@
 import { useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
 import { buildWeeklyReport } from '@/src/utils/reportBuilder';
+import dfiftJson from '@/src/data/standards/dfift-standards.json';
+import type { DfiftStandards } from '@/src/types/dfift';
+import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import {
   buildGoalSummary,
   buildGoalAction,
@@ -92,6 +96,7 @@ function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummar
 
 export default function WeeklyReportScreen() {
   const { logs, goals, isLoading } = useTraining();
+  const { gender } = useUser();
   const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
@@ -104,7 +109,9 @@ export default function WeeklyReportScreen() {
   const goalSummary = buildGoalSummary(goals);
   const goalAction = buildGoalAction(goals, logs);
   const performance = buildPerformanceSnapshot(logs);
-  const report = buildWeeklyReport(logs, new Date(), goals);
+  const dfiftStandards = dfiftJson as DfiftStandards;
+  const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
+  const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender });
 
   const healthIsWarn = healthScore < 60;
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
@@ -189,6 +196,14 @@ export default function WeeklyReportScreen() {
         <Text style={styles.goalAction}>{performance.highlight}</Text>
         <Text style={styles.adviceText}>
           Best ruck {performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'} · Best run {performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : '--'} · Longest {performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : '--'}
+        </Text>
+      </View>
+
+      <View style={styles.performanceCard}>
+        <Text style={styles.cardKicker}>DFIFT SNAPSHOT</Text>
+        <Text style={styles.goalTitle}>{dfiftSnapshot.passedEvents} / {dfiftSnapshot.rows.length} passing</Text>
+        <Text style={styles.goalAction}>
+          {dfiftSnapshot.weakPoint ? `Weak point: ${dfiftSnapshot.weakPoint.label}. ` : ''}{dfiftSnapshot.recommendation}
         </Text>
       </View>
 
