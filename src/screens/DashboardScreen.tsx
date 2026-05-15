@@ -153,9 +153,16 @@ export default function DashboardScreen() {
             <Text style={styles.goalNumberComplete}>{goalSummary.complete}</Text>
             <Text style={styles.goalLabel}>Complete</Text>
           </View>
+          <View style={styles.goalStat}>
+            <Text style={styles.goalNumber}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}%` : '--'}</Text>
+            <Text style={styles.goalLabel}>Measured</Text>
+          </View>
           <TouchableOpacity style={styles.goalButton} onPress={() => router.push('/goals')}>
             <Text style={styles.goalButtonText}>Manage</Text>
           </TouchableOpacity>
+        </View>
+        <View style={styles.goalTrack}>
+          <View style={[styles.goalFill, { width: `${goalSummary.averageProgress}%` }]} />
         </View>
         <Text style={styles.cardText}>{goalSummary.message}</Text>
       </SentinelCard>
@@ -325,6 +332,8 @@ const styles = StyleSheet.create({
   goalLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '800', marginTop: 2 },
   goalButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
   goalButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
+  goalTrack: { height: 8, backgroundColor: '#07110c', borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: '#26382c', marginTop: 12 },
+  goalFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 999 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   section: { marginTop: 8, gap: 12 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

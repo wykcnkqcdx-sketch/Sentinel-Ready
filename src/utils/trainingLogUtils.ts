@@ -664,7 +664,14 @@ export type GoalSummary = {
   complete: number;
   priority: TrainingGoal | null;
   byCategory: Record<GoalCategory, number>;
+  averageProgress: number;
   message: string;
+};
+
+export type GoalProgress = {
+  percent: number;
+  label: string;
+  hasNumericProgress: boolean;
 };
 
 function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'> & Partial<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>>): DayPlan {
@@ -713,17 +720,53 @@ export function buildGoalSummary(goals: TrainingGoal[]): GoalSummary {
     .filter((goal) => /^\d{4}-\d{2}-\d{2}$/.test(goal.deadline))
     .sort((a, b) => getDateValue(a.deadline) - getDateValue(b.deadline));
   const priority = datedGoals[0] ?? activeGoals[0] ?? null;
+  const numericProgress = activeGoals
+    .map((goal) => getGoalProgress(goal))
+    .filter((progress) => progress.hasNumericProgress);
+  const averageProgress = numericProgress.length > 0
+    ? Math.round(numericProgress.reduce((sum, progress) => sum + progress.percent, 0) / numericProgress.length)
+    : 0;
 
   return {
     active: activeGoals.length,
     complete: completeGoals.length,
     priority,
     byCategory,
+    averageProgress,
     message: priority
       ? `Priority: ${priority.title}. Target ${priority.target}.`
       : completeGoals.length > 0
         ? 'All goals are complete. Add the next target when ready.'
         : 'Set one active goal to anchor the next plan.',
+  };
+}
+
+function getFirstNumber(value: string) {
+  const match = value.replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+export function getGoalProgress(goal: TrainingGoal): GoalProgress {
+  if (goal.status === 'complete') {
+    return { percent: 100, label: 'Complete', hasNumericProgress: true };
+  }
+
+  const current = getFirstNumber(goal.current);
+  const target = getFirstNumber(goal.target);
+
+  if (current > 0 && target > 0) {
+    const percent = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+    return {
+      percent,
+      label: `${percent}% toward target`,
+      hasNumericProgress: true,
+    };
+  }
+
+  return {
+    percent: 0,
+    label: goal.current.trim() ? goal.current.trim() : 'Progress not quantified',
+    hasNumericProgress: false,
   };
 }
 

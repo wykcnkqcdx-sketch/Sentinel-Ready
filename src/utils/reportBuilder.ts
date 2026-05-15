@@ -8,6 +8,7 @@ import {
   buildWeeklyLoadRisk,
   calculateTrainingLogHealthScore,
   getTrainingLogHealthLabel,
+  getGoalProgress,
   getWeakLogReasons,
   isFatigueWatch,
 } from '@/src/utils/trainingLogUtils';
@@ -68,6 +69,7 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     `Weekly Load Risk: ${weeklyLoadRisk.label}`,
     `Recommended Next Session: ${recommendation.sessionType}`,
     `Active Goals: ${goalSummary.active}`,
+    `Average Goal Progress: ${goalSummary.averageProgress}%`,
     '',
     'TRAINING SPLIT',
     `Total Logs: ${summary.total}`,
@@ -87,7 +89,10 @@ export function buildWeeklyReport(logs: TrainingLog[], now: Date = new Date(), g
     'GOALS',
     goalSummary.message,
     ...(goals.length > 0
-      ? goals.slice(0, 5).map((goal) => `${goal.status.toUpperCase()} | ${goal.category} | ${goal.title} | Target: ${sanitiseField(goal.target)} | Current: ${sanitiseField(goal.current || 'Not recorded')}`)
+      ? goals.slice(0, 5).map((goal) => {
+          const progress = getGoalProgress(goal);
+          return `${goal.status.toUpperCase()} | ${goal.category} | ${goal.title} | ${progress.label} | Target: ${sanitiseField(goal.target)} | Current: ${sanitiseField(goal.current || 'Not recorded')}`;
+        })
       : ['No goals recorded.']),
     '',
     'NEXT SESSION GUIDANCE',

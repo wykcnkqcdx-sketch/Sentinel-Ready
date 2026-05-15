@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TrainingLog } from '@/src/screens/TrainingContext';
+import type { TrainingGoal } from '@/src/screens/TrainingContext';
 import { calculateReadinessPercentage } from '@/src/screens/TrainingContext';
 import {
   buildReadinessTrend,
@@ -9,6 +10,7 @@ import {
   buildWeekSummary,
   calculateTrainingLogHealthScore,
   filterAndSortLogs,
+  getGoalProgress,
   getCompletionScore,
   getWeakLogReasons,
 } from './trainingLogUtils';
@@ -23,6 +25,20 @@ function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
     distanceLoad: '6 km with 15 kg',
     readiness: '7',
     notes: 'Steady tactical pace with controlled breathing and no unusual pain.',
+    ...overrides,
+  };
+}
+
+function makeGoal(overrides: Partial<TrainingGoal> = {}): TrainingGoal {
+  return {
+    id: 1,
+    category: 'Ruck',
+    title: '10 km ruck',
+    target: '10 km with 18 kg',
+    current: '8 km with 18 kg',
+    deadline: '',
+    notes: '',
+    status: 'active',
     ...overrides,
   };
 }
@@ -258,6 +274,32 @@ describe('recommendations and plans', () => {
 
     expect(plan.planType).toBe('recovery');
     expect(plan.days).toHaveLength(7);
+  });
+});
+
+describe('goal progress', () => {
+  it('extracts numeric progress from current and target text', () => {
+    expect(getGoalProgress(makeGoal())).toMatchObject({
+      percent: 80,
+      label: '80% toward target',
+      hasNumericProgress: true,
+    });
+  });
+
+  it('caps complete goals at 100 percent', () => {
+    expect(getGoalProgress(makeGoal({ status: 'complete', current: '2 km', target: '10 km' }))).toMatchObject({
+      percent: 100,
+      label: 'Complete',
+      hasNumericProgress: true,
+    });
+  });
+
+  it('falls back to text status when numbers are missing', () => {
+    expect(getGoalProgress(makeGoal({ current: 'Building baseline', target: 'Improve consistency' }))).toMatchObject({
+      percent: 0,
+      label: 'Building baseline',
+      hasNumericProgress: false,
+    });
   });
 });
 

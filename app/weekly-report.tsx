@@ -174,6 +174,7 @@ export default function WeeklyReportScreen() {
       <View style={styles.goalCard}>
         <Text style={styles.cardKicker}>GOALS</Text>
         <Text style={styles.goalTitle}>{goalSummary.active} active / {goalSummary.complete} complete</Text>
+        <Text style={styles.goalProgress}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}% average measured progress` : 'No measured progress yet'}</Text>
         <Text style={styles.adviceText}>{goalSummary.message}</Text>
       </View>
 
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
   adviceTextWarning: { color: '#c8a070', fontSize: 13, lineHeight: 20 },
   goalCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 8 },
   goalTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  goalProgress: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
 
   exportCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
   exportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },

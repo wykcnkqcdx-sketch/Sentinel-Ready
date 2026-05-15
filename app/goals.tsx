@@ -1,5 +1,5 @@
 import { GoalCategory, GoalStatus, TrainingGoal, useTraining } from '@/src/screens/TrainingContext';
-import { buildGoalSummary } from '@/src/utils/trainingLogUtils';
+import { buildGoalSummary, getGoalProgress } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -28,6 +28,7 @@ function GoalCard({
   onEdit: (goal: TrainingGoal) => void;
 }) {
   const complete = goal.status === 'complete';
+  const progress = getGoalProgress(goal);
   return (
     <View style={complete ? styles.goalCardComplete : styles.goalCard}>
       <View style={styles.goalHeader}>
@@ -41,6 +42,15 @@ function GoalCard({
       </View>
       <Text style={styles.goalText}>Target: {goal.target}</Text>
       <Text style={styles.goalText}>Current: {goal.current || 'Not recorded yet'}</Text>
+      <View style={styles.progressBlock}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressLabel}>Progress</Text>
+          <Text style={styles.progressValue}>{progress.label}</Text>
+        </View>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
+        </View>
+      </View>
       {goal.deadline ? <Text style={styles.goalSubText}>Deadline: {goal.deadline}</Text> : null}
       {goal.notes ? <Text style={styles.goalSubText}>{goal.notes}</Text> : null}
       <View style={styles.goalActions}>
@@ -120,6 +130,7 @@ export default function GoalsScreen() {
       <View style={styles.summaryCard}>
         <Text style={styles.cardKicker}>GOAL TRACKING</Text>
         <Text style={styles.summaryNumber}>{summary.active} active / {summary.complete} complete</Text>
+        <Text style={styles.summaryProgress}>{summary.averageProgress > 0 ? `${summary.averageProgress}% average measured progress` : 'No measured progress yet'}</Text>
         <Text style={styles.summaryText}>{summary.message}</Text>
       </View>
 
@@ -170,6 +181,7 @@ const styles = StyleSheet.create({
   summaryCard: { backgroundColor: '#102016', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2d6b3f', gap: 7 },
   cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   summaryNumber: { color: '#ffffff', fontSize: 24, fontWeight: '900' },
+  summaryProgress: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   summaryText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
   formCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -190,6 +202,12 @@ const styles = StyleSheet.create({
   goalTitleComplete: { color: '#91e6a3', fontSize: 18, fontWeight: '900', marginTop: 3 },
   goalText: { color: '#dfe8da', fontSize: 13, lineHeight: 19, fontWeight: '800' },
   goalSubText: { color: '#8fbf8f', fontSize: 12, lineHeight: 18 },
+  progressBlock: { gap: 6, marginTop: 2 },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
+  progressLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  progressValue: { color: '#dfe8da', fontSize: 11, fontWeight: '900', flex: 1, textAlign: 'right' },
+  progressTrack: { height: 8, backgroundColor: '#07110c', borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: '#26382c' },
+  progressFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 999 },
   statusPill: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   statusPillComplete: { backgroundColor: '#1e3a27', borderWidth: 1, borderColor: '#58d77a', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   statusText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
