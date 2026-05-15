@@ -1,6 +1,7 @@
 import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import type { DfiftStandards } from '@/src/types/dfift';
 import type { Gender } from '@/src/screens/UserContext';
+import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
@@ -66,6 +67,7 @@ export function buildWeeklyReport(
   const performance = buildPerformanceSnapshot(logs);
   const dfiftSnapshot = dfift ? buildDfiftSnapshot(logs, dfift.standards, dfift.gender) : null;
   const recoveryDebt = buildRecoveryDebt(logs, profile?.injuryNotes ?? '', now);
+  const trainingBalance = buildTrainingBalance(logs);
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -89,6 +91,7 @@ export function buildWeeklyReport(
     `Next Goal Action: ${goalAction.title}`,
     `Performance Highlight: ${performance.highlight}`,
     `Recovery Debt: ${recoveryDebt.label} (${recoveryDebt.status === 'no-data' ? 'No Data' : `${recoveryDebt.score}%`})`,
+    `Training Balance: ${trainingBalance.label} (${trainingBalance.status === 'no-data' ? 'No Data' : `${trainingBalance.score}%`})`,
     ...(dfiftSnapshot ? [`DFIFT Passing: ${dfiftSnapshot.passedEvents}/${dfiftSnapshot.rows.length}`] : []),
     '',
     'TRAINING SPLIT',
@@ -106,6 +109,12 @@ export function buildWeeklyReport(
     `Best Run: ${performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : 'No run distance logged'}`,
     `Longest Session: ${performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : 'No duration logged'}`,
     `Consistency: ${performance.consistencyLabel}`,
+    '',
+    'TRAINING BALANCE',
+    `Balance: ${trainingBalance.label}`,
+    `Next Focus: ${trainingBalance.nextFocus}`,
+    `Gaps: ${trainingBalance.gaps.length > 0 ? trainingBalance.gaps.join(', ') : 'None'}`,
+    `Overloads: ${trainingBalance.overloads.length > 0 ? trainingBalance.overloads.join(', ') : 'None'}`,
     '',
     ...(dfiftSnapshot ? [
       'DFIFT SNAPSHOT',

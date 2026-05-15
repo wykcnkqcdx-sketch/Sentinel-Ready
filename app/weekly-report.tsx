@@ -3,6 +3,7 @@ import { useUser } from '@/src/screens/UserContext';
 import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import type { DfiftStandards } from '@/src/types/dfift';
+import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
@@ -113,6 +114,7 @@ export default function WeeklyReportScreen() {
   const dfiftStandards = dfiftJson as DfiftStandards;
   const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
   const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
+  const trainingBalance = buildTrainingBalance(logs);
   const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
@@ -215,6 +217,14 @@ export default function WeeklyReportScreen() {
           {recoveryDebt.label} {recoveryDebt.status === 'no-data' ? '' : `· ${recoveryDebt.score}%`}
         </Text>
         <Text style={styles.goalAction}>{recoveryDebt.action}</Text>
+      </View>
+
+      <View style={trainingBalance.status === 'overload' ? styles.recoveryCardWarn : styles.performanceCard}>
+        <Text style={styles.cardKicker}>TRAINING BALANCE</Text>
+        <Text style={trainingBalance.status === 'overload' ? styles.recoveryTitleWarn : styles.goalTitle}>
+          {trainingBalance.label} {trainingBalance.status === 'no-data' ? '' : `· ${trainingBalance.score}%`}
+        </Text>
+        <Text style={styles.goalAction}>{trainingBalance.nextFocus}</Text>
       </View>
 
       <View style={styles.exportCard}>

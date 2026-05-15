@@ -4,6 +4,7 @@ import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
@@ -63,6 +64,7 @@ export default function DashboardScreen() {
   const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
   const performance = useMemo(() => buildPerformanceSnapshot(logs), [logs]);
   const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
+  const trainingBalance = useMemo(() => buildTrainingBalance(logs), [logs]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -164,6 +166,23 @@ export default function DashboardScreen() {
           </View>
         </View>
         <Text style={styles.recoveryDebtAction}>{recoveryDebt.action}</Text>
+      </SentinelCard>
+
+      <SentinelCard title="Training Balance" variant={trainingBalance.status === 'overload' ? 'warning' : 'default'}>
+        <View style={styles.balanceHeader}>
+          <View>
+            <Text style={trainingBalance.status === 'overload' ? styles.balanceScoreWarn : styles.balanceScore}>
+              {trainingBalance.status === 'no-data' ? '--' : `${trainingBalance.score}%`}
+            </Text>
+            <Text style={styles.cardText}>{trainingBalance.message}</Text>
+          </View>
+          <View style={trainingBalance.status === 'overload' ? styles.balanceBadgeWarn : styles.balanceBadge}>
+            <Text style={trainingBalance.status === 'overload' ? styles.balanceBadgeTextWarn : styles.balanceBadgeText}>
+              {trainingBalance.label}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.balanceFocus}>{trainingBalance.nextFocus}</Text>
       </SentinelCard>
 
       <SentinelCard title="Performance Snapshot">
@@ -386,6 +405,14 @@ const styles = StyleSheet.create({
   recoveryDebtBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   recoveryDebtBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
   recoveryDebtAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  balanceScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
+  balanceScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
+  balanceBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
+  balanceBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
+  balanceBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  balanceBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  balanceFocus: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },

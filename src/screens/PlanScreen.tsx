@@ -1,5 +1,6 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import {
   buildWeekPlan,
   buildWeekSummary,
@@ -47,6 +48,7 @@ export default function PlanScreen() {
   const thisWeek = buildWeekSummary(logs, 0);
   const trend = buildReadinessTrend(logs);
   const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
+  const balance = buildTrainingBalance(logs);
 
   const planTypeLabel =
     planType === 'recovery' ? 'Recovery Week'
@@ -109,6 +111,15 @@ export default function PlanScreen() {
         <Text style={styles.commandText}>{rationale}</Text>
       </View>
 
+      <View style={balance.status === 'overload' ? styles.balanceCardWarn : styles.balanceCard}>
+        <View style={styles.commandHeader}>
+          <Text style={styles.commandKicker}>TRAINING BALANCE</Text>
+          <Text style={balance.status === 'overload' ? styles.balanceLabelWarn : styles.balanceLabel}>{balance.label}</Text>
+        </View>
+        <Text style={styles.commandText}>{balance.message}</Text>
+        <Text style={styles.balanceFocus}>{balance.nextFocus}</Text>
+      </View>
+
       {days.map((item) => (
         <DayCard key={item.day} item={item} planType={planType} />
       ))}
@@ -139,6 +150,11 @@ const styles = StyleSheet.create({
   commandKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   planTypeLabel: { fontSize: 13, fontWeight: '900' },
   commandText: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
+  balanceCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 8 },
+  balanceCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 8 },
+  balanceLabel: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+  balanceLabelWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+  balanceFocus: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '900' },
 
   dayCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 6 },
   dayCardRest: { backgroundColor: '#080f0a', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#161f18', gap: 6 },
