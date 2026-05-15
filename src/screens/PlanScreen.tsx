@@ -1,6 +1,7 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
+import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import {
   buildWeekPlan,
   buildWeekSummary,
@@ -49,6 +50,7 @@ export default function PlanScreen() {
   const trend = buildReadinessTrend(logs);
   const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
   const balance = buildTrainingBalance(logs);
+  const forecast = buildReadinessForecast(logs, goals, profile);
 
   const planTypeLabel =
     planType === 'recovery' ? 'Recovery Week'
@@ -120,6 +122,29 @@ export default function PlanScreen() {
         <Text style={styles.balanceFocus}>{balance.nextFocus}</Text>
       </View>
 
+      <View style={forecast.status === 'red' ? styles.balanceCardWarn : styles.balanceCard}>
+        <View style={styles.commandHeader}>
+          <Text style={styles.commandKicker}>READINESS FORECAST</Text>
+          <Text style={forecast.status === 'red' ? styles.balanceLabelWarn : styles.balanceLabel}>{forecast.label}</Text>
+        </View>
+        <Text style={styles.commandText}>{forecast.summary}</Text>
+        <View style={styles.forecastList}>
+          {forecast.days.map((day) => (
+            <View key={day.day} style={styles.forecastItem}>
+              <Text style={styles.forecastDay}>{day.day.slice(0, 3)}</Text>
+              <Text style={styles.forecastFocus}>{day.focus}</Text>
+              <Text style={
+                day.status === 'red' ? styles.forecastStatusRed
+                : day.status === 'amber' ? styles.forecastStatusAmber
+                : styles.forecastStatusGreen
+              }>
+                {day.status.toUpperCase()}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
       {days.map((item) => (
         <DayCard key={item.day} item={item} planType={planType} />
       ))}
@@ -155,6 +180,13 @@ const styles = StyleSheet.create({
   balanceLabel: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   balanceLabelWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
   balanceFocus: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '900' },
+  forecastList: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', overflow: 'hidden' },
+  forecastItem: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: '#162218' },
+  forecastDay: { color: '#91e6a3', fontSize: 12, fontWeight: '900', width: 34 },
+  forecastFocus: { color: '#dfe8da', fontSize: 12, fontWeight: '800', flex: 1 },
+  forecastStatusGreen: { color: '#91e6a3', fontSize: 10, fontWeight: '900' },
+  forecastStatusAmber: { color: '#f3d36b', fontSize: 10, fontWeight: '900' },
+  forecastStatusRed: { color: '#ffb86b', fontSize: 10, fontWeight: '900' },
 
   dayCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 6 },
   dayCardRest: { backgroundColor: '#080f0a', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#161f18', gap: 6 },

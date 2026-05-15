@@ -5,6 +5,7 @@ import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
+import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildGoalSummary,
@@ -72,6 +73,7 @@ export function buildWeeklyReport(
   const recoveryDebt = buildRecoveryDebt(logs, profile?.injuryNotes ?? '', now);
   const trainingBalance = buildTrainingBalance(logs);
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile?.injuryNotes });
+  const forecast = buildReadinessForecast(logs, goals, { injuryNotes: profile?.injuryNotes });
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -91,6 +93,7 @@ export function buildWeeklyReport(
     `Weekly Load Risk: ${weeklyLoadRisk.label}`,
     `Recommended Next Session: ${recommendation.sessionType}`,
     `Mission Brief: ${missionBrief.title}`,
+    `Readiness Forecast: ${forecast.label}`,
     `Active Goals: ${goalSummary.active}`,
     `Suggested Goals: ${goalSuggestions.length}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
@@ -116,6 +119,11 @@ export function buildWeeklyReport(
     `Primary Action: ${missionBrief.primaryAction}`,
     `Secondary Action: ${missionBrief.secondaryAction}`,
     `Reasons: ${missionBrief.reasons.join(', ')}`,
+    '',
+    'READINESS FORECAST',
+    `Forecast: ${forecast.label}`,
+    `Summary: ${forecast.summary}`,
+    ...forecast.days.map((day) => `${day.day}: ${day.focus} | ${day.status.toUpperCase()} | ${day.message}`),
     '',
     'PERFORMANCE SNAPSHOT',
     `Best Ruck: ${performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : 'No ruck distance logged'}`,

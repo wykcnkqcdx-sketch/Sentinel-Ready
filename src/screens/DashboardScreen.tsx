@@ -6,6 +6,7 @@ import { calculateReadinessPercentage, useTraining } from '@/src/screens/Trainin
 import { useUser } from '@/src/screens/UserContext';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
+import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
@@ -67,6 +68,7 @@ export default function DashboardScreen() {
   const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
   const trainingBalance = useMemo(() => buildTrainingBalance(logs), [logs]);
   const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
+  const forecast = useMemo(() => buildReadinessForecast(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -204,6 +206,25 @@ export default function DashboardScreen() {
           </View>
         </View>
         <Text style={styles.balanceFocus}>{trainingBalance.nextFocus}</Text>
+      </SentinelCard>
+
+      <SentinelCard title="Readiness Forecast" variant={forecast.status === 'red' ? 'warning' : forecast.status === 'green' ? 'success' : 'default'}>
+        <View style={styles.forecastHeader}>
+          <Text style={forecast.status === 'red' ? styles.forecastTitleWarn : styles.forecastTitle}>{forecast.label}</Text>
+          <Text style={styles.cardText}>{forecast.summary}</Text>
+        </View>
+        <View style={styles.forecastRow}>
+          {forecast.days.map((day) => (
+            <View key={day.day} style={styles.forecastDay}>
+              <Text style={styles.forecastDayLabel}>{day.day.slice(0, 3)}</Text>
+              <View style={
+                day.status === 'red' ? styles.forecastDotRed
+                : day.status === 'amber' ? styles.forecastDotAmber
+                : styles.forecastDotGreen
+              } />
+            </View>
+          ))}
+        </View>
       </SentinelCard>
 
       <SentinelCard title="Performance Snapshot">
@@ -446,6 +467,15 @@ const styles = StyleSheet.create({
   balanceBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   balanceBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
   balanceFocus: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  forecastHeader: { gap: 3 },
+  forecastTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  forecastTitleWarn: { color: '#ffb86b', fontSize: 22, fontWeight: '900' },
+  forecastRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, marginTop: 8 },
+  forecastDay: { alignItems: 'center', gap: 6, flex: 1 },
+  forecastDayLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
+  forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#91e6a3' },
+  forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#f3d36b' },
+  forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffb86b' },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },
