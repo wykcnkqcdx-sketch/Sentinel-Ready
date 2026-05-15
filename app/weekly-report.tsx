@@ -4,6 +4,7 @@ import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import type { DfiftStandards } from '@/src/types/dfift';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildGoalSummary,
   buildGoalAction,
@@ -96,7 +97,7 @@ function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummar
 
 export default function WeeklyReportScreen() {
   const { logs, goals, isLoading } = useTraining();
-  const { gender } = useUser();
+  const { gender, injuryNotes } = useUser();
   const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
@@ -111,7 +112,8 @@ export default function WeeklyReportScreen() {
   const performance = buildPerformanceSnapshot(logs);
   const dfiftStandards = dfiftJson as DfiftStandards;
   const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
-  const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender });
+  const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
+  const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
 
   const healthIsWarn = healthScore < 60;
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
@@ -207,6 +209,14 @@ export default function WeeklyReportScreen() {
         </Text>
       </View>
 
+      <View style={recoveryDebt.status === 'red' ? styles.recoveryCardWarn : styles.performanceCard}>
+        <Text style={styles.cardKicker}>RECOVERY SNAPSHOT</Text>
+        <Text style={recoveryDebt.status === 'red' ? styles.recoveryTitleWarn : styles.goalTitle}>
+          {recoveryDebt.label} {recoveryDebt.status === 'no-data' ? '' : `· ${recoveryDebt.score}%`}
+        </Text>
+        <Text style={styles.goalAction}>{recoveryDebt.action}</Text>
+      </View>
+
       <View style={styles.exportCard}>
         <View style={styles.exportHeader}>
           <View style={styles.exportHeaderText}>
@@ -284,6 +294,8 @@ const styles = StyleSheet.create({
   goalProgress: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   goalAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
   performanceCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 8 },
+  recoveryCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 8 },
+  recoveryTitleWarn: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
 
   exportCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
   exportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },

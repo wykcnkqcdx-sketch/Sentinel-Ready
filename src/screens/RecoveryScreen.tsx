@@ -1,4 +1,6 @@
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
+import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildReadinessTrend,
   buildWeekSummary,
@@ -74,11 +76,13 @@ function getProtocol(score: number) {
 
 export default function RecoveryScreen() {
   const { logs, isLoading } = useTraining();
+  const { injuryNotes } = useUser();
   if (isLoading) return <View style={styles.screen} />;
 
   const recoveryScore = getRecoveryScore(logs);
   const trend = buildReadinessTrend(logs);
   const thisWeek = buildWeekSummary(logs, 0);
+  const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id),
@@ -128,6 +132,35 @@ export default function RecoveryScreen() {
           </View>
         </View>
         <Text style={styles.scoreMessage}>{scoreMessage}</Text>
+      </View>
+
+      <View style={
+        recoveryDebt.status === 'red' ? styles.debtCardRed
+        : recoveryDebt.status === 'amber' ? styles.debtCardAmber
+        : styles.debtCard
+      }>
+        <View style={styles.debtHeader}>
+          <View>
+            <Text style={styles.cardKicker}>RECOVERY DEBT</Text>
+            <Text style={recoveryDebt.status === 'red' ? styles.debtScoreRed : styles.debtScore}>
+              {recoveryDebt.status === 'no-data' ? '--' : `${recoveryDebt.score}%`}
+            </Text>
+          </View>
+          <View style={recoveryDebt.status === 'red' ? styles.badgeWarning : recoveryDebt.status === 'amber' ? styles.badgeModerate : styles.badge}>
+            <Text style={recoveryDebt.status === 'red' ? styles.badgeTextWarning : recoveryDebt.status === 'amber' ? styles.badgeTextModerate : styles.badgeText}>
+              {recoveryDebt.label}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.scoreMessage}>{recoveryDebt.message}</Text>
+        <Text style={styles.debtAction}>{recoveryDebt.action}</Text>
+        <View style={styles.debtFactorRow}>
+          {recoveryDebt.factors.slice(0, 3).map((factor) => (
+            <View key={factor} style={styles.debtFactor}>
+              <Text style={styles.debtFactorText}>{factor}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <View style={styles.statGrid}>
@@ -260,6 +293,16 @@ const styles = StyleSheet.create({
   badgeTextWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
   badgeTextNeutral: { color: '#8fbf8f', fontSize: 12, fontWeight: '900' },
   scoreMessage: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
+  debtCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 10 },
+  debtCardAmber: { backgroundColor: '#1a1608', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#5a4a20', gap: 10 },
+  debtCardRed: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 10 },
+  debtHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  debtScore: { color: '#ffffff', fontSize: 38, fontWeight: '900', marginTop: 3 },
+  debtScoreRed: { color: '#ffb86b', fontSize: 38, fontWeight: '900', marginTop: 3 },
+  debtAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  debtFactorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  debtFactor: { backgroundColor: '#07110c', borderRadius: 999, borderWidth: 1, borderColor: '#26382c', paddingHorizontal: 10, paddingVertical: 6 },
+  debtFactorText: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: { width: '47%', backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 4 },

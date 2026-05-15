@@ -3,6 +3,8 @@ import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
+import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -50,6 +52,7 @@ function getRecoveryStatus(logs: ReturnType<typeof useTraining>['logs']) {
 
 export default function DashboardScreen() {
   const { logs, goals, isLoading } = useTraining();
+  const { injuryNotes } = useUser();
   const router = useRouter();
 
   const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
@@ -59,6 +62,7 @@ export default function DashboardScreen() {
   const goalSummary = useMemo(() => buildGoalSummary(goals), [goals]);
   const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
   const performance = useMemo(() => buildPerformanceSnapshot(logs), [logs]);
+  const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
   const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
   const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
@@ -144,6 +148,23 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
+
+      <SentinelCard title="Recovery Debt" variant={recoveryDebt.status === 'red' ? 'warning' : 'default'}>
+        <View style={styles.recoveryDebtRow}>
+          <View>
+            <Text style={recoveryDebt.status === 'red' ? styles.recoveryDebtScoreWarn : styles.recoveryDebtScore}>
+              {recoveryDebt.status === 'no-data' ? '--' : `${recoveryDebt.score}%`}
+            </Text>
+            <Text style={styles.cardText}>{recoveryDebt.message}</Text>
+          </View>
+          <View style={recoveryDebt.status === 'red' ? styles.recoveryDebtBadgeWarn : styles.recoveryDebtBadge}>
+            <Text style={recoveryDebt.status === 'red' ? styles.recoveryDebtBadgeTextWarn : styles.recoveryDebtBadgeText}>
+              {recoveryDebt.label}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.recoveryDebtAction}>{recoveryDebt.action}</Text>
+      </SentinelCard>
 
       <SentinelCard title="Performance Snapshot">
         <View style={styles.performanceGrid}>
@@ -357,6 +378,14 @@ const styles = StyleSheet.create({
   performanceItem: { width: '47%', backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
   performanceValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
   performanceLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  recoveryDebtRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  recoveryDebtScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
+  recoveryDebtScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
+  recoveryDebtBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
+  recoveryDebtBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
+  recoveryDebtBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  recoveryDebtBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  recoveryDebtAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },

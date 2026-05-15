@@ -2,6 +2,7 @@ import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import type { DfiftStandards } from '@/src/types/dfift';
 import type { Gender } from '@/src/screens/UserContext';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildGoalSummary,
   buildGoalAction,
@@ -50,7 +51,8 @@ export function buildWeeklyReport(
   logs: TrainingLog[],
   now: Date = new Date(),
   goals: TrainingGoal[] = [],
-  dfift?: { standards: DfiftStandards; gender: Gender }
+  dfift?: { standards: DfiftStandards; gender: Gender },
+  profile?: { injuryNotes?: string }
 ): WeeklyReport {
   const thisWeek = buildWeekSummary(logs, 0);
   const summary = buildSummary(logs);
@@ -63,6 +65,7 @@ export function buildWeeklyReport(
   const goalAction = buildGoalAction(goals, logs);
   const performance = buildPerformanceSnapshot(logs);
   const dfiftSnapshot = dfift ? buildDfiftSnapshot(logs, dfift.standards, dfift.gender) : null;
+  const recoveryDebt = buildRecoveryDebt(logs, profile?.injuryNotes ?? '', now);
 
   const recentLogs = [...logs]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -85,6 +88,7 @@ export function buildWeeklyReport(
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
     `Next Goal Action: ${goalAction.title}`,
     `Performance Highlight: ${performance.highlight}`,
+    `Recovery Debt: ${recoveryDebt.label} (${recoveryDebt.status === 'no-data' ? 'No Data' : `${recoveryDebt.score}%`})`,
     ...(dfiftSnapshot ? [`DFIFT Passing: ${dfiftSnapshot.passedEvents}/${dfiftSnapshot.rows.length}`] : []),
     '',
     'TRAINING SPLIT',
@@ -111,6 +115,11 @@ export function buildWeeklyReport(
       `Recommendation: ${dfiftSnapshot.recommendation}`,
       '',
     ] : []),
+    'RECOVERY SNAPSHOT',
+    `Recovery Debt: ${recoveryDebt.label}`,
+    `Recovery Action: ${recoveryDebt.action}`,
+    `Recovery Factors: ${recoveryDebt.factors.join(', ')}`,
+    '',
     'WATCH ITEMS',
     `Weak Logs: ${weakLogs.length}`,
     `Fatigue Watch Logs: ${fatigueWatchLogs.length}`,
