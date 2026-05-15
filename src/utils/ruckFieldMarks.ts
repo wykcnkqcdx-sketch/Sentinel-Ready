@@ -1,0 +1,31 @@
+import { Ionicons } from '@expo/vector-icons';
+import type { RuckCheckpoint, MarkType } from '../types/map';
+
+export type FieldMarkType = NonNullable<MarkType>;
+
+export const fieldMarkTypes: {
+  key: FieldMarkType;
+  label: string;
+  shortLabel: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  tone: string;
+}[] = [
+  { key: 'checkpoint', label: 'Checkpoint', shortLabel: 'CP', icon: 'flag-outline', tone: '#22d3ee' },
+  { key: 'rv', label: 'Rendezvous', shortLabel: 'RV', icon: 'people-outline', tone: '#2E7D32' },
+  { key: 'hazard', label: 'Hazard', shortLabel: 'HZ', icon: 'warning-outline', tone: '#B23B3B' },
+  { key: 'water', label: 'Water', shortLabel: 'WT', icon: 'water-outline', tone: '#60a5fa' },
+  { key: 'medic', label: 'Medic', shortLabel: 'MED', icon: 'medical-outline', tone: '#D6A23A' },
+  { key: 'observation', label: 'Observation', shortLabel: 'OP', icon: 'eye-outline', tone: '#a78bfa' },
+  { key: 'objective', label: 'Objective', shortLabel: 'OBJ', icon: 'radio-button-on-outline', tone: '#f97316' },
+];
+
+export function getFieldMarkType(markType?: RuckCheckpoint['markType']) {
+  return fieldMarkTypes.find((type) => type.key === markType) ?? fieldMarkTypes[0];
+}
+
+export function formatFieldMarkLabel(checkpoint: RuckCheckpoint) {
+  const meta = getFieldMarkType(checkpoint.markType);
+  return checkpoint.label.toUpperCase().startsWith(meta.shortLabel)
+    ? checkpoint.label
+    : `${meta.shortLabel} ${checkpoint.label}`;
+}

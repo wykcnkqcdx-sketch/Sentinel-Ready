@@ -81,7 +81,7 @@ export function buildWeeklyReport(
   const earnedMilestones = getEarnedMilestones(milestones);
   const nextMilestone = getNextMilestone(milestones);
 
-  const title = `Weekly Report: ${formatDate(now)}`;
+  const title = 'Sentinel Ready Weekly Report';
   
   let text = `================================================
 SENTINEL READY WEEKLY REPORT
@@ -89,21 +89,22 @@ Generated: ${formatDate(now)}
 ================================================
 
 TRAINING LOG HEALTH
-Score: ${healthScore}/100 - ${healthLabel}
+Training Log Health: ${healthScore}/100 - ${healthLabel}
 Total Sessions: ${summary.total}
+Weak Logs: ${summary.weakLogs}
 Average Readiness: ${summary.averageReadiness}
-Fatigue Watch Sessions: ${summary.fatigueWatch}
+Fatigue Watch Logs: ${summary.fatigueWatch}
 
 READINESS TREND
-${readinessTrend.label} (${readinessTrend.change > 0 ? '+' : ''}${readinessTrend.change})
+Readiness Trend: ${readinessTrend.label} (${readinessTrend.change > 0 ? '+' : ''}${readinessTrend.change})
 Latest: ${readinessTrend.latest}/10, Previous: ${readinessTrend.previous}/10
 
 WEEKLY LOAD RISK
-${weeklyLoadRisk.label} Risk
+Weekly Load Risk: ${weeklyLoadRisk.label}
 ${weeklyLoadRisk.message}
 
 NEXT RECOMMENDED SESSION
-${recommendation.sessionType}
+Recommended Next Session: ${recommendation.sessionType}
 Reason: ${recommendation.reason}
 Suggestion: ${recommendation.suggestion}
 
@@ -167,12 +168,19 @@ SUGGESTED GOALS
   }
 
   text += `
+WEEKLY SPLIT
+Ruck: ${thisWeek.ruck}
+Strength: ${thisWeek.strength}
+Run: ${thisWeek.run}
+Recovery: ${thisWeek.recovery}
+Mobility: ${thisWeek.mobility}
+
 RECENT SESSIONS (THIS WEEK)
 `;
-  
+
   const thisWeekLogs = logs.filter(l => l.date >= thisWeek.weekStart && l.date <= thisWeek.weekEnd)
     .sort((a, b) => b.id - a.id);
-    
+
   if (thisWeekLogs.length > 0) {
     thisWeekLogs.forEach(l => {
       text += `${formatLogLine(l)}\n`;
@@ -181,9 +189,19 @@ RECENT SESSIONS (THIS WEEK)
     text += 'No sessions logged this week.\n';
   }
 
+  const keyNotes = buildKeyNotes(logs);
+  if (keyNotes.length > 0) {
+    text += `
+KEY NOTES
+`;
+    keyNotes.forEach(n => {
+      text += `${n}\n`;
+    });
+  }
+
   return {
     title,
-    generatedAt: now.toISOString(),
+    generatedAt: formatDate(now),
     text,
   };
 }

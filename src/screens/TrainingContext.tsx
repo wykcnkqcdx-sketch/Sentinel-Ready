@@ -1,4 +1,5 @@
 import type { RouteData } from '@/src/utils/trainingLogUtils';
+import type { TrackPoint } from '@/src/types/map';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -14,6 +15,7 @@ export type TrainingLog = {
   readiness: string;
   notes: string;
   route?: RouteData;
+  routePoints?: TrackPoint[];
 };
 
 export type GoalCategory = 'Ruck' | 'Run' | 'Strength' | 'Recovery' | 'Test' | 'Consistency';
@@ -46,7 +48,8 @@ function isValidLogArray(parsed: unknown): parsed is TrainingLog[] {
       typeof (item as TrainingLog).duration === 'string' &&
       typeof (item as TrainingLog).readiness === 'string' &&
       typeof (item as TrainingLog).notes === 'string' &&
-      (typeof (item as TrainingLog).route === 'undefined' || typeof (item as TrainingLog).route === 'object')
+      (typeof (item as TrainingLog).route === 'undefined' || typeof (item as TrainingLog).route === 'object') &&
+      ((item as TrainingLog).routePoints === undefined || Array.isArray((item as TrainingLog).routePoints))
   );
 }
 
