@@ -1,4 +1,8 @@
 import { GoalCategory, GoalStatus, TrainingGoal, useTraining } from '@/src/screens/TrainingContext';
+import { useUser } from '@/src/screens/UserContext';
+import dfiftJson from '@/src/data/standards/dfift-standards.json';
+import type { DfiftStandards } from '@/src/types/dfift';
+import { buildGoalSuggestions, GoalSuggestion } from '@/src/utils/goalSuggestionUtils';
 import { buildGoalAction, buildGoalSummary, getGoalProgress } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -68,10 +72,16 @@ function GoalCard({
 export default function GoalsScreen() {
   const router = useRouter();
   const { logs, goals, addGoal, updateGoal, deleteGoal, isLoading } = useTraining();
+  const { gender } = useUser();
   const [draft, setDraft] = useState(blankGoal);
   const [editingId, setEditingId] = useState<number | null>(null);
   const summary = useMemo(() => buildGoalSummary(goals), [goals]);
   const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
+  const dfiftStandards = dfiftJson as DfiftStandards;
+  const suggestions = useMemo(
+    () => buildGoalSuggestions(logs, goals, { standards: dfiftStandards, gender }),
+    [logs, goals, gender]
+  );
 
   async function saveGoal() {
     if (draft.title.trim().length < 3 || draft.target.trim().length < 3) {
@@ -116,6 +126,18 @@ export default function GoalsScreen() {
     ]);
   }
 
+  async function addSuggestedGoal(suggestion: GoalSuggestion) {
+    await addGoal({
+      category: suggestion.category,
+      title: suggestion.title,
+      target: suggestion.target,
+      current: suggestion.current,
+      deadline: '',
+      notes: suggestion.notes,
+      status: 'active',
+    });
+  }
+
   if (isLoading) return <View style={styles.screen} />;
 
   return (
@@ -141,6 +163,24 @@ export default function GoalsScreen() {
         <Text style={styles.summaryText}>{goalAction.reason}</Text>
         <Text style={styles.actionText}>{goalAction.action}</Text>
       </View>
+
+      {suggestions.length > 0 ? (
+        <View style={styles.suggestionCard}>
+          <Text style={styles.cardKicker}>SUGGESTED GOALS</Text>
+          {suggestions.map((suggestion) => (
+            <View key={`${suggestion.category}-${suggestion.title}`} style={styles.suggestionItem}>
+              <View style={styles.suggestionTextBlock}>
+                <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
+                <Text style={styles.suggestionReason}>{suggestion.reason}</Text>
+                <Text style={styles.suggestionTarget}>{suggestion.target}</Text>
+              </View>
+              <TouchableOpacity style={styles.suggestionButton} onPress={() => addSuggestedGoal(suggestion)}>
+                <Text style={styles.suggestionButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       <View style={styles.formCard}>
         <Text style={styles.cardKicker}>{editingId ? 'EDIT GOAL' : 'NEW GOAL'}</Text>
@@ -196,6 +236,14 @@ const styles = StyleSheet.create({
   actionTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
   actionTitleWarning: { color: '#ffb86b', fontSize: 20, fontWeight: '900' },
   actionText: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  suggestionCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 10 },
+  suggestionItem: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12 },
+  suggestionTextBlock: { flex: 1, gap: 3 },
+  suggestionTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  suggestionReason: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  suggestionTarget: { color: '#aeb8aa', fontSize: 12, lineHeight: 18 },
+  suggestionButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9 },
+  suggestionButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
   formCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   categoryButton: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },

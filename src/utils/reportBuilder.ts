@@ -3,6 +3,7 @@ import type { DfiftStandards } from '@/src/types/dfift';
 import type { Gender } from '@/src/screens/UserContext';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
@@ -67,6 +68,7 @@ export function buildWeeklyReport(
   const goalAction = buildGoalAction(goals, logs);
   const performance = buildPerformanceSnapshot(logs);
   const dfiftSnapshot = dfift ? buildDfiftSnapshot(logs, dfift.standards, dfift.gender) : null;
+  const goalSuggestions = buildGoalSuggestions(logs, goals, dfift);
   const recoveryDebt = buildRecoveryDebt(logs, profile?.injuryNotes ?? '', now);
   const trainingBalance = buildTrainingBalance(logs);
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile?.injuryNotes });
@@ -90,6 +92,7 @@ export function buildWeeklyReport(
     `Recommended Next Session: ${recommendation.sessionType}`,
     `Mission Brief: ${missionBrief.title}`,
     `Active Goals: ${goalSummary.active}`,
+    `Suggested Goals: ${goalSuggestions.length}`,
     `Average Goal Progress: ${goalSummary.averageProgress}%`,
     `Next Goal Action: ${goalAction.title}`,
     `Performance Highlight: ${performance.highlight}`,
@@ -153,6 +156,11 @@ export function buildWeeklyReport(
           return `${goal.status.toUpperCase()} | ${goal.category} | ${goal.title} | ${progress.label} | Target: ${sanitiseField(goal.target)} | Current: ${sanitiseField(goal.current || 'Not recorded')}`;
         })
       : ['No goals recorded.']),
+    '',
+    'SUGGESTED GOALS',
+    ...(goalSuggestions.length > 0
+      ? goalSuggestions.map((suggestion) => `${suggestion.category} | ${suggestion.title} | Target: ${sanitiseField(suggestion.target)} | Reason: ${sanitiseField(suggestion.reason)}`)
+      : ['No new goal suggestions right now.']),
     '',
     'NEXT SESSION GUIDANCE',
     `Reason: ${recommendation.reason}`,

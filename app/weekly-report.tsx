@@ -5,6 +5,7 @@ import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import type { DfiftStandards } from '@/src/types/dfift';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
+import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
@@ -114,6 +115,7 @@ export default function WeeklyReportScreen() {
   const performance = buildPerformanceSnapshot(logs);
   const dfiftStandards = dfiftJson as DfiftStandards;
   const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
+  const goalSuggestions = buildGoalSuggestions(logs, goals, { standards: dfiftStandards, gender });
   const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
   const trainingBalance = buildTrainingBalance(logs);
   const missionBrief = buildMissionBrief(logs, goals, { injuryNotes });
@@ -200,6 +202,9 @@ export default function WeeklyReportScreen() {
         <Text style={styles.goalProgress}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}% average measured progress` : 'No measured progress yet'}</Text>
         <Text style={styles.adviceText}>{goalSummary.message}</Text>
         <Text style={styles.goalAction}>{goalAction.title}: {goalAction.action}</Text>
+        {goalSuggestions.length > 0 ? (
+          <Text style={styles.goalAction}>Suggested: {goalSuggestions[0].title} ({goalSuggestions[0].reason})</Text>
+        ) : null}
       </View>
 
       <View style={styles.performanceCard}>
