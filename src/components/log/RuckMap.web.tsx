@@ -15,11 +15,22 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('react-leaflet')
-        .then((reactLeaflet) => {
-          setRL(reactLeaflet);
-        })
-        .catch((err) => console.error("Failed to load map module", err));
+      Promise.all([
+        import('react-leaflet'),
+        import('leaflet')
+      ]).then(([reactLeaflet, leaflet]) => {
+        const L = leaflet.default || leaflet;
+        
+        // Fix Leaflet's broken default marker icon issue in Metro/Webpack
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        });
+
+        setRL(reactLeaflet);
+      }).catch((err) => console.error("Failed to load map modules", err));
     }
   }, []);
 
