@@ -6,6 +6,7 @@ import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
 import React, { memo } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
 export type RuckSaveDraft = {
   sessionType: string;
@@ -170,6 +171,23 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         overlays={overlays}
         fullHeight
       />
+
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Svg width="100%" height="100%">
+          <Defs>
+            <LinearGradient id="topGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#07110c" stopOpacity="0.8" />
+              <Stop offset="0.25" stopColor="#07110c" stopOpacity="0" />
+            </LinearGradient>
+            <LinearGradient id="bottomGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0.5" stopColor="#07110c" stopOpacity="0" />
+              <Stop offset="1" stopColor="#07110c" stopOpacity="1" />
+            </LinearGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#topGrad)" />
+          <Rect width="100%" height="100%" fill="url(#bottomGrad)" />
+        </Svg>
+      </View>
 
       <View style={styles.metricsWrapper}>
         <LiveMetricsOverlay
