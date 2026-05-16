@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
-import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
+import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking';
+import { RuckMapView } from '@/src/components/ruck/RuckMapView';
+import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
+import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
 
 type RuckMetrics = {
   distance: number;
@@ -167,7 +170,10 @@ function RuckSessionCard({ log, metrics, paceVsPb }: {
 }
 
 export default function RuckScreen() {
-  const { logs, isLoading } = useTraining();
+  const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
+  const tracking = useRuckTracking();
+  const { logs, isLoading, addLog } = useTraining();
+
   if (isLoading) return <View style={styles.screen} />;
 
   const ruckLogs = useMemo(
@@ -230,12 +236,43 @@ export default function RuckScreen() {
   const recentMetricsSlice = useMemo(() => ruckMetrics.slice(0, 5), [ruckMetrics]);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>LOAD CARRIAGE</Text>
-      <Text style={styles.title}>Ruck Performance</Text>
-      <Text style={styles.subtitle}>
-        Distance, load, pace and progression tracked from your logged ruck sessions.
-      </Text>
+    <View style={styles.screen}>
+      {/* Header row */}
+      <View style={styles.headerBlock}>
+        <Text style={styles.kicker}>LOAD CARRIAGE</Text>
+        <Text style={styles.title}>Ruck Performance</Text>
+      </View>
+
+      {/* Tab pills */}
+      <View style={styles.tabRow}>
+        <TouchableOpacity
+          style={[styles.tabPill, activeTab === 'stats' && styles.tabPillActive]}
+          onPress={() => setActiveTab('stats')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'stats' }}
+        >
+          <Text style={[styles.tabPillText, activeTab === 'stats' && styles.tabPillTextActive]}>
+            Stats
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabPill, activeTab === 'track' && styles.tabPillActive]}
+          onPress={() => setActiveTab('track')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'track' }}
+        >
+          <Text style={[styles.tabPillText, activeTab === 'track' && styles.tabPillTextActive]}>
+            Track
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Stats tab */}
+      {activeTab === 'stats' ? (
+        <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+          <Text style={styles.subtitle}>
+            Distance, load, pace and progression tracked from your logged ruck sessions.
+          </Text>
 
       {ruckLogs.length === 0 ? (
         <View style={styles.emptyCard}>
@@ -435,13 +472,38 @@ export default function RuckScreen() {
         </Text>
       </View>
 
-      <View style={styles.fieldCard}>
-        <Text style={styles.fieldLabel}>AFTER</Text>
-        <Text style={styles.fieldText}>
-          Log distance, load, pace, readiness and any hot spots, blisters or lower-leg pain immediately after the session.
-        </Text>
-      </View>
-    </ScrollView>
+          <View style={styles.fieldCard}>
+            <Text style={styles.fieldLabel}>AFTER</Text>
+            <Text style={styles.fieldText}>
+              Log distance, load, pace, readiness and any hot spots, blisters or lower-leg pain immediately after the session.
+            </Text>
+          </View>
+        </ScrollView>
+      ) : (
+        /* Track tab */
+        <View style={{ flex: 1 }}>
+          <RuckMapView
+            routePoints={tracking.routePoints}
+            currentPosition={tracking.currentPosition}
+            layer={tracking.activeLayer}
+          />
+
+          <LiveMetricsOverlay
+            distanceKm={tracking.distanceKm}
+            elapsedSeconds={tracking.elapsedSeconds}
+            gpsQualityWarning={tracking.gpsQualityWarning}
+            trackingState={tracking.trackingState}
+          />
+
+          <MapLayerPicker
+            activeLayer={tracking.activeLayer}
+            onSelect={tracking.setLayer}
+          />
+
+          <ControlRow tracking={tracking} onSave={handleSaveSession} />
+        </View>
+      )}
+    </View>
   );
 }
 
