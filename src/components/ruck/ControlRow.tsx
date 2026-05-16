@@ -6,9 +6,10 @@ import { colours } from '@/src/theme/colours';
 interface ControlRowProps {
   tracking: RuckTrackingState;
   onSave: () => void | Promise<void>;
+  onDiscard?: () => void;
 }
 
-export function ControlRow({ tracking, onSave }: ControlRowProps) {
+export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
   const { trackingState } = tracking;
 
   return (
@@ -25,7 +26,7 @@ export function ControlRow({ tracking, onSave }: ControlRowProps) {
             <Text style={styles.secondaryText}>PAUSE</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.dangerButton} onPress={tracking.stopRecording}>
-            <Text style={styles.primaryText}>STOP</Text>
+            <Text style={styles.dangerText}>STOP</Text>
           </TouchableOpacity>
         </>
       ) : null}
@@ -36,14 +37,20 @@ export function ControlRow({ tracking, onSave }: ControlRowProps) {
             <Text style={styles.primaryText}>RESUME</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.dangerButton} onPress={tracking.stopRecording}>
-            <Text style={styles.primaryText}>STOP</Text>
+            <Text style={styles.dangerText}>STOP</Text>
           </TouchableOpacity>
         </>
       ) : null}
 
       {trackingState === 'finished' ? (
         <>
-          <TouchableOpacity style={styles.secondaryButton} onPress={tracking.resetSession}>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => {
+              tracking.resetSession();
+              onDiscard?.();
+            }}
+          >
             <Text style={styles.secondaryText}>DISCARD</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.primaryButton} onPress={onSave}>
@@ -93,6 +100,11 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   secondaryText: {
+    color: colours.text,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  dangerText: {
     color: colours.text,
     fontSize: 13,
     fontWeight: '900',

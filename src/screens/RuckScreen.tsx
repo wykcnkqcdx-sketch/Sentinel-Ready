@@ -214,11 +214,17 @@ function RuckSavePanel({
   draft,
   distanceKm,
   elapsedSeconds,
+  splitCount = 0,
+  routeConfidence = 'High',
+  rejectedPointCount = 0,
   onChange,
 }: {
   draft: RuckSaveDraft;
   distanceKm: number;
   elapsedSeconds: number;
+  splitCount?: number;
+  routeConfidence?: 'High' | 'Medium' | 'Low';
+  rejectedPointCount?: number;
   onChange: (draft: RuckSaveDraft) => void;
 }) {
   const paceSeconds = distanceKm > 0 ? elapsedSeconds / distanceKm : 0;
@@ -229,6 +235,10 @@ function RuckSavePanel({
         <Text style={styles.saveSummary}>
           {distanceKm.toFixed(2)} km · {formatDurationFromSeconds(elapsedSeconds)}
           {paceSeconds > 0 ? ` · ${formatPace(paceSeconds / 60)}` : ''}
+        </Text>
+        <Text style={styles.saveMeta}>
+          {splitCount} splits · {routeConfidence} GPS
+          {rejectedPointCount > 0 ? ` · ${rejectedPointCount} points filtered` : ''}
         </Text>
       </View>
 
@@ -330,6 +340,10 @@ export default function RuckScreen() {
         paceSecondsPerKm,
         rpe,
         elevationGainMeters: 0,
+        splits: tracking.sessionResult?.splits ?? tracking.splits,
+        routeConfidence: tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence,
+        rejectedPointCount: tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount,
+        averageAccuracyMeters: tracking.sessionResult?.averageAccuracyMeters ?? tracking.averageAccuracyMeters ?? undefined,
       },
     });
     tracking.resetSession();
@@ -649,6 +663,7 @@ export default function RuckScreen() {
             routePoints={tracking.routePoints}
             currentPosition={tracking.currentPosition}
             layer={tracking.activeLayer}
+            fullHeight
           />
 
           <LiveMetricsOverlay
@@ -668,11 +683,18 @@ export default function RuckScreen() {
               draft={saveDraft}
               distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
               elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
+              splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
+              routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
+              rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
               onChange={setSaveDraft}
             />
           ) : null}
 
-          <ControlRow tracking={tracking} onSave={handleSaveSession} />
+          <ControlRow
+            tracking={tracking}
+            onSave={handleSaveSession}
+            onDiscard={() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT)}
+          />
         </View>
       )}
     </View>
@@ -778,6 +800,7 @@ const styles = StyleSheet.create({
   saveHeader: { gap: 3 },
   saveKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
   saveSummary: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  saveMeta: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
   saveGrid: { flexDirection: 'row', gap: 8 },
   saveField: { flex: 1, gap: 4 },
   saveLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
