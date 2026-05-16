@@ -6,6 +6,7 @@ import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking'
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
 import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
 import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
+import RuckScoreScreen from '@/src/screens/RuckScoreScreen';
 
 type RuckMetrics = {
   distance: number;
@@ -232,7 +233,7 @@ function ControlRow({
 }
 
 export default function RuckScreen() {
-  const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'track' | 'score'>('stats');
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
 
@@ -345,6 +346,16 @@ export default function RuckScreen() {
         >
           <Text style={[styles.tabPillText, activeTab === 'track' && styles.tabPillTextActive]}>
             Track
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabPill, activeTab === 'score' && styles.tabPillActive]}
+          onPress={() => setActiveTab('score')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'score' }}
+        >
+          <Text style={[styles.tabPillText, activeTab === 'score' && styles.tabPillTextActive]}>
+            Score
           </Text>
         </TouchableOpacity>
       </View>
@@ -585,6 +596,8 @@ export default function RuckScreen() {
           <ControlRow tracking={tracking} onSave={handleSaveSession} />
         </View>
       )}
+
+      {activeTab === 'score' && <RuckScoreScreen />}
     </View>
   );
 }
