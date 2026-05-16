@@ -17,15 +17,8 @@ function daysSince(dateStr: string): number {
   return Math.floor((now - then) / 86400000);
 }
 
-function getRecoveryScore(logs: TrainingLog[]) {
-  const recent = [...logs]
-    .sort((a, b) => {
-      if (a.date !== b.date) {
-        return a.date < b.date ? 1 : -1;
-      }
-      return b.id - a.id;
-    })
-    .slice(0, 5);
+function getRecoveryScore(recentSortedLogs: TrainingLog[]) {
+  const recent = recentSortedLogs.slice(0, 5);
   if (recent.length === 0) return 0;
   const avg = recent.reduce((sum, l) => sum + getReadinessNumber(l.readiness), 0) / recent.length;
   return Math.round((avg / 10) * 100);
@@ -84,12 +77,6 @@ export default function RecoveryScreen() {
   const { injuryNotes } = useUser();
   if (isLoading) return <View style={styles.screen} />;
 
-  const recoveryScore = getRecoveryScore(logs);
-  const trend = buildReadinessTrend(logs);
-  const thisWeek = buildWeekSummary(logs, 0);
-  const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
-  const injuryWatch = buildInjuryWatch(logs, injuryNotes);
-
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => {
       if (a.date !== b.date) {
@@ -100,9 +87,15 @@ export default function RecoveryScreen() {
     [logs]
   );
 
-  const latestRecoveryLog = recentSorted.find((l) => l.category === 'Recovery');
-  const recentFatigueLogs = recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3);
-  const daysSinceRecovery = latestRecoveryLog ? daysSince(latestRecoveryLog.date) : null;
+  const recoveryScore = useMemo(() => getRecoveryScore(recentSorted), [recentSorted]);
+  const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
+  const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
+  const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
+  const injuryWatch = useMemo(() => buildInjuryWatch(logs, injuryNotes), [logs, injuryNotes]);
+
+  const latestRecoveryLog = useMemo(() => recentSorted.find((l) => l.category === 'Recovery'), [recentSorted]);
+  const recentFatigueLogs = useMemo(() => recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3), [recentSorted]);
+  const daysSinceRecovery = useMemo(() => latestRecoveryLog ? daysSince(latestRecoveryLog.date) : null, [latestRecoveryLog]);
 
   const isHighFatigue = recoveryScore > 0 && recoveryScore < 50;
   const isModerate = recoveryScore >= 50 && recoveryScore < 75;
@@ -122,7 +115,7 @@ export default function RecoveryScreen() {
   const badgeStyle = isHighFatigue ? styles.badgeWarning : isModerate ? styles.badgeModerate : recoveryScore > 0 ? styles.badge : styles.badgeNeutral;
   const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : recoveryScore > 0 ? styles.badgeText : styles.badgeTextNeutral;
 
-  const protocol = getProtocol(recoveryScore);
+  const protocol = useMemo(() => getProtocol(recoveryScore), [recoveryScore]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

@@ -182,6 +182,19 @@ export default function ProfileScreen() {
         />
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardKicker}>DATA</Text>
+        <Text style={styles.cardLabel}>Back up logs, goals and profile settings or restore local data.</Text>
+        <TouchableOpacity
+          style={styles.dataButton}
+          onPress={() => router.push('/backup')}
+          accessibilityRole="button"
+          accessibilityLabel="Open data backup"
+        >
+          <Text style={styles.dataButtonText}>Data Backup</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>DFIFT Standards (current)</Text>
         <View style={styles.infoRow}>
@@ -267,6 +280,8 @@ const styles = StyleSheet.create({
   levelBtnActive: { flexGrow: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#2f6b3c', alignItems: 'center', backgroundColor: '#102d1a' },
   levelText: { color: '#4a5e4a', fontSize: 13, fontWeight: '900' },
   levelTextActive: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+  dataButton: { backgroundColor: '#91e6a3', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  dataButtonText: { color: '#07110c', fontSize: 14, fontWeight: '900' },
 
   infoCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 8 },
   infoTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900', marginBottom: 4 },

@@ -19,10 +19,13 @@ import {
   filterAndSortLogs,
   getTrainingLogHealthLabel,
   getTrainingLogHealthMessage,
+  getWeakLogReasons,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const EMPTY_REASONS: string[] = [];
 
 export default function LogScreen() {
   const { logs, goals, isLoading, deleteLog, duplicateLog, exportLogsCsv } = useTraining();
@@ -39,6 +42,15 @@ export default function LogScreen() {
   const sessionRecommendation = useMemo(() => buildSessionRecommendation(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
   const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
+  
+  const weakReasonsMap = useMemo(() => {
+    const map = new Map<number, string[]>();
+    for (const log of logs) {
+      const reasons = getWeakLogReasons(log);
+      if (reasons.length > 0) map.set(log.id, reasons);
+    }
+    return map;
+  }, [logs]);
 
   const handleRecommendationAction = useCallback((actionType: RecommendationActionType) => {
     if (actionType === 'weak-logs') {
@@ -57,12 +69,12 @@ export default function LogScreen() {
     [logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly]
   );
 
-  function clearSearchAndFilters() {
+  const clearSearchAndFilters = useCallback(() => {
     setActiveFilter('All');
     setSortMode('Newest');
     setSearchQuery('');
     setShowWeakLogsOnly(false);
-  }
+  }, []);
 
   const handleDuplicateLog = useCallback(async (id: number) => {
     try {
@@ -72,7 +84,7 @@ export default function LogScreen() {
     }
   }, [duplicateLog]);
 
-  async function shareCsvExport() {
+  const shareCsvExport = useCallback(async () => {
     try {
       await Share.share({
         title: 'Sentinel Ready Training Logs CSV',
@@ -81,7 +93,7 @@ export default function LogScreen() {
     } catch {
       Alert.alert('Export Failed', 'The CSV export could not be shared.');
     }
-  }
+  }, [exportLogsCsv]);
 
   const confirmDeleteLog = useCallback((log: TrainingLog) => {
     Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
@@ -118,6 +130,7 @@ export default function LogScreen() {
         renderItem={({ item }) => (
           <TrainingLogCard
             log={item}
+            weakReasons={weakReasonsMap.get(item.id) ?? EMPTY_REASONS}
             onEdit={handleEditLog}
             onDuplicate={handleDuplicateLog}
             onDelete={confirmDeleteLog}

@@ -1,5 +1,5 @@
-import type { TrainingSession, ReadinessLog } from '../types/map';
 import { colours } from '../theme/colours';
+import type { ReadinessLog, TrainingSession } from '../types/map';
 
 // ---------------------------------------------------------------------------
 // Performance profile (inlined from forge-pwa/lib/performance.ts)
@@ -47,16 +47,19 @@ function sessionLoad(session: TrainingSession) {
   return Math.round(session.durationMinutes * session.rpe * loadMultiplier);
 }
 
-function sessionsWithinDays(sessions: TrainingSession[], days: number, now = new Date()) {
-  const cutoff = now.getTime() - days * dayMs;
-  return sessions.filter((session) => sessionDate(session).getTime() >= cutoff);
-}
-
 function standardDeviation(values: number[]) {
-  if (values.length === 0) return 0;
-  const mean = values.reduce((total, value) => total + value, 0) / values.length;
-  const variance = values.reduce((total, value) => total + Math.pow(value - mean, 2), 0) / values.length;
-  return Math.sqrt(variance);
+  const n = values.length;
+  if (n === 0) return 0;
+  let sum = 0;
+  let sumSq = 0;
+  for (let i = 0; i < n; i++) {
+    const val = values[i];
+    sum += val;
+    sumSq += val * val;
+  }
+  const mean = sum / n;
+  const variance = (sumSq / n) - (mean * mean);
+  return Math.sqrt(Math.max(0, variance));
 }
 
 function estimateRuckKm(session: TrainingSession) {
@@ -67,38 +70,70 @@ function estimateRuckKm(session: TrainingSession) {
 }
 
 function buildPerformanceProfile(sessions: TrainingSession[], now = new Date()): PerformanceProfile {
-  const ordered = [...sessions].sort((a, b) => sessionDate(b).getTime() - sessionDate(a).getTime());
-  const recent = sessionsWithinDays(ordered, 7, now);
-  const chronic = sessionsWithinDays(ordered, 28, now);
-  const recentLoads = recent.map(sessionLoad);
-  const weeklyLoad = recentLoads.reduce((total, load) => total + load, 0);
+  let chronicLoadTotal = 0;
+  let weeklyLoad = 0;
+  let rpeSum = 0;
+  let highIntensityCount = 0;
+  let ruckKmTotal = 0;
+  let ruckLoadKgTotal = 0;
+  let ruckCount = 0;
+  let recentCount = 0;
+
+  const nowTime = now.getTime();
+  const recentCutoff = nowTime - 7 * dayMs;
+  const chronicCutoff = nowTime - 28 * dayMs;
+
+  const dayStarts = Array.from({ length: 7 }, (_, index) =>
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() - index).getTime()
+  );
+  const dailyLoads = [0, 0, 0, 0, 0, 0, 0];
+
+  for (let i = 0; i < sessions.length; i++) {
+    const s = sessions[i];
+    const t = sessionDate(s).getTime();
+
+    if (t >= chronicCutoff) {
+      const load = sessionLoad(s);
+      chronicLoadTotal += load;
+
+      if (t >= recentCutoff) {
+        recentCount++;
+        weeklyLoad += load;
+        rpeSum += s.rpe;
+        if (s.rpe >= 8) highIntensityCount++;
+
+        if (s.type === 'Ruck') {
+          ruckCount++;
+          ruckKmTotal += estimateRuckKm(s);
+          ruckLoadKgTotal += s.loadKg ?? 0;
+        }
+
+        for (let d = 0; d < 7; d++) {
+          if (t >= dayStarts[d] && t < dayStarts[d] + dayMs) {
+            dailyLoads[d] += load;
+            break;
+          }
+        }
+      }
+    }
+  }
+
   const acuteLoad = Math.round(weeklyLoad / 7);
-  const chronicLoad = Math.round(chronic.reduce((total, s) => total + sessionLoad(s), 0) / 28);
+  const chronicLoad = Math.round(chronicLoadTotal / 28);
   const acuteChronicRatio = chronicLoad > 0 ? Math.round((acuteLoad / chronicLoad) * 100) / 100 : acuteLoad > 0 ? 1.5 : 0;
-  const averageRpe = recent.length ? recent.reduce((total, s) => total + s.rpe, 0) / recent.length : 0;
-  const highIntensityCount = recent.filter((s) => s.rpe >= 8).length;
-  const dailyLoads = Array.from({ length: 7 }, (_, index) => {
-    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - index).getTime();
-    const dayEnd = dayStart + dayMs;
-    return recent
-      .filter((s) => { const t = sessionDate(s).getTime(); return t >= dayStart && t < dayEnd; })
-      .reduce((total, s) => total + sessionLoad(s), 0);
-  });
-  const dailyMean = dailyLoads.reduce((total, load) => total + load, 0) / 7;
+  const averageRpe = recentCount > 0 ? rpeSum / recentCount : 0;
+  const dailyMean = weeklyLoad / 7;
   const dailySd = standardDeviation(dailyLoads);
   const monotony = dailySd > 0 ? Math.round((dailyMean / dailySd) * 10) / 10 : weeklyLoad > 0 ? 2.5 : 0;
   const strain = Math.round(weeklyLoad * monotony);
-  const ruckSessions = recent.filter((s) => s.type === 'Ruck');
-  const ruckKm = Math.round(ruckSessions.reduce((total, s) => total + estimateRuckKm(s), 0) * 10) / 10;
-  const ruckLoadKg = ruckSessions.length
-    ? Math.round(ruckSessions.reduce((total, s) => total + (s.loadKg ?? 0), 0) / ruckSessions.length)
-    : 0;
+  const ruckKm = Math.round(ruckKmTotal * 10) / 10;
+  const ruckLoadKg = ruckCount > 0 ? Math.round(ruckLoadKgTotal / ruckCount) : 0;
 
   const loadPenalty = clamp((acuteChronicRatio - 1.25) * 28, 0, 18);
   const rpePenalty = clamp((averageRpe - 6.5) * 7, 0, 18);
   const intensityPenalty = highIntensityCount * 4;
   const monotonyPenalty = monotony > 2 ? clamp((monotony - 2) * 7, 0, 12) : 0;
-  const readiness = Math.round(clamp(88 - loadPenalty - rpePenalty - intensityPenalty - monotonyPenalty + Math.min(6, recent.length), 35, 96));
+  const readiness = Math.round(clamp(88 - loadPenalty - rpePenalty - intensityPenalty - monotonyPenalty + Math.min(6, recentCount), 35, 96));
   const readinessBand: ReadinessBand = readiness >= 80 ? 'GREEN' : readiness >= 62 ? 'AMBER' : 'RED';
   const readinessTone = readinessBand === 'GREEN' ? colours.pass : readinessBand === 'AMBER' ? colours.amber : colours.fail;
   const readinessLabel = readinessBand === 'GREEN' ? 'Train as planned' : readinessBand === 'AMBER' ? 'Control intensity' : 'Recovery priority';

@@ -1,22 +1,40 @@
-import { useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ControlRow } from '@/src/components/ruck/ControlRow';
+import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
+import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
+import { RuckMapView } from '@/src/components/ruck/RuckMapView';
+import { useRuckTracking } from '@/src/hooks/useRuckTracking';
+import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { parseGeoJsonOverlay, parseKmlOverlay, extractKmlFromKmz } from '@/src/utils/fieldMapping';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
-import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
-import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
-import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking';
-import { RuckMapView } from '@/src/components/ruck/RuckMapView';
-import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
-import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
-import { ControlRow } from '@/src/components/ruck/ControlRow';
+
+
 
 type RuckMetrics = {
   distance: number;
   load: number;
   minutes: number;
   pace: number;
+};
+
+type RuckSaveDraft = {
+  sessionType: string;
+  packWeightKg: string;
+  readiness: string;
+  rpe: string;
+  notes: string;
+};
+
+const DEFAULT_RUCK_SAVE_DRAFT: RuckSaveDraft = {
+  sessionType: 'GPS Tracked Ruck',
+  packWeightKg: '15',
+  readiness: '6',
+  rpe: '6',
+  notes: '',
 };
 
 const DISTANCE_REGEX = /(\d+(?:\.\d+)?)\s*km/i;
@@ -27,6 +45,15 @@ const MIN_REGEX = /(\d+)\s*min/i;
 const NUM_REGEX = /(\d+)/;
 
 function parseRuckMetrics(log: TrainingLog): RuckMetrics {
+  if (log.ruck) {
+    return {
+      distance: log.ruck.distanceKm,
+      load: log.ruck.packWeightKg,
+      minutes: Math.round(log.ruck.durationSeconds / 60),
+      pace: log.ruck.paceSecondsPerKm / 60,
+    };
+  }
+
   const distMatch = log.distanceLoad.match(DISTANCE_REGEX);
   const distance = distMatch ? parseFloat(distMatch[1]) : 0;
 
@@ -54,8 +81,12 @@ function parseRuckMetrics(log: TrainingLog): RuckMetrics {
 
 function formatPace(pace: number): string {
   if (!pace) return '--';
-  const mins = Math.floor(pace);
-  const secs = Math.round((pace - mins) * 60);
+  let mins = Math.floor(pace);
+  let secs = Math.round((pace - mins) * 60);
+  if (secs === 60) {
+    mins += 1;
+    secs = 0;
+  }
   return `${mins}:${secs.toString().padStart(2, '0')}/km`;
 }
 
@@ -66,6 +97,16 @@ function formatDuration(minutes: number): string {
   if (hrs > 0 && mins > 0) return `${hrs}h ${mins}m`;
   if (hrs > 0) return `${hrs}h`;
   return `${mins}m`;
+}
+
+function formatDurationFromSeconds(seconds: number): string {
+  const totalMinutes = Math.max(1, Math.round(seconds / 60));
+  return formatDuration(totalMinutes);
+}
+
+function getNumberInput(value: string, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 function getThisWeekKm(ruckLogs: TrainingLog[], metrics: RuckMetrics[]): { sessions: number; km: number } {
@@ -116,7 +157,7 @@ function getNextSessionAdvice(
   return `Aim for ${nextDist} km${loadStr}. Steady pace — log notes on foot condition and breathing rhythm.`;
 }
 
-function RuckSessionCard({ log, metrics, paceVsPb }: {
+const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }: {
   log: TrainingLog;
   metrics: RuckMetrics;
   paceVsPb: number | null;
@@ -173,39 +214,152 @@ function RuckSessionCard({ log, metrics, paceVsPb }: {
       ) : null}
     </View>
   );
-}
+});
+
+const RuckSavePanel = memo(function RuckSavePanel({
+  draft,
+  distanceKm,
+  elapsedSeconds,
+  splitCount = 0,
+  routeConfidence = 'High',
+  rejectedPointCount = 0,
+  onChange,
+}: {
+  draft: RuckSaveDraft;
+  distanceKm: number;
+  elapsedSeconds: number;
+  splitCount?: number;
+  routeConfidence?: 'High' | 'Medium' | 'Low';
+  rejectedPointCount?: number;
+  onChange: (draft: RuckSaveDraft) => void;
+}) {
+  const paceSeconds = distanceKm > 0 ? elapsedSeconds / distanceKm : 0;
+  return (
+    <View style={styles.savePanel}>
+      <View style={styles.saveHeader}>
+        <Text style={styles.saveKicker}>SAVE RUCK</Text>
+        <Text style={styles.saveSummary}>
+          {distanceKm.toFixed(2)} km · {formatDurationFromSeconds(elapsedSeconds)}
+          {paceSeconds > 0 ? ` · ${formatPace(paceSeconds / 60)}` : ''}
+        </Text>
+        <Text style={styles.saveMeta}>
+          {splitCount} splits · {routeConfidence} GPS
+          {rejectedPointCount > 0 ? ` · ${rejectedPointCount} points filtered` : ''}
+        </Text>
+      </View>
+
+      <TextInput
+        style={styles.saveInput}
+        value={draft.sessionType}
+        onChangeText={(sessionType) => onChange({ ...draft, sessionType })}
+        placeholder="Session type"
+        placeholderTextColor="#617061"
+      />
+
+      <View style={styles.saveGrid}>
+        <View style={styles.saveField}>
+          <Text style={styles.saveLabel}>KG</Text>
+          <TextInput
+            style={styles.saveInput}
+            value={draft.packWeightKg}
+            onChangeText={(packWeightKg) => onChange({ ...draft, packWeightKg })}
+            keyboardType="numeric"
+            placeholder="15"
+            placeholderTextColor="#617061"
+          />
+        </View>
+        <View style={styles.saveField}>
+          <Text style={styles.saveLabel}>READINESS</Text>
+          <TextInput
+            style={styles.saveInput}
+            value={draft.readiness}
+            onChangeText={(readiness) => onChange({ ...draft, readiness })}
+            keyboardType="numeric"
+            placeholder="6"
+            placeholderTextColor="#617061"
+          />
+        </View>
+        <View style={styles.saveField}>
+          <Text style={styles.saveLabel}>RPE</Text>
+          <TextInput
+            style={styles.saveInput}
+            value={draft.rpe}
+            onChangeText={(rpe) => onChange({ ...draft, rpe })}
+            keyboardType="numeric"
+            placeholder="6"
+            placeholderTextColor="#617061"
+          />
+        </View>
+      </View>
+
+      <TextInput
+        style={[styles.saveInput, styles.saveNotes]}
+        value={draft.notes}
+        onChangeText={(notes) => onChange({ ...draft, notes })}
+        placeholder="Notes: feet, breathing, terrain, hot spots"
+        placeholderTextColor="#617061"
+        multiline
+      />
+    </View>
+  );
+});
 
 export default function RuckScreen() {
   const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
+  const [saveDraft, setSaveDraft] = useState<RuckSaveDraft>(DEFAULT_RUCK_SAVE_DRAFT);
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
   const [overlays, setOverlays] = useState<MapOverlay[]>([]);
   const [loadingOverlay, setLoadingOverlay] = useState(false);
 
-  const handleSaveSession = async () => {
+  const handleSaveSession = useCallback(async () => {
     if (tracking.distanceKm < 0.1) {
       Alert.alert('Too Short', 'Route must be at least 100m to save.');
       return;
     }
+    const packWeightKg = Math.max(0, getNumberInput(saveDraft.packWeightKg, 0));
+    const readiness = Math.max(1, Math.min(10, Math.round(getNumberInput(saveDraft.readiness, 6))));
+    const rpe = Math.max(1, Math.min(10, Math.round(getNumberInput(saveDraft.rpe, 6))));
+    const durationSeconds = tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds;
+    const distanceKm = tracking.sessionResult?.distanceKm ?? tracking.distanceKm;
+    const routePoints = tracking.sessionResult?.routePoints ?? tracking.routePoints;
+    const paceSecondsPerKm = distanceKm > 0 ? durationSeconds / distanceKm : 0;
+    const notes = saveDraft.notes.trim();
+
     await addLog({
       date: new Date().toISOString().slice(0, 10),
       category: 'Ruck',
-      type: 'GPS Tracked Ruck',
-      duration: `${Math.floor(tracking.elapsedSeconds / 60)} min`,
-      distanceLoad: `${tracking.distanceKm.toFixed(2)} km`,
-      readiness: '5',
-      notes: 'GPS tracked session.',
-      routePoints: tracking.routePoints,
+      type: saveDraft.sessionType.trim() || 'GPS Tracked Ruck',
+      duration: formatDurationFromSeconds(durationSeconds),
+      distanceLoad: `${distanceKm.toFixed(2)} km - ${packWeightKg} kg`,
+      readiness: String(readiness),
+      notes: notes || `GPS tracked session. RPE ${rpe}/10.`,
+      routePoints,
       route: {
-        distanceKm: tracking.distanceKm,
+        distanceKm,
         elevationGainMeters: 0,
-        packWeightKg: 0,
+        packWeightKg,
         polyline: ''
-      }
+      },
+      ruck: {
+        distanceKm,
+        durationSeconds,
+        packWeightKg,
+        paceSecondsPerKm,
+        rpe,
+        elevationGainMeters: 0,
+        splits: tracking.sessionResult?.splits ?? tracking.splits,
+        routeConfidence: tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence,
+        rejectedPointCount: tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount,
+        averageAccuracyMeters: tracking.sessionResult?.averageAccuracyMeters ?? tracking.averageAccuracyMeters ?? undefined,
+      },
     });
-    tracking.resetTracking();
+    tracking.resetSession();
+    setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
-  };
+  }, [tracking, saveDraft, addLog]);
+
+  const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
 
   async function handleImportOverlay() {
     setLoadingOverlay(true);
@@ -231,7 +385,6 @@ export default function RuckScreen() {
         const content = await FileSystem.readAsStringAsync(asset.uri);
         overlay = parseKmlOverlay(content, name, color, 'kml');
       } else {
-        // GeoJSON
         const content = await FileSystem.readAsStringAsync(asset.uri);
         overlay = parseGeoJsonOverlay(content, name, color);
       }
@@ -250,8 +403,6 @@ export default function RuckScreen() {
   function handleToggleOverlay(id: string) {
     setOverlays(prev => prev.map(o => o.id === id ? { ...o, visible: !o.visible } : o));
   }
-
-  if (isLoading) return <View style={styles.screen} />;
 
   const ruckLogs = useMemo(
     () => 
@@ -311,6 +462,8 @@ export default function RuckScreen() {
 
   const recentHistory = useMemo(() => ruckLogs.slice(0, 5), [ruckLogs]);
   const recentMetricsSlice = useMemo(() => ruckMetrics.slice(0, 5), [ruckMetrics]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <View style={styles.screen}>
@@ -564,6 +717,7 @@ export default function RuckScreen() {
             currentPosition={tracking.currentPosition}
             layer={tracking.activeLayer}
             overlays={overlays}
+            fullHeight
           />
 
           <LiveMetricsOverlay
@@ -608,7 +762,23 @@ export default function RuckScreen() {
             ))}
           </View>
 
-          <ControlRow tracking={tracking} onSave={handleSaveSession} />
+          {tracking.trackingState === 'finished' ? (
+            <RuckSavePanel
+              draft={saveDraft}
+              distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
+              elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
+              splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
+              routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
+              rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
+              onChange={setSaveDraft}
+            />
+          ) : null}
+
+          <ControlRow
+            tracking={tracking}
+            onSave={handleSaveSession}
+            onDiscard={handleDiscardDraft}
+          />
         </View>
       )}
     </View>
@@ -621,6 +791,13 @@ const styles = StyleSheet.create({
   kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#aeb8aa', fontSize: 15, lineHeight: 22 },
+
+  headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10, gap: 4 },
+  tabRow: { flexDirection: 'row', backgroundColor: '#0d1812', borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: '#203529' },
+  tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
+  tabPillActive: { backgroundColor: '#2f6b3c' },
+  tabPillText: { color: '#8fbf8f', fontSize: 13, fontWeight: '900' },
+  tabPillTextActive: { color: '#ffffff' },
 
   volumeCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#2f6b3c', gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },
@@ -700,4 +877,39 @@ const styles = StyleSheet.create({
   overlayChipHidden: { opacity: 0.4 },
   overlayDot: { width: 8, height: 8, borderRadius: 4 },
   overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
+
+  savePanel: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 86,
+    backgroundColor: '#0d1812',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+    padding: 12,
+    gap: 10,
+  },
+  saveHeader: { gap: 3 },
+  saveKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  saveSummary: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  saveMeta: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
+  saveGrid: { flexDirection: 'row', gap: 8 },
+  saveField: { flex: 1, gap: 4 },
+  saveLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
+  saveInput: {
+    backgroundColor: '#07110c',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#203529',
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  saveNotes: {
+    minHeight: 62,
+    textAlignVertical: 'top',
+  },
 });

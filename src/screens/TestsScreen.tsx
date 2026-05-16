@@ -5,7 +5,7 @@ import type { DfiftStandards } from '@/src/types/dfift';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildReadinessTrend } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const dfiftStandards = dfiftJson as DfiftStandards;
@@ -53,7 +53,7 @@ function findLatest(grouped: Record<string, TrainingLog[]>, ...keywords: string[
   return null;
 }
 
-function DfiftRow({ label, standard, result, pass }: {
+const DfiftRow = memo(function DfiftRow({ label, standard, result, pass }: {
   label: string; standard: string; result: string | null; pass: boolean | null;
 }) {
   return (
@@ -78,7 +78,7 @@ function DfiftRow({ label, standard, result, pass }: {
       </View>
     </View>
   );
-}
+});
 
 export default function TestsScreen() {
   const { logs, isLoading } = useTraining();
@@ -123,10 +123,12 @@ export default function TestsScreen() {
   const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
 
-  const pushReps = pushLog ? parseReps(pushLog.distanceLoad) : null;
-  const sitReps = sitLog ? parseReps(sitLog.distanceLoad) : null;
-  const runSeconds = runLog ? parseRunSeconds(runLog.distanceLoad, runLog.duration) : null;
-  const skinfoldMm = skinfoldLog ? parseMm(skinfoldLog.distanceLoad) : null;
+  const { pushReps, sitReps, runSeconds, skinfoldMm } = useMemo(() => ({
+    pushReps: pushLog ? parseReps(pushLog.distanceLoad) : null,
+    sitReps: sitLog ? parseReps(sitLog.distanceLoad) : null,
+    runSeconds: runLog ? parseRunSeconds(runLog.distanceLoad, runLog.duration) : null,
+    skinfoldMm: skinfoldLog ? parseMm(skinfoldLog.distanceLoad) : null,
+  }), [pushLog, sitLog, runLog, skinfoldLog]);
 
   const { pushUps, sitUps, run, skinfold } = dfiftStandards.events;
   const pushLimit = gender === 'F' ? pushUps.female : pushUps.male;
@@ -135,36 +137,26 @@ export default function TestsScreen() {
   const skinfoldLimit = gender === 'F' ? skinfold.femaleMaxMm : skinfold.maleMaxMm;
   const dfiftSnapshot = useMemo(() => buildDfiftSnapshot(logs, dfiftStandards, gender), [logs, gender]);
 
-  const daysUntilTest = testDate
-    ? Math.ceil((new Date(testDate + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)
-    : null;
+  const daysUntilTest = useMemo(() => {
+    if (!testDate) return null;
+    return Math.ceil((new Date(testDate + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000);
+  }, [testDate]);
 
-  let readinessLabel = 'GREEN';
-  let readinessColor = '#91e6a3';
-  let readinessMessage = 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.';
+  const readinessStatus = useMemo(() => {
+    if (readinessPercentage === 0) {
+      return { label: 'NO DATA', color: '#8fbf8f', message: 'Log sessions with readiness scores to determine your testing readiness.', cardStyle: styles.heroCard };
+    }
+    if (readinessPercentage < 60) {
+      return { label: 'RED', color: '#ffb86b', message: 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.', cardStyle: styles.heroCardWarn };
+    }
+    if (readinessPercentage < 80) {
+      return { label: 'AMBER', color: '#f3d36b', message: 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.', cardStyle: styles.heroCardAmber };
+    }
+    return { label: 'GREEN', color: '#91e6a3', message: 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.', cardStyle: styles.heroCardGood };
+  }, [readinessPercentage]);
 
-  if (readinessPercentage === 0) {
-    readinessLabel = 'NO DATA';
-    readinessColor = '#8fbf8f';
-    readinessMessage = 'Log sessions with readiness scores to determine your testing readiness.';
-  } else if (readinessPercentage < 60) {
-    readinessLabel = 'RED';
-    readinessColor = '#ffb86b';
-    readinessMessage = 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.';
-  } else if (readinessPercentage < 80) {
-    readinessLabel = 'AMBER';
-    readinessColor = '#f3d36b';
-    readinessMessage = 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.';
-  }
-
-  const isReadyToTest = readinessPercentage >= 80;
-  const heroCardStyle = isReadyToTest
-    ? styles.heroCardGood
-    : readinessPercentage > 0 && readinessPercentage < 60
-      ? styles.heroCardWarn
-      : readinessPercentage >= 60 && readinessPercentage < 80
-        ? styles.heroCardAmber
-        : styles.heroCard;
+  const navigateToProfile = useCallback(() => router.push('/profile'), [router]);
+  const navigateToAddLog = useCallback(() => router.push('/add-log'), [router]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -193,12 +185,12 @@ export default function TestsScreen() {
         </View>
       ) : null}
 
-      <View style={heroCardStyle}>
+      <View style={readinessStatus.cardStyle}>
         <View style={styles.heroRow}>
           <View style={styles.heroLeft}>
             <Text style={styles.heroLabel}>TEST READINESS</Text>
-            <Text style={[styles.heroScore, { color: readinessColor }]}>{readinessLabel}</Text>
-            <Text style={styles.heroMessage}>{readinessMessage}</Text>
+            <Text style={[styles.heroScore, { color: readinessStatus.color }]}>{readinessStatus.label}</Text>
+            <Text style={styles.heroMessage}>{readinessStatus.message}</Text>
           </View>
 
           <View style={styles.heroStats}>
@@ -327,7 +319,7 @@ export default function TestsScreen() {
         <View style={styles.dfiftHeader}>
           <Text style={styles.dfiftKicker}>DEFENCE FORCES INDUCTION FITNESS TEST</Text>
           <TouchableOpacity
-            onPress={() => router.push('/profile')}
+            onPress={navigateToProfile}
             accessibilityRole="button"
             accessibilityLabel="Edit profile gender setting"
           >

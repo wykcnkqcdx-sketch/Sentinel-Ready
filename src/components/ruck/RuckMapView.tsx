@@ -28,9 +28,10 @@ export interface RuckMapViewProps {
   layer: MapLayerKey;
   zoom?: number;
   overlays?: MapOverlay[];
+  fullHeight?: boolean;
 }
 
-export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays }: RuckMapViewProps) {
+export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays, fullHeight = false }: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
 
@@ -57,7 +58,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
   }
 
   return (
-    <View style={styles.container} onLayout={handleLayout}>
+    <View style={[styles.container, fullHeight && styles.fullHeight]} onLayout={handleLayout}>
       {tiles.map((tile) => (
         <Image key={tile.id} source={{ uri: tile.url }} style={tile.style} />
       ))}
@@ -164,6 +165,10 @@ const styles = StyleSheet.create({
     height: MAP_HEIGHT,
     overflow: 'hidden',
     backgroundColor: '#1a1a2e',
+  },
+  fullHeight: {
+    flex: 1,
+    height: undefined,
   },
   gpsOverlay: {
     ...StyleSheet.absoluteFillObject,

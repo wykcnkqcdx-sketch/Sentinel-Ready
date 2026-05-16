@@ -1,11 +1,11 @@
+import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import { GoalCategory, GoalStatus, TrainingGoal, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
-import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import type { DfiftStandards } from '@/src/types/dfift';
 import { buildGoalSuggestions, GoalSuggestion } from '@/src/utils/goalSuggestionUtils';
 import { buildGoalAction, buildGoalSummary, getGoalProgress } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const categories: GoalCategory[] = ['Ruck', 'Run', 'Strength', 'Recovery', 'Test', 'Consistency'];
@@ -20,7 +20,7 @@ const blankGoal = {
   status: 'active' as GoalStatus,
 };
 
-function GoalCard({
+const GoalCard = memo(function GoalCard({
   goal,
   onToggle,
   onDelete,
@@ -67,7 +67,7 @@ function GoalCard({
       </View>
     </View>
   );
-}
+});
 
 export default function GoalsScreen() {
   const router = useRouter();
@@ -83,7 +83,7 @@ export default function GoalsScreen() {
     [logs, goals, gender]
   );
 
-  async function saveGoal() {
+  const saveGoal = useCallback(async () => {
     if (draft.title.trim().length < 3 || draft.target.trim().length < 3) {
       Alert.alert('Check Goal', 'Add a clear title and target.');
       return;
@@ -104,9 +104,9 @@ export default function GoalsScreen() {
     }
     setDraft(blankGoal);
     setEditingId(null);
-  }
+  }, [draft, editingId, updateGoal, addGoal]);
 
-  function editGoal(goal: TrainingGoal) {
+  const editGoal = useCallback((goal: TrainingGoal) => {
     setDraft({
       category: goal.category,
       title: goal.title,
@@ -117,16 +117,16 @@ export default function GoalsScreen() {
       status: goal.status,
     });
     setEditingId(goal.id);
-  }
+  }, []);
 
-  function confirmDelete(goal: TrainingGoal) {
+  const confirmDelete = useCallback((goal: TrainingGoal) => {
     Alert.alert('Delete Goal', `Delete ${goal.title}?`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => deleteGoal(goal.id) },
     ]);
-  }
+  }, [deleteGoal]);
 
-  async function addSuggestedGoal(suggestion: GoalSuggestion) {
+  const addSuggestedGoal = useCallback(async (suggestion: GoalSuggestion) => {
     await addGoal({
       category: suggestion.category,
       title: suggestion.title,
@@ -136,7 +136,11 @@ export default function GoalsScreen() {
       notes: suggestion.notes,
       status: 'active',
     });
-  }
+  }, [addGoal]);
+
+  const handleToggleGoal = useCallback((item: TrainingGoal) => {
+    updateGoal(item.id, { ...item, status: item.status === 'active' ? 'complete' : 'active' });
+  }, [updateGoal]);
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -211,7 +215,7 @@ export default function GoalsScreen() {
           goal={goal}
           onEdit={editGoal}
           onDelete={confirmDelete}
-          onToggle={(item) => updateGoal(item.id, { ...item, status: item.status === 'active' ? 'complete' : 'active' })}
+          onToggle={handleToggleGoal}
         />
       ))}
     </ScrollView>

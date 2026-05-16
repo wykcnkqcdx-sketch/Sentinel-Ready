@@ -1,5 +1,5 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { Activity, Battery, CalendarDays, ClipboardEdit, Dumbbell, Map, Target } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -26,7 +26,7 @@ export default function TabLayout() {
         name="log"
         options={{
           title: 'Log',
-          tabBarIcon: ({ color, size }) => <ClipboardEdit color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="clipboard-outline" color={color} size={size} />,
         }}
       />
 
@@ -34,7 +34,7 @@ export default function TabLayout() {
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => <Activity color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" color={color} size={size} />,
         }}
       />
 
@@ -42,7 +42,7 @@ export default function TabLayout() {
         name="training"
         options={{
           title: 'Training',
-          tabBarIcon: ({ color, size }) => <Dumbbell color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="dumbbell" color={color} size={size} />,
         }}
       />
 
@@ -50,7 +50,7 @@ export default function TabLayout() {
         name="ruck"
         options={{
           title: 'Ruck',
-          tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" color={color} size={size} />,
         }}
       />
 
@@ -58,7 +58,7 @@ export default function TabLayout() {
         name="tests"
         options={{
           title: 'Tests',
-          tabBarIcon: ({ color, size }) => <Target color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="locate-outline" color={color} size={size} />,
         }}
       />
 
@@ -66,7 +66,7 @@ export default function TabLayout() {
         name="plan"
         options={{
           title: 'Plan',
-          tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" color={color} size={size} />,
         }}
       />
 
@@ -74,7 +74,7 @@ export default function TabLayout() {
         name="recovery"
         options={{
           title: 'Recovery',
-          tabBarIcon: ({ color, size }) => <Battery color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="battery-half-outline" color={color} size={size} />,
         }}
       />
 

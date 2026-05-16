@@ -4,14 +4,17 @@ import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import {
+  buildGoalAction,
   buildReadinessTrend,
   buildWeekPlan,
   buildWeekSummary,
+  buildPlanLogDraft,
   DayPlan,
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
-import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { memo, useCallback, useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
   if (intensity === 'Rest' || intensity === 'Low') return '#8fbf8f';
@@ -20,7 +23,15 @@ function intensityColor(intensity: DayPlan['intensity'], planType: string) {
   return '#91e6a3';
 }
 
-function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
+const DayCard = memo(function DayCard({
+  item,
+  planType,
+  onLog,
+}: {
+  item: DayPlan;
+  planType: string;
+  onLog: (item: DayPlan) => void;
+}) {
   const isRest = item.isRest;
   const details = getDayPlanDetails(item);
   return (
@@ -39,13 +50,22 @@ function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
         <Text style={styles.detailText}>Cooldown: {details.cooldown}</Text>
         <Text style={styles.detailText}>Adjust: {details.adjustment}</Text>
       </View>
+      <TouchableOpacity
+        style={isRest ? styles.logButtonRest : styles.logButton}
+        onPress={() => onLog(item)}
+      >
+        <Text style={isRest ? styles.logButtonTextRest : styles.logButtonText}>
+          {isRest ? 'Log Recovery' : 'Log Planned Session'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
-}
+});
 
 export default function PlanScreen() {
   const { logs, goals, isLoading } = useTraining();
   const profile = useUser();
+  const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
   const { thisWeek, trend, balance } = useMemo(() => ({
@@ -54,10 +74,11 @@ export default function PlanScreen() {
     balance: buildTrainingBalance(logs),
   }), [logs]);
 
-  const { days, planType, rationale, forecast, adherence } = useMemo(() => ({
+  const { days, planType, rationale, forecast, adherence, goalAction } = useMemo(() => ({
     ...buildWeekPlan(logs, goals, profile),
     forecast: buildReadinessForecast(logs, goals, profile),
     adherence: buildPlanAdherence(logs, goals, profile),
+    goalAction: buildGoalAction(goals, logs),
   }), [logs, goals, profile]);
 
   const planTypeLabel =
@@ -74,6 +95,22 @@ export default function PlanScreen() {
     planType === 'recovery' ? styles.commandCardWarning
     : planType === 'progressive' ? styles.commandCardGood
     : styles.commandCard;
+
+  const logPlannedSession = useCallback((day: DayPlan) => {
+    const draft = buildPlanLogDraft(day);
+    router.push({
+      pathname: '/add-log',
+      params: {
+        date: draft.date,
+        category: draft.category,
+        type: draft.type,
+        duration: draft.duration,
+        distanceLoad: draft.distanceLoad,
+        readiness: draft.readiness,
+        notes: draft.notes,
+      },
+    });
+  }, [router]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -119,6 +156,17 @@ export default function PlanScreen() {
           <Text style={[styles.planTypeLabel, { color: planTypeColor }]}>{planTypeLabel}</Text>
         </View>
         <Text style={styles.commandText}>{rationale}</Text>
+      </View>
+
+      <View style={goalAction.status === 'warning' ? styles.balanceCardWarn : styles.balanceCard}>
+        <View style={styles.commandHeader}>
+          <Text style={styles.commandKicker}>PRIORITY GOAL</Text>
+          <Text style={goalAction.status === 'warning' ? styles.balanceLabelWarn : styles.balanceLabel}>
+            {goalAction.title}
+          </Text>
+        </View>
+        <Text style={styles.commandText}>{goalAction.reason}</Text>
+        <Text style={styles.balanceFocus}>{goalAction.action}</Text>
       </View>
 
       <View style={balance.status === 'overload' ? styles.balanceCardWarn : styles.balanceCard}>
@@ -174,7 +222,7 @@ export default function PlanScreen() {
       </View>
 
       {days.map((item) => (
-        <DayCard key={item.day} item={item} planType={planType} />
+        <DayCard key={item.day} item={item} planType={planType} onLog={logPlannedSession} />
       ))}
     </ScrollView>
   );
@@ -230,4 +278,8 @@ const styles = StyleSheet.create({
   session: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
   detailGrid: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 10, gap: 4, marginTop: 4 },
   detailText: { color: '#aeb8aa', fontSize: 12, lineHeight: 17, fontWeight: '700' },
+  logButton: { backgroundColor: '#91e6a3', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6 },
+  logButtonRest: { backgroundColor: '#102016', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: '#203529' },
+  logButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
+  logButtonTextRest: { color: '#8fbf8f', fontSize: 12, fontWeight: '900' },
 });

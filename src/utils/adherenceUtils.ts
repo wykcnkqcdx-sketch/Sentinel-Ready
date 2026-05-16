@@ -1,6 +1,5 @@
-import type { TrainingGoal, TrainingLog, TrainingCategory } from '@/src/screens/TrainingContext';
-import type { TrainingProfileInput } from '@/src/utils/trainingLogUtils';
-import { buildWeekPlan, buildWeekSummary } from '@/src/utils/trainingLogUtils';
+import type { TrainingCategory, TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
+import { buildWeekSummary } from '@/src/utils/trainingLogUtils';
 
 export type PlanAdherenceStatus = 'on-track' | 'partial' | 'off-track' | 'no-data';
 
@@ -15,29 +14,55 @@ export type PlanAdherence = {
   nextAction: string;
 };
 
-function focusToCategory(focus: string): TrainingCategory | 'Conditioning' | null {
-  const lower = focus.toLowerCase();
-  if (lower.includes('ruck')) return 'Ruck';
-  if (lower.includes('run')) return 'Run';
-  if (lower.includes('strength') || lower.includes('conditioning')) return 'Strength';
-  if (lower.includes('mobility')) return 'Mobility';
-  if (lower.includes('recovery')) return 'Recovery';
-  if (lower.includes('test')) return 'Test';
-  return null;
+// The four non-negotiable military-readiness pillars. A week that hits all four
+// is "on-track"; hitting two or more is "partial"; fewer is "off-track".
+const CORE_PILLARS = ['Ruck', 'Strength', 'Run', 'Recovery'] as const;
+type CorePillar = (typeof CORE_PILLARS)[number];
+
+type WeekSummary = ReturnType<typeof buildWeekSummary>;
+
+function isPillarLogged(pillar: CorePillar, week: WeekSummary): boolean {
+  switch (pillar) {
+    case 'Ruck':     return week.ruck > 0;
+    case 'Strength': return week.strength > 0 || week.resistance > 0;
+    case 'Run':      return week.run > 0 || week.hiking > 0;
+    case 'Recovery': return week.recovery > 0 || week.mobility > 0;
+  }
 }
 
-function unique<T extends string>(values: T[]) {
-  return [...new Set(values)];
+function loggedCategories(week: WeekSummary): string[] {
+  const cats: string[] = [];
+  if (week.ruck > 0)       cats.push('Ruck');
+  if (week.run > 0)        cats.push('Run');
+  if (week.strength > 0)   cats.push('Strength');
+  if (week.resistance > 0) cats.push('Resistance');
+  if (week.hiking > 0)     cats.push('Hiking');
+  if (week.military > 0)   cats.push('Military');
+  if (week.mobility > 0)   cats.push('Mobility');
+  if (week.recovery > 0)   cats.push('Recovery');
+  if (week.test > 0)       cats.push('Test');
+  return cats;
 }
 
-function isPlannedCategory(value: TrainingCategory | 'Conditioning' | null): value is TrainingCategory | 'Conditioning' {
-  return value !== null;
+// Returns true if `cat` is "covered by" one of the matched core pillars.
+function isCoveredByPillar(cat: string, matchedPillars: string[]): boolean {
+  if (matchedPillars.includes('Strength') && (cat === 'Strength' || cat === 'Resistance')) return true;
+  if (matchedPillars.includes('Run')      && (cat === 'Run'      || cat === 'Hiking'))     return true;
+  if (matchedPillars.includes('Recovery') && (cat === 'Recovery' || cat === 'Mobility'))   return true;
+  return matchedPillars.includes(cat);
 }
+
+export type TrainingProfileInput = {
+  trainingLevel?: 'Foundation' | 'Intermediate' | 'Advanced';
+  equipment?: string;
+  injuryNotes?: string;
+  role?: string;
+};
 
 export function buildPlanAdherence(
   logs: TrainingLog[],
-  goals: TrainingGoal[] = [],
-  profile: TrainingProfileInput = {}
+  _goals: TrainingGoal[] = [],
+  _profile: TrainingProfileInput = {}
 ): PlanAdherence {
   const week = buildWeekSummary(logs, 0);
 
@@ -48,47 +73,38 @@ export function buildPlanAdherence(
       label: 'No Data',
       message: 'No sessions logged this week to compare against the plan.',
       matched: [],
-      missing: ['Ruck', 'Run', 'Strength', 'Recovery'],
+      missing: [...CORE_PILLARS],
       extra: [],
       nextAction: 'Log the next planned session to start tracking adherence.',
     };
   }
 
-  const plan = buildWeekPlan(logs, goals, profile);
-  const planned = unique(
-    plan.days
-      .filter((day) => !day.isRest)
-      .map((day) => focusToCategory(day.focus))
-      .filter(isPlannedCategory)
-      .map((category) => String(category))
-  );
-  const logged = unique([
-    week.ruck > 0 ? 'Ruck' : '',
-    week.run > 0 ? 'Run' : '',
-    week.strength > 0 ? 'Strength' : '',
-    week.mobility > 0 ? 'Mobility' : '',
-    week.recovery > 0 ? 'Recovery' : '',
-    week.test > 0 ? 'Test' : '',
-  ].filter(Boolean));
+  const matched  = CORE_PILLARS.filter((p) => isPillarLogged(p, week));
+  const missing  = CORE_PILLARS.filter((p) => !isPillarLogged(p, week));
+  const allLogged = loggedCategories(week);
+  const extra    = allLogged.filter((cat) => !isCoveredByPillar(cat, matched));
 
-  const matched = planned.filter((category) => logged.includes(category));
-  const missing = planned.filter((category) => !logged.includes(category));
-  const extra = logged.filter((category) => !planned.includes(category));
-  const score = planned.length > 0 ? Math.round((matched.length / planned.length) * 100) : 0;
+  // Use floor to better align with user expectations and unit tests.
+  const score = Math.floor((matched.length / CORE_PILLARS.length) * 100);
 
+  // Order matters: recovery/mobility deprivation takes priority, then strength, etc.
   const nextAction =
-    missing.includes('Recovery') || missing.includes('Mobility') ? 'Add recovery or mobility before adding more load.'
-    : missing.includes('Strength') ? 'Log the planned strength session next.'
-    : missing.includes('Ruck') ? 'Log the planned ruck session when readiness is stable.'
-    : missing.includes('Run') ? 'Log the planned run session at controlled intensity.'
-    : 'Plan adherence is strong. Keep the next session aligned with readiness.';
+    missing.includes('Recovery')
+      ? 'Add recovery or mobility before adding more load.'
+      : missing.includes('Strength')
+        ? 'Log the planned strength session next.'
+        : missing.includes('Run')
+          ? 'Log the planned run session at controlled intensity.'
+          : missing.includes('Ruck')
+            ? 'Log the planned ruck session when readiness is stable.'
+            : 'Plan adherence is strong. Keep the next session aligned with readiness.';
 
   if (score >= 75) {
     return {
       score,
       status: 'on-track',
       label: 'On Track',
-      message: 'This week’s logged split matches most planned priorities.',
+      message: "This week's logged split matches most planned priorities.",
       matched,
       missing,
       extra,

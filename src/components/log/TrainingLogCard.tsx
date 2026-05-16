@@ -1,20 +1,21 @@
 import RuckMap from '@/src/components/log/RuckMap';
 import { TrainingLog } from '@/src/screens/TrainingContext';
-import { getReadinessLabel, getWeakLogReasons, isFatigueWatch, logNeedsImprovement } from '@/src/utils/trainingLogUtils';
+import { getReadinessLabel, getWeakLogReasons, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 type Props = {
   log: TrainingLog;
+  weakReasons?: string[];
   onEdit: (id: number) => void;
   onDuplicate: (id: number) => void;
   onDelete: (log: TrainingLog) => void;
 };
 
-const TrainingLogCard = memo(function TrainingLogCard({ log, onEdit, onDuplicate, onDelete }: Props) {
+const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWeakReasons, onEdit, onDuplicate, onDelete }: Props) {
   const fatigueWatch = isFatigueWatch(log.readiness);
-  const weakLog = logNeedsImprovement(log);
-  const weakReasons = getWeakLogReasons(log);
+  const weakReasons = propWeakReasons ?? getWeakLogReasons(log);
+  const weakLog = weakReasons.length > 0;
   const colorScheme = useColorScheme() ?? 'dark';
 
   return (

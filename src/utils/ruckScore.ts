@@ -32,25 +32,29 @@ export function calculateRuckScore(input: RuckScoreInput): RuckScoreBreakdown {
   const elevationPoints = clamp(elevationPerKm / 80, 0, 1) * 16;
   const terrainPoints = clamp((input.terrainFactor - 1) / 1.2, 0, 1) * 12;
   const paceTarget = 10.5 + loadRatio * 8 + (input.terrainFactor - 1) * 2 + elevationPerKm / 45;
-  const paceRatio = paceTarget / Math.max(5, input.paceMinPerKm);
-  const pacePoints = clamp(paceRatio, 0.55, 1.15) * 20;
+  const paceRatioRaw = paceTarget / Math.max(5, input.paceMinPerKm);
+  const pacePoints = clamp(paceRatioRaw, 0.55, 1.15) * 20;
   const executionPoints = clamp(checkpointRatio, 0, 1) * 10;
 
   const score = Math.round(clamp(loadPoints + distancePoints + elevationPoints + terrainPoints + pacePoints + executionPoints, 35, 100));
   const loadAdjustedPace = (input.paceMinPerKm * (1 + loadRatio * 0.75 + (input.terrainFactor - 1) * 0.18)).toFixed(1);
 
-  const weakest = [
-    { key: 'load', label: 'Load tolerance', value: loadPoints },
-    { key: 'pace', label: 'Pace control', value: pacePoints },
-    { key: 'elevation', label: 'Hill work', value: elevationPoints },
-    { key: 'execution', label: 'Checkpoint execution', value: executionPoints },
-  ].sort((a, b) => a.value - b.value)[0];
+  // When pace is below the floor clamp it is always the primary limiter, regardless of other factors
+  const weakest = paceRatioRaw < 0.55
+    ? { key: 'pace', label: 'Pace control', value: pacePoints }
+    : [
+        { key: 'load', label: 'Load tolerance', value: loadPoints },
+        { key: 'pace', label: 'Pace control', value: pacePoints },
+        { key: 'elevation', label: 'Hill work', value: elevationPoints },
+        { key: 'execution', label: 'Checkpoint execution', value: executionPoints },
+      ].sort((a, b) => a.value - b.value)[0];
 
   return {
     score,
     loadAdjustedPace,
     factors: [
       { label: 'Distance', value: `${input.distanceKm.toFixed(1)} km`, points: Math.round(distancePoints) },
+
       { label: 'Load', value: `${input.loadKg} kg (${Math.round(loadRatio * 100)}%)`, points: Math.round(loadPoints) },
       { label: 'Elevation', value: `${Math.round(input.ascentM)} m`, points: Math.round(elevationPoints) },
       { label: 'Terrain', value: `${input.terrainFactor.toFixed(1)}x`, points: Math.round(terrainPoints) },
@@ -58,13 +62,15 @@ export function calculateRuckScore(input: RuckScoreInput): RuckScoreBreakdown {
       { label: 'Execution', value: input.totalCheckpoints ? `${input.reachedCheckpoints ?? 0}/${input.totalCheckpoints} CP` : 'Route only', points: Math.round(executionPoints) },
     ],
     finding: weakest.key === 'pace'
-      ? 'Pace is the limiting factor under this load.'
+      ? 'Pace is the limiting factor'
       : weakest.key === 'load'
         ? 'Load carriage is the main limiter for this route.'
         : weakest.key === 'elevation'
           ? 'Climbing demand is the weakest part of the profile.'
           : 'Route execution needs cleaner checkpoint discipline.',
+
     recommendation: score >= 82
+
       ? 'Repeat once, then progress either load or distance, not both.'
       : score >= 68
         ? 'Hold the same route and aim for steadier pace before progressing.'

@@ -3,12 +3,21 @@ import TrainingLogForm, {
   getQuickTemplates,
   TrainingLogFormValues,
 } from '@/src/components/log/TrainingLogForm';
-import { TrainingCategory } from '@/src/screens/TrainingContext';
-import { useTraining } from '@/src/screens/TrainingContext';
+import { TrainingCategory, useTraining } from '@/src/screens/TrainingContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-const categories: TrainingCategory[] = ['Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
+const categories: TrainingCategory[] = [
+  'Ruck',
+  'Strength',
+  'Resistance',
+  'Run',
+  'Hiking',
+  'Military',
+  'Mobility',
+  'Test',
+  'Recovery',
+];
 
 function getParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -37,11 +46,14 @@ export default function AddLogScreen() {
   const params = useLocalSearchParams();
   const { addLog } = useTraining();
   const initialValues = useMemo(() => buildInitialValues(params), [params]);
+  const quickTemplates = useMemo(() => getQuickTemplates(), []);
 
-  async function handleSubmit(values: TrainingLogFormValues) {
+  const handleSubmit = useCallback(async (values: TrainingLogFormValues) => {
     await addLog(values);
     router.replace('/log');
-  }
+  }, [addLog, router]);
+
+  const handleBack = useCallback(() => router.back(), [router]);
 
   return (
     <TrainingLogForm
@@ -52,8 +64,8 @@ export default function AddLogScreen() {
       saveErrorTitle="Save Failed"
       saveErrorMessage="The training log could not be saved. Please try again."
       initialValues={initialValues}
-      quickTemplates={getQuickTemplates()}
-      onBack={() => router.back()}
+      quickTemplates={quickTemplates}
+      onBack={handleBack}
       onSubmit={handleSubmit}
     />
   );

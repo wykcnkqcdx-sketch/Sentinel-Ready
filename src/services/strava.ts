@@ -186,11 +186,11 @@ export async function fetchStravaActivities(
 
 function mapStravaType(type: string): TrainingLog['category'] {
   if (['Run', 'TrailRun', 'VirtualRun'].includes(type)) return 'Run';
-  if (['Hike', 'Walk', 'BackpackingTrip'].includes(type)) return 'Ruck';
+  if (['Hike', 'Walk', 'BackpackingTrip'].includes(type)) return 'Hiking';
   if (
     ['WeightTraining', 'Crossfit', 'Workout', 'RockClimbing'].includes(type)
   )
-    return 'Strength';
+    return type === 'Workout' || type === 'Crossfit' ? 'Resistance' : 'Strength';
   if (['Yoga', 'Pilates', 'Stretching'].includes(type)) return 'Mobility';
   return 'Strength';
 }

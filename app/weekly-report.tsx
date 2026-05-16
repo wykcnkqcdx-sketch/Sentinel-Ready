@@ -1,30 +1,32 @@
+import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
-import { buildWeeklyReport } from '@/src/utils/reportBuilder';
-import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import type { DfiftStandards } from '@/src/types/dfift';
+import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
-import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
+import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
-import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
+import { buildWeeklyReport } from '@/src/utils/reportBuilder';
 import {
-  buildGoalSummary,
   buildGoalAction,
-  buildPerformanceSnapshot,
+  buildGoalSummary,
   buildNextWeekRecommendation,
+  buildPerformanceSnapshot,
   buildWeekSummary,
   calculateTrainingLogHealthScore,
   getTrainingLogHealthLabel,
   WeekSummary,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
+import React, { memo, useCallback } from 'react';
 import { Alert, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 
 function formatWeekRange(start: string, end: string) {
   const s = new Date(start + 'T00:00:00');
@@ -33,16 +35,16 @@ function formatWeekRange(start: string, end: string) {
   return `${s.toLocaleDateString('en-GB', opts)} – ${e.toLocaleDateString('en-GB', opts)}`;
 }
 
-function CategoryPill({ label, count, warn }: { label: string; count: number; warn?: boolean }) {
+const CategoryPill = memo(function CategoryPill({ label, count, warn }: { label: string; count: number; warn?: boolean }) {
   if (count === 0) return null;
   return (
     <View style={warn ? styles.pillWarning : styles.pill}>
       <Text style={warn ? styles.pillTextWarning : styles.pillText}>{label} {count}</Text>
     </View>
   );
-}
+});
 
-function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummary; isThisWeek: boolean }) {
+const WeekCard = memo(function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummary; isThisWeek: boolean }) {
   const hasData = week.total > 0;
   const readiness = Number(week.averageReadiness);
   const readinessWarn = hasData && readiness > 0 && readiness < 6;
@@ -101,7 +103,7 @@ function WeekCard({ title, week, isThisWeek }: { title: string; week: WeekSummar
       )}
     </View>
   );
-}
+});
 
 export default function WeeklyReportScreen() {
   const { logs, goals, isLoading } = useTraining();
@@ -137,7 +139,7 @@ export default function WeeklyReportScreen() {
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
   const nextWeekIsGood = nextWeekAdvice.toLowerCase().includes('ready to progress');
 
-  async function shareReport() {
+  const shareReport = useCallback(async () => {
     try {
       await Share.share({
         title: report.title,
@@ -146,7 +148,7 @@ export default function WeeklyReportScreen() {
     } catch {
       Alert.alert('Share Failed', 'The weekly report could not be shared. You can still select the report text below.');
     }
-  }
+  }, [report]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

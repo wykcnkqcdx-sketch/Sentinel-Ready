@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { TrainingLog } from '@/src/screens/TrainingContext';
+import { describe, expect, it } from 'vitest';
 import { buildInjuryWatch } from './injuryWatchUtils';
 
 function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
@@ -51,5 +51,15 @@ describe('buildInjuryWatch', () => {
 
     expect(watch.status).toBe('clear');
     expect(watch.score).toBe(100);
+  });
+
+  it('marks high watch when cumulative score drops below 55 even with fewer than 3 flagged logs', () => {
+    const watch = buildInjuryWatch([
+      makeLog({ id: 1, date: '2026-05-11', category: 'Ruck', notes: 'Knee soreness.', readiness: '4' }),
+      makeLog({ id: 2, date: '2026-05-12', category: 'Ruck', notes: 'Still sore.', readiness: '5' }),
+    ], 'lower back issues');
+
+    expect(watch.status).toBe('high');
+    expect(watch.score).toBeLessThan(55);
   });
 });

@@ -47,7 +47,7 @@ export type RuckMissionPlan = {
 
 export type TrainingSession = {
   id: string;
-  type: 'Ruck' | 'Strength' | 'Resistance' | 'Cardio' | 'Workout' | 'Run' | 'Mobility';
+  type: 'Ruck' | 'Strength' | 'Resistance' | 'Cardio' | 'Workout' | 'Run' | 'Hiking' | 'Military' | 'Mobility';
   title: string;
   score: number;
   durationMinutes: number;

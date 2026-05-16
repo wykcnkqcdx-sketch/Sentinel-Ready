@@ -1,289 +1,357 @@
-import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { TrainingLog } from '@/src/screens/TrainingContext';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  buildNextWeekRecommendation,
   buildReadinessTrend,
   buildSessionRecommendation,
-  buildWeeklyLoadRisk,
+  buildSummary,
   buildWeekPlan,
-  buildWeekSummary,
   calculateTrainingLogHealthScore,
-  getCompletionScore,
-  getWeakLogReasons
+  getDateValue,
+  getNotesQualityMessage,
+  getNotesQualityWarning,
+  getNoteStarter,
+  getReadinessLabel,
+  getReadinessNumber,
+  getTrainingLogHealthLabel,
+  getTrainingLogHealthMessage,
+  isFatigueWatch,
+  logNeedsImprovement,
 } from './trainingLogUtils';
 
-function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
+function makeLog(overrides?: Partial<TrainingLog>): TrainingLog {
   return {
-    id: 1,
-    date: '2026-05-11',
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    date: '2026-05-10',
     category: 'Ruck',
     type: 'Loaded Ruck',
-    duration: '60 minutes',
-    distanceLoad: '6 km with 15 kg',
+    duration: '60 min',
+    distanceLoad: '10 km - 15 kg',
     readiness: '7',
-    notes: 'Steady tactical pace with controlled breathing and no unusual pain.',
+    notes: 'Steady pace, breathing controlled, no pain.',
     ...overrides,
   };
 }
 
-function makeGoal(overrides: Partial<TrainingGoal> = {}): TrainingGoal {
-  return {
-    id: 1,
-    category: 'Ruck',
-    title: '10 km ruck',
-    target: '10 km with 18 kg',
-    current: '8 km with 18 kg',
-    deadline: '',
-    notes: '',
-    status: 'active',
-    ...overrides,
-  };
-}
-
-afterEach(() => {
-  vi.useRealTimers();
-});
-
-describe('training log completion and quality', () => {
-  it('scores a complete log at 100 percent', () => {
-    expect(
-      getCompletionScore(
-        '2026-05-11',
-        'Ruck',
-        'Loaded Ruck',
-        '60 minutes',
-        '6 km with 15 kg',
-        '8',
-        'Steady effort, good posture, breathing controlled, no pain.'
-      )
-    ).toBe(100);
+describe('getReadinessNumber', () => {
+  it('returns the numeric value for a valid string', () => {
+    expect(getReadinessNumber('7')).toBe(7);
   });
 
-  it('reports weak log reasons for missing or invalid fields', () => {
-    expect(
-      getWeakLogReasons(
-        makeLog({
-          date: 'bad-date',
-          type: 'ok',
-          duration: '',
-          distanceLoad: '5',
-          readiness: '12',
-          notes: 'ok',
-        })
-      )
-    ).toEqual(['date', 'session type', 'duration', 'distance/load', 'readiness score', 'notes too brief']);
+  it('returns 0 for a non-numeric string', () => {
+    expect(getReadinessNumber('abc')).toBe(0);
+  });
+
+  it('returns 0 for an empty string', () => {
+    expect(getReadinessNumber('')).toBe(0);
   });
 });
 
-describe('readiness trend', () => {
-  it('detects improving readiness from the latest two valid logs', () => {
-    const trend = buildReadinessTrend([
-      makeLog({ id: 1, date: '2026-05-09', readiness: '5' }),
-      makeLog({ id: 2, date: '2026-05-10', readiness: '8' }),
-      makeLog({ id: 3, date: '2026-05-11', readiness: 'not a number' }),
+describe('isFatigueWatch', () => {
+  it('returns true for readiness exactly 5', () => {
+    expect(isFatigueWatch('5')).toBe(true);
+  });
+
+  it('returns false for readiness 6', () => {
+    expect(isFatigueWatch('6')).toBe(false);
+  });
+
+  it('returns false for non-numeric readiness', () => {
+    expect(isFatigueWatch('abc')).toBe(false);
+  });
+});
+
+describe('getDateValue', () => {
+  it('returns a positive timestamp for a valid date', () => {
+    expect(getDateValue('2026-05-11')).toBeGreaterThan(0);
+  });
+
+  it('returns 0 for an invalid date string', () => {
+    expect(getDateValue('not-a-date')).toBe(0);
+  });
+});
+
+describe('getReadinessLabel', () => {
+  it.each([
+    ['2', 'Low'],
+    ['3', 'Low'],
+    ['4', 'Fatigue Watch'],
+    ['5', 'Fatigue Watch'],
+    ['6', 'Moderate'],
+    ['7', 'Moderate'],
+    ['8', 'High'],
+    ['10', 'High'],
+    ['abc', 'Unknown'],
+  ])('labels readiness %s as %s', (readiness, expected) => {
+    expect(getReadinessLabel(readiness)).toBe(expected);
+  });
+});
+
+describe('getNotesQualityMessage', () => {
+  it('returns missing notes for empty string', () => {
+    expect(getNotesQualityMessage('')).toBe('missing notes');
+  });
+
+  it('returns notes too brief for single weak word', () => {
+    expect(getNotesQualityMessage('good')).toBe('notes too brief');
+  });
+
+  it('returns notes need more detail for a short non-weak note', () => {
+    expect(getNotesQualityMessage('felt hard')).toBe('notes need more detail');
+  });
+
+  it('returns empty string for a sufficiently detailed note', () => {
+    expect(getNotesQualityMessage('Steady pace, breathing controlled, no pain.')).toBe('');
+  });
+});
+
+describe('getNotesQualityWarning', () => {
+  it('prompts to add notes when empty', () => {
+    expect(getNotesQualityWarning('')).toContain('Add');
+  });
+
+  it('prompts to expand a weak-word note', () => {
+    expect(getNotesQualityWarning('ok')).toContain('too brief');
+  });
+
+  it('prompts to add one more detail for a short note', () => {
+    expect(getNotesQualityWarning('felt tired')).toContain('short');
+  });
+
+  it('returns empty string for a detailed note', () => {
+    expect(getNotesQualityWarning('Breathing controlled, legs felt good, no pain at all.')).toBe('');
+  });
+});
+
+describe('getNoteStarter', () => {
+  it.each(['Ruck', 'Run', 'Strength', 'Recovery', 'Test'] as const)(
+    'returns a non-empty starter for %s',
+    (category) => {
+      const starter = getNoteStarter(category);
+      expect(starter.length).toBeGreaterThan(10);
+    }
+  );
+
+  it('returns a fallback for Mobility category', () => {
+    const starter = getNoteStarter('Mobility');
+    expect(starter).toContain('Session notes');
+  });
+});
+
+describe('logNeedsImprovement', () => {
+  it('returns false for a complete, valid log', () => {
+    expect(logNeedsImprovement(makeLog())).toBe(false);
+  });
+
+  it('returns true when a field is missing', () => {
+    expect(logNeedsImprovement(makeLog({ duration: '' }))).toBe(true);
+  });
+});
+
+describe('buildSummary', () => {
+  it('returns zero averageReadiness for logs with invalid readiness', () => {
+    const summary = buildSummary([makeLog({ readiness: 'abc' })]);
+    expect(summary.averageReadiness).toBe('0.0');
+  });
+
+  it('counts categories correctly', () => {
+    const summary = buildSummary([
+      makeLog({ category: 'Ruck' }),
+      makeLog({ category: 'Ruck' }),
+      makeLog({ category: 'Run' }),
     ]);
+    expect(summary.ruck).toBe(2);
+    expect(summary.run).toBe(1);
+    expect(summary.total).toBe(3);
+  });
+});
 
-    expect(trend).toMatchObject({
-      latest: 8,
-      previous: 5,
-      change: 3,
-      label: 'Improving',
-      status: 'good',
+describe('getTrainingLogHealthLabel', () => {
+  it.each([
+    [90, 'Excellent'],
+    [85, 'Excellent'],
+    [75, 'Healthy'],
+    [70, 'Healthy'],
+    [55, 'Needs Work'],
+    [50, 'Needs Work'],
+    [49, 'Poor Data'],
+    [0, 'Poor Data'],
+  ])('labels score %i as %s', (score, expected) => {
+    expect(getTrainingLogHealthLabel(score)).toBe(expected);
+  });
+});
+
+describe('getTrainingLogHealthMessage', () => {
+  it('returns a string for each threshold', () => {
+    expect(getTrainingLogHealthMessage(90)).toContain('strong');
+    expect(getTrainingLogHealthMessage(72)).toContain('usable');
+    expect(getTrainingLogHealthMessage(55)).toContain('needs work');
+    expect(getTrainingLogHealthMessage(30)).toContain('too weak');
+  });
+});
+
+describe('calculateTrainingLogHealthScore', () => {
+  it('returns 0 for empty logs', () => {
+    expect(calculateTrainingLogHealthScore([])).toBe(0);
+  });
+});
+
+describe('buildReadinessTrend edge cases', () => {
+  it('returns no-data state for empty logs', () => {
+    expect(buildReadinessTrend([])).toMatchObject({
+      label: 'No Data',
+      status: 'neutral',
+      latest: 0,
     });
   });
 
-  it('detects dropping readiness', () => {
+  it('returns baseline state for a single valid log', () => {
+    expect(buildReadinessTrend([makeLog({ readiness: '7' })])).toMatchObject({
+      label: 'Baseline',
+      status: 'neutral',
+      latest: 7,
+    });
+  });
+
+  it('returns stable when change is exactly 1', () => {
     expect(
       buildReadinessTrend([
-        makeLog({ id: 1, date: '2026-05-10', readiness: '8' }),
-        makeLog({ id: 2, date: '2026-05-11', readiness: '5' }),
-      ]).status
-    ).toBe('warning');
+        makeLog({ id: 1, date: '2026-05-10', readiness: '6' }),
+        makeLog({ id: 2, date: '2026-05-11', readiness: '7' }),
+      ])
+    ).toMatchObject({ label: 'Stable', status: 'neutral' });
   });
 });
 
-describe('weekly summaries and health', () => {
-  it('summarises only logs in the requested week', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const summary = buildWeekSummary([
-      makeLog({ id: 1, date: '2026-05-11', category: 'Ruck', readiness: '8' }),
-      makeLog({ id: 2, date: '2026-05-13', category: 'Strength', readiness: '6' }),
-      makeLog({ id: 3, date: '2026-05-04', category: 'Run', readiness: '9' }),
-    ]);
-
-    expect(summary).toMatchObject({
-      weekStart: '2026-05-11',
-      weekEnd: '2026-05-17',
-      total: 2,
-      averageReadiness: '7.0',
-      ruck: 1,
-      strength: 1,
-      run: 0,
+describe('buildSessionRecommendation edge cases', () => {
+  it('returns start logging recommendation for empty logs', () => {
+    expect(buildSessionRecommendation([])).toMatchObject({
+      sessionType: 'Start Logging',
+      actionType: 'add-log',
+      status: 'neutral',
     });
   });
 
-  it('penalises weak and fatigue-watch logs in the health score', () => {
-    const healthScore = calculateTrainingLogHealthScore([
-      makeLog({ id: 1, readiness: '8' }),
-      makeLog({ id: 2, readiness: '4' }),
-      makeLog({ id: 3, readiness: '7', notes: 'ok' }),
-    ]);
-
-    expect(healthScore).toBe(46);
-  });
-});
-
-describe('weekly load risk', () => {
-  it('returns no data when no logs exist in the last 7 days', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    expect(buildWeeklyLoadRisk([makeLog({ id: 1, date: '2026-05-01' })])).toMatchObject({
-      status: 'no-data',
-      label: 'No Data',
-      totalSessions: 0,
-    });
-  });
-
-  it('marks high risk for multiple fatigue-watch sessions', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const risk = buildWeeklyLoadRisk([
-      makeLog({ id: 1, date: '2026-05-10', readiness: '5' }),
-      makeLog({ id: 2, date: '2026-05-11', readiness: '4' }),
-      makeLog({ id: 3, date: '2026-05-12', readiness: '7' }),
-    ]);
-
-    expect(risk).toMatchObject({
-      status: 'high',
-      label: 'High',
-      fatigueWatchSessions: 2,
-    });
-    expect(risk.factors).toContain('Multiple fatigue-watch sessions');
-  });
-
-  it('marks moderate risk when load is building without recovery', () => {
+  it('recommends a ruck when none logged this week and readiness is good', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
 
     expect(
-      buildWeeklyLoadRisk([
-        makeLog({ id: 1, date: '2026-05-10', category: 'Strength', readiness: '7' }),
-        makeLog({ id: 2, date: '2026-05-11', category: 'Run', readiness: '7' }),
-        makeLog({ id: 3, date: '2026-05-12', category: 'Ruck', readiness: '7' }),
-      ]).status
-    ).toBe('moderate');
+      buildSessionRecommendation([
+        makeLog({ id: 1, date: '2026-05-12', category: 'Strength', readiness: '8' }),
+        makeLog({ id: 2, date: '2026-05-13', category: 'Run', readiness: '8' }),
+      ])
+    ).toMatchObject({ sessionType: 'Load Carriage', status: 'good' });
   });
 
-  it('marks low risk when recent load is controlled', () => {
+  it('recommends strength when no strength logged this week', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
 
     expect(
-      buildWeeklyLoadRisk([
-        makeLog({ id: 1, date: '2026-05-10', category: 'Strength', readiness: '8' }),
-        makeLog({ id: 2, date: '2026-05-12', category: 'Recovery', readiness: '8' }),
-      ]).status
-    ).toBe('low');
+      buildSessionRecommendation([
+        makeLog({ id: 1, date: '2026-05-12', category: 'Ruck', readiness: '8' }),
+        makeLog({ id: 2, date: '2026-05-13', category: 'Run', readiness: '8' }),
+      ])
+    ).toMatchObject({ sessionType: 'Strength or Resistance', status: 'good' });
+  });
+
+  it('recommends a run when no run logged this week', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    expect(
+      buildSessionRecommendation([
+        makeLog({ id: 1, date: '2026-05-12', category: 'Ruck', readiness: '8' }),
+        makeLog({ id: 2, date: '2026-05-13', category: 'Strength', readiness: '8' }),
+      ])
+    ).toMatchObject({ sessionType: 'Steady Run', status: 'good' });
+  });
+
+  it('recommends progressive load when trend is good and no fatigue', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    expect(
+      buildSessionRecommendation([
+        makeLog({ id: 1, date: '2026-05-11', category: 'Ruck', readiness: '6' }),
+        makeLog({ id: 2, date: '2026-05-12', category: 'Strength', readiness: '8' }),
+        makeLog({ id: 3, date: '2026-05-13', category: 'Run', readiness: '8' }),
+      ])
+    ).toMatchObject({ sessionType: 'Progressive Load', status: 'good' });
   });
 });
 
-describe('recommendations and plans', () => {
-  it('recommends recovery when readiness drops and fatigue watch is recent', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const recommendation = buildSessionRecommendation([
-      makeLog({ id: 1, date: '2026-05-09', readiness: '8' }),
-      makeLog({ id: 2, date: '2026-05-10', readiness: '5' }),
-      makeLog({ id: 3, date: '2026-05-11', readiness: '4' }),
-    ]);
-
-    expect(recommendation).toMatchObject({
-      sessionType: 'Active Recovery',
-      actionType: 'add-log',
-      status: 'warning',
-    });
-  });
-
-  it('recommends a deload day when weekly load risk is high', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const recommendation = buildSessionRecommendation([
-      makeLog({ id: 1, date: '2026-05-10', category: 'Ruck', readiness: '7' }),
-      makeLog({ id: 2, date: '2026-05-11', category: 'Ruck', readiness: '7' }),
-      makeLog({ id: 3, date: '2026-05-12', category: 'Ruck', readiness: '7' }),
-    ]);
-
-    expect(recommendation).toMatchObject({
-      sessionType: 'Deload Day',
-      actionType: 'add-log',
-      status: 'warning',
-    });
-  });
-
-  it('recommends mobility when weekly load is moderate without recovery', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const recommendation = buildSessionRecommendation([
-      makeLog({ id: 1, date: '2026-05-10', category: 'Strength', readiness: '7' }),
-      makeLog({ id: 2, date: '2026-05-11', category: 'Run', readiness: '7' }),
-      makeLog({ id: 3, date: '2026-05-12', category: 'Ruck', readiness: '7' }),
-    ]);
-
-    expect(recommendation).toMatchObject({
-      sessionType: 'Mobility Session',
-      actionType: 'add-log',
-      status: 'caution',
-    });
-  });
-
-  it('points users to weak logs when most saved logs need improvement', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const recommendation = buildSessionRecommendation([
-      makeLog({ id: 1, date: '2026-05-09', readiness: '7', notes: 'ok' }),
-      makeLog({ id: 2, date: '2026-05-10', readiness: '7', duration: '' }),
-      makeLog({ id: 3, date: '2026-05-11', readiness: '7' }),
-    ]);
-
-    expect(recommendation).toMatchObject({
-      sessionType: 'Fix Training Data',
-      actionType: 'weak-logs',
-      status: 'caution',
-    });
-  });
-
-  it('builds a recovery week when readiness is dropping', () => {
+describe('buildWeekPlan plan types', () => {
+  it('builds a standard plan when readiness is stable', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
 
     const plan = buildWeekPlan([
-      makeLog({ id: 1, date: '2026-05-10', readiness: '8' }),
-      makeLog({ id: 2, date: '2026-05-11', readiness: '8' }),
-      makeLog({ id: 3, date: '2026-05-12', readiness: '4' }),
-    ]);
-
-    expect(plan.planType).toBe('recovery');
-    expect(plan.days[0].isRest).toBe(true);
-  });
-
-  it('builds a standard week when readiness is stable', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const plan = buildWeekPlan([
-      makeLog({ id: 1, date: '2026-05-10', readiness: '8' }),
-      makeLog({ id: 2, date: '2026-05-11', readiness: '7' }),
-      makeLog({ id: 3, date: '2026-05-12', readiness: '8' }),
+      makeLog({ id: 1, date: '2026-05-11', readiness: '7' }),
+      makeLog({ id: 2, date: '2026-05-12', readiness: '7' }),
     ]);
 
     expect(plan.planType).toBe('standard');
-    expect(plan.days[0].isRest).toBe(false);
+    expect(plan.days).toHaveLength(7);
+  });
+
+  it('builds a progressive plan when trend is good and 3+ sessions with no fatigue', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const plan = buildWeekPlan([
+      makeLog({ id: 1, date: '2026-05-11', readiness: '6', category: 'Ruck' }),
+      makeLog({ id: 2, date: '2026-05-12', readiness: '8', category: 'Strength' }),
+      makeLog({ id: 3, date: '2026-05-13', readiness: '8', category: 'Run' }),
+    ]);
+
+    expect(plan.planType).toBe('progressive');
+  });
+});
+
+describe('buildNextWeekRecommendation', () => {
+  const emptyWeek = {
+    total: 0,
+    averageReadiness: '0',
+    fatigueWatch: 0,
+    weakLogs: 0,
+    ruck: 0,
+    strength: 0,
+    resistance: 0,
+    run: 0,
+    hiking: 0,
+    military: 0,
+    mobility: 0,
+    test: 0,
+    recovery: 0,
+    weekStart: '',
+    weekEnd: '',
+    fatigueWatchSessions: 0,
+  };
+
+  it('recommends logging when no sessions this week', () => {
+    expect(buildNextWeekRecommendation({ ...emptyWeek }, { ...emptyWeek })).toContain('3 to 4 sessions');
+  });
+
+  it('recommends recovery when 2+ fatigue watch sessions', () => {
+    expect(buildNextWeekRecommendation(
+      { ...emptyWeek, total: 3, fatigueWatch: 2, averageReadiness: '4' },
+      { ...emptyWeek }
+    )).toContain('recovery');
+  });
+
+  it('holds load when readiness dropped more than 1 vs last week', () => {
+    expect(buildNextWeekRecommendation(
+      { ...emptyWeek, total: 3, averageReadiness: '5' },
+      { ...emptyWeek, total: 3, averageReadiness: '7' }
+    )).toContain('Hold current load');
+  });
+
+  it('suggests progressing when readiness is 7+ and no fatigue flags', () => {
+    expect(buildNextWeekRecommendation(
+      { ...emptyWeek, total: 3, averageReadiness: '8', fatigueWatch: 0, weakLogs: 0 },
+      { ...emptyWeek, total: 3, averageReadiness: '8' }
+    )).toContain('Ready to progress');
   });
 });

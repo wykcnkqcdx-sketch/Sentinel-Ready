@@ -1,12 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useRouter } from 'expo-router';
 import { useTraining } from '@/src/screens/TrainingContext';
 import {
   StravaActivity,
@@ -20,6 +11,15 @@ import {
   saveStravaTokens,
   stravaActivityToLog,
 } from '@/src/services/strava';
+import { useRouter } from 'expo-router';
+import React, { memo, useCallback, useEffect, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 // ---------------------------------------------------------------------------
 // Activity card
@@ -31,7 +31,7 @@ type ActivityCardProps = {
   onImport: (activity: StravaActivity) => void;
 };
 
-function ActivityCard({ activity, imported, onImport }: ActivityCardProps) {
+const ActivityCard = memo(function ActivityCard({ activity, imported, onImport }: ActivityCardProps) {
   const km = (activity.distance / 1000).toFixed(2);
   const mins = Math.round(activity.moving_time / 60);
   const elev = Math.round(activity.total_elevation_gain);
@@ -88,7 +88,7 @@ function ActivityCard({ activity, imported, onImport }: ActivityCardProps) {
       </View>
     </View>
   );
-}
+});
 
 // ---------------------------------------------------------------------------
 // Main screen
@@ -115,7 +115,7 @@ export default function StravaScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function loadActivities(t: StravaTokens) {
+  const loadActivities = useCallback(async (t: StravaTokens) => {
     setLoading(true);
     setError(null);
     try {
@@ -131,9 +131,9 @@ export default function StravaScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function handleConnect() {
+  const handleConnect = useCallback(async () => {
     setSyncing(true);
     setError(null);
     try {
@@ -153,20 +153,20 @@ export default function StravaScreen() {
     } finally {
       setSyncing(false);
     }
-  }
+  }, [loadActivities]);
 
-  async function handleDisconnect() {
+  const handleDisconnect = useCallback(async () => {
     await clearStravaTokens();
     setTokens(null);
     setActivities([]);
     setImportedIds(new Set());
-  }
+  }, []);
 
-  function handleImport(activity: StravaActivity) {
+  const handleImport = useCallback((activity: StravaActivity) => {
     const entry = stravaActivityToLog(activity);
     addLog(entry);
     setImportedIds((prev) => new Set(prev).add(activity.id));
-  }
+  }, [addLog]);
 
   return (
     <ScrollView

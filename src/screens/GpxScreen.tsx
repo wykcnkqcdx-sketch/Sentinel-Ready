@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useTraining, TrainingLog } from '@/src/screens/TrainingContext';
 import { exportSessionGpx } from '@/src/utils/gpxExport';
 import { parseGpx, GpxPoint } from '@/src/utils/gpxParser';
@@ -56,6 +56,48 @@ type ParsedRoute = {
 
 // ─── screen ──────────────────────────────────────────────────────────────────
 
+const GpsLogCard = memo(function GpsLogCard({
+  log,
+  isExporting,
+  isAnyExporting,
+  onExport,
+}: {
+  log: TrainingLog;
+  isExporting: boolean;
+  isAnyExporting: boolean;
+  onExport: (log: TrainingLog) => void;
+}) {
+  return (
+    <View style={styles.logCard}>
+      <View style={styles.logInfo}>
+        <Text style={styles.logDate}>{log.date}</Text>
+        <Text style={styles.logType}>
+          {log.type}
+          {log.distanceLoad ? ` — ${log.distanceLoad}` : ''}
+        </Text>
+        <Text style={styles.logPoints}>
+          {'📍 '}
+          {log.routePoints!.length} GPS points
+        </Text>
+      </View>
+      <TouchableOpacity
+        style={[
+          styles.exportBtn,
+          isExporting && styles.exportBtnDisabled,
+        ]}
+        onPress={() => onExport(log)}
+        disabled={isAnyExporting}
+        accessibilityRole="button"
+        accessibilityLabel={`Export ${log.date} as GPX`}
+      >
+        <Text style={styles.exportBtnText}>
+          {isExporting ? 'Exporting...' : 'EXPORT GPX'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
 export default function GpxScreen() {
   const [activeTab, setActiveTab] = useState<'export' | 'import'>('export');
   const [exporting, setExporting] = useState<number | null>(null);
@@ -73,7 +115,7 @@ export default function GpxScreen() {
     [logs],
   );
 
-  async function handleExport(log: TrainingLog) {
+  const handleExport = useCallback(async (log: TrainingLog) => {
     setExporting(log.id);
     try {
       await exportSessionGpx(logToSession(log));
@@ -82,9 +124,9 @@ export default function GpxScreen() {
     } finally {
       setExporting(null);
     }
-  }
+  }, []);
 
-  async function handlePickGpx() {
+  const handlePickGpx = useCallback(async () => {
     setImporting(true);
     setParsed(null);
     try {
@@ -119,9 +161,9 @@ export default function GpxScreen() {
     } finally {
       setImporting(false);
     }
-  }
+  }, []);
 
-  function handleImportLog() {
+  const handleImportLog = useCallback(() => {
     if (!parsed) return;
     const today = new Date().toISOString().slice(0, 10);
     const estKm = (parsed.pointCount * 0.005).toFixed(1);
@@ -143,7 +185,15 @@ export default function GpxScreen() {
     );
     setParsed(null);
     setFileName('');
-  }
+  }, [parsed, addLog]);
+
+  const clearParsed = useCallback(() => {
+    setParsed(null);
+    setFileName('');
+  }, []);
+
+  const handleTabExport = useCallback(() => setActiveTab('export'), []);
+  const handleTabImport = useCallback(() => setActiveTab('import'), []);
 
   return (
     <View style={styles.screen}>
@@ -160,7 +210,7 @@ export default function GpxScreen() {
       <View style={styles.tabRow}>
         <TouchableOpacity
           style={[styles.tabPill, activeTab === 'export' && styles.tabPillActive]}
-          onPress={() => setActiveTab('export')}
+          onPress={handleTabExport}
         >
           <Text
             style={[styles.tabPillText, activeTab === 'export' && styles.tabPillTextActive]}
@@ -170,7 +220,7 @@ export default function GpxScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabPill, activeTab === 'import' && styles.tabPillActive]}
-          onPress={() => setActiveTab('import')}
+          onPress={handleTabImport}
         >
           <Text
             style={[styles.tabPillText, activeTab === 'import' && styles.tabPillTextActive]}
@@ -193,33 +243,13 @@ export default function GpxScreen() {
             </View>
           ) : (
             gpsLogs.map((log) => (
-              <View key={log.id} style={styles.logCard}>
-                <View style={styles.logInfo}>
-                  <Text style={styles.logDate}>{log.date}</Text>
-                  <Text style={styles.logType}>
-                    {log.type}
-                    {log.distanceLoad ? ` — ${log.distanceLoad}` : ''}
-                  </Text>
-                  <Text style={styles.logPoints}>
-                    {'📍 '}
-                    {log.routePoints!.length} GPS points
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={[
-                    styles.exportBtn,
-                    exporting === log.id && styles.exportBtnDisabled,
-                  ]}
-                  onPress={() => handleExport(log)}
-                  disabled={exporting !== null}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Export ${log.date} as GPX`}
-                >
-                  <Text style={styles.exportBtnText}>
-                    {exporting === log.id ? 'Exporting...' : 'EXPORT GPX'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <GpsLogCard
+                key={log.id}
+                log={log}
+                isExporting={exporting === log.id}
+                isAnyExporting={exporting !== null}
+                onExport={handleExport}
+              />
             ))
           )}
         </ScrollView>
@@ -273,10 +303,7 @@ export default function GpxScreen() {
                 <Text style={styles.importBtnText}>ADD TO TRAINING LOG</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => {
-                  setParsed(null);
-                  setFileName('');
-                }}
+                onPress={clearParsed}
               >
                 <Text style={styles.clearLink}>Clear</Text>
               </TouchableOpacity>
