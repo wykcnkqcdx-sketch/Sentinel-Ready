@@ -1,5 +1,5 @@
 import type { RouteData } from '@/src/utils/trainingLogUtils';
-import type { TrackPoint } from '@/src/types/map';
+import type { RuckSplit, TrackPoint } from '@/src/types/map';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -16,6 +16,18 @@ export type TrainingLog = {
   notes: string;
   route?: RouteData;
   routePoints?: TrackPoint[];
+  ruck?: {
+    distanceKm: number;
+    durationSeconds: number;
+    packWeightKg: number;
+    paceSecondsPerKm: number;
+    rpe: number;
+    elevationGainMeters?: number;
+    splits?: RuckSplit[];
+    routeConfidence?: 'High' | 'Medium' | 'Low';
+    rejectedPointCount?: number;
+    averageAccuracyMeters?: number;
+  };
 };
 
 export type GoalCategory = 'Ruck' | 'Run' | 'Strength' | 'Recovery' | 'Test' | 'Consistency';
