@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking';
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
 import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
 import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
+import { ControlRow } from '@/src/components/ruck/ControlRow';
 
 type RuckMetrics = {
   distance: number;
@@ -173,6 +175,31 @@ export default function RuckScreen() {
   const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
+
+  const handleSaveSession = async () => {
+    if (tracking.distanceKm < 0.1) {
+      Alert.alert('Too Short', 'Route must be at least 100m to save.');
+      return;
+    }
+    await addLog({
+      date: new Date().toISOString().slice(0, 10),
+      category: 'Ruck',
+      type: 'GPS Tracked Ruck',
+      duration: `${Math.floor(tracking.elapsedSeconds / 60)} min`,
+      distanceLoad: `${tracking.distanceKm.toFixed(2)} km`,
+      readiness: '5',
+      notes: 'GPS tracked session.',
+      routePoints: tracking.routePoints,
+      route: {
+        distanceKm: tracking.distanceKm,
+        elevationGainMeters: 0,
+        packWeightKg: 0,
+        polyline: ''
+      }
+    });
+    tracking.resetTracking();
+    setActiveTab('stats');
+  };
 
   if (isLoading) return <View style={styles.screen} />;
 
