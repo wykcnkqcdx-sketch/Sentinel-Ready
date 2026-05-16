@@ -305,11 +305,12 @@ export default function ATAKScreen() {
   }, [config]);
 
   const handleExportSession = useCallback(async () => {
-    const ruckWithRoute = [...logs]
-      .filter(
-        (l) => l.category === 'Ruck' && l.routePoints && l.routePoints.length > 0,
-      )
-      .sort((a, b) => b.date.localeCompare(a.date))[0];
+    let ruckWithRoute: typeof logs[0] | undefined;
+    for (const log of logs) {
+      if (log.category === 'Ruck' && log.routePoints && log.routePoints.length > 0) {
+        if (!ruckWithRoute || log.date > ruckWithRoute.date) ruckWithRoute = log;
+      }
+    }
 
     if (!ruckWithRoute || !ruckWithRoute.routePoints) {
       Alert.alert(

@@ -99,24 +99,43 @@ function perpendicularDistanceMeters(point: TrackPoint, start: TrackPoint, end: 
 export function simplifyRoute(points: TrackPoint[], toleranceMeters: number): TrackPoint[] {
   if (points.length <= 2) return points;
 
-  let maxDistance = 0;
-  let splitIndex = 0;
-  const start = points[0];
-  const end = points[points.length - 1];
+  const keep = new Uint8Array(points.length);
+  keep[0] = 1;
+  keep[points.length - 1] = 1;
 
-  for (let i = 1; i < points.length - 1; i += 1) {
-    const distance = perpendicularDistanceMeters(points[i], start, end);
-    if (distance > maxDistance) {
-      maxDistance = distance;
-      splitIndex = i;
+  const stack: [number, number][] = [[0, points.length - 1]];
+
+  while (stack.length > 0) {
+    const [startIndex, endIndex] = stack.pop()!;
+    let maxDistance = 0;
+    let splitIndex = startIndex;
+
+    const startPoint = points[startIndex];
+    const endPoint = points[endIndex];
+
+    for (let i = startIndex + 1; i < endIndex; i++) {
+      const distance = perpendicularDistanceMeters(points[i], startPoint, endPoint);
+      if (distance > maxDistance) {
+        maxDistance = distance;
+        splitIndex = i;
+      }
+    }
+
+    if (maxDistance > toleranceMeters) {
+      keep[splitIndex] = 1;
+      stack.push([startIndex, splitIndex]);
+      stack.push([splitIndex, endIndex]);
     }
   }
 
-  if (maxDistance <= toleranceMeters) return [start, end];
+  const simplified: TrackPoint[] = [];
+  for (let i = 0; i < points.length; i++) {
+    if (keep[i]) {
+      simplified.push(points[i]);
+    }
+  }
 
-  const beforeSplit = simplifyRoute(points.slice(0, splitIndex + 1), toleranceMeters);
-  const afterSplit = simplifyRoute(points.slice(splitIndex), toleranceMeters);
-  return [...beforeSplit.slice(0, -1), ...afterSplit];
+  return simplified;
 }
 
 export function decimateRouteForMap(points: TrackPoint[]) {

@@ -1,8 +1,8 @@
-import * as Location from 'expo-location';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { RuckSplit, TrackPoint } from '@/src/types/map';
 import { MapLayerKey } from '@/src/utils/mapTiles';
-import { evaluateRoutePoint, decimateRouteForMap, WEAK_ACCURACY_METERS } from '@/src/utils/routeQuality';
+import { decimateRouteForMap, evaluateRoutePoint, WEAK_ACCURACY_METERS } from '@/src/utils/routeQuality';
+import * as Location from 'expo-location';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type TrackingState = 'idle' | 'recording' | 'paused' | 'finished';
 
@@ -95,6 +95,8 @@ export function useRuckTracking(): RuckTrackingState {
   const accuracyTotalRef = useRef(0);
   const accuracyCountRef = useRef(0);
   const trackingStateRef = useRef<TrackingState>('idle');
+  const activeSegmentStartRef = useRef(0);
+  const accumulatedTimeRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -105,12 +107,13 @@ export function useRuckTracking(): RuckTrackingState {
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
+    activeSegmentStartRef.current = Date.now();
     timerRef.current = setInterval(() => {
-      setElapsedSeconds((s) => {
-        const next = s + 1;
-        elapsedRef.current = next;
-        return next;
-      });
+      const now = Date.now();
+      const segmentElapsed = Math.floor((now - activeSegmentStartRef.current) / 1000);
+      const next = accumulatedTimeRef.current + segmentElapsed;
+      elapsedRef.current = next;
+      setElapsedSeconds(next);
     }, 1000);
   }, []);
 
@@ -118,6 +121,11 @@ export function useRuckTracking(): RuckTrackingState {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
+      const now = Date.now();
+      const segmentElapsed = Math.floor((now - activeSegmentStartRef.current) / 1000);
+      accumulatedTimeRef.current += segmentElapsed;
+      elapsedRef.current = accumulatedTimeRef.current;
+      setElapsedSeconds(accumulatedTimeRef.current);
     }
   }, []);
 
@@ -137,6 +145,8 @@ export function useRuckTracking(): RuckTrackingState {
     routePointsRef.current = [];
     distanceRef.current = 0;
     elapsedRef.current = 0;
+    accumulatedTimeRef.current = 0;
+    activeSegmentStartRef.current = 0;
     splitsRef.current = [];
     nextSplitKmRef.current = 1;
     lastSplitElapsedRef.current = 0;
@@ -272,6 +282,8 @@ export function useRuckTracking(): RuckTrackingState {
     routePointsRef.current = [];
     distanceRef.current = 0;
     elapsedRef.current = 0;
+    accumulatedTimeRef.current = 0;
+    activeSegmentStartRef.current = 0;
     splitsRef.current = [];
     nextSplitKmRef.current = 1;
     lastSplitElapsedRef.current = 0;

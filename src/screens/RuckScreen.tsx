@@ -1,12 +1,12 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ControlRow } from '@/src/components/ruck/ControlRow';
+import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
+import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
+import { RuckMapView } from '@/src/components/ruck/RuckMapView';
+import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
-import { useRuckTracking } from '@/src/hooks/useRuckTracking';
-import { RuckMapView } from '@/src/components/ruck/RuckMapView';
-import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
-import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
-import { ControlRow } from '@/src/components/ruck/ControlRow';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type RuckMetrics = {
   distance: number;
@@ -210,7 +210,7 @@ const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }
   );
 });
 
-function RuckSavePanel({
+const RuckSavePanel = memo(function RuckSavePanel({
   draft,
   distanceKm,
   elapsedSeconds,
@@ -296,7 +296,7 @@ function RuckSavePanel({
       />
     </View>
   );
-}
+});
 
 export default function RuckScreen() {
   const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
@@ -350,6 +350,8 @@ export default function RuckScreen() {
     setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
   }, [tracking, saveDraft, addLog]);
+
+  const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
 
   const ruckLogs = useMemo(
     () => 
@@ -693,7 +695,7 @@ export default function RuckScreen() {
           <ControlRow
             tracking={tracking}
             onSave={handleSaveSession}
-            onDiscard={() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT)}
+            onDiscard={handleDiscardDraft}
           />
         </View>
       )}
