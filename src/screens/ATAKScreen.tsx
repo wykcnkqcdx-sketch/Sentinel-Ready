@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useTraining } from '@/src/screens/TrainingContext';
@@ -173,7 +174,9 @@ const EditConfigForm = memo(function EditConfigForm({ draft, onChange, onSave, o
 
 // ── CotObject row ─────────────────────────────────────────────────────────────
 
-function CotRow({ obj }: { obj: CotObject }) {
+const CotRow = memo(function CotRow({ obj }: { obj: CotObject }) {
+
+
   const staled = isStale(obj.stale);
   const tColour = teamColour(obj.team);
 
@@ -203,6 +206,7 @@ function CotRow({ obj }: { obj: CotObject }) {
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function ATAKScreen() {
+
   const router = useRouter();
   const { logs } = useTraining();
 
@@ -356,6 +360,7 @@ export default function ATAKScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+
 
       {/* Header */}
       <View style={styles.header}>

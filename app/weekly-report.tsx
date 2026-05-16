@@ -24,7 +24,9 @@ import {
   WeekSummary,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { Alert, memo, ScrollView, Share, StyleSheet, Text, TouchableOpacity, useCallback, View } from 'react-native';
+import React, { memo, useCallback } from 'react';
+import { Alert, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 
 function formatWeekRange(start: string, end: string) {
   const s = new Date(start + 'T00:00:00');
