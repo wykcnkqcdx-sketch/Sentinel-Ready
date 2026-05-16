@@ -502,7 +502,7 @@ export default function ATAKScreen() {
 
     </ScrollView>
   );
-});
+}
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
