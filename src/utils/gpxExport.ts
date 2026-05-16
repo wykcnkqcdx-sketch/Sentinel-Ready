@@ -1,5 +1,5 @@
 import * as Sharing from 'expo-sharing';
-import { writeAsStringAsync, cacheDirectory } from 'expo-file-system';
+import { writeAsStringAsync, cacheDirectory } from 'expo-file-system/legacy';
 import type { TrainingSession } from '../types/map';
 
 export function buildGpxXml(session: TrainingSession): string {
