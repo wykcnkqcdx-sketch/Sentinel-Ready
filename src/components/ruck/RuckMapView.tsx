@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, LayoutChangeEvent, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { buildVisibleTiles, getMercatorRoutePoints } from '../../utils/mapTiles';
-import type { MapLayerKey, MapViewport } from '../../utils/mapTiles';
+import type { MapLayerKey, MapTile, MapViewport } from '../../utils/mapTiles';
 import type { TrackPoint } from '../../types/map';
 import type { MapOverlay } from '../../utils/fieldMapping';
+import { getResolvedTileUri } from '../../services/tileCache';
 
 let Svg: React.ComponentType<any> | null = null;
 let Polyline: React.ComponentType<any> | null = null;
@@ -22,6 +23,37 @@ try {
 const DUBLIN: TrackPoint = { latitude: 53.3498, longitude: -6.2603, altitude: null, accuracy: null, timestamp: 0 };
 const MAP_HEIGHT = 300;
 
+function useResolvedTileUris(tiles: MapTile[]): Map<string, string> {
+  const [uriMap, setUriMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    const map = new Map<string, string>();
+    Promise.all(
+      tiles.map(async (tile) => {
+        const parts = tile.id.split('-');
+        const layer = parts[0] as MapLayerKey;
+        const y = Number(parts[parts.length - 1]);
+        const x = Number(parts[parts.length - 2]);
+        const zoom = Number(parts[parts.length - 3]);
+        try {
+          const uri = await getResolvedTileUri(layer, zoom, x, y);
+          map.set(tile.id, uri);
+        } catch {
+          map.set(tile.id, tile.url);
+        }
+      }),
+    ).then(() => {
+      if (!cancelled) setUriMap(new Map(map));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [tiles]);
+
+  return uriMap;
+}
+
 export interface RuckMapViewProps {
   routePoints: TrackPoint[];
   currentPosition: TrackPoint | null;
@@ -39,6 +71,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
     currentPosition ?? (routePoints.length > 0 ? routePoints[routePoints.length - 1] : DUBLIN);
 
   const tiles = buildVisibleTiles(center, viewport, layer, zoom);
+  const uriMap = useResolvedTileUris(tiles);
 
   const projectedPoints = Svg && Polyline && routePoints.length >= 2
     ? getMercatorRoutePoints(routePoints, center, viewport, zoom)
@@ -60,7 +93,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
   return (
     <View style={[styles.container, fullHeight && styles.fullHeight]} onLayout={handleLayout}>
       {tiles.map((tile) => (
-        <Image key={tile.id} source={{ uri: tile.url }} style={tile.style} />
+        <Image key={tile.id} source={{ uri: uriMap.get(tile.id) ?? tile.url }} style={tile.style} />
       ))}
 
       {Svg && (Polyline || Circle) && (
