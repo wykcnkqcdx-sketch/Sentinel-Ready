@@ -4,6 +4,7 @@ import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import {
+  buildGoalAction,
   buildReadinessTrend,
   buildWeekPlan,
   buildWeekSummary,
@@ -54,10 +55,11 @@ export default function PlanScreen() {
     balance: buildTrainingBalance(logs),
   }), [logs]);
 
-  const { days, planType, rationale, forecast, adherence } = useMemo(() => ({
+  const { days, planType, rationale, forecast, adherence, goalAction } = useMemo(() => ({
     ...buildWeekPlan(logs, goals, profile),
     forecast: buildReadinessForecast(logs, goals, profile),
     adherence: buildPlanAdherence(logs, goals, profile),
+    goalAction: buildGoalAction(goals, logs),
   }), [logs, goals, profile]);
 
   const planTypeLabel =
@@ -119,6 +121,17 @@ export default function PlanScreen() {
           <Text style={[styles.planTypeLabel, { color: planTypeColor }]}>{planTypeLabel}</Text>
         </View>
         <Text style={styles.commandText}>{rationale}</Text>
+      </View>
+
+      <View style={goalAction.status === 'warning' ? styles.balanceCardWarn : styles.balanceCard}>
+        <View style={styles.commandHeader}>
+          <Text style={styles.commandKicker}>PRIORITY GOAL</Text>
+          <Text style={goalAction.status === 'warning' ? styles.balanceLabelWarn : styles.balanceLabel}>
+            {goalAction.title}
+          </Text>
+        </View>
+        <Text style={styles.commandText}>{goalAction.reason}</Text>
+        <Text style={styles.balanceFocus}>{goalAction.action}</Text>
       </View>
 
       <View style={balance.status === 'overload' ? styles.balanceCardWarn : styles.balanceCard}>
