@@ -14,7 +14,7 @@ import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
@@ -76,40 +76,39 @@ export default function DashboardScreen() {
   const milestones = useMemo(() => buildMilestones(logs, goals), [logs, goals]);
   const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
+  const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
+  const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
 
   if (isLoading) return <View style={styles.screen} />;
 
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
-  const weekLoadStatus = getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness);
+  const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
   const weekProgress = Math.min(thisWeek.total / WEEKLY_TARGET, 1);
 
-  let statusBadgeText = 'GREEN';
-  let statusBadgeColor = '#143d22';
-  let statusTextColor = '#bfffcf';
-  let progressColor = '#62d982';
-  let readinessMsg = 'Fit for training. Monitor fatigue and recovery.';
+  const readinessStatus = useMemo(() => {
+    if (readinessPercentage === 0) {
+      return { text: 'NO DATA', bg: '#1a1a1a', textCol: '#cccccc', prog: '#333333', msg: 'Log a session to calculate your readiness score.' };
+    }
+    if (readinessPercentage < 60) {
+      return { text: 'RED', bg: '#3d1414', textCol: '#ffbfbf', prog: '#d96262', msg: 'High fatigue detected. Prioritise recovery and rest today.' };
+    }
+    if (readinessPercentage < 75) {
+      return { text: 'AMBER', bg: '#3d3014', textCol: '#ffdfbf', prog: '#d9a662', msg: 'Moderate fatigue. Keep training volume controlled.' };
+    }
+    return { text: 'GREEN', bg: '#143d22', textCol: '#bfffcf', prog: '#62d982', msg: 'Fit for training. Monitor fatigue and recovery.' };
+  }, [readinessPercentage]);
 
-  if (readinessPercentage === 0) {
-    statusBadgeText = 'NO DATA';
-    statusBadgeColor = '#1a1a1a';
-    statusTextColor = '#cccccc';
-    progressColor = '#333333';
-    readinessMsg = 'Log a session to calculate your readiness score.';
-  } else if (readinessPercentage < 60) {
-    statusBadgeText = 'RED';
-    statusBadgeColor = '#3d1414';
-    statusTextColor = '#ffbfbf';
-    progressColor = '#d96262';
-    readinessMsg = 'High fatigue detected. Prioritise recovery and rest today.';
-  } else if (readinessPercentage < 75) {
-    statusBadgeText = 'AMBER';
-    statusBadgeColor = '#3d3014';
-    statusTextColor = '#ffdfbf';
-    progressColor = '#d9a662';
-    readinessMsg = 'Moderate fatigue. Keep training volume controlled.';
-  }
-
-  const { latestRuck, latestStrength, latestRun, latestRecovery, trendLogs, strengthLogs, enduranceLogs, recentLogs } = useMemo(() => {
+  const { 
+    latestRuck, 
+    trendChartData, 
+    strengthLogs, 
+    enduranceLogs, 
+    recentLogs,
+    ruckVal,
+    strengthVal,
+    cardioVal,
+    recoveryVal
+  } = useMemo(() => {
     let ruck: typeof logs[0] | undefined;
     let strength: typeof logs[0] | undefined;
     let run: typeof logs[0] | undefined;
@@ -145,15 +144,27 @@ export default function DashboardScreen() {
       }
     }
 
+    const chartData = recentTrendLogs.reverse().map((log) => {
+      const score = getReadinessNumber(log.readiness);
+      const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
+      let barColor = '#62d982';
+      if (score < 6) barColor = '#d96262';
+      else if (score < 8) barColor = '#d9a662';
+
+      const dateLabel = log.date.substring(5, 10).replace('-', '/');
+      return { id: log.id, score, heightPercentage, barColor, dateLabel };
+    });
+
     return {
       latestRuck: ruck,
-      latestStrength: strength,
-      latestRun: run,
-      latestRecovery: recovery,
-      trendLogs: recentTrendLogs.reverse(),
+      trendChartData: chartData,
       strengthLogs: strengthLogsList,
       enduranceLogs: enduranceLogsList,
       recentLogs: recentLogsList,
+      ruckVal: ruck ? ruck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
+      strengthVal: strength ? `Score: ${strength.readiness}` : 'N/A',
+      cardioVal: run ? run.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
+      recoveryVal: recovery ? `Score: ${recovery.readiness}` : 'N/A',
     };
   }, [logs]);
 
@@ -161,10 +172,10 @@ export default function DashboardScreen() {
   const enduranceStatus = useMemo(() => getEnduranceStatus(enduranceLogs), [enduranceLogs]);
   const recoveryStatus = useMemo(() => getRecoveryStatus(recentLogs), [recentLogs]);
 
-  const ruckVal = latestRuck ? latestRuck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
-  const strengthVal = latestStrength ? `Score: ${latestStrength.readiness}` : 'N/A';
-  const cardioVal = latestRun ? latestRun.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
-  const recoveryVal = latestRecovery ? `Score: ${latestRecovery.readiness}` : 'N/A';
+  const navigateToGoals = useCallback(() => router.push('/goals'), [router]);
+  const navigateToStrava = useCallback(() => router.push('/strava'), [router]);
+  const navigateToAtak = useCallback(() => router.push('/atak'), [router]);
+  const navigateToGpx = useCallback(() => router.push('/gpx'), [router]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -180,16 +191,16 @@ export default function DashboardScreen() {
         <View style={styles.readinessRow}>
           <View>
             <Text style={styles.metric}>{readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}</Text>
-            <Text style={styles.cardText}>{readinessMsg}</Text>
+            <Text style={styles.cardText}>{readinessStatus.msg}</Text>
           </View>
 
-          <View style={[styles.statusBadge, { backgroundColor: statusBadgeColor }]}>
-            <Text style={[styles.statusBadgeText, { color: statusTextColor }]}>{statusBadgeText}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: readinessStatus.bg }]}>
+            <Text style={[styles.statusBadgeText, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
           </View>
         </View>
 
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${readinessPercentage}%`, backgroundColor: progressColor }]} />
+          <View style={[styles.progressFill, { width: `${readinessPercentage}%`, backgroundColor: readinessStatus.prog }]} />
         </View>
 
         <View style={styles.readinessDetails}>
@@ -311,7 +322,7 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <SentinelCard title="Training Insights">
-        {insights.slice(0, 3).map((insight) => (
+        {topInsights.map((insight) => (
           <View key={insight.title} style={
             insight.severity === 'warning' ? styles.insightItemWarn
             : insight.severity === 'good' ? styles.insightItemGood
@@ -337,7 +348,7 @@ export default function DashboardScreen() {
           ) : null}
         </View>
         <View style={styles.milestoneRow}>
-          {milestones.slice(0, 4).map((milestone) => (
+          {topMilestones.map((milestone) => (
             <View key={milestone.id} style={milestone.earned ? styles.milestonePillEarned : styles.milestonePill}>
               <Text style={milestone.earned ? styles.milestonePillTextEarned : styles.milestonePillText}>
                 {milestone.title}
@@ -383,7 +394,7 @@ export default function DashboardScreen() {
             <Text style={styles.goalNumber}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}%` : '--'}</Text>
             <Text style={styles.goalLabel}>Measured</Text>
           </View>
-          <TouchableOpacity style={styles.goalButton} onPress={() => router.push('/goals')}>
+          <TouchableOpacity style={styles.goalButton} onPress={navigateToGoals}>
             <Text style={styles.goalButtonText}>Manage</Text>
           </TouchableOpacity>
         </View>
@@ -399,26 +410,16 @@ export default function DashboardScreen() {
 
       <SentinelCard title="Readiness Trend">
         <View style={styles.chartContainer}>
-          {trendLogs.length > 0 ? (
-            trendLogs.map((log) => {
-              const score = getReadinessNumber(log.readiness);
-              const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
-              let barColor = '#62d982';
-              if (score < 6) barColor = '#d96262';
-              else if (score < 8) barColor = '#d9a662';
-
-              const dateLabel = log.date.substring(5, 10).replace('-', '/');
-
-              return (
-                <View key={log.id} style={styles.barColumn}>
-                  <Text style={styles.barScore}>{score}</Text>
+          {trendChartData.length > 0 ? (
+            trendChartData.map((data) => (
+                <View key={data.id} style={styles.barColumn}>
+                  <Text style={styles.barScore}>{data.score}</Text>
                   <View style={styles.barBackground}>
-                    <View style={[styles.barFill, { height: heightPercentage, backgroundColor: barColor }]} />
+                    <View style={[styles.barFill, { height: data.heightPercentage, backgroundColor: data.barColor }]} />
                   </View>
-                  <Text style={styles.barLabel}>{dateLabel}</Text>
+                  <Text style={styles.barLabel}>{data.dateLabel}</Text>
                 </View>
-              );
-            })
+            ))
           ) : (
             <Text style={styles.cardText}>No readiness data available.</Text>
           )}
@@ -426,10 +427,10 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <View style={styles.grid}>
-        <MissionStat label="Ruck" value={ruckVal} status={latestRuck ? 'Latest session' : 'Awaiting data'} />
-        <MissionStat label="Strength" value={strengthVal} status={latestStrength ? 'Force output' : 'Awaiting data'} />
-        <MissionStat label="Cardio" value={cardioVal} status={latestRun ? 'Aerobic base' : 'Awaiting data'} />
-        <MissionStat label="Recovery" value={recoveryVal} status={latestRecovery ? 'Latest session' : 'Awaiting data'} />
+        <MissionStat label="Ruck" value={ruckVal} status={ruckVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
+        <MissionStat label="Strength" value={strengthVal} status={strengthVal !== 'N/A' ? 'Force output' : 'Awaiting data'} />
+        <MissionStat label="Cardio" value={cardioVal} status={cardioVal !== 'N/A' ? 'Aerobic base' : 'Awaiting data'} />
+        <MissionStat label="Recovery" value={recoveryVal} status={recoveryVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
       </View>
 
       <View style={weekLoadStatus.isWarn ? styles.loadCardWarn : styles.loadCard}>
@@ -486,7 +487,7 @@ export default function DashboardScreen() {
         <View style={styles.connectRow}>
           <TouchableOpacity
             style={styles.connectPill}
-            onPress={() => router.push('/strava')}
+            onPress={navigateToStrava}
             accessibilityRole="button"
             accessibilityLabel="Open Strava integration"
           >
@@ -495,7 +496,7 @@ export default function DashboardScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.connectPill}
-            onPress={() => router.push('/atak')}
+            onPress={navigateToAtak}
             accessibilityRole="button"
             accessibilityLabel="Open ATAK integration"
           >
@@ -504,7 +505,7 @@ export default function DashboardScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.connectPill}
-            onPress={() => router.push('/gpx')}
+            onPress={navigateToGpx}
             accessibilityRole="button"
             accessibilityLabel="Open GPX Files"
           >

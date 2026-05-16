@@ -99,19 +99,18 @@ function getUserInfo() {
 function getLearningStats() {
   const memoryPaths = [
     path.join(process.cwd(), '.swarm', 'memory.db'),
-    path.join(process.cwd(), '.claude', 'memory.db'),
-    path.join(process.cwd(), 'data', 'memory.db'),
+    path.join(process.cwd(), '.claude-flow', 'data', 'memory.json'),
   ];
 
   let patterns = 0;
   let sessions = 0;
   let trajectories = 0;
 
-  // Try to read from sqlite database
+  // Try to read from memory store
   for (const dbPath of memoryPaths) {
     if (fs.existsSync(dbPath)) {
       try {
-        // Count entries in memory file (rough estimate from file size)
+        // Count entries in memory file
         const stats = fs.statSync(dbPath);
         const sizeKB = stats.size / 1024;
         // Estimate: ~2KB per pattern on average
@@ -126,7 +125,7 @@ function getLearningStats() {
   }
 
   // Also check for session files
-  const sessionsPath = path.join(process.cwd(), '.claude', 'sessions');
+  const sessionsPath = path.join(process.cwd(), '.claude-flow', 'sessions');
   if (fs.existsSync(sessionsPath)) {
     try {
       const sessionFiles = fs.readdirSync(sessionsPath).filter(f => f.endsWith('.json'));
@@ -168,13 +167,13 @@ function getV3Progress() {
 // Get security status based on actual scans
 function getSecurityStatus() {
   // Check for security scan results in memory
-  const scanResultsPath = path.join(process.cwd(), '.claude', 'security-scans');
+  const scanResultsPath = path.join(process.cwd(), '.claude-flow', 'metrics');
   let cvesFixed = 0;
   const totalCves = 3;
 
   if (fs.existsSync(scanResultsPath)) {
     try {
-      const scans = fs.readdirSync(scanResultsPath).filter(f => f.endsWith('.json'));
+      const scans = fs.readdirSync(scanResultsPath).filter(f => f.includes('audit') && f.endsWith('.json'));
       // Each successful scan file = 1 CVE addressed
       cvesFixed = Math.min(totalCves, scans.length);
     } catch (e) {
