@@ -12,6 +12,7 @@ import {
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
+import { memo, useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
@@ -21,7 +22,7 @@ function intensityColor(intensity: DayPlan['intensity'], planType: string) {
   return '#91e6a3';
 }
 
-function MiniDayRow({ item, isToday, planType }: { item: DayPlan; isToday: boolean; planType: string }) {
+const MiniDayRow = memo(function MiniDayRow({ item, isToday, planType }: { item: DayPlan; isToday: boolean; planType: string }) {
   return (
     <View style={isToday ? styles.miniRowToday : item.isRest ? styles.miniRowRest : styles.miniRow}>
       <View style={styles.miniLeft}>
@@ -35,7 +36,7 @@ function MiniDayRow({ item, isToday, planType }: { item: DayPlan; isToday: boole
       </Text>
     </View>
   );
-}
+});
 
 export default function TrainingScreen() {
   const { logs, goals, isLoading } = useTraining();
@@ -43,13 +44,13 @@ export default function TrainingScreen() {
   const router = useRouter();
   if (isLoading) return <View style={styles.screen} />;
 
-  const thisWeek = buildWeekSummary(logs, 0);
-  const trend = buildReadinessTrend(logs);
-  const { days, planType, rationale } = buildWeekPlan(logs, goals, profile);
-  const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile.injuryNotes });
-  const smartDraft = buildSmartLogDraft(logs, goals, { injuryNotes: profile.injuryNotes });
+  const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
+  const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
+  const { days, planType, rationale } = useMemo(() => buildWeekPlan(logs, goals, profile), [logs, goals, profile]);
+  const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes: profile.injuryNotes }), [logs, goals, profile.injuryNotes]);
+  const smartDraft = useMemo(() => buildSmartLogDraft(logs, goals, { injuryNotes: profile.injuryNotes }), [logs, goals, profile.injuryNotes]);
 
-  function logSuggestedSession() {
+  const logSuggestedSession = useCallback(() => {
     router.push({
       pathname: '/add-log',
       params: {
@@ -62,13 +63,13 @@ export default function TrainingScreen() {
         notes: smartDraft.notes,
       },
     });
-  }
+  }, [router, smartDraft]);
 
-  const todayPlan = getCurrentPlanDay(days);
-  const todayDetails = todayPlan ? getDayPlanDetails(todayPlan) : null;
-  const remainingDays = days.filter((d) => d.day !== todayPlan?.day);
+  const todayPlan = useMemo(() => getCurrentPlanDay(days), [days]);
+  const todayDetails = useMemo(() => todayPlan ? getDayPlanDetails(todayPlan) : null, [todayPlan]);
+  const remainingDays = useMemo(() => days.filter((d) => d.day !== todayPlan?.day), [days, todayPlan]);
 
-  function logTodayPlan() {
+  const logTodayPlan = useCallback(() => {
     if (!todayPlan) return;
     const draft = buildPlanLogDraft(todayPlan);
     router.push({
@@ -83,7 +84,7 @@ export default function TrainingScreen() {
         notes: draft.notes,
       },
     });
-  }
+  }, [router, todayPlan]);
 
   const isRecovery = planType === 'recovery';
   const isProgressive = planType === 'progressive';

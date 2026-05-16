@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -75,7 +75,7 @@ type EditFormProps = {
   onCancel: () => void;
 };
 
-function EditConfigForm({ draft, onChange, onSave, onCancel }: EditFormProps) {
+const EditConfigForm = memo(function EditConfigForm({ draft, onChange, onSave, onCancel }: EditFormProps) {
   return (
     <View style={styles.editForm}>
       <Text style={styles.formLabel}>Host / IP</Text>
@@ -225,28 +225,28 @@ export default function ATAKScreen() {
     });
   }, []);
 
-  function handleDraftChange(key: keyof FTSConfig, value: string) {
+  const handleDraftChange = useCallback((key: keyof FTSConfig, value: string) => {
     setDraft((prev) => ({
       ...prev,
       [key]: key === 'port' ? Number(value) || prev.port : value,
     }));
-  }
+  }, []);
 
-  async function handleSaveConfig() {
+  const handleSaveConfig = useCallback(async () => {
     await saveFTSConfig(draft);
     setConfig(draft);
     setEditingConfig(false);
     setStatus('disconnected');
     setPingResult('none');
     setStatusMessage('');
-  }
+  }, [draft]);
 
-  function handleCancelEdit() {
+  const handleCancelEdit = useCallback(() => {
     setDraft(config);
     setEditingConfig(false);
-  }
+  }, [config]);
 
-  async function handlePing() {
+  const handlePing = useCallback(async () => {
     if (!config.host) {
       Alert.alert('No Host', 'Enter a FreeTAKServer host/IP in the config first.');
       return;
@@ -264,9 +264,9 @@ export default function ATAKScreen() {
       setStatusMessage('Connection failed');
       setPingResult('fail');
     }
-  }
+  }, [config]);
 
-  async function handleSendPosition() {
+  const handleSendPosition = useCallback(async () => {
     if (!config.host) {
       Alert.alert('No Host', 'Configure the server first.');
       return;
@@ -290,9 +290,9 @@ export default function ATAKScreen() {
     } catch (e) {
       Alert.alert('Send Failed', 'Could not send position to FreeTAKServer.');
     }
-  }
+  }, [config]);
 
-  async function handleFetchTeam() {
+  const handleFetchTeam = useCallback(async () => {
     if (!config.host) {
       Alert.alert('No Host', 'Configure the server first.');
       return;
@@ -302,9 +302,9 @@ export default function ATAKScreen() {
     if (objects.length === 0) {
       Alert.alert('No Objects', 'No active CoT objects returned from server.');
     }
-  }
+  }, [config]);
 
-  async function handleExportSession() {
+  const handleExportSession = useCallback(async () => {
     const ruckWithRoute = [...logs]
       .filter(
         (l) => l.category === 'Ruck' && l.routePoints && l.routePoints.length > 0,
@@ -340,7 +340,7 @@ export default function ATAKScreen() {
     } finally {
       setExporting(false);
     }
-  }
+  }, [logs, config]);
 
   // ── Status label ────────────────────────────────────────────────────────────
 
@@ -496,7 +496,7 @@ export default function ATAKScreen() {
 
     </ScrollView>
   );
-}
+});
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 

@@ -25,6 +25,8 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+const EMPTY_REASONS: string[] = [];
+
 export default function LogScreen() {
   const { logs, goals, isLoading, deleteLog, duplicateLog, exportLogsCsv } = useTraining();
   const router = useRouter();
@@ -128,7 +130,7 @@ export default function LogScreen() {
         renderItem={({ item }) => (
           <TrainingLogCard
             log={item}
-            weakReasons={weakReasonsMap.get(item.id) ?? []}
+            weakReasons={weakReasonsMap.get(item.id) ?? EMPTY_REASONS}
             onEdit={handleEditLog}
             onDuplicate={handleDuplicateLog}
             onDelete={confirmDeleteLog}

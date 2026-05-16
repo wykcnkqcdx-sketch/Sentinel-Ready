@@ -63,4 +63,25 @@ describe('buildDfiftSnapshot', () => {
     expect(snapshot.weakPoint?.label).toBe('Sit-ups');
     expect(snapshot.recommendation).toContain('no logged result');
   });
+
+  it('applies female standards and parses duration in minutes', () => {
+    const snapshot = buildDfiftSnapshot([
+      makeLog({ id: 1, type: 'Push-ups', distanceLoad: '10 reps' }),
+      makeLog({ id: 2, type: 'Sit-ups', distanceLoad: '22 reps' }),
+      makeLog({ id: 3, type: '2.4km Run', duration: '12.5 mins', distanceLoad: '2.4 km' }),
+      makeLog({ id: 4, type: 'Skinfold', distanceLoad: '75 mm' }),
+    ], standards, 'F');
+
+    expect(snapshot.loggedEvents).toBe(4);
+    expect(snapshot.passedEvents).toBe(4);
+  });
+
+  it('handles completely unparseable run duration gracefully', () => {
+    const snapshot = buildDfiftSnapshot([
+      makeLog({ id: 1, type: '2.4km Run', duration: 'unknown', distanceLoad: '2.4 km' }),
+    ], standards, 'M');
+
+    const runRow = snapshot.rows.find((r) => r.key === 'run');
+    expect(runRow?.result).toBeNull();
+  });
 });

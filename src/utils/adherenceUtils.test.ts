@@ -1,66 +1,79 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TrainingLog } from '@/src/screens/TrainingContext';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildPlanAdherence } from './adherenceUtils';
 
-function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
+function makeLog(overrides: Partial<TrainingLog>): TrainingLog {
   return {
-    id: 1,
-    date: '2026-05-11',
+    id: Math.random(),
+    date: '2026-05-15',
     category: 'Ruck',
-    type: 'Loaded Ruck',
-    duration: '60 minutes',
-    distanceLoad: '6 km with 15 kg',
-    readiness: '8',
-    notes: 'Steady session with controlled effort and no unusual pain.',
+    type: 'Test',
+    duration: '45 min',
+    distanceLoad: '',
+    readiness: '7',
+    notes: '',
     ...overrides,
   };
 }
 
-afterEach(() => {
-  vi.useRealTimers();
-});
-
 describe('buildPlanAdherence', () => {
-  it('returns no-data when there are no logs this week', () => {
+  beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    expect(buildPlanAdherence([])).toMatchObject({
-      score: 0,
-      status: 'no-data',
-      label: 'No Data',
-    });
+    vi.setSystemTime(new Date('2026-05-15T12:00:00Z'));
   });
 
-  it('detects partial adherence when only some planned categories are logged', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
-
-    const adherence = buildPlanAdherence([
-      makeLog({ id: 1, date: '2026-05-11', category: 'Ruck' }),
-      makeLog({ id: 2, date: '2026-05-12', category: 'Strength' }),
-      makeLog({ id: 3, date: '2026-05-13', category: 'Resistance' }),
-    ]);
-
-    expect(adherence.status).toBe('partial');
-    expect(adherence.matched).toContain('Ruck');
-    expect(adherence.missing.length).toBeGreaterThan(0);
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('marks the week on track when most planned categories are logged', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+  it('returns no-data status when no sessions are logged', () => {
+    const result = buildPlanAdherence([]);
+    expect(result.status).toBe('no-data');
+    expect(result.score).toBe(0);
+    expect(result.missing).toContain('Ruck');
+  });
 
-    const adherence = buildPlanAdherence([
-      makeLog({ id: 1, date: '2026-05-11', category: 'Ruck' }),
-      makeLog({ id: 2, date: '2026-05-12', category: 'Run' }),
-      makeLog({ id: 3, date: '2026-05-13', category: 'Strength' }),
-      makeLog({ id: 4, date: '2026-05-14', category: 'Resistance' }),
-      makeLog({ id: 5, date: '2026-05-14', category: 'Hiking' }),
-      makeLog({ id: 6, date: '2026-05-14', category: 'Military' }),
-    ]);
+  it('returns off-track when logged sessions fall significantly short of the plan', () => {
+    // Logging a single test session while the week plan expects multiple core pillars
+    const logs = [makeLog({ category: 'Test' })];
+    const result = buildPlanAdherence(logs);
+    
+    expect(result.status).toBe('off-track');
+    expect(result.score).toBeLessThan(40);
+    expect(result.missing.length).toBeGreaterThan(0);
+    expect(result.extra).toContain('Test');
+  });
 
-    expect(adherence.status).toBe('on-track');
-    expect(adherence.score).toBeGreaterThanOrEqual(75);
+  it('returns on-track when the core pillars of the week are logged', () => {
+    const logs = [
+      makeLog({ category: 'Ruck' }),
+      makeLog({ category: 'Run' }),
+      makeLog({ category: 'Strength' }),
+      makeLog({ category: 'Recovery' }),
+    ];
+    const result = buildPlanAdherence(logs);
+    
+    expect(result.status).toBe('on-track');
+    expect(result.score).toBeGreaterThanOrEqual(75);
+    expect(result.matched).toContain('Ruck');
+    expect(result.matched).toContain('Strength');
+  });
+
+  it('prompts the user to prioritise recovery if it is the primary missing category', () => {
+    const logs = [
+      makeLog({ category: 'Ruck' }),
+      makeLog({ category: 'Strength' }),
+      makeLog({ category: 'Run' }),
+    ];
+    const result = buildPlanAdherence(logs);
+    expect(result.nextAction).toContain('Add recovery or mobility');
+  });
+  
+  it('prompts the user to prioritise strength if recovery exists but strength is missing', () => {
+    const logs = [
+      makeLog({ category: 'Recovery' }),
+    ];
+    const result = buildPlanAdherence(logs);
+    expect(result.nextAction).toContain('Log the planned strength session next');
   });
 });

@@ -1,6 +1,6 @@
 import { TrainingCategory, TrainingLog } from '@/src/screens/TrainingContext';
 import { getCompletionScore, getNoteStarter, getNotesQualityWarning } from '@/src/utils/trainingLogUtils';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export type TrainingLogFormValues = Omit<TrainingLog, 'id'>;
@@ -132,7 +132,7 @@ export function getQuickTemplates(): QuickTemplate[] {
   ];
 }
 
-export default function TrainingLogForm({
+const TrainingLogForm = memo(function TrainingLogForm({
   title,
   subtitle,
   submitLabel,
@@ -160,7 +160,7 @@ export default function TrainingLogForm({
     [date, category, type, duration, distanceLoad, readiness, notes]
   );
 
-  function applyTemplate(template: QuickTemplate) {
+  const applyTemplate = useCallback((template: QuickTemplate) => {
     setValues((prev) => ({
       ...prev,
       category: template.category,
@@ -170,9 +170,9 @@ export default function TrainingLogForm({
       readiness: template.readiness,
       notes: template.notes,
     }));
-  }
+  }, []);
 
-  function validateForm() {
+  const validateForm = useCallback(() => {
     const readinessNumber = Number(readiness);
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
@@ -201,9 +201,29 @@ export default function TrainingLogForm({
     }
 
     return true;
-  }
+  }, [date, type, duration, distanceLoad, readiness]);
 
-  async function saveLog() {
+  const saveLogConfirmed = useCallback(async () => {
+    try {
+      setSaving(true);
+
+      await onSubmit({
+        date: date.trim(),
+        category,
+        type: type.trim(),
+        duration: duration.trim(),
+        distanceLoad: distanceLoad.trim(),
+        readiness: readiness.trim(),
+        notes: notes.trim(),
+      });
+    } catch {
+      Alert.alert(saveErrorTitle, saveErrorMessage);
+    } finally {
+      setSaving(false);
+    }
+  }, [onSubmit, date, category, type, duration, distanceLoad, readiness, notes, saveErrorTitle, saveErrorMessage]);
+
+  const saveLog = useCallback(async () => {
     if (!validateForm()) {
       return;
     }
@@ -225,27 +245,7 @@ export default function TrainingLogForm({
     }
 
     await saveLogConfirmed();
-  }
-
-  async function saveLogConfirmed() {
-    try {
-      setSaving(true);
-
-      await onSubmit({
-        date: date.trim(),
-        category,
-        type: type.trim(),
-        duration: duration.trim(),
-        distanceLoad: distanceLoad.trim(),
-        readiness: readiness.trim(),
-        notes: notes.trim(),
-      });
-    } catch {
-      Alert.alert(saveErrorTitle, saveErrorMessage);
-    } finally {
-      setSaving(false);
-    }
-  }
+  }, [validateForm, completionScore, notesWarning, saveLogConfirmed]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -361,7 +361,9 @@ export default function TrainingLogForm({
       </TouchableOpacity>
     </ScrollView>
   );
-}
+});
+
+export default TrainingLogForm;
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#07110c' },

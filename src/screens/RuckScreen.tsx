@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
@@ -151,7 +151,7 @@ function getNextSessionAdvice(
   return `Aim for ${nextDist} km${loadStr}. Steady pace — log notes on foot condition and breathing rhythm.`;
 }
 
-function RuckSessionCard({ log, metrics, paceVsPb }: {
+const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }: {
   log: TrainingLog;
   metrics: RuckMetrics;
   paceVsPb: number | null;
@@ -208,7 +208,7 @@ function RuckSessionCard({ log, metrics, paceVsPb }: {
       ) : null}
     </View>
   );
-}
+});
 
 function RuckSavePanel({
   draft,

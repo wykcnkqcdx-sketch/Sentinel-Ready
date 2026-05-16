@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { TrainingFilter, SortMode, filters, sortModes } from '@/src/utils/trainingLogUtils';
 
@@ -14,7 +15,7 @@ type Props = {
   showWeakLogsOnly: boolean;
 };
 
-export default function LogControls({
+const LogControls = memo(function LogControls({
   searchQuery,
   onSearchChange,
   activeFilter,
@@ -86,7 +87,9 @@ export default function LogControls({
       </Text>
     </View>
   );
-}
+});
+
+export default LogControls;
 
 const styles = StyleSheet.create({
   controlsCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },

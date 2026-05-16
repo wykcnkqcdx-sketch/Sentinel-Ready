@@ -13,7 +13,7 @@ import {
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
@@ -96,7 +96,7 @@ export default function PlanScreen() {
     : planType === 'progressive' ? styles.commandCardGood
     : styles.commandCard;
 
-  function logPlannedSession(day: DayPlan) {
+  const logPlannedSession = useCallback((day: DayPlan) => {
     const draft = buildPlanLogDraft(day);
     router.push({
       pathname: '/add-log',
@@ -110,7 +110,7 @@ export default function PlanScreen() {
         notes: draft.notes,
       },
     });
-  }
+  }, [router]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

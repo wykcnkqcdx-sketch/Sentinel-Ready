@@ -128,6 +128,11 @@ export function useRuckTracking(): RuckTrackingState {
       return;
     }
 
+    if (locationSubRef.current) {
+      locationSubRef.current.remove();
+      locationSubRef.current = null;
+    }
+
     lastAcceptedRef.current = undefined;
     routePointsRef.current = [];
     distanceRef.current = 0;

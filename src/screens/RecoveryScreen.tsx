@@ -84,11 +84,11 @@ export default function RecoveryScreen() {
   const { injuryNotes } = useUser();
   if (isLoading) return <View style={styles.screen} />;
 
-  const recoveryScore = getRecoveryScore(logs);
-  const trend = buildReadinessTrend(logs);
-  const thisWeek = buildWeekSummary(logs, 0);
-  const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
-  const injuryWatch = buildInjuryWatch(logs, injuryNotes);
+  const recoveryScore = useMemo(() => getRecoveryScore(logs), [logs]);
+  const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
+  const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
+  const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
+  const injuryWatch = useMemo(() => buildInjuryWatch(logs, injuryNotes), [logs, injuryNotes]);
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => {
@@ -100,9 +100,9 @@ export default function RecoveryScreen() {
     [logs]
   );
 
-  const latestRecoveryLog = recentSorted.find((l) => l.category === 'Recovery');
-  const recentFatigueLogs = recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3);
-  const daysSinceRecovery = latestRecoveryLog ? daysSince(latestRecoveryLog.date) : null;
+  const latestRecoveryLog = useMemo(() => recentSorted.find((l) => l.category === 'Recovery'), [recentSorted]);
+  const recentFatigueLogs = useMemo(() => recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3), [recentSorted]);
+  const daysSinceRecovery = useMemo(() => latestRecoveryLog ? daysSince(latestRecoveryLog.date) : null, [latestRecoveryLog]);
 
   const isHighFatigue = recoveryScore > 0 && recoveryScore < 50;
   const isModerate = recoveryScore >= 50 && recoveryScore < 75;
@@ -122,7 +122,7 @@ export default function RecoveryScreen() {
   const badgeStyle = isHighFatigue ? styles.badgeWarning : isModerate ? styles.badgeModerate : recoveryScore > 0 ? styles.badge : styles.badgeNeutral;
   const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : recoveryScore > 0 ? styles.badgeText : styles.badgeTextNeutral;
 
-  const protocol = getProtocol(recoveryScore);
+  const protocol = useMemo(() => getProtocol(recoveryScore), [recoveryScore]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
