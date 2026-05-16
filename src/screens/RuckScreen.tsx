@@ -8,6 +8,8 @@ import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtil
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+
+
 type RuckMetrics = {
   distance: number;
   load: number;
