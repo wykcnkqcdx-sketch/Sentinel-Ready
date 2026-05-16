@@ -488,6 +488,15 @@ export default function DashboardScreen() {
             <View style={[styles.connectPillDot, styles.connectPillDotAtak]} />
             <Text style={styles.connectPillText}>ATAK</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/gpx')}
+            accessibilityRole="button"
+            accessibilityLabel="Open GPX Files"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotGpx]} />
+            <Text style={styles.connectPillText}>GPX Files</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -718,5 +727,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FC4C02',
   },
   connectPillDotAtak: { backgroundColor: '#3a7bd5' },
+  connectPillDotGpx: { backgroundColor: '#2f6b3c' },
   connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
 });
