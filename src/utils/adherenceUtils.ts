@@ -1,4 +1,4 @@
-import type { TrainingGoal, TrainingLog, TrainingCategory } from '@/src/screens/TrainingContext';
+import type { TrainingCategory, TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import type { TrainingProfileInput } from '@/src/utils/trainingLogUtils';
 import { buildWeekPlan, buildWeekSummary } from '@/src/utils/trainingLogUtils';
 
@@ -80,17 +80,29 @@ export function buildPlanAdherence(
   const matched = planned.filter((category) => logged.includes(category));
   const missing = planned.filter((category) => !logged.includes(category));
   const extra = logged.filter((category) => !planned.includes(category));
-  const score = planned.length > 0 ? Math.round((matched.length / planned.length) * 100) : 0;
+  // Use floor to better align with user expectations and unit tests.
+  const score = planned.length > 0 ? Math.floor((matched.length / planned.length) * 100) : 0;
 
+
+  // Order matters: tests expect recovery/mobility to take priority when missing,
+  // then strength when recovery exists but strength is missing.
   const nextAction =
-    missing.includes('Recovery') || missing.includes('Mobility') ? 'Add recovery or mobility before adding more load.'
-    : missing.includes('Resistance') ? 'Log the planned resistance circuit next.'
-    : missing.includes('Hiking') ? 'Log the planned terrain hike next.'
-    : missing.includes('Military') ? 'Log the planned military skills block next.'
-    : missing.includes('Strength') ? 'Log the planned strength session next.'
-    : missing.includes('Ruck') ? 'Log the planned ruck session when readiness is stable.'
-    : missing.includes('Run') ? 'Log the planned run session at controlled intensity.'
-    : 'Plan adherence is strong. Keep the next session aligned with readiness.';
+    missing.includes('Recovery') || missing.includes('Mobility')
+      ? 'Add recovery or mobility before adding more load.'
+      : missing.includes('Strength')
+        ? 'Log the planned strength session next.'
+        : missing.includes('Resistance')
+          ? 'Log the planned resistance circuit next.'
+          : missing.includes('Hiking')
+            ? 'Log the planned terrain hike next.'
+            : missing.includes('Military')
+              ? 'Log the planned military skills block next.'
+              : missing.includes('Ruck')
+                ? 'Log the planned ruck session when readiness is stable.'
+                : missing.includes('Run')
+                  ? 'Log the planned run session at controlled intensity.'
+                  : 'Plan adherence is strong. Keep the next session aligned with readiness.';
+
 
   if (score >= 75) {
     return {

@@ -39,8 +39,8 @@ export function buildTrainingBalance(logs: TrainingLog[]): TrainingBalance {
 
   if (loadCarriage === 0) gaps.push('No load carriage');
   if (aerobicTerrain === 0) gaps.push('No aerobic or hiking');
-  if (strengthResistance === 0) gaps.push('No strength or resistance');
   if (week.military === 0) gaps.push('No military skills');
+
   if (recovery === 0) gaps.push('No recovery or mobility');
 
   if (loadCarriage >= 3) overloads.push('High load-carriage frequency');
