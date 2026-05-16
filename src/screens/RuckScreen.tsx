@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
@@ -294,7 +294,7 @@ export default function RuckScreen() {
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
 
-  const handleSaveSession = async () => {
+  const handleSaveSession = useCallback(async () => {
     if (tracking.distanceKm < 0.1) {
       Alert.alert('Too Short', 'Route must be at least 100m to save.');
       return;
@@ -335,7 +335,7 @@ export default function RuckScreen() {
     tracking.resetSession();
     setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
-  };
+  }, [tracking, saveDraft, addLog]);
 
   const ruckLogs = useMemo(
     () => 
