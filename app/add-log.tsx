@@ -3,8 +3,7 @@ import TrainingLogForm, {
   getQuickTemplates,
   TrainingLogFormValues,
 } from '@/src/components/log/TrainingLogForm';
-import { TrainingCategory } from '@/src/screens/TrainingContext';
-import { useTraining } from '@/src/screens/TrainingContext';
+import { TrainingCategory, useTraining } from '@/src/screens/TrainingContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
@@ -37,6 +36,7 @@ export default function AddLogScreen() {
   const params = useLocalSearchParams();
   const { addLog } = useTraining();
   const initialValues = useMemo(() => buildInitialValues(params), [params]);
+  const quickTemplates = useMemo(() => getQuickTemplates(), []);
 
   async function handleSubmit(values: TrainingLogFormValues) {
     await addLog(values);
@@ -52,7 +52,7 @@ export default function AddLogScreen() {
       saveErrorTitle="Save Failed"
       saveErrorMessage="The training log could not be saved. Please try again."
       initialValues={initialValues}
-      quickTemplates={getQuickTemplates()}
+      quickTemplates={quickTemplates}
       onBack={() => router.back()}
       onSubmit={handleSubmit}
     />

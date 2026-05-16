@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type Gender = 'M' | 'F';
 
@@ -73,12 +73,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  function save(updated: UserProfile) {
+  const save = useCallback((updated: UserProfile) => {
     setProfile(updated);
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated)).catch((e) =>
       console.error('UserContext: failed to persist profile', e)
     );
-  }
+  }, []);
 
   const contextValue = useMemo(() => ({
     ...profile,
@@ -86,7 +86,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setTestDate: (testDate: string | null) => save({ ...profile, testDate }),
     updateProfile: (updates: Partial<UserProfile>) => save({ ...profile, ...updates }),
     isLoaded,
-  }), [profile, isLoaded]);
+  }), [profile, isLoaded, save]);
 
   return (
     <UserContext.Provider value={contextValue}>
