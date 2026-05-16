@@ -1,6 +1,6 @@
 import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import { describe, expect, it } from 'vitest';
-import { buildWeekPlan, getDayPlanDetails } from './planUtils';
+import { buildPlanLogDraft, buildWeekPlan, getDayPlanDetails } from './planUtils';
 
 function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
   return {
@@ -95,5 +95,26 @@ describe('planUtils', () => {
     expect(details.mainWork).toBe('Full Body Strength');
     expect(details.cooldown).toContain('cooldown');
     expect(details.adjustment).toContain('readiness');
+  });
+
+  it('builds an add-log draft from a planned military session', () => {
+    const draft = buildPlanLogDraft({
+      day: 'Day 4',
+      focus: 'Military',
+      session: 'Field Skills and Tactical Movement - Priority Goal',
+      mainWork: 'Practise navigation, movement discipline and casualty drag mechanics.',
+      adjustment: 'Keep the session technical.',
+      intensity: 'Low',
+      isRest: false,
+    }, '2026-05-20');
+
+    expect(draft).toMatchObject({
+      date: '2026-05-20',
+      category: 'Military',
+      type: 'Field Skills and Tactical Movement',
+      duration: '60 minutes',
+    });
+    expect(draft.distanceLoad).toContain('Navigation');
+    expect(draft.notes).toContain('casualty drag');
   });
 });

@@ -1,4 +1,4 @@
-import type { TrainingLog, TrainingGoal } from '@/src/screens/TrainingContext';
+import type { TrainingCategory, TrainingLog, TrainingGoal } from '@/src/screens/TrainingContext';
 import { getDateValue } from './trainingLogCore';
 import { buildReadinessTrend, hasRecentReadinessImprovement, isFatigueWatch } from './readinessUtils';
 
@@ -26,6 +26,8 @@ export type TrainingProfileInput = {
   injuryNotes?: string;
   role?: string;
 };
+
+export type PlanLogDraft = Omit<TrainingLog, 'id'>;
 
 function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'> & Partial<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>>): DayPlan {
   return {
@@ -75,6 +77,60 @@ function withGoalRationale(rationale: string, goals: TrainingGoal[]) {
   const priority = getPriorityGoal(goals);
   if (!priority) return rationale;
   return `${rationale} Priority goal emphasis: ${priority.title}.`;
+}
+
+function focusToTrainingCategory(focus: string): TrainingCategory {
+  const lower = focus.toLowerCase();
+  if (lower.includes('ruck')) return 'Ruck';
+  if (lower.includes('resistance') || lower.includes('circuit')) return 'Resistance';
+  if (lower.includes('hiking') || lower.includes('hike') || lower.includes('terrain')) return 'Hiking';
+  if (lower.includes('military') || lower.includes('field') || lower.includes('tactical')) return 'Military';
+  if (lower.includes('run')) return 'Run';
+  if (lower.includes('strength')) return 'Strength';
+  if (lower.includes('mobility')) return 'Mobility';
+  if (lower.includes('test')) return 'Test';
+  return 'Recovery';
+}
+
+function getDefaultDuration(category: TrainingCategory, intensity: DayPlan['intensity']) {
+  if (category === 'Ruck') return intensity === 'High' ? '75 minutes' : '60 minutes';
+  if (category === 'Hiking') return intensity === 'High' ? '120 minutes' : '90 minutes';
+  if (category === 'Strength') return '50 minutes';
+  if (category === 'Resistance') return '40 minutes';
+  if (category === 'Military') return '60 minutes';
+  if (category === 'Run') return '35 minutes';
+  if (category === 'Mobility' || category === 'Recovery') return '25 minutes';
+  return '40 minutes';
+}
+
+function getDistanceLoadFromPlan(category: TrainingCategory, details: ReturnType<typeof getDayPlanDetails>) {
+  if (category === 'Ruck') return 'Planned loaded ruck - see main work';
+  if (category === 'Hiking') return 'Planned terrain hike - see main work';
+  if (category === 'Strength') return 'Squat/hinge - press - pull - carry';
+  if (category === 'Resistance') return 'Push - pull - hinge - lunge - carry - core';
+  if (category === 'Military') return 'Navigation - tactical movement - casualty drag - kit checks';
+  if (category === 'Run') return 'Planned aerobic run - see main work';
+  if (category === 'Mobility' || category === 'Recovery') return 'Mobility - breathing - foot care - recovery';
+  return details.mainWork.slice(0, 100);
+}
+
+export function buildPlanLogDraft(plan: DayPlan, date: string = new Date().toISOString().slice(0, 10)): PlanLogDraft {
+  const category = focusToTrainingCategory(plan.focus);
+  const details = getDayPlanDetails(plan);
+
+  return {
+    date,
+    category,
+    type: plan.session.replace(/\s+-\s+Priority Goal$/, ''),
+    duration: getDefaultDuration(category, plan.intensity),
+    distanceLoad: getDistanceLoadFromPlan(category, details),
+    readiness: '',
+    notes: [
+      `Planned ${plan.focus} session from Sentinel Ready.`,
+      `Main: ${details.mainWork}`,
+      `Adjust: ${details.adjustment}`,
+    ].join(' '),
+  };
 }
 
 export function getDayPlanDetails(plan: DayPlan): Required<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>> {
