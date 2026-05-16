@@ -11,6 +11,7 @@ import {
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
@@ -21,6 +22,7 @@ function intensityColor(intensity: DayPlan['intensity'], planType: string) {
 }
 
 function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
+const DayCard = memo(function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
   const isRest = item.isRest;
   const details = getDayPlanDetails(item);
   return (
@@ -42,6 +44,7 @@ function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
     </View>
   );
 }
+});
 
 export default function PlanScreen() {
   const { logs, goals, isLoading } = useTraining();
