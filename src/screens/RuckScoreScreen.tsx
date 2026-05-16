@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { calculateRuckScore } from '@/src/utils/ruckScore';
 import { calculateEnhancedPandolf, buildH2FDomains } from '@/src/utils/h2f';
-import type { TrainingSession } from '@/src/types/map';
+import type { TrainingSession, ReadinessLog } from '@/src/types/map';
+import { getLatestReadinessLog } from '@/src/services/readinessService';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -101,8 +103,14 @@ const barStyles = StyleSheet.create({
 export default function RuckScoreScreen() {
   const [terrainFactor, setTerrainFactor] = useState(1.0);
   const [bodyMassKg, setBodyMassKg] = useState(80);
+  const [latestReadiness, setLatestReadiness] = useState<ReadinessLog | null>(null);
+  const router = useRouter();
 
   const { logs } = useTraining();
+
+  useEffect(() => {
+    getLatestReadinessLog().then(setLatestReadiness);
+  }, []);
 
   const ruckLogs = useMemo(
     () =>
@@ -139,7 +147,10 @@ export default function RuckScoreScreen() {
     });
   }, [latestMetrics, bodyMassKg, terrainFactor]);
 
-  const h2fDomains = useMemo(() => buildH2FDomains(sessions), [sessions]);
+  const h2fDomains = useMemo(
+    () => buildH2FDomains(sessions, latestReadiness ?? undefined),
+    [sessions, latestReadiness],
+  );
   const physicalDomain = useMemo(() => h2fDomains.find(d => d.id === 'physical') ?? null, [h2fDomains]);
 
   const scoreColour = !ruckScore
@@ -307,6 +318,20 @@ export default function RuckScoreScreen() {
         </View>
       )}
 
+      {/* Check-in link */}
+      <TouchableOpacity
+        style={styles.checkInLink}
+        onPress={() => router.push('/check-in')}
+        accessibilityRole="button"
+        accessibilityLabel="Log today's check-in"
+      >
+        <Text style={styles.checkInLinkText}>
+          {latestReadiness && latestReadiness.date === new Date().toISOString().slice(0, 10)
+            ? '✓ Check-in logged today'
+            : "Log today's check-in →"}
+        </Text>
+      </TouchableOpacity>
+
       {/* Recent sessions summary */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>All Ruck Sessions</Text>
@@ -420,4 +445,7 @@ const styles = StyleSheet.create({
   historyDate: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
   historyDetail: { color: '#f2f5ef', fontSize: 14, fontWeight: '900' },
   historyScore: { fontSize: 22, fontWeight: '900' },
+
+  checkInLink: { backgroundColor: '#0d2e18', borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: '#2f6b3c' },
+  checkInLinkText: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
 });

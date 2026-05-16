@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import { parseGeoJsonOverlay, parseKmlOverlay, extractKmlFromKmz } from '@/src/utils/fieldMapping';
+import type { MapOverlay } from '@/src/utils/fieldMapping';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking';
@@ -175,6 +179,8 @@ export default function RuckScreen() {
   const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
+  const [overlays, setOverlays] = useState<MapOverlay[]>([]);
+  const [loadingOverlay, setLoadingOverlay] = useState(false);
 
   const handleSaveSession = async () => {
     if (tracking.distanceKm < 0.1) {
@@ -200,6 +206,50 @@ export default function RuckScreen() {
     tracking.resetTracking();
     setActiveTab('stats');
   };
+
+  async function handleImportOverlay() {
+    setLoadingOverlay(true);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/vnd.google-earth.kml+xml', 'application/vnd.google-earth.kmz',
+               'application/json', 'application/geo+json', 'text/xml', 'application/xml', '*/*'],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      const name = asset.name ?? 'overlay';
+      const lowerName = name.toLowerCase();
+      const OVERLAY_COLOURS = ['#FF6B6B','#4ECDC4','#FFE66D','#A8E6CF','#FF8B94','#B5EAD7'];
+      const color = OVERLAY_COLOURS[overlays.length % OVERLAY_COLOURS.length];
+
+      let overlay: MapOverlay;
+      if (lowerName.endsWith('.kmz')) {
+        const b64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
+        const kmlContent = extractKmlFromKmz(b64);
+        overlay = parseKmlOverlay(kmlContent, name, color, 'kmz');
+      } else if (lowerName.endsWith('.kml')) {
+        const content = await FileSystem.readAsStringAsync(asset.uri);
+        overlay = parseKmlOverlay(content, name, color, 'kml');
+      } else {
+        // GeoJSON
+        const content = await FileSystem.readAsStringAsync(asset.uri);
+        overlay = parseGeoJsonOverlay(content, name, color);
+      }
+      setOverlays(prev => [...prev, overlay]);
+    } catch (e) {
+      Alert.alert('Import failed', e instanceof Error ? e.message : 'Could not read file');
+    } finally {
+      setLoadingOverlay(false);
+    }
+  }
+
+  function handleRemoveOverlay(id: string) {
+    setOverlays(prev => prev.filter(o => o.id !== id));
+  }
+
+  function handleToggleOverlay(id: string) {
+    setOverlays(prev => prev.map(o => o.id === id ? { ...o, visible: !o.visible } : o));
+  }
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -513,6 +563,7 @@ export default function RuckScreen() {
             routePoints={tracking.routePoints}
             currentPosition={tracking.currentPosition}
             layer={tracking.activeLayer}
+            overlays={overlays}
           />
 
           <LiveMetricsOverlay
@@ -526,6 +577,36 @@ export default function RuckScreen() {
             activeLayer={tracking.activeLayer}
             onSelect={tracking.setLayer}
           />
+
+          {/* Overlay bar */}
+          <View style={styles.overlayBar}>
+            <TouchableOpacity
+              style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
+              onPress={handleImportOverlay}
+              disabled={loadingOverlay}
+              accessibilityRole="button"
+              accessibilityLabel="Import map overlay"
+            >
+              <Text style={styles.overlayImportBtnText}>
+                {loadingOverlay ? 'Loading…' : '+ Overlay'}
+              </Text>
+            </TouchableOpacity>
+
+            {overlays.map(o => (
+              <TouchableOpacity
+                key={o.id}
+                style={[styles.overlayChip, !o.visible && styles.overlayChipHidden]}
+                onPress={() => handleToggleOverlay(o.id)}
+                onLongPress={() => handleRemoveOverlay(o.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`${o.name} overlay, ${o.visible ? 'visible' : 'hidden'}. Long press to remove.`}
+                accessibilityHint="Tap to toggle visibility, long press to remove"
+              >
+                <View style={[styles.overlayDot, { backgroundColor: o.color }]} />
+                <Text style={styles.overlayChipText} numberOfLines={1}>{o.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <ControlRow tracking={tracking} onSave={handleSaveSession} />
         </View>
@@ -610,4 +691,13 @@ const styles = StyleSheet.create({
   fieldCard: { backgroundColor: '#101a14', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#26382c', gap: 6 },
   fieldLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   fieldText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
+
+  overlayBar: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: 'rgba(7,17,12,0.9)' },
+  overlayImportBtn: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#2f6b3c' },
+  overlayImportBtnDisabled: { borderColor: '#203529' },
+  overlayImportBtnText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  overlayChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#2a3a2a', maxWidth: 130 },
+  overlayChipHidden: { opacity: 0.4 },
+  overlayDot: { width: 8, height: 8, borderRadius: 4 },
+  overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
 });

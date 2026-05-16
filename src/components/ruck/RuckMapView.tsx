@@ -3,15 +3,18 @@ import { Image, LayoutChangeEvent, StyleSheet, Text, View, useWindowDimensions }
 import { buildVisibleTiles, getMercatorRoutePoints } from '../../utils/mapTiles';
 import type { MapLayerKey, MapViewport } from '../../utils/mapTiles';
 import type { TrackPoint } from '../../types/map';
+import type { MapOverlay } from '../../utils/fieldMapping';
 
 let Svg: React.ComponentType<any> | null = null;
 let Polyline: React.ComponentType<any> | null = null;
 let Circle: React.ComponentType<any> | null = null;
+let Polygon: React.ComponentType<any> | null = null;
 try {
   const rnSvg = require('react-native-svg');
   Svg = rnSvg.default;
   Polyline = rnSvg.Polyline;
   Circle = rnSvg.Circle;
+  Polygon = rnSvg.Polygon;
 } catch {
   // react-native-svg not available; route overlay will be skipped
 }
@@ -24,9 +27,10 @@ export interface RuckMapViewProps {
   currentPosition: TrackPoint | null;
   layer: MapLayerKey;
   zoom?: number;
+  overlays?: MapOverlay[];
 }
 
-export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15 }: RuckMapViewProps) {
+export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays }: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
 
@@ -79,6 +83,69 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15 }: 
               strokeWidth={2}
             />
           )}
+
+          {overlays && overlays.length > 0 && overlays.filter(o => o.visible).map(overlay => (
+            <React.Fragment key={overlay.id}>
+              {Polyline && overlay.lines.map(line => {
+                const pts = getMercatorRoutePoints(
+                  line.points.map(p => ({ latitude: p.lat, longitude: p.lon, altitude: null, accuracy: null, timestamp: 0 })),
+                  center, viewport, zoom
+                );
+                if (pts.length < 2) return null;
+                return (
+                  <Polyline
+                    key={line.id}
+                    points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                    fill="none"
+                    stroke={overlay.color}
+                    strokeWidth={2}
+                    strokeOpacity={0.85}
+                    strokeDasharray="6,3"
+                  />
+                );
+              })}
+
+              {Circle && overlay.points.map(point => {
+                const pts = getMercatorRoutePoints(
+                  [{ latitude: point.latitude, longitude: point.longitude, altitude: null, accuracy: null, timestamp: 0 }],
+                  center, viewport, zoom
+                );
+                if (pts.length < 1) return null;
+                return (
+                  <Circle
+                    key={point.id}
+                    cx={pts[0].x}
+                    cy={pts[0].y}
+                    r={5}
+                    fill={overlay.color}
+                    stroke="white"
+                    strokeWidth={1.5}
+                  />
+                );
+              })}
+
+              {Polygon && overlay.polygons.map(polygon =>
+                polygon.rings.map((ring, ringIndex) => {
+                  const pts = getMercatorRoutePoints(
+                    ring.map(p => ({ latitude: p.lat, longitude: p.lon, altitude: null, accuracy: null, timestamp: 0 })),
+                    center, viewport, zoom
+                  );
+                  if (pts.length < 3) return null;
+                  return (
+                    <Polygon
+                      key={`${polygon.id}-ring${ringIndex}`}
+                      points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+                      fill={overlay.color}
+                      fillOpacity={0.15}
+                      stroke={overlay.color}
+                      strokeWidth={1.5}
+                      strokeOpacity={0.8}
+                    />
+                  );
+                })
+              )}
+            </React.Fragment>
+          ))}
         </Svg>
       )}
 

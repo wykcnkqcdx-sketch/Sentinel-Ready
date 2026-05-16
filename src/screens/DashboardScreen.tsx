@@ -497,6 +497,15 @@ export default function DashboardScreen() {
             <View style={[styles.connectPillDot, styles.connectPillDotGpx]} />
             <Text style={styles.connectPillText}>GPX Files</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/check-in')}
+            accessibilityRole="button"
+            accessibilityLabel="Log today's check-in"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotCheckin]} />
+            <Text style={styles.connectPillText}>Check-in</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -728,5 +737,6 @@ const styles = StyleSheet.create({
   },
   connectPillDotAtak: { backgroundColor: '#3a7bd5' },
   connectPillDotGpx: { backgroundColor: '#2f6b3c' },
+  connectPillDotCheckin: { backgroundColor: '#91e6a3' },
   connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
 });
