@@ -50,6 +50,7 @@ export function calculateRuckScore(input: RuckScoreInput): RuckScoreBreakdown {
     score,
     loadAdjustedPace,
     factors: [
+
       { label: 'Distance', value: `${input.distanceKm.toFixed(1)} km`, points: Math.round(distancePoints) },
       { label: 'Load', value: `${input.loadKg} kg (${Math.round(loadRatio * 100)}%)`, points: Math.round(loadPoints) },
       { label: 'Elevation', value: `${Math.round(input.ascentM)} m`, points: Math.round(elevationPoints) },
@@ -58,12 +59,13 @@ export function calculateRuckScore(input: RuckScoreInput): RuckScoreBreakdown {
       { label: 'Execution', value: input.totalCheckpoints ? `${input.reachedCheckpoints ?? 0}/${input.totalCheckpoints} CP` : 'Route only', points: Math.round(executionPoints) },
     ],
     finding: weakest.key === 'pace'
-      ? 'Pace is the limiting factor under this load.'
+      ? 'Pace is the limiting factor.'
       : weakest.key === 'load'
         ? 'Load carriage is the main limiter for this route.'
         : weakest.key === 'elevation'
           ? 'Climbing demand is the weakest part of the profile.'
           : 'Route execution needs cleaner checkpoint discipline.',
+
     recommendation: score >= 82
       ? 'Repeat once, then progress either load or distance, not both.'
       : score >= 68
