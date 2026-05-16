@@ -1,11 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo } from 'react';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
-import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
-import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking';
-import { RuckMapView } from '@/src/components/ruck/RuckMapView';
-import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
-import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
+import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 type RuckMetrics = {
   distance: number;
@@ -14,24 +10,31 @@ type RuckMetrics = {
   pace: number;
 };
 
+const DISTANCE_REGEX = /(\d+(?:\.\d+)?)\s*km/i;
+const LOAD_REGEX = /(\d+(?:\.\d+)?)\s*kg/i;
+const COLON_TIME_REGEX = /(\d+):(\d+)/;
+const HR_REGEX = /(\d+)\s*hr/i;
+const MIN_REGEX = /(\d+)\s*min/i;
+const NUM_REGEX = /(\d+)/;
+
 function parseRuckMetrics(log: TrainingLog): RuckMetrics {
-  const distMatch = log.distanceLoad.match(/(\d+(?:\.\d+)?)\s*km/i);
+  const distMatch = log.distanceLoad.match(DISTANCE_REGEX);
   const distance = distMatch ? parseFloat(distMatch[1]) : 0;
 
-  const loadMatch = log.distanceLoad.match(/(\d+(?:\.\d+)?)\s*kg/i);
+  const loadMatch = log.distanceLoad.match(LOAD_REGEX);
   const load = loadMatch ? parseFloat(loadMatch[1]) : 0;
 
   let minutes = 0;
-  const colonMatch = log.duration.match(/(\d+):(\d+)/);
+  const colonMatch = log.duration.match(COLON_TIME_REGEX);
   if (colonMatch) {
     minutes = parseInt(colonMatch[1], 10) * 60 + parseInt(colonMatch[2], 10);
   } else {
-    const hrMatch = log.duration.match(/(\d+)\s*hr/i);
+    const hrMatch = log.duration.match(HR_REGEX);
     if (hrMatch) minutes += parseInt(hrMatch[1], 10) * 60;
-    const minMatch = log.duration.match(/(\d+)\s*min/i);
+    const minMatch = log.duration.match(MIN_REGEX);
     if (minMatch) minutes += parseInt(minMatch[1], 10);
     if (!hrMatch && !minMatch) {
-      const numMatch = log.duration.match(/(\d+)/);
+      const numMatch = log.duration.match(NUM_REGEX);
       if (numMatch) minutes += parseInt(numMatch[1], 10);
     }
   }
@@ -163,86 +166,16 @@ function RuckSessionCard({ log, metrics, paceVsPb }: {
   );
 }
 
-function ControlRow({
-  tracking,
-  onSave,
-}: {
-  tracking: RuckTrackingState;
-  onSave: () => void;
-}) {
-  const { trackingState, startRecording, stopRecording, pauseRecording, resumeRecording } = tracking;
-
-  if (trackingState === 'idle') {
-    return (
-      <TouchableOpacity
-        style={controlStyles.startBtn}
-        onPress={startRecording}
-        accessibilityRole="button"
-        accessibilityLabel="Start GPS tracking"
-      >
-        <Text style={controlStyles.startBtnText}>START</Text>
-      </TouchableOpacity>
-    );
-  }
-  if (trackingState === 'recording') {
-    return (
-      <View style={controlStyles.row}>
-        <TouchableOpacity style={controlStyles.pauseBtn} onPress={pauseRecording} accessibilityRole="button" accessibilityLabel="Pause tracking">
-          <Text style={controlStyles.pauseBtnText}>PAUSE</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={controlStyles.stopBtn} onPress={stopRecording} accessibilityRole="button" accessibilityLabel="Stop tracking">
-          <Text style={controlStyles.stopBtnText}>STOP</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-  if (trackingState === 'paused') {
-    return (
-      <View style={controlStyles.row}>
-        <TouchableOpacity style={controlStyles.resumeBtn} onPress={resumeRecording} accessibilityRole="button" accessibilityLabel="Resume tracking">
-          <Text style={controlStyles.resumeBtnText}>RESUME</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={controlStyles.stopBtn} onPress={stopRecording} accessibilityRole="button" accessibilityLabel="Stop tracking">
-          <Text style={controlStyles.stopBtnText}>STOP</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-  if (trackingState === 'finished') {
-    return (
-      <View style={controlStyles.saveCard}>
-        <Text style={controlStyles.saveTitle}>Session Complete</Text>
-        <Text style={controlStyles.saveSub}>
-          {tracking.sessionResult
-            ? `${tracking.sessionResult.distanceKm.toFixed(2)} km recorded`
-            : 'Route recorded'}
-        </Text>
-        <View style={controlStyles.row}>
-          <TouchableOpacity style={controlStyles.saveBtn} onPress={onSave} accessibilityRole="button" accessibilityLabel="Save session to training log">
-            <Text style={controlStyles.saveBtnText}>SAVE TO LOG</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={controlStyles.discardBtn} onPress={tracking.resetSession} accessibilityRole="button" accessibilityLabel="Discard session">
-            <Text style={controlStyles.discardBtnText}>DISCARD</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-  return null;
-}
-
 export default function RuckScreen() {
-  const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
-  const tracking = useRuckTracking();
-  const { logs, isLoading, addLog } = useTraining();
-
+  const { logs, isLoading } = useTraining();
   if (isLoading) return <View style={styles.screen} />;
 
   const ruckLogs = useMemo(
-    () =>
-      [...logs.filter((l) => l.category === 'Ruck')].sort(
-        (a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id
-      ),
+    () => 
+      logs.filter((l) => l.category === 'Ruck').sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+        return b.id - a.id;
+      }),
     [logs]
   );
 
@@ -296,312 +229,228 @@ export default function RuckScreen() {
   const recentHistory = useMemo(() => ruckLogs.slice(0, 5), [ruckLogs]);
   const recentMetricsSlice = useMemo(() => ruckMetrics.slice(0, 5), [ruckMetrics]);
 
-  const handleSaveSession = useCallback(() => {
-    if (!tracking.sessionResult) return;
-    const today = new Date().toISOString().slice(0, 10);
-    addLog({
-      date: today,
-      category: 'Ruck',
-      type: 'GPS Tracked Ruck',
-      duration: (() => {
-        const s = tracking.elapsedSeconds;
-        const h = Math.floor(s / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        return h > 0 ? `${h}h ${m}m` : `${m} minutes`;
-      })(),
-      distanceLoad: `${tracking.sessionResult.distanceKm.toFixed(2)} km`,
-      readiness: '',
-      notes: '',
-      routePoints: tracking.sessionResult.routePoints,
-    });
-    tracking.resetSession();
-  }, [tracking, addLog]);
-
   return (
-    <View style={styles.screen}>
-      {/* Header row */}
-      <View style={styles.headerBlock}>
-        <Text style={styles.kicker}>LOAD CARRIAGE</Text>
-        <Text style={styles.title}>Ruck Performance</Text>
-      </View>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Text style={styles.kicker}>LOAD CARRIAGE</Text>
+      <Text style={styles.title}>Ruck Performance</Text>
+      <Text style={styles.subtitle}>
+        Distance, load, pace and progression tracked from your logged ruck sessions.
+      </Text>
 
-      {/* Tab pills */}
-      <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[styles.tabPill, activeTab === 'stats' && styles.tabPillActive]}
-          onPress={() => setActiveTab('stats')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'stats' }}
-        >
-          <Text style={[styles.tabPillText, activeTab === 'stats' && styles.tabPillTextActive]}>
-            Stats
+      {ruckLogs.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>No ruck sessions logged</Text>
+          <Text style={styles.emptyText}>
+            {'Log a ruck session with category "Ruck" and include distance in km and load in kg to start tracking performance.'}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabPill, activeTab === 'track' && styles.tabPillActive]}
-          onPress={() => setActiveTab('track')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'track' }}
-        >
-          <Text style={[styles.tabPillText, activeTab === 'track' && styles.tabPillTextActive]}>
-            Track
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Stats tab */}
-      {activeTab === 'stats' ? (
-        <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-          <Text style={styles.subtitle}>
-            Distance, load, pace and progression tracked from your logged ruck sessions.
-          </Text>
-
-          {ruckLogs.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>No ruck sessions logged</Text>
-              <Text style={styles.emptyText}>
-                {'Log a ruck session with category "Ruck" and include distance in km and load in kg to start tracking performance.'}
-              </Text>
-              <Text style={styles.emptyHint}>{'Example: "12 km - 18 kg"'}</Text>
-            </View>
-          ) : (
-            <>
-              <View style={styles.volumeCard}>
-                <View style={styles.volumeRow}>
-                  <View style={styles.volumeStat}>
-                    <Text style={styles.volumeNumber}>{totalSessions}</Text>
-                    <Text style={styles.volumeLabel}>Sessions</Text>
-                  </View>
-                  <View style={styles.volumeDivider} />
-                  <View style={styles.volumeStat}>
-                    <Text style={styles.volumeNumber}>{totalDistance > 0 ? `${totalDistance.toFixed(1)}` : '--'}</Text>
-                    <Text style={styles.volumeLabel}>Total km</Text>
-                  </View>
-                  <View style={styles.volumeDivider} />
-                  <View style={styles.volumeStat}>
-                    <Text style={styles.volumeNumber}>{longestRuck > 0 ? `${longestRuck}` : '--'}</Text>
-                    <Text style={styles.volumeLabel}>Longest km</Text>
-                  </View>
-                  <View style={styles.volumeDivider} />
-                  <View style={styles.volumeStat}>
-                    <Text style={styles.volumeNumber}>{heaviestLoad > 0 ? `${heaviestLoad}` : '--'}</Text>
-                    <Text style={styles.volumeLabel}>Max kg</Text>
-                  </View>
-                </View>
-
-                {weekStats.sessions > 0 ? (
-                  <View style={styles.weekRow}>
-                    <Text style={styles.weekText}>
-                      This week: {weekStats.sessions} {weekStats.sessions === 1 ? 'session' : 'sessions'}
-                      {weekStats.km > 0 ? ` · ${weekStats.km.toFixed(1)} km` : ''}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-
-              <View style={styles.pbRow}>
-                <View style={styles.pbCard}>
-                  <Text style={styles.pbKicker}>BEST PACE</Text>
-                  <Text style={styles.pbValue}>
-                    {bestPace !== Infinity ? formatPace(bestPace) : '--'}
-                  </Text>
-                  {latestMetrics && latestMetrics.pace > 0 && bestPace !== Infinity && latestMetrics.pace !== bestPace ? (
-                    <Text style={latestMetrics.pace <= bestPace ? styles.pbDeltaGood : styles.pbDeltaNeutral}>
-                      Last: {formatPace(latestMetrics.pace)}
-                    </Text>
-                  ) : null}
-                </View>
-                <View style={styles.pbCard}>
-                  <Text style={styles.pbKicker}>TREND</Text>
-                  <Text style={
-                    trend.status === 'warning' ? styles.pbValueWarn
-                    : trend.status === 'good' ? styles.pbValueGood
-                    : styles.pbValue
-                  }>
-                    {ruckLogs.length > 1 ? trend.label : 'Baseline'}
-                  </Text>
-                  {trend.status !== 'neutral' && ruckLogs.length > 1 ? (
-                    <Text style={trend.status === 'warning' ? styles.pbDeltaWarn : styles.pbDeltaGood}>
-                      {trend.latest}/10 vs {trend.previous}/10
-                    </Text>
-                  ) : null}
-                </View>
-              </View>
-
-              {latest && latestMetrics ? (
-                <View style={styles.latestCard}>
-                  <View style={styles.latestHeader}>
-                    <Text style={styles.latestKicker}>LAST RUCK — {latest.date}</Text>
-                    <View style={isFatigueWatch(latest.readiness) ? styles.readinessBadgeWarn : styles.readinessBadge}>
-                      <Text style={isFatigueWatch(latest.readiness) ? styles.readinessTextWarn : styles.readinessText}>
-                        {latest.readiness}/10
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.latestStats}>
-                    <View style={styles.latestStat}>
-                      <Text style={styles.latestStatNumber}>
-                        {latestMetrics.distance > 0 ? `${latestMetrics.distance} km` : '--'}
-                      </Text>
-                      <Text style={styles.latestStatLabel}>Distance</Text>
-                      {distanceDelta !== null ? (
-                        <Text style={distanceDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
-                          {distanceDelta > 0 ? '+' : ''}{distanceDelta.toFixed(1)} km
-                        </Text>
-                      ) : null}
-                    </View>
-
-                    <View style={styles.latestStat}>
-                      <Text style={styles.latestStatNumber}>
-                        {latestMetrics.load > 0 ? `${latestMetrics.load} kg` : '--'}
-                      </Text>
-                      <Text style={styles.latestStatLabel}>Load</Text>
-                      {loadDelta !== null ? (
-                        <Text style={loadDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
-                          {loadDelta > 0 ? '+' : ''}{loadDelta.toFixed(1)} kg
-                        </Text>
-                      ) : null}
-                    </View>
-
-                    <View style={styles.latestStat}>
-                      <Text style={styles.latestStatNumber}>{formatDuration(latestMetrics.minutes)}</Text>
-                      <Text style={styles.latestStatLabel}>Duration</Text>
-                    </View>
-
-                    <View style={styles.latestStat}>
-                      <Text style={styles.latestStatNumber}>
-                        {latestMetrics.pace > 0 ? formatPace(latestMetrics.pace) : '--'}
-                      </Text>
-                      <Text style={styles.latestStatLabel}>Pace</Text>
-                      {latestMetrics.pace > 0 && bestPace !== Infinity && latestMetrics.pace !== bestPace ? (
-                        <Text style={latestMetrics.pace <= bestPace ? styles.deltaGood : styles.deltaWarn}>
-                          {latestMetrics.pace <= bestPace ? 'PB' : `+${formatPace(latestMetrics.pace - bestPace).replace('/km', '')} vs PB`}
-                        </Text>
-                      ) : latestMetrics.pace > 0 && bestPace !== Infinity && latestMetrics.pace === bestPace ? (
-                        <Text style={styles.deltaGood}>PB</Text>
-                      ) : null}
-                    </View>
-                  </View>
-                </View>
-              ) : null}
-
-              <View style={readinessGood ? styles.nextCard : styles.nextCardWarn}>
-                <Text style={styles.nextKicker}>NEXT SESSION</Text>
-                <Text style={styles.nextText}>{nextSessionAdvice}</Text>
-              </View>
-
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Recent Sessions</Text>
-                <Text style={styles.sectionTag}>{totalSessions} TOTAL</Text>
-              </View>
-
-              {recentHistory.map((log, i) => {
-                const m = recentMetricsSlice[i];
-                const paceVsPb = m?.pace > 0 && bestPace !== Infinity ? m.pace - bestPace : null;
-                return (
-                  <RuckSessionCard key={log.id} log={log} metrics={m} paceVsPb={paceVsPb} />
-                );
-              })}
-            </>
-          )}
-
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Ruck Builder</Text>
-            <Text style={styles.sectionTag}>SESSIONS</Text>
-          </View>
-
-          <View style={styles.builderCard}>
-            <Text style={styles.builderTitle}>Base Ruck</Text>
-            <Text style={styles.builderDetail}>6–8 km · 10–15 kg · Easy pace</Text>
-            <Text style={styles.builderText}>
-              Steady tactical pace. Posture check every 10 minutes. No running under load. Focus on foot care and breathing rhythm.
-            </Text>
-          </View>
-
-          <View style={styles.builderCard}>
-            <Text style={styles.builderTitle}>Interval Ruck</Text>
-            <Text style={styles.builderDetail}>5 × 4 min strong / 2 min easy</Text>
-            <Text style={styles.builderText}>
-              Builds work capacity without full aerobic load. Keep load moderate. Monitor lower-leg response after the session.
-            </Text>
-          </View>
-
-          <View style={styles.builderCard}>
-            <Text style={styles.builderTitle}>Long Ruck</Text>
-            <Text style={styles.builderDetail}>10–15 km · Match last session load</Text>
-            <Text style={styles.builderText}>
-              Extend distance only. Hold load constant. Increase either load or distance — never both in the same week.
-            </Text>
-          </View>
-
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Field Notes</Text>
-            <Text style={styles.sectionTag}>CHECKLIST</Text>
-          </View>
-
-          <View style={styles.fieldCard}>
-            <Text style={styles.fieldLabel}>BEFORE</Text>
-            <Text style={styles.fieldText}>
-              Check boots, socks, blister kit, hydration, route, weather and pack fit before stepping off.
-            </Text>
-          </View>
-
-          <View style={styles.fieldCard}>
-            <Text style={styles.fieldLabel}>DURING</Text>
-            <Text style={styles.fieldText}>
-              Keep shoulders relaxed. Shorten stride on inclines. Avoid running under heavy load. Hydrate every 20–30 minutes.
-            </Text>
-          </View>
-
-          <View style={styles.fieldCard}>
-            <Text style={styles.fieldLabel}>AFTER</Text>
-            <Text style={styles.fieldText}>
-              Log distance, load, pace, readiness and any hot spots, blisters or lower-leg pain immediately after the session.
-            </Text>
-          </View>
-        </ScrollView>
-      ) : (
-        /* Track tab */
-        <View style={{ flex: 1 }}>
-          <RuckMapView
-            routePoints={tracking.routePoints}
-            currentPosition={tracking.currentPosition}
-            layer={tracking.activeLayer}
-          />
-
-          <LiveMetricsOverlay
-            distanceKm={tracking.distanceKm}
-            elapsedSeconds={tracking.elapsedSeconds}
-            gpsQualityWarning={tracking.gpsQualityWarning}
-            trackingState={tracking.trackingState}
-          />
-
-          <MapLayerPicker
-            activeLayer={tracking.activeLayer}
-            onSelect={tracking.setLayer}
-          />
-
-          <ControlRow tracking={tracking} onSave={handleSaveSession} />
+          <Text style={styles.emptyHint}>{'Example: "12 km - 18 kg"'}</Text>
         </View>
+      ) : (
+        <>
+          <View style={styles.volumeCard}>
+            <View style={styles.volumeRow}>
+              <View style={styles.volumeStat}>
+                <Text style={styles.volumeNumber}>{totalSessions}</Text>
+                <Text style={styles.volumeLabel}>Sessions</Text>
+              </View>
+              <View style={styles.volumeDivider} />
+              <View style={styles.volumeStat}>
+                <Text style={styles.volumeNumber}>{totalDistance > 0 ? `${totalDistance.toFixed(1)}` : '--'}</Text>
+                <Text style={styles.volumeLabel}>Total km</Text>
+              </View>
+              <View style={styles.volumeDivider} />
+              <View style={styles.volumeStat}>
+                <Text style={styles.volumeNumber}>{longestRuck > 0 ? `${longestRuck}` : '--'}</Text>
+                <Text style={styles.volumeLabel}>Longest km</Text>
+              </View>
+              <View style={styles.volumeDivider} />
+              <View style={styles.volumeStat}>
+                <Text style={styles.volumeNumber}>{heaviestLoad > 0 ? `${heaviestLoad}` : '--'}</Text>
+                <Text style={styles.volumeLabel}>Max kg</Text>
+              </View>
+            </View>
+
+            {weekStats.sessions > 0 ? (
+              <View style={styles.weekRow}>
+                <Text style={styles.weekText}>
+                  This week: {weekStats.sessions} {weekStats.sessions === 1 ? 'session' : 'sessions'}
+                  {weekStats.km > 0 ? ` · ${weekStats.km.toFixed(1)} km` : ''}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <View style={styles.pbRow}>
+            <View style={styles.pbCard}>
+              <Text style={styles.pbKicker}>BEST PACE</Text>
+              <Text style={styles.pbValue}>
+                {bestPace !== Infinity ? formatPace(bestPace) : '--'}
+              </Text>
+              {latestMetrics && latestMetrics.pace > 0 && bestPace !== Infinity && latestMetrics.pace !== bestPace ? (
+                <Text style={latestMetrics.pace <= bestPace ? styles.pbDeltaGood : styles.pbDeltaNeutral}>
+                  Last: {formatPace(latestMetrics.pace)}
+                </Text>
+              ) : null}
+            </View>
+            <View style={styles.pbCard}>
+              <Text style={styles.pbKicker}>TREND</Text>
+              <Text style={
+                trend.status === 'warning' ? styles.pbValueWarn
+                : trend.status === 'good' ? styles.pbValueGood
+                : styles.pbValue
+              }>
+                {ruckLogs.length > 1 ? trend.label : 'Baseline'}
+              </Text>
+              {trend.status !== 'neutral' && ruckLogs.length > 1 ? (
+                <Text style={trend.status === 'warning' ? styles.pbDeltaWarn : styles.pbDeltaGood}>
+                  {trend.latest}/10 vs {trend.previous}/10
+                </Text>
+              ) : null}
+            </View>
+          </View>
+
+          {latest && latestMetrics ? (
+            <View style={styles.latestCard}>
+              <View style={styles.latestHeader}>
+                <Text style={styles.latestKicker}>LAST RUCK — {latest.date}</Text>
+                <View style={isFatigueWatch(latest.readiness) ? styles.readinessBadgeWarn : styles.readinessBadge}>
+                  <Text style={isFatigueWatch(latest.readiness) ? styles.readinessTextWarn : styles.readinessText}>
+                    {latest.readiness}/10
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.latestStats}>
+                <View style={styles.latestStat}>
+                  <Text style={styles.latestStatNumber}>
+                    {latestMetrics.distance > 0 ? `${latestMetrics.distance} km` : '--'}
+                  </Text>
+                  <Text style={styles.latestStatLabel}>Distance</Text>
+                  {distanceDelta !== null ? (
+                    <Text style={distanceDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
+                      {distanceDelta > 0 ? '+' : ''}{distanceDelta.toFixed(1)} km
+                    </Text>
+                  ) : null}
+                </View>
+
+                <View style={styles.latestStat}>
+                  <Text style={styles.latestStatNumber}>
+                    {latestMetrics.load > 0 ? `${latestMetrics.load} kg` : '--'}
+                  </Text>
+                  <Text style={styles.latestStatLabel}>Load</Text>
+                  {loadDelta !== null ? (
+                    <Text style={loadDelta >= 0 ? styles.deltaGood : styles.deltaWarn}>
+                      {loadDelta > 0 ? '+' : ''}{loadDelta.toFixed(1)} kg
+                    </Text>
+                  ) : null}
+                </View>
+
+                <View style={styles.latestStat}>
+                  <Text style={styles.latestStatNumber}>{formatDuration(latestMetrics.minutes)}</Text>
+                  <Text style={styles.latestStatLabel}>Duration</Text>
+                </View>
+
+                <View style={styles.latestStat}>
+                  <Text style={styles.latestStatNumber}>
+                    {latestMetrics.pace > 0 ? formatPace(latestMetrics.pace) : '--'}
+                  </Text>
+                  <Text style={styles.latestStatLabel}>Pace</Text>
+                  {latestMetrics.pace > 0 && bestPace !== Infinity && latestMetrics.pace !== bestPace ? (
+                    <Text style={latestMetrics.pace <= bestPace ? styles.deltaGood : styles.deltaWarn}>
+                      {latestMetrics.pace <= bestPace ? 'PB' : `+${formatPace(latestMetrics.pace - bestPace).replace('/km', '')} vs PB`}
+                    </Text>
+                  ) : latestMetrics.pace > 0 && bestPace !== Infinity && latestMetrics.pace === bestPace ? (
+                    <Text style={styles.deltaGood}>PB</Text>
+                  ) : null}
+                </View>
+              </View>
+            </View>
+          ) : null}
+
+          <View style={readinessGood ? styles.nextCard : styles.nextCardWarn}>
+            <Text style={styles.nextKicker}>NEXT SESSION</Text>
+            <Text style={styles.nextText}>{nextSessionAdvice}</Text>
+          </View>
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Sessions</Text>
+            <Text style={styles.sectionTag}>{totalSessions} TOTAL</Text>
+          </View>
+
+          {recentHistory.map((log, i) => {
+            const m = recentMetricsSlice[i];
+            const paceVsPb = m?.pace > 0 && bestPace !== Infinity ? m.pace - bestPace : null;
+            return (
+              <RuckSessionCard key={log.id} log={log} metrics={m} paceVsPb={paceVsPb} />
+            );
+          })}
+        </>
       )}
-    </View>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Ruck Builder</Text>
+        <Text style={styles.sectionTag}>SESSIONS</Text>
+      </View>
+
+      <View style={styles.builderCard}>
+        <Text style={styles.builderTitle}>Base Ruck</Text>
+        <Text style={styles.builderDetail}>6–8 km · 10–15 kg · Easy pace</Text>
+        <Text style={styles.builderText}>
+          Steady tactical pace. Posture check every 10 minutes. No running under load. Focus on foot care and breathing rhythm.
+        </Text>
+      </View>
+
+      <View style={styles.builderCard}>
+        <Text style={styles.builderTitle}>Interval Ruck</Text>
+        <Text style={styles.builderDetail}>5 × 4 min strong / 2 min easy</Text>
+        <Text style={styles.builderText}>
+          Builds work capacity without full aerobic load. Keep load moderate. Monitor lower-leg response after the session.
+        </Text>
+      </View>
+
+      <View style={styles.builderCard}>
+        <Text style={styles.builderTitle}>Long Ruck</Text>
+        <Text style={styles.builderDetail}>10–15 km · Match last session load</Text>
+        <Text style={styles.builderText}>
+          Extend distance only. Hold load constant. Increase either load or distance — never both in the same week.
+        </Text>
+      </View>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Field Notes</Text>
+        <Text style={styles.sectionTag}>CHECKLIST</Text>
+      </View>
+
+      <View style={styles.fieldCard}>
+        <Text style={styles.fieldLabel}>BEFORE</Text>
+        <Text style={styles.fieldText}>
+          Check boots, socks, blister kit, hydration, route, weather and pack fit before stepping off.
+        </Text>
+      </View>
+
+      <View style={styles.fieldCard}>
+        <Text style={styles.fieldLabel}>DURING</Text>
+        <Text style={styles.fieldText}>
+          Keep shoulders relaxed. Shorten stride on inclines. Avoid running under heavy load. Hydrate every 20–30 minutes.
+        </Text>
+      </View>
+
+      <View style={styles.fieldCard}>
+        <Text style={styles.fieldLabel}>AFTER</Text>
+        <Text style={styles.fieldText}>
+          Log distance, load, pace, readiness and any hot spots, blisters or lower-leg pain immediately after the session.
+        </Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#07110c' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
-  headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 4, gap: 2 },
   kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#aeb8aa', fontSize: 15, lineHeight: 22 },
-
-  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 14, paddingTop: 4 },
-  tabPill: { flex: 1, borderRadius: 12, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: '#203529', backgroundColor: '#0d1812' },
-  tabPillActive: { backgroundColor: '#2f6b3c', borderColor: '#2f6b3c' },
-  tabPillText: { color: '#8fbf8f', fontSize: 13, fontWeight: '900', letterSpacing: 1.2 },
-  tabPillTextActive: { color: '#f2f5ef' },
 
   volumeCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#2f6b3c', gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },
@@ -672,23 +521,4 @@ const styles = StyleSheet.create({
   fieldCard: { backgroundColor: '#101a14', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#26382c', gap: 6 },
   fieldLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   fieldText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
-});
-
-const controlStyles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 10, padding: 14 },
-  startBtn: { margin: 14, backgroundColor: '#2f6b3c', borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
-  startBtnText: { color: '#f2f5ef', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  pauseBtn: { flex: 1, backgroundColor: '#1a2e22', borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: '#2f6b3c' },
-  pauseBtnText: { color: '#91e6a3', fontSize: 14, fontWeight: '900' },
-  stopBtn: { flex: 1, backgroundColor: '#3a1010', borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: '#7a2020' },
-  stopBtnText: { color: '#ff8080', fontSize: 14, fontWeight: '900' },
-  resumeBtn: { flex: 1, backgroundColor: '#2f6b3c', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  resumeBtnText: { color: '#f2f5ef', fontSize: 14, fontWeight: '900' },
-  saveCard: { margin: 14, backgroundColor: '#0d1812', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 10 },
-  saveTitle: { color: '#f2f5ef', fontSize: 18, fontWeight: '900' },
-  saveSub: { color: '#8fbf8f', fontSize: 13 },
-  saveBtn: { flex: 1, backgroundColor: '#2f6b3c', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  saveBtnText: { color: '#f2f5ef', fontSize: 14, fontWeight: '900' },
-  discardBtn: { flex: 1, backgroundColor: '#1a1a1a', borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: '#333' },
-  discardBtnText: { color: '#aaaaaa', fontSize: 14, fontWeight: '700' },
 });
