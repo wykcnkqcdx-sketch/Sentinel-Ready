@@ -86,4 +86,18 @@ describe('buildGoalSuggestions', () => {
 
     expect(suggestions.some((suggestion) => suggestion.category === 'Ruck')).toBe(false);
   });
+
+  it('suggests military-readiness goals for missing training pillars', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-14T12:00:00Z'));
+
+    const suggestions = buildGoalSuggestions([
+      makeLog({ id: 1, date: '2026-05-11', category: 'Run', distanceLoad: '5 km' }),
+      makeLog({ id: 2, date: '2026-05-12', category: 'Recovery' }),
+    ]);
+
+    expect(suggestions.map((suggestion) => suggestion.category)).toEqual(
+      expect.arrayContaining(['Ruck', 'Strength', 'Resistance']),
+    );
+  });
 });

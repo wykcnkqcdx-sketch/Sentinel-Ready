@@ -52,14 +52,58 @@ export function buildGoalSuggestions(
     });
   }
 
-  if (balance.gaps.includes('No strength') && !hasActiveCategory(goals, 'Strength')) {
+  if (balance.gaps.includes('No load carriage') && !hasActiveCategory(goals, 'Ruck')) {
+    suggestions.push({
+      category: 'Ruck',
+      title: 'Load-carriage base',
+      target: '1 controlled ruck or loaded hike per week',
+      current: 'No load-carriage session logged this week',
+      notes: 'Build pack tolerance, foot care and posture before increasing distance or load.',
+      reason: 'Load-carriage gap detected',
+    });
+  }
+
+  if (balance.gaps.includes('No strength or resistance') && !hasActiveCategory(goals, 'Strength')) {
     suggestions.push({
       category: 'Strength',
       title: 'Strength base',
       target: '2 full-body strength sessions per week',
-      current: 'No strength logged this week',
+      current: 'No strength or resistance logged this week',
       notes: 'Cover squat, press, pull, hinge and carry patterns.',
       reason: 'Strength gap detected',
+    });
+  }
+
+  if (balance.gaps.includes('No strength or resistance') && !hasActiveCategory(goals, 'Resistance')) {
+    suggestions.push({
+      category: 'Resistance',
+      title: 'Resistance circuit capacity',
+      target: '1 push-pull-core-carry circuit per week',
+      current: 'No resistance circuit logged this week',
+      notes: 'Use controlled circuits to build repeated-effort capacity without turning every session into a max test.',
+      reason: 'Resistance training gap detected',
+    });
+  }
+
+  if (balance.gaps.includes('No aerobic or hiking') && !hasActiveCategory(goals, 'Hiking')) {
+    suggestions.push({
+      category: 'Hiking',
+      title: 'Terrain movement base',
+      target: '1 terrain hike per week',
+      current: 'No hiking or terrain session logged this week',
+      notes: 'Practise climbs, descents, footing, fueling, navigation pauses and foot checks.',
+      reason: 'Terrain movement gap detected',
+    });
+  }
+
+  if (balance.gaps.includes('No military skills') && !hasActiveCategory(goals, 'Military')) {
+    suggestions.push({
+      category: 'Military',
+      title: 'Field skills consistency',
+      target: '1 low-risk military skills block per week',
+      current: 'No military skills block logged this week',
+      notes: 'Practise navigation, kit setup, tactical movement, communication and casualty-drag mechanics.',
+      reason: 'Military skills gap detected',
     });
   }
 

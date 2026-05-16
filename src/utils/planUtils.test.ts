@@ -1,4 +1,4 @@
-import type { TrainingLog } from '@/src/screens/TrainingContext';
+import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import { describe, expect, it } from 'vitest';
 import { buildWeekPlan, getDayPlanDetails } from './planUtils';
 
@@ -12,6 +12,20 @@ function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
     distanceLoad: '8 km - 18 kg',
     readiness: '7',
     notes: 'Steady pace, breathing controlled, no pain.',
+    ...overrides,
+  };
+}
+
+function makeGoal(overrides: Partial<TrainingGoal> = {}): TrainingGoal {
+  return {
+    id: 1,
+    category: 'Military',
+    title: 'Weekly field skills block',
+    target: '60 minutes field skills',
+    current: 'Building baseline',
+    deadline: '2026-06-01',
+    notes: '',
+    status: 'active',
     ...overrides,
   };
 }
@@ -51,6 +65,21 @@ describe('planUtils', () => {
     expect(mainWork).toContain('navigation');
     expect(mainWork).toContain('carry');
     expect(mainWork).toContain('terrain');
+  });
+
+  it('emphasizes the priority goal on the matching training day', () => {
+    const plan = buildWeekPlan([
+      makeLog({ id: 1, date: '2026-05-14', readiness: '6' }),
+      makeLog({ id: 2, date: '2026-05-15', readiness: '8' }),
+      makeLog({ id: 3, date: '2026-05-16', readiness: '8' }),
+    ], [makeGoal()]);
+
+    const militaryDay = plan.days.find((day) => day.focus === 'Military');
+    const details = militaryDay ? getDayPlanDetails(militaryDay) : null;
+
+    expect(plan.rationale).toContain('Priority goal emphasis');
+    expect(militaryDay?.session).toContain('Priority Goal');
+    expect(details?.mainWork).toContain('Weekly field skills block');
   });
 
   it('fills missing day plan details with defaults', () => {

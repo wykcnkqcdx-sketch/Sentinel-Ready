@@ -37,6 +37,46 @@ function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' |
   };
 }
 
+function getPriorityGoal(goals: TrainingGoal[]): TrainingGoal | null {
+  const active = goals.filter((goal) => goal.status === 'active');
+  if (active.length === 0) return null;
+
+  return [...active].sort((a, b) => {
+    const aDate = /^\d{4}-\d{2}-\d{2}$/.test(a.deadline) ? getDateValue(a.deadline) : Number.MAX_SAFE_INTEGER;
+    const bDate = /^\d{4}-\d{2}-\d{2}$/.test(b.deadline) ? getDateValue(b.deadline) : Number.MAX_SAFE_INTEGER;
+    return aDate - bDate || a.id - b.id;
+  })[0];
+}
+
+function goalMatchesFocus(goal: TrainingGoal, focus: string) {
+  if (goal.category === 'Consistency' || goal.category === 'Test' || goal.category === 'Recovery') return false;
+  return focus.toLowerCase().includes(goal.category.toLowerCase());
+}
+
+function applyPriorityGoalToPlan(days: DayPlan[], goals: TrainingGoal[]): DayPlan[] {
+  const priority = getPriorityGoal(goals);
+  if (!priority) return days;
+
+  let applied = false;
+  return days.map((day) => {
+    if (applied || day.isRest || !goalMatchesFocus(priority, day.focus)) return day;
+
+    applied = true;
+    return {
+      ...day,
+      session: `${day.session} - Priority Goal`,
+      mainWork: `Priority goal: ${priority.title}. Target: ${priority.target}. ${day.mainWork ?? day.session}`,
+      adjustment: `${day.adjustment ?? 'Adjust from readiness.'} Keep the goal-specific progression controlled: change only one variable and log the result clearly.`,
+    };
+  });
+}
+
+function withGoalRationale(rationale: string, goals: TrainingGoal[]) {
+  const priority = getPriorityGoal(goals);
+  if (!priority) return rationale;
+  return `${rationale} Priority goal emphasis: ${priority.title}.`;
+}
+
 export function getDayPlanDetails(plan: DayPlan): Required<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>> {
   const defaults = createDayPlan({
     day: plan.day,
@@ -87,8 +127,8 @@ export function buildWeekPlan(
   if (readinessImproving && logs.length >= 3 && recentFatigueWatch === 0) {
     return {
       planType: 'progressive',
-      rationale: 'Readiness is improving. Use a progressive military microcycle: strength, resistance, ruck, hiking, field skills and recovery, while progressing only one load variable.',
-      days: [
+      rationale: withGoalRationale('Readiness is improving. Use a progressive military microcycle: strength, resistance, ruck, hiking, field skills and recovery, while progressing only one load variable.', goals),
+      days: applyPriorityGoalToPlan([
         createDayPlan({
           day: 'Day 1',
           focus: 'Strength',
@@ -166,14 +206,14 @@ export function buildWeekPlan(
           intensity: 'Rest',
           isRest: true,
         }),
-      ],
+      ], goals),
     };
   }
   
   return {
     planType: 'standard',
-    rationale: 'Readiness is stable. Follow a balanced military-readiness week covering strength, resistance, ruck, hiking, military skills and recovery.',
-    days: [
+    rationale: withGoalRationale('Readiness is stable. Follow a balanced military-readiness week covering strength, resistance, ruck, hiking, military skills and recovery.', goals),
+    days: applyPriorityGoalToPlan([
       createDayPlan({
         day: 'Day 1',
         focus: 'Strength',
@@ -237,6 +277,6 @@ export function buildWeekPlan(
         intensity: 'Rest',
         isRest: true,
       }),
-    ],
+    ], goals),
   };
 }
