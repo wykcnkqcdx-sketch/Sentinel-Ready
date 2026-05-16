@@ -7,6 +7,7 @@ import type { MapOverlay } from '@/src/utils/fieldMapping';
 import React, { memo } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 export type RuckSaveDraft = {
   sessionType: string;
@@ -224,6 +225,19 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
             <View style={[styles.overlayDot, { backgroundColor: o.color }]} />
             <Text style={styles.overlayChipText} numberOfLines={1}>{o.name}</Text>
           </TouchableOpacity>
+          <Animated.View key={o.id} entering={FadeIn.duration(400)} exiting={FadeOut.duration(300)}>
+            <TouchableOpacity
+              style={[styles.overlayChip, !o.visible && styles.overlayChipHidden]}
+              onPress={() => onToggleOverlay(o.id)}
+              onLongPress={() => onRemoveOverlay(o.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${o.name} overlay, ${o.visible ? 'visible' : 'hidden'}. Long press to remove.`}
+              accessibilityHint="Tap to toggle visibility, long press to remove"
+            >
+              <View style={[styles.overlayDot, { backgroundColor: o.color }]} />
+              <Text style={styles.overlayChipText} numberOfLines={1}>{o.name}</Text>
+            </TouchableOpacity>
+          </Animated.View>
         ))}
       </View>
 
