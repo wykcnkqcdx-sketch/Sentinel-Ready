@@ -19,6 +19,7 @@ import {
   filterAndSortLogs,
   getTrainingLogHealthLabel,
   getTrainingLogHealthMessage,
+  getWeakLogReasons,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -39,6 +40,15 @@ export default function LogScreen() {
   const sessionRecommendation = useMemo(() => buildSessionRecommendation(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
   const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
+  
+  const weakReasonsMap = useMemo(() => {
+    const map = new Map<number, string[]>();
+    for (const log of logs) {
+      const reasons = getWeakLogReasons(log);
+      if (reasons.length > 0) map.set(log.id, reasons);
+    }
+    return map;
+  }, [logs]);
 
   const handleRecommendationAction = useCallback((actionType: RecommendationActionType) => {
     if (actionType === 'weak-logs') {
@@ -57,11 +67,13 @@ export default function LogScreen() {
     [logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly]
   );
 
-  sci tActiveFilter('All');
+  const clearSearchAndFilters = useCallback(() => {
+    setActiveFilter('All');
     setSortMode('Newest');
     setSearchQuery('');
     setShowWeakLogsOnly(false);
   }, []);
+
   const handleDuplicateLog = useCallback(async (id: number) => {
     try {
       await duplicateLog(id);
@@ -72,6 +84,7 @@ export default function LogScreen() {
 
   const shareCsvExport = useCallback(async () => {
     try {
+      await Share.share({
         title: 'Sentinel Ready Training Logs CSV',
         message: exportLogsCsv(),
       });
@@ -80,7 +93,8 @@ export default function LogScreen() {
     }
   }, [exportLogsCsv]);
 
-co    Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
+  const confirmDeleteLog = useCallback((log: TrainingLog) => {
+    Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -114,6 +128,7 @@ co    Alert.alert('Delete Training Log', `Delete this ${log.category} log from $
         renderItem={({ item }) => (
           <TrainingLogCard
             log={item}
+            weakReasons={weakReasonsMap.get(item.id) ?? []}
             onEdit={handleEditLog}
             onDuplicate={handleDuplicateLog}
             onDelete={confirmDeleteLog}

@@ -201,7 +201,7 @@ export default function RuckScreen() {
         polyline: ''
       }
     });
-    tracking.resetTracking();
+    tracking.resetSession();
     setActiveTab('stats');
   };
 

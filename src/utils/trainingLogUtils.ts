@@ -234,6 +234,19 @@ export function buildReadinessTrend(logs: TrainingLog[]) {
   };
 }
 
+function hasRecentReadinessImprovement(logs: TrainingLog[]) {
+  const sortedLogs = [...logs]
+    .filter((log) => getReadinessNumber(log.readiness) > 0)
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .slice(0, 7);
+
+  if (sortedLogs.length < 2) return false;
+
+  const latest = getReadinessNumber(sortedLogs[0].readiness);
+  const oldest = getReadinessNumber(sortedLogs[sortedLogs.length - 1].readiness);
+  return latest - oldest >= 2;
+}
+
 export function filterAndSortLogs(
   logs: TrainingLog[],
   activeFilter: TrainingFilter,
@@ -498,6 +511,7 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
   const trend = buildReadinessTrend(logs);
   const thisWeek = buildWeekSummary(logs, 0);
   const weeklyLoadRisk = buildWeeklyLoadRisk(logs);
+  const readinessImproving = trend.status === 'good' || hasRecentReadinessImprovement(logs);
 
   const recentLogs = [...logs]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
@@ -562,6 +576,17 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
     };
   }
 
+  if (readinessImproving && recentFatigueWatch === 0) {
+    return {
+      sessionType: 'Progressive Load',
+      reason: 'Readiness is improving and no recent fatigue watch sessions.',
+      suggestion: 'Choose a session that suits your weekly split. Consider a small increase in distance, load or session count.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'good',
+    };
+  }
+
   if (weeklyLoadRisk.status === 'moderate' && weeklyLoadRisk.recoverySessions === 0) {
     return {
       sessionType: 'Mobility Session',
@@ -614,17 +639,6 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
       sessionType: 'Steady Run',
       reason: 'No run logged this week and readiness is good.',
       suggestion: '30–40 minutes at a comfortable aerobic pace. Keep effort conversational and finish with a short cooldown.',
-      actionLabel: 'Add Training Log',
-      actionType: 'add-log',
-      status: 'good',
-    };
-  }
-
-  if (trend.status === 'good' && recentFatigueWatch === 0) {
-    return {
-      sessionType: 'Progressive Load',
-      reason: 'Readiness is improving and no recent fatigue watch sessions.',
-      suggestion: 'Choose a session that suits your weekly split. Consider a small increase in distance, load or session count.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
       status: 'good',
@@ -930,6 +944,11 @@ export function buildWeekPlan(
   profile: TrainingProfileInput = {}
 ): WeekPlan {
   const trend = buildReadinessTrend(logs);
+  const readinessImproving = trend.status === 'good' || hasRecentReadinessImprovement(logs);
+  const recentFatigueWatch = [...logs]
+    .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id)
+    .slice(0, 7)
+    .filter((log) => isFatigueWatch(log.readiness)).length;
   
   if (trend.status === 'warning') {
     return {
@@ -942,6 +961,22 @@ export function buildWeekPlan(
         intensity: 'Rest',
         isRest: true,
       })),
+    };
+  }
+
+  if (readinessImproving && logs.length >= 3 && recentFatigueWatch === 0) {
+    return {
+      planType: 'progressive',
+      rationale: 'Readiness is improving. Progress carefully while keeping recovery built into the week.',
+      days: [
+        { day: 'Day 1', focus: 'Strength', session: 'Full Body Strength', intensity: 'Moderate', isRest: false },
+        { day: 'Day 2', focus: 'Run', session: 'Aerobic Base Run', intensity: 'Moderate', isRest: false },
+        { day: 'Day 3', focus: 'Recovery', session: 'Mobility and Core', intensity: 'Low', isRest: true },
+        { day: 'Day 4', focus: 'Strength', session: 'Full Body Strength Progression', intensity: 'Moderate', isRest: false },
+        { day: 'Day 5', focus: 'Ruck', session: 'Loaded Ruck Progression', intensity: 'High', isRest: false },
+        { day: 'Day 6', focus: 'Recovery', session: 'Active Recovery', intensity: 'Low', isRest: false },
+        { day: 'Day 7', focus: 'Rest', session: 'Complete Rest', intensity: 'Rest', isRest: true },
+      ],
     };
   }
   
