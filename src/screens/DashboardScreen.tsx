@@ -467,6 +467,30 @@ export default function DashboardScreen() {
         ) : null}
       </View>
 
+      <View style={styles.connectSection}>
+        <Text style={styles.connectKicker}>CONNECT</Text>
+        <View style={styles.connectRow}>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/strava')}
+            accessibilityRole="button"
+            accessibilityLabel="Open Strava integration"
+          >
+            <View style={styles.connectPillDot} />
+            <Text style={styles.connectPillText}>Strava</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/atak')}
+            accessibilityRole="button"
+            accessibilityLabel="Open ATAK integration"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotAtak]} />
+            <Text style={styles.connectPillText}>ATAK</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mission Alerts</Text>
@@ -659,4 +683,40 @@ const styles = StyleSheet.create({
   loadNoData: { color: '#6f7d70', fontSize: 13, fontWeight: '800' },
   loadSubText: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
   loadWarnText: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+
+  // Connections section
+  connectSection: {
+    backgroundColor: '#0d1812',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#203529',
+    padding: 16,
+    gap: 12,
+  },
+  connectKicker: {
+    color: '#91e6a3',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  connectRow: { flexDirection: 'row', gap: 10 },
+  connectPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#07110c',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#203529',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  connectPillDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FC4C02',
+  },
+  connectPillDotAtak: { backgroundColor: '#3a7bd5' },
+  connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
 });
