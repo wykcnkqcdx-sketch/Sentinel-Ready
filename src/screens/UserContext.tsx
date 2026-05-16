@@ -3,7 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 export type Gender = 'M' | 'F';
 
-type UserProfile = {
+export type UserProfile = {
   gender: Gender;
   testDate: string | null;
   age: string;
@@ -17,10 +17,12 @@ type UserContextType = UserProfile & {
   setGender: (g: Gender) => void;
   setTestDate: (d: string | null) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
+  replaceProfile: (profile: UserProfile) => void;
+  resetProfile: () => void;
   isLoaded: boolean;
 };
 
-const defaultProfile: UserProfile = {
+export const defaultProfile: UserProfile = {
   gender: 'M',
   testDate: null,
   age: '',
@@ -37,6 +39,8 @@ const UserContext = createContext<UserContextType>({
   setGender: () => {},
   setTestDate: () => {},
   updateProfile: () => {},
+  replaceProfile: () => {},
+  resetProfile: () => {},
   isLoaded: false,
 });
 
@@ -85,6 +89,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setGender: (gender: Gender) => save({ ...profile, gender }),
     setTestDate: (testDate: string | null) => save({ ...profile, testDate }),
     updateProfile: (updates: Partial<UserProfile>) => save({ ...profile, ...updates }),
+    replaceProfile: (nextProfile: UserProfile) => save(nextProfile),
+    resetProfile: () => save(defaultProfile),
     isLoaded,
   }), [profile, isLoaded, save]);
 

@@ -201,6 +201,9 @@ interface TrainingContextType {
   addGoal: (goal: Omit<TrainingGoal, 'id'>) => Promise<void>;
   updateGoal: (id: number, goal: Omit<TrainingGoal, 'id'>) => Promise<void>;
   deleteGoal: (id: number) => Promise<void>;
+  replaceTrainingData: (nextLogs: TrainingLog[], nextGoals: TrainingGoal[]) => Promise<void>;
+  clearLogs: () => Promise<void>;
+  resetStarterData: () => Promise<void>;
   exportLogsCsv: () => string;
   importLogsCsv: (csv: string) => Promise<number>;
   isLoading: boolean;
@@ -325,6 +328,23 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     await updateAndSaveGoals((prev) => prev.filter((goal) => goal.id !== id));
   }, [updateAndSaveGoals]);
 
+  const replaceTrainingData = useCallback(async (nextLogs: TrainingLog[], nextGoals: TrainingGoal[]) => {
+    setLogs(nextLogs);
+    setGoals(nextGoals);
+    await Promise.all([
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextLogs)),
+      AsyncStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(nextGoals)),
+    ]);
+  }, []);
+
+  const clearLogs = useCallback(async () => {
+    await updateAndSaveLogs(() => []);
+  }, [updateAndSaveLogs]);
+
+  const resetStarterData = useCallback(async () => {
+    await replaceTrainingData(starterLogs, starterGoals);
+  }, [replaceTrainingData]);
+
   const exportLogsCsv = useCallback(() => {
     return buildTrainingLogsCsv(logs);
   }, [logs]);
@@ -349,6 +369,9 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     addGoal,
     updateGoal,
     deleteGoal,
+    replaceTrainingData,
+    clearLogs,
+    resetStarterData,
     exportLogsCsv,
     importLogsCsv,
     isLoading,
@@ -363,6 +386,9 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     addGoal,
     updateGoal,
     deleteGoal,
+    replaceTrainingData,
+    clearLogs,
+    resetStarterData,
     exportLogsCsv,
     importLogsCsv,
   ]);
