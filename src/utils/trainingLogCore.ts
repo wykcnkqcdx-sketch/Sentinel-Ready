@@ -3,7 +3,18 @@ import type { TrainingCategory } from '@/src/screens/TrainingContext';
 export type TrainingFilter = 'All' | TrainingCategory;
 export type SortMode = 'Newest' | 'Oldest' | 'Highest Readiness' | 'Lowest Readiness';
 
-export const filters: TrainingFilter[] = ['All', 'Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
+export const filters: TrainingFilter[] = [
+  'All',
+  'Ruck',
+  'Strength',
+  'Resistance',
+  'Run',
+  'Hiking',
+  'Military',
+  'Mobility',
+  'Test',
+  'Recovery',
+];
 export const sortModes: SortMode[] = ['Newest', 'Oldest', 'Highest Readiness', 'Lowest Readiness'];
 
 export type RouteData = {

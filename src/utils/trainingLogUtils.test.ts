@@ -241,7 +241,7 @@ describe('buildSessionRecommendation edge cases', () => {
         makeLog({ id: 1, date: '2026-05-12', category: 'Strength', readiness: '8' }),
         makeLog({ id: 2, date: '2026-05-13', category: 'Run', readiness: '8' }),
       ])
-    ).toMatchObject({ sessionType: 'Base Ruck', status: 'good' });
+    ).toMatchObject({ sessionType: 'Load Carriage', status: 'good' });
   });
 
   it('recommends strength when no strength logged this week', () => {
@@ -253,7 +253,7 @@ describe('buildSessionRecommendation edge cases', () => {
         makeLog({ id: 1, date: '2026-05-12', category: 'Ruck', readiness: '8' }),
         makeLog({ id: 2, date: '2026-05-13', category: 'Run', readiness: '8' }),
       ])
-    ).toMatchObject({ sessionType: 'Strength Session', status: 'good' });
+    ).toMatchObject({ sessionType: 'Strength or Resistance', status: 'good' });
   });
 
   it('recommends a run when no run logged this week', () => {
@@ -311,7 +311,24 @@ describe('buildWeekPlan plan types', () => {
 });
 
 describe('buildNextWeekRecommendation', () => {
-  const emptyWeek = { total: 0, averageReadiness: '0', fatigueWatch: 0, weakLogs: 0, ruck: 0, strength: 0, run: 0, mobility: 0, test: 0, recovery: 0, weekStart: '', weekEnd: '', fatigueWatchSessions: 0 };
+  const emptyWeek = {
+    total: 0,
+    averageReadiness: '0',
+    fatigueWatch: 0,
+    weakLogs: 0,
+    ruck: 0,
+    strength: 0,
+    resistance: 0,
+    run: 0,
+    hiking: 0,
+    military: 0,
+    mobility: 0,
+    test: 0,
+    recovery: 0,
+    weekStart: '',
+    weekEnd: '',
+    fatigueWatchSessions: 0,
+  };
 
   it('recommends logging when no sessions this week', () => {
     expect(buildNextWeekRecommendation({ ...emptyWeek }, { ...emptyWeek })).toContain('3 to 4 sessions');

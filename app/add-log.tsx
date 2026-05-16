@@ -7,7 +7,17 @@ import { TrainingCategory, useTraining } from '@/src/screens/TrainingContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
-const categories: TrainingCategory[] = ['Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
+const categories: TrainingCategory[] = [
+  'Ruck',
+  'Strength',
+  'Resistance',
+  'Run',
+  'Hiking',
+  'Military',
+  'Mobility',
+  'Test',
+  'Recovery',
+];
 
 function getParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

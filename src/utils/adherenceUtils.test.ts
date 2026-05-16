@@ -39,6 +39,7 @@ describe('buildPlanAdherence', () => {
     const adherence = buildPlanAdherence([
       makeLog({ id: 1, date: '2026-05-11', category: 'Ruck' }),
       makeLog({ id: 2, date: '2026-05-12', category: 'Strength' }),
+      makeLog({ id: 3, date: '2026-05-13', category: 'Resistance' }),
     ]);
 
     expect(adherence.status).toBe('partial');
@@ -54,7 +55,9 @@ describe('buildPlanAdherence', () => {
       makeLog({ id: 1, date: '2026-05-11', category: 'Ruck' }),
       makeLog({ id: 2, date: '2026-05-12', category: 'Run' }),
       makeLog({ id: 3, date: '2026-05-13', category: 'Strength' }),
-      makeLog({ id: 4, date: '2026-05-14', category: 'Recovery' }),
+      makeLog({ id: 4, date: '2026-05-14', category: 'Resistance' }),
+      makeLog({ id: 5, date: '2026-05-14', category: 'Hiking' }),
+      makeLog({ id: 6, date: '2026-05-14', category: 'Military' }),
     ]);
 
     expect(adherence.status).toBe('on-track');

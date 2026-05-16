@@ -34,7 +34,10 @@ export type WeekSummary = {
   weakLogs: number;
   ruck: number;
   strength: number;
+  resistance: number;
   run: number;
+  hiking: number;
+  military: number;
   mobility: number;
   test: number;
   recovery: number;
@@ -54,7 +57,10 @@ export function buildWeekSummary(logs: TrainingLog[], weeksAgo: number = 0): Wee
     weakLogs: summary.weakLogs,
     ruck: summary.ruck,
     strength: summary.strength,
+    resistance: summary.resistance,
     run: summary.run,
+    hiking: summary.hiking,
+    military: summary.military,
     mobility: weekLogs.filter((log) => log.category === 'Mobility').length,
     test: weekLogs.filter((log) => log.category === 'Test').length,
     recovery: summary.recovery,
@@ -72,6 +78,9 @@ export type WeeklyLoadRisk = {
   ruckSessions: number;
   runSessions: number;
   strengthSessions: number;
+  resistanceSessions: number;
+  hikingSessions: number;
+  militarySessions: number;
   recoverySessions: number;
   fatigueWatchSessions: number;
 };
@@ -92,6 +101,11 @@ export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date())
   const ruckSessions = recentLogs.filter((log) => log.category === 'Ruck').length;
   const runSessions = recentLogs.filter((log) => log.category === 'Run').length;
   const strengthSessions = recentLogs.filter((log) => log.category === 'Strength').length;
+  const resistanceSessions = recentLogs.filter((log) => log.category === 'Resistance').length;
+  const hikingSessions = recentLogs.filter((log) => log.category === 'Hiking').length;
+  const militarySessions = recentLogs.filter((log) => log.category === 'Military').length;
+  const loadCarriageSessions = ruckSessions + hikingSessions;
+  const strengthLoadSessions = strengthSessions + resistanceSessions;
   const recoverySessions = recentLogs.filter((log) => log.category === 'Recovery' || log.category === 'Mobility').length;
   const fatigueWatchSessions = recentLogs.filter((log) => isFatigueWatch(log.readiness)).length;
   const factors: string[] = [];
@@ -106,22 +120,29 @@ export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date())
       ruckSessions,
       runSessions,
       strengthSessions,
+      resistanceSessions,
+      hikingSessions,
+      militarySessions,
       recoverySessions,
       fatigueWatchSessions,
     };
   }
 
   if (fatigueWatchSessions >= 2) factors.push('Multiple fatigue-watch sessions');
-  if (ruckSessions >= 3) factors.push('High ruck frequency');
+  if (loadCarriageSessions >= 3) factors.push('High load-carriage frequency');
   if (runSessions >= 4) factors.push('High run frequency');
+  if (strengthLoadSessions >= 4) factors.push('High strength/resistance frequency');
+  if (militarySessions >= 2 && recoverySessions === 0) factors.push('Field skills without recovery');
   if (totalSessions >= 6) factors.push('High total session count');
   if (totalSessions >= 3 && recoverySessions === 0) factors.push('No recovery or mobility logged');
   if (trend.status === 'warning') factors.push('Readiness trend is dropping');
 
   const highRisk =
     fatigueWatchSessions >= 2 ||
-    ruckSessions >= 3 ||
+    loadCarriageSessions >= 3 ||
     runSessions >= 4 ||
+    strengthLoadSessions >= 4 ||
+    (militarySessions >= 2 && recoverySessions === 0) ||
     (totalSessions >= 6 && recoverySessions === 0) ||
     (trend.status === 'warning' && fatigueWatchSessions >= 1);
 
@@ -135,6 +156,9 @@ export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date())
       ruckSessions,
       runSessions,
       strengthSessions,
+      resistanceSessions,
+      hikingSessions,
+      militarySessions,
       recoverySessions,
       fatigueWatchSessions,
     };
@@ -142,7 +166,7 @@ export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date())
 
   const moderateRisk =
     totalSessions >= 5 ||
-    ruckSessions >= 2 ||
+    loadCarriageSessions >= 2 ||
     runSessions >= 3 ||
     (totalSessions >= 3 && recoverySessions === 0) ||
     trend.status === 'warning';
@@ -157,6 +181,9 @@ export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date())
       ruckSessions,
       runSessions,
       strengthSessions,
+      resistanceSessions,
+      hikingSessions,
+      militarySessions,
       recoverySessions,
       fatigueWatchSessions,
     };
@@ -171,6 +198,9 @@ export function buildWeeklyLoadRisk(logs: TrainingLog[], now: Date = new Date())
     ruckSessions,
     runSessions,
     strengthSessions,
+    resistanceSessions,
+    hikingSessions,
+    militarySessions,
     recoverySessions,
     fatigueWatchSessions,
   };

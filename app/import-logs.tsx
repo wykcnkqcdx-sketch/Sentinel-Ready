@@ -55,7 +55,7 @@ export default function ImportLogsScreen() {
       <View style={styles.requirementsCard}>
         <Text style={styles.cardKicker}>CSV FORMAT</Text>
         <Text style={styles.requirementText}>Required columns: id, date, category, type, duration, distanceLoad, readiness, notes.</Text>
-        <Text style={styles.requirementText}>Allowed categories: Ruck, Strength, Run, Mobility, Test, Recovery.</Text>
+        <Text style={styles.requirementText}>Allowed categories: Ruck, Strength, Resistance, Run, Hiking, Military, Mobility, Test, Recovery.</Text>
       </View>
 
       <View style={styles.editorCard}>

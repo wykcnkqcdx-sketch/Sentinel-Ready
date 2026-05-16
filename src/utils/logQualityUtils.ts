@@ -27,6 +27,9 @@ export function getNoteStarter(category: TrainingCategory): string {
   if (category === 'Ruck') return 'Ruck notes: pace felt controlled, pack sat well, feet checked after session, shoulders manageable, breathing steady, no major hot spots.';
   if (category === 'Run') return 'Run notes: pace controlled, breathing steady, legs felt good, calves monitored, finished with energy left, no unusual pain.';
   if (category === 'Strength') return 'Strength notes: main lifts completed, form stayed solid, effort controlled, no grinding reps, joints felt comfortable, recovery needed.';
+  if (category === 'Resistance') return 'Resistance notes: circuit completed, movement quality tracked, grip/core fatigue noted, carries controlled, breathing steady, recovery cost recorded.';
+  if (category === 'Hiking') return 'Hiking notes: terrain, pace, footing, climbs, navigation stops, feet/calves/hips and post-session energy recorded.';
+  if (category === 'Military') return 'Military notes: field skill focus, kit setup, movement quality, navigation accuracy, tactical drills, fatigue and recovery cost recorded.';
   if (category === 'Recovery') return 'Recovery notes: mobility completed, hips/calves/hamstrings worked, stiffness reduced, hydration checked, sleep and soreness monitored.';
   if (category === 'Test') return 'Test notes: result recorded, pacing reviewed, weak points identified, breathing controlled, fatigue noted, next improvement target set.';
   return 'Session notes: effort level, fatigue, soreness, breathing, load, pace, recovery and anything unusual recorded.';
@@ -93,7 +96,10 @@ export function buildSummary(logs: TrainingLog[]) {
     averageReadiness,
     ruck: logs.filter((log) => log.category === 'Ruck').length,
     strength: logs.filter((log) => log.category === 'Strength').length,
+    resistance: logs.filter((log) => log.category === 'Resistance').length,
     run: logs.filter((log) => log.category === 'Run').length,
+    hiking: logs.filter((log) => log.category === 'Hiking').length,
+    military: logs.filter((log) => log.category === 'Military').length,
     recovery: logs.filter((log) => log.category === 'Recovery').length,
     fatigueWatch: logs.filter((log) => isFatigueWatch(log.readiness)).length,
     weakLogs: logs.filter((log) => logNeedsImprovement(log)).length,

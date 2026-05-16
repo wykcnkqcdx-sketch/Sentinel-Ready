@@ -122,7 +122,7 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
     return {
       sessionType: 'Controlled Session',
       reason: 'Weekly load risk is moderate. Progression is possible, but only with controlled intensity.',
-      suggestion: 'Choose a short ruck, steady run or strength session without increasing distance, load and intensity together.',
+      suggestion: 'Choose a short ruck, terrain hike, steady run, resistance circuit or strength session without increasing distance, load and intensity together.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
       status: 'caution',
@@ -132,10 +132,10 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
   const readiness = Number(thisWeek.averageReadiness);
   const readinessGood = readiness >= 6 || thisWeek.total === 0;
 
-  if (readinessGood && thisWeek.ruck === 0) {
+  if (readinessGood && thisWeek.ruck + thisWeek.hiking === 0) {
     return {
-      sessionType: 'Base Ruck',
-      reason: 'No ruck session logged this week and readiness is good.',
+      sessionType: 'Load Carriage',
+      reason: 'No ruck or hiking session is logged this week and readiness is good.',
       suggestion: '45–60 minutes at a steady tactical pace with 10–15 kg. Focus on posture, breathing and foot care.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
@@ -143,10 +143,10 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
     };
   }
 
-  if (readinessGood && thisWeek.strength === 0) {
+  if (readinessGood && thisWeek.strength + thisWeek.resistance === 0) {
     return {
-      sessionType: 'Strength Session',
-      reason: 'No strength session logged this week and readiness is good.',
+      sessionType: 'Strength or Resistance',
+      reason: 'No strength or resistance session is logged this week and readiness is good.',
       suggestion: '45–55 minutes covering squat, press, pull and hinge patterns. Keep intensity controlled and form strict.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
@@ -159,6 +159,17 @@ export function buildSessionRecommendation(logs: TrainingLog[]): SessionRecommen
       sessionType: 'Steady Run',
       reason: 'No run logged this week and readiness is good.',
       suggestion: '30–40 minutes at a comfortable aerobic pace. Keep effort conversational and finish with a short cooldown.',
+      actionLabel: 'Add Training Log',
+      actionType: 'add-log',
+      status: 'good',
+    };
+  }
+
+  if (readinessGood && thisWeek.military === 0) {
+    return {
+      sessionType: 'Military Skills',
+      reason: 'No military skills block is logged this week and readiness is good.',
+      suggestion: '45-60 minutes of low-risk field skills: navigation, kit setup, tactical movement, casualty drag mechanics and communication drills.',
       actionLabel: 'Add Training Log',
       actionType: 'add-log',
       status: 'good',

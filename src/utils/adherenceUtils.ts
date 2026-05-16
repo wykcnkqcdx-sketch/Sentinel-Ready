@@ -18,6 +18,9 @@ export type PlanAdherence = {
 function focusToCategory(focus: string): TrainingCategory | 'Conditioning' | null {
   const lower = focus.toLowerCase();
   if (lower.includes('ruck')) return 'Ruck';
+  if (lower.includes('hiking') || lower.includes('hike') || lower.includes('terrain')) return 'Hiking';
+  if (lower.includes('military') || lower.includes('field') || lower.includes('tactical') || lower.includes('navigation')) return 'Military';
+  if (lower.includes('resistance') || lower.includes('circuit')) return 'Resistance';
   if (lower.includes('run')) return 'Run';
   if (lower.includes('strength') || lower.includes('conditioning')) return 'Strength';
   if (lower.includes('mobility')) return 'Mobility';
@@ -48,7 +51,7 @@ export function buildPlanAdherence(
       label: 'No Data',
       message: 'No sessions logged this week to compare against the plan.',
       matched: [],
-      missing: ['Ruck', 'Run', 'Strength', 'Recovery'],
+      missing: ['Ruck', 'Strength', 'Resistance', 'Hiking', 'Military', 'Recovery'],
       extra: [],
       nextAction: 'Log the next planned session to start tracking adherence.',
     };
@@ -66,6 +69,9 @@ export function buildPlanAdherence(
     week.ruck > 0 ? 'Ruck' : '',
     week.run > 0 ? 'Run' : '',
     week.strength > 0 ? 'Strength' : '',
+    week.resistance > 0 ? 'Resistance' : '',
+    week.hiking > 0 ? 'Hiking' : '',
+    week.military > 0 ? 'Military' : '',
     week.mobility > 0 ? 'Mobility' : '',
     week.recovery > 0 ? 'Recovery' : '',
     week.test > 0 ? 'Test' : '',
@@ -78,6 +84,9 @@ export function buildPlanAdherence(
 
   const nextAction =
     missing.includes('Recovery') || missing.includes('Mobility') ? 'Add recovery or mobility before adding more load.'
+    : missing.includes('Resistance') ? 'Log the planned resistance circuit next.'
+    : missing.includes('Hiking') ? 'Log the planned terrain hike next.'
+    : missing.includes('Military') ? 'Log the planned military skills block next.'
     : missing.includes('Strength') ? 'Log the planned strength session next.'
     : missing.includes('Ruck') ? 'Log the planned ruck session when readiness is stable.'
     : missing.includes('Run') ? 'Log the planned run session at controlled intensity.'

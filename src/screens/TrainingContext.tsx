@@ -4,7 +4,16 @@ import { buildTrainingLogsCsv, parseTrainingLogsCsv } from '@/src/utils/csvUtils
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-export type TrainingCategory = 'Ruck' | 'Strength' | 'Run' | 'Mobility' | 'Test' | 'Recovery';
+export type TrainingCategory =
+  | 'Ruck'
+  | 'Strength'
+  | 'Resistance'
+  | 'Run'
+  | 'Hiking'
+  | 'Military'
+  | 'Mobility'
+  | 'Test'
+  | 'Recovery';
 
 export type TrainingLog = {
   id: number;
@@ -31,7 +40,16 @@ export type TrainingLog = {
   };
 };
 
-export type GoalCategory = 'Ruck' | 'Run' | 'Strength' | 'Recovery' | 'Test' | 'Consistency';
+export type GoalCategory =
+  | 'Ruck'
+  | 'Run'
+  | 'Strength'
+  | 'Resistance'
+  | 'Hiking'
+  | 'Military'
+  | 'Recovery'
+  | 'Test'
+  | 'Consistency';
 export type GoalStatus = 'active' | 'complete';
 
 export type TrainingGoal = {

@@ -47,6 +47,9 @@ export function buildGoalSummary(goals: TrainingGoal[]): GoalSummary {
     Ruck: 0,
     Run: 0,
     Strength: 0,
+    Resistance: 0,
+    Hiking: 0,
+    Military: 0,
     Recovery: 0,
     Test: 0,
     Consistency: 0,
@@ -140,6 +143,33 @@ export function buildGoalAction(goals: TrainingGoal[], logs: TrainingLog[]): Goa
       title: 'Goal Ruck Session',
       reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
       action: 'Plan a controlled ruck. Progress only distance, load or pace, not all three.',
+      status: progress.percent >= 80 ? 'good' : 'neutral',
+    };
+  }
+
+  if (priority.category === 'Resistance' || priority.category === 'Strength') {
+    return {
+      title: 'Goal Strength Session',
+      reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
+      action: 'Plan controlled strength or resistance work with strict form, core and carries.',
+      status: progress.percent >= 80 ? 'good' : 'neutral',
+    };
+  }
+
+  if (priority.category === 'Hiking') {
+    return {
+      title: 'Goal Terrain Session',
+      reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
+      action: 'Plan a terrain hike that builds pacing, climbing, navigation and foot-care durability.',
+      status: progress.percent >= 80 ? 'good' : 'neutral',
+    };
+  }
+
+  if (priority.category === 'Military') {
+    return {
+      title: 'Goal Field Skills Session',
+      reason: progress.hasNumericProgress ? `${progress.label} on ${priority.title}.` : `Priority goal is ${priority.title}.`,
+      action: 'Plan a field skills block covering navigation, kit setup, tactical movement and casualty-drag mechanics.',
       status: progress.percent >= 80 ? 'good' : 'neutral',
     };
   }

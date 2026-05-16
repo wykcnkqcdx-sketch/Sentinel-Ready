@@ -8,7 +8,17 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const categories: GoalCategory[] = ['Ruck', 'Run', 'Strength', 'Recovery', 'Test', 'Consistency'];
+const categories: GoalCategory[] = [
+  'Ruck',
+  'Run',
+  'Strength',
+  'Resistance',
+  'Hiking',
+  'Military',
+  'Recovery',
+  'Test',
+  'Consistency',
+];
 
 const blankGoal = {
   category: 'Ruck' as GoalCategory,

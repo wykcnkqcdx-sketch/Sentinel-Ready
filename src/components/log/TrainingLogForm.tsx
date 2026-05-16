@@ -22,7 +22,17 @@ type Props = {
   onSubmit: (values: TrainingLogFormValues) => Promise<void>;
 };
 
-const categories: TrainingCategory[] = ['Ruck', 'Strength', 'Run', 'Mobility', 'Test', 'Recovery'];
+const categories: TrainingCategory[] = [
+  'Ruck',
+  'Strength',
+  'Resistance',
+  'Run',
+  'Hiking',
+  'Military',
+  'Mobility',
+  'Test',
+  'Recovery',
+];
 
 export function getDefaultTrainingLogValues(): TrainingLogFormValues {
   return {
@@ -67,6 +77,36 @@ export function getQuickTemplates(): QuickTemplate[] {
       distanceLoad: 'Squat - Press - Pull - Hinge - Carry',
       readiness: '8',
       notes: 'Keep form strict. Avoid grinding reps. Leave one or two reps in reserve.',
+      date: today,
+    },
+    {
+      label: 'Resistance',
+      category: 'Resistance',
+      type: 'Resistance Circuit',
+      duration: '40 minutes',
+      distanceLoad: 'Push - Pull - Core - Grip - Carries',
+      readiness: '7',
+      notes: 'Circuit pace controlled. Track grip, core fatigue, breathing and movement quality under repeated effort.',
+      date: today,
+    },
+    {
+      label: 'Hiking',
+      category: 'Hiking',
+      type: 'Terrain Hike',
+      duration: '90 minutes',
+      distanceLoad: '8 km mixed terrain with light day kit',
+      readiness: '7',
+      notes: 'Terrain pace steady. Monitor footing, calves, hips, feet, navigation stops and energy after climbs.',
+      date: today,
+    },
+    {
+      label: 'Military',
+      category: 'Military',
+      type: 'Field Skills',
+      duration: '60 minutes',
+      distanceLoad: 'Navigation - tactical movement - casualty drag - kit checks',
+      readiness: '7',
+      notes: 'Skills block completed with controlled intensity. Record movement quality, kit issues, navigation accuracy and recovery cost.',
       date: today,
     },
     {
