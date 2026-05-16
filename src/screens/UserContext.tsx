@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 export type Gender = 'M' | 'F';
 
@@ -80,14 +80,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const contextValue = useMemo(() => ({
+    ...profile,
+    setGender: (gender: Gender) => save({ ...profile, gender }),
+    setTestDate: (testDate: string | null) => save({ ...profile, testDate }),
+    updateProfile: (updates: Partial<UserProfile>) => save({ ...profile, ...updates }),
+    isLoaded,
+  }), [profile, isLoaded]);
+
   return (
-    <UserContext.Provider value={{
-      ...profile,
-      setGender: (gender) => save({ ...profile, gender }),
-      setTestDate: (testDate) => save({ ...profile, testDate }),
-      updateProfile: (updates) => save({ ...profile, ...updates }),
-      isLoaded,
-    }}>
+    <UserContext.Provider value={contextValue}>
       {children}
     </UserContext.Provider>
   );

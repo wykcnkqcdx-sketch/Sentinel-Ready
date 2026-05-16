@@ -10,7 +10,6 @@ import {
   DayPlan,
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
-import { useMemo } from 'react';
 import { memo, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -21,7 +20,6 @@ function intensityColor(intensity: DayPlan['intensity'], planType: string) {
   return '#91e6a3';
 }
 
-function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
 const DayCard = memo(function DayCard({ item, planType }: { item: DayPlan; planType: string }) {
   const isRest = item.isRest;
   const details = getDayPlanDetails(item);
@@ -43,7 +41,6 @@ const DayCard = memo(function DayCard({ item, planType }: { item: DayPlan; planT
       </View>
     </View>
   );
-}
 });
 
 export default function PlanScreen() {

@@ -1,5 +1,6 @@
 import type { RouteData } from '@/src/utils/trainingLogUtils';
 import type { RuckSplit, TrackPoint } from '@/src/types/map';
+import { buildTrainingLogsCsv, parseTrainingLogsCsv } from '@/src/utils/csvUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -46,6 +47,10 @@ export type TrainingGoal = {
 
 const STORAGE_KEY = 'sentinel_training_logs';
 const GOALS_STORAGE_KEY = 'sentinel_training_goals';
+
+function createNumericId(offset: number = 0) {
+  return Date.now() * 1000 + Math.floor(Math.random() * 1000) + offset;
+}
 
 function isValidLogArray(parsed: unknown): parsed is TrainingLog[] {
   if (!Array.isArray(parsed)) return false;
@@ -282,7 +287,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addLog = useCallback(async (log: Omit<TrainingLog, 'id'>) => {
-    const newLog: TrainingLog = { ...log, id: Date.now() };
+    const newLog: TrainingLog = { ...log, id: createNumericId() };
     await updateAndSaveLogs((prev) => [newLog, ...prev]);
   }, [updateAndSaveLogs]);
 
@@ -300,13 +305,13 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     await updateAndSaveLogs((prev) => {
       const toDuplicate = prev.find((log) => log.id === id);
       if (!toDuplicate) return prev;
-      const newLog: TrainingLog = { ...toDuplicate, id: Date.now() };
+      const newLog: TrainingLog = { ...toDuplicate, id: createNumericId() };
       return [newLog, ...prev];
     });
   }, [updateAndSaveLogs]);
 
   const addGoal = useCallback(async (goal: Omit<TrainingGoal, 'id'>) => {
-    const newGoal: TrainingGoal = { ...goal, id: Date.now() };
+    const newGoal: TrainingGoal = { ...goal, id: createNumericId() };
     await updateAndSaveGoals((prev) => [newGoal, ...prev]);
   }, [updateAndSaveGoals]);
 
@@ -321,42 +326,11 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   }, [updateAndSaveGoals]);
 
   const exportLogsCsv = useCallback(() => {
-    if (logs.length === 0) return 'Date,Category,Type,Duration,DistanceLoad,Readiness,Notes';
-    const header = ['Date', 'Category', 'Type', 'Duration', 'DistanceLoad', 'Readiness', 'Notes'].join(',');
-    const rows = logs.map(log => 
-      [
-        log.date,
-        log.category,
-        `"${log.type.replace(/"/g, '""')}"`,
-        `"${log.duration.replace(/"/g, '""')}"`,
-        `"${log.distanceLoad.replace(/"/g, '""')}"`,
-        log.readiness,
-        `"${log.notes.replace(/"/g, '""')}"`
-      ].join(',')
-    );
-    return [header, ...rows].join('\n');
+    return buildTrainingLogsCsv(logs);
   }, [logs]);
 
   const importLogsCsv = useCallback(async (csv: string) => {
-    const lines = csv.split('\n').filter((l) => l.trim().length > 0);
-    if (lines.length < 2) return 0;
-    
-    const newLogs: TrainingLog[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(',').map((s) => s.replace(/^"|"$/g, '').replace(/""/g, '"'));
-      if (parts.length >= 7) {
-        newLogs.push({
-          id: Date.now() + i,
-          date: parts[0],
-          category: parts[1] as TrainingCategory,
-          type: parts[2],
-          duration: parts[3],
-          distanceLoad: parts[4],
-          readiness: parts[5],
-          notes: parts[6]
-        });
-      }
-    }
+    const newLogs = parseTrainingLogsCsv(csv, (rowIndex) => createNumericId(rowIndex));
     
     if (newLogs.length > 0) {
       await updateAndSaveLogs((prev) => [...newLogs, ...prev]);
