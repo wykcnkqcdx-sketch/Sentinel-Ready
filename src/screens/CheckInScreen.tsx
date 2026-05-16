@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import type { ReadinessLog } from '@/src/types/map';
 import { saveReadinessLog, getLatestReadinessLog } from '@/src/services/readinessService';
+import { scheduleRestNudge, loadNotificationPrefs } from '@/src/services/notificationService';
 
 // ---------------------------------------------------------------------------
 // ScaleRow
@@ -187,6 +188,15 @@ export default function CheckInScreen() {
         updatedAt: new Date().toISOString(),
       };
       await saveReadinessLog(log);
+      try {
+        const notifPrefs = await loadNotificationPrefs();
+        const isRedReadiness = log.mood <= 2 || log.stress >= 4 || (log.sleepHours < 5.5 && log.sleepQuality <= 2);
+        if (notifPrefs.restNudgeEnabled && isRedReadiness) {
+          await scheduleRestNudge();
+        }
+      } catch {
+        // notification scheduling is non-critical — don't block save
+      }
       router.back();
     } catch {
       Alert.alert('Save failed', 'Could not save check-in. Try again.');

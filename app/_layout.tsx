@@ -4,6 +4,17 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { TrainingProvider } from '@/src/screens/TrainingContext';
 import { UserProvider } from '@/src/screens/UserContext';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },

@@ -176,6 +176,8 @@ export default function DashboardScreen() {
   const navigateToStrava = useCallback(() => router.push('/strava'), [router]);
   const navigateToAtak = useCallback(() => router.push('/atak'), [router]);
   const navigateToGpx = useCallback(() => router.push('/gpx'), [router]);
+  const navigateToOfflineMap = useCallback(() => router.push('/offline-map'), [router]);
+  const navigateToNotifications = useCallback(() => router.push('/notifications'), [router]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -521,6 +523,24 @@ export default function DashboardScreen() {
             <View style={[styles.connectPillDot, styles.connectPillDotCheckin]} />
             <Text style={styles.connectPillText}>Check-in</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToOfflineMap}
+            accessibilityRole="button"
+            accessibilityLabel="Open offline map tile cache"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotOffline]} />
+            <Text style={styles.connectPillText}>Offline Maps</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToNotifications}
+            accessibilityRole="button"
+            accessibilityLabel="Open notification settings"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotAlerts]} />
+            <Text style={styles.connectPillText}>Alerts</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -753,5 +773,7 @@ const styles = StyleSheet.create({
   connectPillDotAtak: { backgroundColor: '#3a7bd5' },
   connectPillDotGpx: { backgroundColor: '#2f6b3c' },
   connectPillDotCheckin: { backgroundColor: '#91e6a3' },
+  connectPillDotOffline: { backgroundColor: '#4ECDC4' },
+  connectPillDotAlerts: { backgroundColor: '#FFB86B' },
   connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
 });
