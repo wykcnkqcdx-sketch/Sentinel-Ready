@@ -57,13 +57,11 @@ export default function LogScreen() {
     [logs, activeFilter, searchQuery, sortMode, showWeakLogsOnly]
   );
 
-  function clearSearchAndFilters() {
-    setActiveFilter('All');
+  sci tActiveFilter('All');
     setSortMode('Newest');
     setSearchQuery('');
     setShowWeakLogsOnly(false);
-  }
-
+  }, []);
   const handleDuplicateLog = useCallback(async (id: number) => {
     try {
       await duplicateLog(id);
@@ -72,19 +70,17 @@ export default function LogScreen() {
     }
   }, [duplicateLog]);
 
-  async function shareCsvExport() {
+  const shareCsvExport = useCallback(async () => {
     try {
-      await Share.share({
         title: 'Sentinel Ready Training Logs CSV',
         message: exportLogsCsv(),
       });
     } catch {
       Alert.alert('Export Failed', 'The CSV export could not be shared.');
     }
-  }
+  }, [exportLogsCsv]);
 
-  const confirmDeleteLog = useCallback((log: TrainingLog) => {
-    Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
+co    Alert.alert('Delete Training Log', `Delete this ${log.category} log from ${log.date}?`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',

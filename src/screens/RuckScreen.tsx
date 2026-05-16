@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
-import { buildReadinessTrend, getDateValue, isFatigueWatch } from '@/src/utils/trainingLogUtils';
-import { useRuckTracking, RuckTrackingState } from '@/src/hooks/useRuckTracking';
+import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
+import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
 import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
 import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
@@ -50,8 +50,12 @@ function parseRuckMetrics(log: TrainingLog): RuckMetrics {
 
 function formatPace(pace: number): string {
   if (!pace) return '--';
-  const mins = Math.floor(pace);
-  const secs = Math.round((pace - mins) * 60);
+  let mins = Math.floor(pace);
+  let secs = Math.round((pace - mins) * 60);
+  if (secs === 60) {
+    mins += 1;
+    secs = 0;
+  }
   return `${mins}:${secs.toString().padStart(2, '0')}/km`;
 }
 
@@ -540,6 +544,13 @@ const styles = StyleSheet.create({
   kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#aeb8aa', fontSize: 15, lineHeight: 22 },
+
+  headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10, gap: 4 },
+  tabRow: { flexDirection: 'row', backgroundColor: '#0d1812', borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: '#203529' },
+  tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
+  tabPillActive: { backgroundColor: '#2f6b3c' },
+  tabPillText: { color: '#8fbf8f', fontSize: 13, fontWeight: '900' },
+  tabPillTextActive: { color: '#ffffff' },
 
   volumeCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#2f6b3c', gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },

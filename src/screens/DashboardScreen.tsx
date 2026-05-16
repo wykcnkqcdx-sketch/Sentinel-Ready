@@ -28,8 +28,7 @@ function getWeeklyLoadStatus(total: number, fatigueWatch: number, avgReadiness: 
   return { label: 'On Track', isWarn: false };
 }
 
-function getStrengthStatus(logs: ReturnType<typeof useTraining>['logs']) {
-  const strengthLogs = logs.filter((l) => l.category === 'Strength');
+function getStrengthStatus(strengthLogs: ReturnType<typeof useTraining>['logs']) {
   if (strengthLogs.length < 2) return strengthLogs.length === 1 ? 'Baseline' : 'No data';
   const latest = getReadinessNumber(strengthLogs[0].readiness);
   const previous = getReadinessNumber(strengthLogs[1].readiness);
@@ -38,8 +37,7 @@ function getStrengthStatus(logs: ReturnType<typeof useTraining>['logs']) {
   return 'Stable';
 }
 
-function getEnduranceStatus(logs: ReturnType<typeof useTraining>['logs']) {
-  const enduranceLogs = logs.filter((l) => l.category === 'Ruck' || l.category === 'Run');
+function getEnduranceStatus(enduranceLogs: ReturnType<typeof useTraining>['logs']) {
   if (enduranceLogs.length < 2) return enduranceLogs.length === 1 ? 'Baseline' : 'No data';
   const latest = getReadinessNumber(enduranceLogs[0].readiness);
   const previous = getReadinessNumber(enduranceLogs[1].readiness);
@@ -48,10 +46,9 @@ function getEnduranceStatus(logs: ReturnType<typeof useTraining>['logs']) {
   return 'Stable';
 }
 
-function getRecoveryStatus(logs: ReturnType<typeof useTraining>['logs']) {
-  const recent = logs.slice(0, 5);
-  const fatigue = recent.filter((l) => getReadinessNumber(l.readiness) <= 5).length;
-  if (recent.length === 0) return 'No data';
+function getRecoveryStatus(recentLogs: ReturnType<typeof useTraining>['logs']) {
+  const fatigue = recentLogs.filter((l) => getReadinessNumber(l.readiness) <= 5).length;
+  if (recentLogs.length === 0) return 'No data';
   if (fatigue >= 3) return 'Poor';
   if (fatigue >= 1) return 'Moderate';
   return 'Good';
@@ -79,9 +76,6 @@ export default function DashboardScreen() {
   const milestones = useMemo(() => buildMilestones(logs, goals), [logs, goals]);
   const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
-  const strengthStatus = useMemo(() => getStrengthStatus(logs), [logs]);
-  const enduranceStatus = useMemo(() => getEnduranceStatus(logs), [logs]);
-  const recoveryStatus = useMemo(() => getRecoveryStatus(logs), [logs]);
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -115,14 +109,21 @@ export default function DashboardScreen() {
     readinessMsg = 'Moderate fatigue. Keep training volume controlled.';
   }
 
-  const { latestRuck, latestStrength, latestRun, latestRecovery, trendLogs } = useMemo(() => {
+  const { latestRuck, latestStrength, latestRun, latestRecovery, trendLogs, strengthLogs, enduranceLogs, recentLogs } = useMemo(() => {
     let ruck: typeof logs[0] | undefined;
     let strength: typeof logs[0] | undefined;
     let run: typeof logs[0] | undefined;
     let recovery: typeof logs[0] | undefined;
     const recentTrendLogs: typeof logs = [];
+    const strengthLogsList: typeof logs = [];
+    const enduranceLogsList: typeof logs = [];
+    const recentLogsList: typeof logs = [];
 
     for (const log of logs) {
+      if (recentLogsList.length < 5) recentLogsList.push(log);
+      if (strengthLogsList.length < 2 && log.category === 'Strength') strengthLogsList.push(log);
+      if (enduranceLogsList.length < 2 && (log.category === 'Ruck' || log.category === 'Run')) enduranceLogsList.push(log);
+
       if (!ruck && log.category === 'Ruck') ruck = log;
       if (!strength && log.category === 'Strength') strength = log;
       if (!run && log.category === 'Run') run = log;
@@ -133,7 +134,13 @@ export default function DashboardScreen() {
       }
 
       // Once all latest specific logs are found and we have 7 trend logs, break the loop early
-      if (ruck && strength && run && recovery && recentTrendLogs.length === 7) {
+      if (
+        ruck && strength && run && recovery && 
+        recentTrendLogs.length === 7 && 
+        strengthLogsList.length === 2 && 
+        enduranceLogsList.length === 2 && 
+        recentLogsList.length === 5
+      ) {
         break;
       }
     }
@@ -144,8 +151,15 @@ export default function DashboardScreen() {
       latestRun: run,
       latestRecovery: recovery,
       trendLogs: recentTrendLogs.reverse(),
+      strengthLogs: strengthLogsList,
+      enduranceLogs: enduranceLogsList,
+      recentLogs: recentLogsList,
     };
   }, [logs]);
+
+  const strengthStatus = useMemo(() => getStrengthStatus(strengthLogs), [strengthLogs]);
+  const enduranceStatus = useMemo(() => getEnduranceStatus(enduranceLogs), [enduranceLogs]);
+  const recoveryStatus = useMemo(() => getRecoveryStatus(recentLogs), [recentLogs]);
 
   const ruckVal = latestRuck ? latestRuck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A';
   const strengthVal = latestStrength ? `Score: ${latestStrength.readiness}` : 'N/A';
