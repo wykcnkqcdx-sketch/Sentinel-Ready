@@ -3,20 +3,16 @@ import { useUser } from '@/src/screens/UserContext';
 import { buildSmartLogDraft } from '@/src/utils/logDraftUtils';
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import {
+  buildPlanLogDraft,
   buildReadinessTrend,
   buildWeekPlan,
   buildWeekSummary,
   DayPlan,
+  getCurrentPlanDay,
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-function getTodayName(): string {
-  return DAY_NAMES[new Date().getDay()];
-}
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
   if (intensity === 'Rest' || intensity === 'Low') return '#8fbf8f';
@@ -68,10 +64,26 @@ export default function TrainingScreen() {
     });
   }
 
-  const todayName = getTodayName();
-  const todayPlan = days.find((d) => d.day === todayName);
+  const todayPlan = getCurrentPlanDay(days);
   const todayDetails = todayPlan ? getDayPlanDetails(todayPlan) : null;
-  const remainingDays = days.filter((d) => d.day !== todayName);
+  const remainingDays = days.filter((d) => d.day !== todayPlan?.day);
+
+  function logTodayPlan() {
+    if (!todayPlan) return;
+    const draft = buildPlanLogDraft(todayPlan);
+    router.push({
+      pathname: '/add-log',
+      params: {
+        date: draft.date,
+        category: draft.category,
+        type: draft.type,
+        duration: draft.duration,
+        distanceLoad: draft.distanceLoad,
+        readiness: draft.readiness,
+        notes: draft.notes,
+      },
+    });
+  }
 
   const isRecovery = planType === 'recovery';
   const isProgressive = planType === 'progressive';
@@ -95,7 +107,7 @@ export default function TrainingScreen() {
       {todayPlan ? (
         <View style={[styles.heroCard, { borderColor: heroBorderColor, backgroundColor: heroBgColor }]}>
           <View style={styles.heroTopRow}>
-            <Text style={styles.heroLabel}>TODAY — {todayName.toUpperCase()}</Text>
+            <Text style={styles.heroLabel}>TODAY - {todayPlan.day.toUpperCase()}</Text>
             <View style={[styles.badge, { borderColor: badgeBorder, backgroundColor: badgeBg }]}>
               <Text style={[styles.badgeText, { color: badgeTextColor }]}>{badgeText}</Text>
             </View>
@@ -113,6 +125,11 @@ export default function TrainingScreen() {
           <Text style={[styles.heroIntensity, { color: intensityColor(todayPlan.intensity, planType) }]}>
             Intensity: {todayPlan.intensity}
           </Text>
+          <TouchableOpacity style={todayPlan.isRest ? styles.heroButtonRest : styles.heroButton} onPress={logTodayPlan}>
+            <Text style={todayPlan.isRest ? styles.heroButtonTextRest : styles.heroButtonText}>
+              {todayPlan.isRest ? 'Log Recovery' : 'Log Today Session'}
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : null}
 
@@ -210,6 +227,10 @@ const styles = StyleSheet.create({
   heroFocus: { fontSize: 24, fontWeight: '900' },
   heroSession: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
   heroIntensity: { fontSize: 12, fontWeight: '900' },
+  heroButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
+  heroButtonRest: { backgroundColor: '#102016', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4, borderWidth: 1, borderColor: '#203529' },
+  heroButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
+  heroButtonTextRest: { color: '#8fbf8f', fontSize: 12, fontWeight: '900' },
   detailBox: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 5, marginTop: 4 },
   detailLine: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   briefCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 7 },

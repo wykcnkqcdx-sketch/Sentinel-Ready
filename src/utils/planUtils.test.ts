@@ -1,6 +1,6 @@
 import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import { describe, expect, it } from 'vitest';
-import { buildPlanLogDraft, buildWeekPlan, getDayPlanDetails } from './planUtils';
+import { buildPlanLogDraft, buildWeekPlan, getCurrentPlanDay, getDayPlanDetails } from './planUtils';
 
 function makeLog(overrides: Partial<TrainingLog> = {}): TrainingLog {
   return {
@@ -116,5 +116,13 @@ describe('planUtils', () => {
     });
     expect(draft.distanceLoad).toContain('Navigation');
     expect(draft.notes).toContain('casualty drag');
+  });
+
+  it('maps the current date to the correct Monday-start plan day', () => {
+    const plan = buildWeekPlan([]);
+
+    expect(getCurrentPlanDay(plan.days, new Date('2026-05-18T12:00:00Z'))?.day).toBe('Day 1');
+    expect(getCurrentPlanDay(plan.days, new Date('2026-05-23T12:00:00Z'))?.day).toBe('Day 6');
+    expect(getCurrentPlanDay(plan.days, new Date('2026-05-24T12:00:00Z'))?.day).toBe('Day 7');
   });
 });

@@ -29,6 +29,8 @@ export type TrainingProfileInput = {
 
 export type PlanLogDraft = Omit<TrainingLog, 'id'>;
 
+const WEEK_START_DAY = 1;
+
 function createDayPlan(input: Omit<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'> & Partial<Pick<DayPlan, 'warmup' | 'mainWork' | 'cooldown' | 'adjustment'>>): DayPlan {
   return {
     warmup: input.isRest ? 'No formal warm-up needed.' : '5-10 min easy movement, joint prep and breathing check.',
@@ -112,6 +114,15 @@ function getDistanceLoadFromPlan(category: TrainingCategory, details: ReturnType
   if (category === 'Run') return 'Planned aerobic run - see main work';
   if (category === 'Mobility' || category === 'Recovery') return 'Mobility - breathing - foot care - recovery';
   return details.mainWork.slice(0, 100);
+}
+
+function getPlanDayIndex(date: Date) {
+  return (date.getDay() - WEEK_START_DAY + 7) % 7;
+}
+
+export function getCurrentPlanDay(days: DayPlan[], date: Date = new Date()): DayPlan | null {
+  if (days.length === 0) return null;
+  return days[getPlanDayIndex(date) % days.length] ?? days[0] ?? null;
 }
 
 export function buildPlanLogDraft(plan: DayPlan, date: string = new Date().toISOString().slice(0, 10)): PlanLogDraft {
