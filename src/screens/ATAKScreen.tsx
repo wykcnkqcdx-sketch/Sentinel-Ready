@@ -171,6 +171,7 @@ const EditConfigForm = memo(function EditConfigForm({ draft, onChange, onSave, o
     </View>
   );
 }
+});
 
 // ── CotObject row ─────────────────────────────────────────────────────────────
 
@@ -202,6 +203,7 @@ const CotRow = memo(function CotRow({ obj }: { obj: CotObject }) {
     </View>
   );
 }
+});
 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
