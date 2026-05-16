@@ -2,10 +2,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ControlRow } from '@/src/components/ruck/ControlRow';
-import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
-import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
-import { RuckMapView } from '@/src/components/ruck/RuckMapView';
+import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
@@ -19,22 +16,6 @@ type RuckMetrics = {
   load: number;
   minutes: number;
   pace: number;
-};
-
-type RuckSaveDraft = {
-  sessionType: string;
-  packWeightKg: string;
-  readiness: string;
-  rpe: string;
-  notes: string;
-};
-
-const DEFAULT_RUCK_SAVE_DRAFT: RuckSaveDraft = {
-  sessionType: 'GPS Tracked Ruck',
-  packWeightKg: '15',
-  readiness: '6',
-  rpe: '6',
-  notes: '',
 };
 
 const DISTANCE_REGEX = /(\d+(?:\.\d+)?)\s*km/i;
@@ -212,94 +193,6 @@ const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }
       {log.notes ? (
         <Text style={styles.sessionNotes} numberOfLines={2}>{log.notes}</Text>
       ) : null}
-    </View>
-  );
-});
-
-const RuckSavePanel = memo(function RuckSavePanel({
-  draft,
-  distanceKm,
-  elapsedSeconds,
-  splitCount = 0,
-  routeConfidence = 'High',
-  rejectedPointCount = 0,
-  onChange,
-}: {
-  draft: RuckSaveDraft;
-  distanceKm: number;
-  elapsedSeconds: number;
-  splitCount?: number;
-  routeConfidence?: 'High' | 'Medium' | 'Low';
-  rejectedPointCount?: number;
-  onChange: (draft: RuckSaveDraft) => void;
-}) {
-  const paceSeconds = distanceKm > 0 ? elapsedSeconds / distanceKm : 0;
-  return (
-    <View style={styles.savePanel}>
-      <View style={styles.saveHeader}>
-        <Text style={styles.saveKicker}>SAVE RUCK</Text>
-        <Text style={styles.saveSummary}>
-          {distanceKm.toFixed(2)} km · {formatDurationFromSeconds(elapsedSeconds)}
-          {paceSeconds > 0 ? ` · ${formatPace(paceSeconds / 60)}` : ''}
-        </Text>
-        <Text style={styles.saveMeta}>
-          {splitCount} splits · {routeConfidence} GPS
-          {rejectedPointCount > 0 ? ` · ${rejectedPointCount} points filtered` : ''}
-        </Text>
-      </View>
-
-      <TextInput
-        style={styles.saveInput}
-        value={draft.sessionType}
-        onChangeText={(sessionType) => onChange({ ...draft, sessionType })}
-        placeholder="Session type"
-        placeholderTextColor="#617061"
-      />
-
-      <View style={styles.saveGrid}>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>KG</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.packWeightKg}
-            onChangeText={(packWeightKg) => onChange({ ...draft, packWeightKg })}
-            keyboardType="numeric"
-            placeholder="15"
-            placeholderTextColor="#617061"
-          />
-        </View>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>READINESS</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.readiness}
-            onChangeText={(readiness) => onChange({ ...draft, readiness })}
-            keyboardType="numeric"
-            placeholder="6"
-            placeholderTextColor="#617061"
-          />
-        </View>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>RPE</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.rpe}
-            onChangeText={(rpe) => onChange({ ...draft, rpe })}
-            keyboardType="numeric"
-            placeholder="6"
-            placeholderTextColor="#617061"
-          />
-        </View>
-      </View>
-
-      <TextInput
-        style={[styles.saveInput, styles.saveNotes]}
-        value={draft.notes}
-        onChangeText={(notes) => onChange({ ...draft, notes })}
-        placeholder="Notes: feet, breathing, terrain, hot spots"
-        placeholderTextColor="#617061"
-        multiline
-      />
     </View>
   );
 });
@@ -711,75 +604,18 @@ export default function RuckScreen() {
         </ScrollView>
       ) : (
         /* Track tab */
-        <View style={{ flex: 1 }}>
-          <RuckMapView
-            routePoints={tracking.routePoints}
-            currentPosition={tracking.currentPosition}
-            layer={tracking.activeLayer}
-            overlays={overlays}
-            fullHeight
-          />
-
-          <LiveMetricsOverlay
-            distanceKm={tracking.distanceKm}
-            elapsedSeconds={tracking.elapsedSeconds}
-            gpsQualityWarning={tracking.gpsQualityWarning}
-            trackingState={tracking.trackingState}
-          />
-
-          <MapLayerPicker
-            activeLayer={tracking.activeLayer}
-            onSelect={tracking.setLayer}
-          />
-
-          {/* Overlay bar */}
-          <View style={styles.overlayBar}>
-            <TouchableOpacity
-              style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
-              onPress={handleImportOverlay}
-              disabled={loadingOverlay}
-              accessibilityRole="button"
-              accessibilityLabel="Import map overlay"
-            >
-              <Text style={styles.overlayImportBtnText}>
-                {loadingOverlay ? 'Loading…' : '+ Overlay'}
-              </Text>
-            </TouchableOpacity>
-
-            {overlays.map(o => (
-              <TouchableOpacity
-                key={o.id}
-                style={[styles.overlayChip, !o.visible && styles.overlayChipHidden]}
-                onPress={() => handleToggleOverlay(o.id)}
-                onLongPress={() => handleRemoveOverlay(o.id)}
-                accessibilityRole="button"
-                accessibilityLabel={`${o.name} overlay, ${o.visible ? 'visible' : 'hidden'}. Long press to remove.`}
-                accessibilityHint="Tap to toggle visibility, long press to remove"
-              >
-                <View style={[styles.overlayDot, { backgroundColor: o.color }]} />
-                <Text style={styles.overlayChipText} numberOfLines={1}>{o.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {tracking.trackingState === 'finished' ? (
-            <RuckSavePanel
-              draft={saveDraft}
-              distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
-              elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
-              splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
-              routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
-              rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
-              onChange={setSaveDraft}
-            />
-          ) : null}
-
-          <ControlRow
-            tracking={tracking}
-            onSave={handleSaveSession}
-            onDiscard={handleDiscardDraft}
-          />
-        </View>
+        <RuckTrackPanel
+          tracking={tracking}
+          overlays={overlays}
+          loadingOverlay={loadingOverlay}
+          saveDraft={saveDraft}
+          onSaveDraftChange={setSaveDraft}
+          onImportOverlay={handleImportOverlay}
+          onToggleOverlay={handleToggleOverlay}
+          onRemoveOverlay={handleRemoveOverlay}
+          onSaveSession={handleSaveSession}
+          onDiscardDraft={handleDiscardDraft}
+        />
       )}
     </View>
   );
@@ -868,48 +704,4 @@ const styles = StyleSheet.create({
   fieldCard: { backgroundColor: '#101a14', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#26382c', gap: 6 },
   fieldLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   fieldText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
-
-  overlayBar: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: 'rgba(7,17,12,0.9)' },
-  overlayImportBtn: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#2f6b3c' },
-  overlayImportBtnDisabled: { borderColor: '#203529' },
-  overlayImportBtnText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  overlayChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#2a3a2a', maxWidth: 130 },
-  overlayChipHidden: { opacity: 0.4 },
-  overlayDot: { width: 8, height: 8, borderRadius: 4 },
-  overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
-
-  savePanel: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 86,
-    backgroundColor: '#0d1812',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#2f6b3c',
-    padding: 12,
-    gap: 10,
-  },
-  saveHeader: { gap: 3 },
-  saveKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  saveSummary: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  saveMeta: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
-  saveGrid: { flexDirection: 'row', gap: 8 },
-  saveField: { flex: 1, gap: 4 },
-  saveLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
-  saveInput: {
-    backgroundColor: '#07110c',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#203529',
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '800',
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-  },
-  saveNotes: {
-    minHeight: 62,
-    textAlignVertical: 'top',
-  },
 });
