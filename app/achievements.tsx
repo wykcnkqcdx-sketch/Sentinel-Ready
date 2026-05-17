@@ -8,7 +8,7 @@ import {
   type AchievementTier,
 } from '@/src/utils/achievementUtils';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -77,6 +77,15 @@ export default function AchievementsScreen() {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('ALL');
 
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/profile');
+  }, [router]);
+
   const achievements = useMemo(() => buildAchievements(logs, goals), [logs, goals]);
   const totalXP = useMemo(() => getTotalXP(achievements), [achievements]);
   const levelData = useMemo(() => getXPLevel(totalXP), [totalXP]);
@@ -94,10 +103,10 @@ export default function AchievementsScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={handleBack} style={styles.backBtn}>
           <Text style={styles.backText}>← BACK</Text>
         </Pressable>
-        <Text style={styles.screenKicker}>// ACHIEVEMENTS //</Text>
+        <Text style={styles.screenKicker}>ACHIEVEMENTS</Text>
       </View>
 
       {/* XP Level card */}
