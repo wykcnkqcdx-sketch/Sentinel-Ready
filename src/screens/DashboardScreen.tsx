@@ -2,10 +2,12 @@ import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
+import SparkLine from '@/src/components/charts/SparkLine';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
+import { weeklyLoadSeries } from '@/src/utils/chartDataUtils';
 import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
 import { buildTrainingInsights } from '@/src/utils/insightUtils';
 import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
@@ -78,6 +80,8 @@ export default function DashboardScreen() {
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
   const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
   const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
+
+  const weeklyLoadData = useMemo(() => weeklyLoadSeries(logs, 8), [logs]);
 
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
@@ -460,6 +464,8 @@ export default function DashboardScreen() {
           ]} />
         </View>
 
+        <SparkLine data={weeklyLoadData} width={240} height={28} color="#91e6a3" />
+
         {thisWeek.total > 0 ? (
           <View style={styles.pillRow}>
             {thisWeek.ruck > 0 && <View style={styles.pill}><Text style={styles.pillText}>Ruck {thisWeek.ruck}</Text></View>}
@@ -540,6 +546,15 @@ export default function DashboardScreen() {
           >
             <View style={[styles.connectPillDot, styles.connectPillDotAlerts]} />
             <Text style={styles.connectPillText}>Alerts</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/progress')}
+            accessibilityRole="button"
+            accessibilityLabel="View progress charts"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotProgress]} />
+            <Text style={styles.connectPillText}>Progress</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -775,5 +790,6 @@ const styles = StyleSheet.create({
   connectPillDotCheckin: { backgroundColor: '#91e6a3' },
   connectPillDotOffline: { backgroundColor: '#4ECDC4' },
   connectPillDotAlerts: { backgroundColor: '#FFB86B' },
+  connectPillDotProgress: { backgroundColor: '#4a9eff' },
   connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
 });
