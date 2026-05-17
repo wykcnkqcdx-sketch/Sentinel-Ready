@@ -20,8 +20,9 @@ import {
 import { getNumberInput } from '@/src/components/ruck/ruckPanelUtils';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -178,8 +179,13 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
                   accessibilityRole="button"
                   accessibilityLabel="Import map overlay"
                 >
+                  <MaterialCommunityIcons
+                    name={loadingOverlay ? 'progress-download' : 'map-plus'}
+                    size={15}
+                    color={loadingOverlay ? '#47614f' : '#91e6a3'}
+                  />
                   <Text style={styles.overlayImportText}>
-                    {loadingOverlay ? 'LOADING...' : '+ OVERLAY'}
+                    {loadingOverlay ? 'LOADING MAP' : 'IMPORT MAP'}
                   </Text>
                 </TouchableOpacity>
 
@@ -288,9 +294,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   overlayImportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     backgroundColor: 'rgba(5,14,9,0.85)',
     borderWidth: 1,
     borderColor: '#235c32',

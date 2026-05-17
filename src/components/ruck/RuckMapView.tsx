@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image, LayoutChangeEvent, PanResponder, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { buildVisibleTiles, getMercatorRoutePoints, latLonToWorldPixel, worldPixelToLatLon } from '../../utils/mapTiles';
 import type { MapLayerKey, MapTile, MapViewport } from '../../utils/mapTiles';
@@ -330,10 +331,10 @@ export function RuckMapView({
         <>
           <View style={styles.zoomControls}>
             <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(1)} accessibilityRole="button" accessibilityLabel="Zoom in">
-              <Text style={styles.mapButtonText}>+</Text>
+              <MaterialCommunityIcons name="magnify-plus-outline" size={22} color="#dfe8da" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(-1)} accessibilityRole="button" accessibilityLabel="Zoom out">
-              <Text style={styles.mapButtonText}>-</Text>
+              <MaterialCommunityIcons name="magnify-minus-outline" size={22} color="#dfe8da" />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.followButton, isFollowing && styles.followButtonActive]}
@@ -342,7 +343,11 @@ export function RuckMapView({
               accessibilityLabel="Recenter map on current position"
               accessibilityState={{ selected: isFollowing }}
             >
-              <Text style={[styles.followButtonText, isFollowing && styles.followButtonTextActive]}>CTR</Text>
+              <MaterialCommunityIcons
+                name="crosshairs-gps"
+                size={18}
+                color={isFollowing ? '#07110c' : '#dfe8da'}
+              />
             </TouchableOpacity>
           </View>
 
