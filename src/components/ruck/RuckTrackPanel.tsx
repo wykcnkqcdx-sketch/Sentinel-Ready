@@ -1,148 +1,47 @@
 import { ControlRow } from '@/src/components/ruck/ControlRow';
 import { LiveMetricsOverlay } from '@/src/components/ruck/LiveMetricsOverlay';
 import { MapLayerPicker } from '@/src/components/ruck/MapLayerPicker';
+import {
+  DEFAULT_RUCK_MISSION_DRAFT,
+  MissionSetupPanel,
+  type RuckMissionDraft,
+} from '@/src/components/ruck/MissionSetupPanel';
+import { MissionProgressPanel } from '@/src/components/ruck/MissionProgressPanel';
+import {
+  RuckDisplayModeToggle,
+  type RuckDisplayMode,
+} from '@/src/components/ruck/RuckDisplayModeToggle';
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
+import {
+  DEFAULT_RUCK_SAVE_DRAFT,
+  RuckSavePanel,
+  type RuckSaveDraft,
+} from '@/src/components/ruck/RuckSavePanel';
+import { getNumberInput } from '@/src/components/ruck/ruckPanelUtils';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
-import React, { memo } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { memo, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-export type RuckSaveDraft = {
-  sessionType: string;
-  packWeightKg: string;
-  readiness: string;
-  rpe: string;
-  notes: string;
+export {
+  DEFAULT_RUCK_MISSION_DRAFT,
+  DEFAULT_RUCK_SAVE_DRAFT,
 };
-
-export const DEFAULT_RUCK_SAVE_DRAFT: RuckSaveDraft = {
-  sessionType: 'GPS Tracked Ruck',
-  packWeightKg: '15',
-  readiness: '6',
-  rpe: '6',
-  notes: '',
+export type {
+  RuckDisplayMode,
+  RuckMissionDraft,
+  RuckSaveDraft,
 };
-
-function formatPace(pace: number): string {
-  if (!pace) return '--';
-  let mins = Math.floor(pace);
-  let secs = Math.round((pace - mins) * 60);
-  if (secs === 60) {
-    mins += 1;
-    secs = 0;
-  }
-  return `${mins}:${secs.toString().padStart(2, '0')}/km`;
-}
-
-function formatDuration(minutes: number): string {
-  if (!minutes) return '--';
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hrs > 0 && mins > 0) return `${hrs}h ${mins}m`;
-  if (hrs > 0) return `${hrs}h`;
-  return `${mins}m`;
-}
-
-function formatDurationFromSeconds(seconds: number): string {
-  const totalMinutes = Math.max(1, Math.round(seconds / 60));
-  return formatDuration(totalMinutes);
-}
-
-const RuckSavePanel = memo(function RuckSavePanel({
-  draft,
-  distanceKm,
-  elapsedSeconds,
-  splitCount = 0,
-  routeConfidence = 'High',
-  rejectedPointCount = 0,
-  onChange,
-}: {
-  draft: RuckSaveDraft;
-  distanceKm: number;
-  elapsedSeconds: number;
-  splitCount?: number;
-  routeConfidence?: 'High' | 'Medium' | 'Low';
-  rejectedPointCount?: number;
-  onChange: (draft: RuckSaveDraft) => void;
-}) {
-  const paceSeconds = distanceKm > 0 ? elapsedSeconds / distanceKm : 0;
-  return (
-    <View style={styles.savePanel}>
-      <View style={styles.saveHeader}>
-        <Text style={styles.saveKicker}>SAVE RUCK</Text>
-        <Text style={styles.saveSummary}>
-          {distanceKm.toFixed(2)} km · {formatDurationFromSeconds(elapsedSeconds)}
-          {paceSeconds > 0 ? ` · ${formatPace(paceSeconds / 60)}` : ''}
-        </Text>
-        <Text style={styles.saveMeta}>
-          {splitCount} splits · {routeConfidence} GPS
-          {rejectedPointCount > 0 ? ` · ${rejectedPointCount} points filtered` : ''}
-        </Text>
-      </View>
-
-      <TextInput
-        style={styles.saveInput}
-        value={draft.sessionType}
-        onChangeText={(sessionType) => onChange({ ...draft, sessionType })}
-        placeholder="Session type"
-        placeholderTextColor="#617061"
-      />
-
-      <View style={styles.saveGrid}>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>KG</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.packWeightKg}
-            onChangeText={(packWeightKg) => onChange({ ...draft, packWeightKg })}
-            keyboardType="numeric"
-            placeholder="15"
-            placeholderTextColor="#617061"
-          />
-        </View>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>READINESS</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.readiness}
-            onChangeText={(readiness) => onChange({ ...draft, readiness })}
-            keyboardType="numeric"
-            placeholder="6"
-            placeholderTextColor="#617061"
-          />
-        </View>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>RPE</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.rpe}
-            onChangeText={(rpe) => onChange({ ...draft, rpe })}
-            keyboardType="numeric"
-            placeholder="6"
-            placeholderTextColor="#617061"
-          />
-        </View>
-      </View>
-
-      <TextInput
-        style={[styles.saveInput, styles.saveNotes]}
-        value={draft.notes}
-        onChangeText={(notes) => onChange({ ...draft, notes })}
-        placeholder="Notes: feet, breathing, terrain, hot spots"
-        placeholderTextColor="#617061"
-        multiline
-      />
-    </View>
-  );
-});
 
 export type RuckTrackPanelProps = {
   tracking: ReturnType<typeof useRuckTracking>;
   overlays: MapOverlay[];
   loadingOverlay: boolean;
+  missionDraft: RuckMissionDraft;
   saveDraft: RuckSaveDraft;
+  onMissionDraftChange: (draft: RuckMissionDraft) => void;
   onSaveDraftChange: (draft: RuckSaveDraft) => void;
   onImportOverlay: () => void;
   onToggleOverlay: (id: string) => void;
@@ -155,7 +54,9 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   tracking,
   overlays,
   loadingOverlay,
+  missionDraft,
   saveDraft,
+  onMissionDraftChange,
   onSaveDraftChange,
   onImportOverlay,
   onToggleOverlay,
@@ -163,13 +64,23 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   onSaveSession,
   onDiscardDraft,
 }: RuckTrackPanelProps) {
+  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('simple');
+  const targetDistance = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
+  const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));
+  const targetPaceMinutesPerKm = targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : undefined;
+
+  const isFinished = tracking.trackingState === 'finished';
+  const showMissionSetup = !isFinished && tracking.trackingState === 'idle' && displayMode === 'mission';
+  const showMissionProgress = !isFinished && tracking.trackingState !== 'idle' && displayMode === 'mission';
+  const showMapTools = !isFinished && displayMode === 'map';
+
   return (
     <View style={styles.container}>
       <RuckMapView
         routePoints={tracking.routePoints}
         currentPosition={tracking.currentPosition}
         layer={tracking.activeLayer}
-        overlays={overlays}
+        overlays={showMapTools ? overlays : []}
         fullHeight
       />
 
@@ -190,51 +101,79 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         </Svg>
       </View>
 
+      {!isFinished ? (
+        <View style={styles.modeWrapper}>
+          <RuckDisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
+        </View>
+      ) : null}
+
       <View style={styles.metricsWrapper}>
         <LiveMetricsOverlay
           distanceKm={tracking.distanceKm}
           elapsedSeconds={tracking.elapsedSeconds}
           gpsQualityWarning={tracking.gpsQualityWarning}
           trackingState={tracking.trackingState}
+          targetPaceMinutesPerKm={targetPaceMinutesPerKm}
         />
       </View>
 
-      <View style={styles.overlayBarWrapper}>
-        <TouchableOpacity
-          style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
-          onPress={onImportOverlay}
-          disabled={loadingOverlay}
-          accessibilityRole="button"
-          accessibilityLabel="Import map overlay"
-        >
-          <Text style={styles.overlayImportBtnText}>
-            {loadingOverlay ? 'Loading…' : '+ Overlay'}
-          </Text>
-        </TouchableOpacity>
+      {showMissionSetup ? (
+        <View style={styles.missionWrapper}>
+          <MissionSetupPanel draft={missionDraft} onChange={onMissionDraftChange} />
+        </View>
+      ) : null}
 
-        {overlays.map(o => (
-          <Animated.View key={o.id} entering={FadeIn.duration(400)} exiting={FadeOut.duration(300)}>
+      {showMissionProgress ? (
+        <View style={styles.missionWrapper}>
+          <MissionProgressPanel
+            draft={missionDraft}
+            distanceKm={tracking.distanceKm}
+            elapsedSeconds={tracking.elapsedSeconds}
+            gpsQualityWarning={tracking.gpsQualityWarning}
+          />
+        </View>
+      ) : null}
+
+      {showMapTools ? (
+        <>
+          <View style={styles.overlayBarWrapper}>
             <TouchableOpacity
-              style={[styles.overlayChip, !o.visible && styles.overlayChipHidden]}
-              onPress={() => onToggleOverlay(o.id)}
-              onLongPress={() => onRemoveOverlay(o.id)}
+              style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
+              onPress={onImportOverlay}
+              disabled={loadingOverlay}
               accessibilityRole="button"
-              accessibilityLabel={`${o.name} overlay, ${o.visible ? 'visible' : 'hidden'}. Long press to remove.`}
-              accessibilityHint="Tap to toggle visibility, long press to remove"
+              accessibilityLabel="Import map overlay"
             >
-              <View style={[styles.overlayDot, { backgroundColor: o.color }]} />
-              <Text style={styles.overlayChipText} numberOfLines={1}>{o.name}</Text>
+              <Text style={styles.overlayImportBtnText}>
+                {loadingOverlay ? 'Loading...' : '+ Overlay'}
+              </Text>
             </TouchableOpacity>
-          </Animated.View>
-        ))}
-      </View>
 
-      <View style={styles.layerPickerWrapper}>
-        <MapLayerPicker
-          activeLayer={tracking.activeLayer}
-          onSelect={tracking.setLayer}
-        />
-      </View>
+            {overlays.map((overlay) => (
+              <Animated.View key={overlay.id} entering={FadeIn.duration(400)} exiting={FadeOut.duration(300)}>
+                <TouchableOpacity
+                  style={[styles.overlayChip, !overlay.visible && styles.overlayChipHidden]}
+                  onPress={() => onToggleOverlay(overlay.id)}
+                  onLongPress={() => onRemoveOverlay(overlay.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${overlay.name} overlay, ${overlay.visible ? 'visible' : 'hidden'}. Long press to remove.`}
+                  accessibilityHint="Tap to toggle visibility, long press to remove"
+                >
+                  <View style={[styles.overlayDot, { backgroundColor: overlay.color }]} />
+                  <Text style={styles.overlayChipText} numberOfLines={1}>{overlay.name}</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
+          </View>
+
+          <View style={styles.layerPickerWrapper}>
+            <MapLayerPicker
+              activeLayer={tracking.activeLayer}
+              onSelect={tracking.setLayer}
+            />
+          </View>
+        </>
+      ) : null}
 
       <View style={styles.controlDock}>
         <ControlRow
@@ -244,16 +183,18 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         />
       </View>
 
-      {tracking.trackingState === 'finished' ? (
-        <RuckSavePanel
-          draft={saveDraft}
-          distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
-          elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
-          splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
-          routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
-          rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
-          onChange={onSaveDraftChange}
-        />
+      {isFinished ? (
+        <View style={styles.savePanelWrapper}>
+          <RuckSavePanel
+            draft={saveDraft}
+            distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
+            elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
+            splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
+            routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
+            rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
+            onChange={onSaveDraftChange}
+          />
+        </View>
       ) : null}
     </View>
   );
@@ -261,11 +202,22 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  modeWrapper: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+  },
   metricsWrapper: {
     position: 'absolute',
     top: 16,
     left: 16,
+    right: 140,
+  },
+  missionWrapper: {
+    position: 'absolute',
+    left: 16,
     right: 16,
+    bottom: 286,
   },
   controlDock: {
     position: 'absolute',
@@ -293,46 +245,35 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
   },
-  overlayImportBtn: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#2f6b3c' },
+  overlayImportBtn: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    backgroundColor: '#0d1812',
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+  },
   overlayImportBtnDisabled: { borderColor: '#203529' },
   overlayImportBtnText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  overlayChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#2a3a2a', maxWidth: 130 },
+  overlayChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#0d1812',
+    borderWidth: 1,
+    borderColor: '#2a3a2a',
+    maxWidth: 130,
+  },
   overlayChipHidden: { opacity: 0.4 },
   overlayDot: { width: 8, height: 8, borderRadius: 4 },
   overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
-
-  savePanel: {
+  savePanelWrapper: {
     position: 'absolute',
     left: 16,
     right: 16,
     bottom: 150,
-    backgroundColor: '#0d1812',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#2f6b3c',
-    padding: 12,
-    gap: 10,
-  },
-  saveHeader: { gap: 3 },
-  saveKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  saveSummary: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  saveMeta: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
-  saveGrid: { flexDirection: 'row', gap: 8 },
-  saveField: { flex: 1, gap: 4 },
-  saveLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
-  saveInput: {
-    backgroundColor: '#07110c',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#203529',
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '800',
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-  },
-  saveNotes: {
-    minHeight: 62,
-    textAlignVertical: 'top',
   },
 });

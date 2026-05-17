@@ -65,9 +65,9 @@ export async function scheduleCheckInReminder(prefs: NotificationPrefs): Promise
       body: 'Daily check-in — log sleep, readiness and any pain before lights out.',
     },
     trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour: prefs.checkInHour,
       minute: prefs.checkInMinute,
-      repeats: true,
     } as Notifications.DailyTriggerInput,
   });
   await AsyncStorage.setItem(CHECK_IN_NOTIF_ID_KEY, id);
@@ -86,9 +86,9 @@ export async function schedulePreSessionReminder(prefs: NotificationPrefs): Prom
       body: 'Quick readiness check before your session. Are you good to train?',
     },
     trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour: prefs.preSessionHour,
       minute: prefs.preSessionMinute,
-      repeats: true,
     } as Notifications.DailyTriggerInput,
   });
   await AsyncStorage.setItem(PRE_SESSION_NOTIF_ID_KEY, id);
@@ -107,6 +107,7 @@ export async function scheduleRestNudge(message?: string): Promise<void> {
       body: message ?? 'Readiness is low. Consider rest, mobility and hydration before your next hard session.',
     },
     trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds,
       repeats: false,
     } as Notifications.TimeIntervalTriggerInput,

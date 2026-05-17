@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Image, LayoutChangeEvent, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { buildVisibleTiles, getMercatorRoutePoints } from '../../utils/mapTiles';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Image, LayoutChangeEvent, PanResponder, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { buildVisibleTiles, getMercatorRoutePoints, latLonToWorldPixel, worldPixelToLatLon } from '../../utils/mapTiles';
 import type { MapLayerKey, MapTile, MapViewport } from '../../utils/mapTiles';
 import type { TrackPoint } from '../../types/map';
 import type { MapOverlay } from '../../utils/fieldMapping';
@@ -23,6 +23,21 @@ try {
 
 const DUBLIN: TrackPoint = { latitude: 53.3498, longitude: -6.2603, altitude: null, accuracy: null, timestamp: 0 };
 const MAP_HEIGHT = 300;
+const MIN_ZOOM = 3;
+const MAX_ZOOM = 18;
+
+function clampZoom(value: number) {
+  return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
+}
+
+function toTrackPoint(latitude: number, longitude: number): TrackPoint {
+  return { latitude, longitude, altitude: null, accuracy: null, timestamp: 0 };
+}
+
+function formatCoord(value: number, positive: string, negative: string) {
+  const hemi = value >= 0 ? positive : negative;
+  return `${Math.abs(value).toFixed(5)}${hemi}`;
+}
 
 function useResolvedTileUris(tiles: MapTile[]): Map<string, string> {
   const [uriMap, setUriMap] = useState<Map<string, string>>(new Map());
@@ -62,24 +77,63 @@ export interface RuckMapViewProps {
   zoom?: number;
   overlays?: MapOverlay[];
   fullHeight?: boolean;
+  showGpsStatus?: boolean;
 }
 
-export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays, fullHeight = false }: RuckMapViewProps) {
+export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays, fullHeight = false, showGpsStatus = true }: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
+  const [mapZoom, setMapZoom] = useState(clampZoom(zoom));
+  const [mapCenter, setMapCenter] = useState<TrackPoint | null>(null);
+  const [isFollowing, setIsFollowing] = useState(true);
+  const panStartRef = useRef<{ x: number; y: number; center: TrackPoint } | null>(null);
 
-  const center: TrackPoint | undefined =
+  const liveCenter: TrackPoint =
     currentPosition ?? (routePoints.length > 0 ? routePoints[routePoints.length - 1] : DUBLIN);
+  const center = mapCenter ?? liveCenter;
 
-  const tiles = buildVisibleTiles(center, viewport, layer, zoom);
+  useEffect(() => {
+    setMapZoom(clampZoom(zoom));
+  }, [zoom]);
+
+  useEffect(() => {
+    if (isFollowing) {
+      setMapCenter(liveCenter);
+    }
+  }, [isFollowing, liveCenter]);
+
+  const panResponder = useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3,
+    onPanResponderGrant: () => {
+      panStartRef.current = { x: 0, y: 0, center };
+    },
+    onPanResponderMove: (_, gesture) => {
+      const start = panStartRef.current;
+      if (!start || viewport.width <= 0 || viewport.height <= 0) return;
+
+      const pixel = latLonToWorldPixel(start.center.latitude, start.center.longitude, mapZoom);
+      const next = worldPixelToLatLon(pixel.x - gesture.dx, pixel.y - gesture.dy, mapZoom);
+      setIsFollowing(false);
+      setMapCenter(toTrackPoint(next.latitude, next.longitude));
+    },
+    onPanResponderRelease: () => {
+      panStartRef.current = null;
+    },
+    onPanResponderTerminate: () => {
+      panStartRef.current = null;
+    },
+  }), [center, mapZoom, viewport.height, viewport.width]);
+
+  const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
   const uriMap = useResolvedTileUris(tiles);
 
   const projectedPoints = Svg && Polyline && routePoints.length >= 2
-    ? getMercatorRoutePoints(routePoints, center, viewport, zoom)
+    ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
     : [];
 
   const projectedCurrent = Svg && Circle && currentPosition
-    ? getMercatorRoutePoints([currentPosition], center, viewport, zoom)[0]
+    ? getMercatorRoutePoints([currentPosition], center, viewport, mapZoom)[0]
     : null;
 
   const polylinePoints = projectedPoints.map((p) => `${p.x},${p.y}`).join(' ');
@@ -91,11 +145,42 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
     }
   }
 
+  function adjustZoom(delta: number) {
+    setIsFollowing(false);
+    setMapZoom((value) => clampZoom(value + delta));
+  }
+
+  function nudgeMap(dx: number, dy: number) {
+    const pixel = latLonToWorldPixel(center.latitude, center.longitude, mapZoom);
+    const next = worldPixelToLatLon(pixel.x + dx, pixel.y + dy, mapZoom);
+    setIsFollowing(false);
+    setMapCenter(toTrackPoint(next.latitude, next.longitude));
+  }
+
+  function recenterMap() {
+    setIsFollowing(true);
+    setMapCenter(liveCenter);
+  }
+
   return (
-    <View style={[styles.container, fullHeight && styles.fullHeight]} onLayout={handleLayout}>
+    <View
+      style={[styles.container, fullHeight && styles.fullHeight]}
+      onLayout={handleLayout}
+      {...panResponder.panHandlers}
+    >
       {tiles.map((tile) => (
         <Image key={tile.id} source={{ uri: uriMap.get(tile.id) ?? tile.url }} style={tile.style} />
       ))}
+
+      <View style={styles.tacticalTint} pointerEvents="none" />
+      <View style={styles.gridOverlay} pointerEvents="none">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <View key={`v-${index}`} style={[styles.gridLineVertical, { left: `${(index + 1) * 16.66}%` }]} />
+        ))}
+        {Array.from({ length: 3 }).map((_, index) => (
+          <View key={`h-${index}`} style={[styles.gridLineHorizontal, { top: `${(index + 1) * 25}%` }]} />
+        ))}
+      </View>
 
       {Svg && (Polyline || Circle) && (
         <Svg width={viewport.width} height={viewport.height} style={StyleSheet.absoluteFill}>
@@ -124,7 +209,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
               {Polyline && overlay.lines.map(line => {
                 const pts = getMercatorRoutePoints(
                   line.points.map(p => ({ latitude: p.lat, longitude: p.lon, altitude: null, accuracy: null, timestamp: 0 })),
-                  center, viewport, zoom
+                  center, viewport, mapZoom
                 );
                 if (pts.length < 2) return null;
                 return (
@@ -143,7 +228,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
               {Circle && overlay.points.map(point => {
                 const pts = getMercatorRoutePoints(
                   [{ latitude: point.latitude, longitude: point.longitude, altitude: null, accuracy: null, timestamp: 0 }],
-                  center, viewport, zoom
+                  center, viewport, mapZoom
                 );
                 if (pts.length < 1) return null;
                 return (
@@ -163,7 +248,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
                 polygon.rings.map((ring, ringIndex) => {
                   const pts = getMercatorRoutePoints(
                     ring.map(p => ({ latitude: p.lat, longitude: p.lon, altitude: null, accuracy: null, timestamp: 0 })),
-                    center, viewport, zoom
+                    center, viewport, mapZoom
                   );
                   if (pts.length < 3) return null;
                   return (
@@ -184,7 +269,58 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
         </Svg>
       )}
 
-      {!currentPosition && (
+      <View style={styles.crosshair} pointerEvents="none">
+        <View style={styles.crosshairHorizontal} />
+        <View style={styles.crosshairVertical} />
+        <View style={styles.crosshairBox} />
+      </View>
+
+      <View style={styles.topHud} pointerEvents="none">
+        <Text style={styles.hudTitle}>RUCK MAP</Text>
+        <Text style={styles.hudText}>
+          {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}  Z{Math.round(mapZoom)}
+        </Text>
+      </View>
+
+      <View style={styles.scaleWrap} pointerEvents="none">
+        <View style={styles.scaleBar} />
+        <Text style={styles.scaleText}>FIELD GRID</Text>
+      </View>
+
+      <View style={styles.zoomControls}>
+        <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(1)} accessibilityRole="button" accessibilityLabel="Zoom in">
+          <Text style={styles.mapButtonText}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(-1)} accessibilityRole="button" accessibilityLabel="Zoom out">
+          <Text style={styles.mapButtonText}>-</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.followButton, isFollowing && styles.followButtonActive]}
+          onPress={recenterMap}
+          accessibilityRole="button"
+          accessibilityLabel="Recenter map on current position"
+          accessibilityState={{ selected: isFollowing }}
+        >
+          <Text style={[styles.followButtonText, isFollowing && styles.followButtonTextActive]}>CTR</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.panPad}>
+        <TouchableOpacity style={[styles.panButton, styles.panNorth]} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
+          <Text style={styles.panText}>N</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.panButton, styles.panWest]} onPress={() => nudgeMap(-128, 0)} accessibilityRole="button" accessibilityLabel="Pan map west">
+          <Text style={styles.panText}>W</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.panButton, styles.panEast]} onPress={() => nudgeMap(128, 0)} accessibilityRole="button" accessibilityLabel="Pan map east">
+          <Text style={styles.panText}>E</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.panButton, styles.panSouth]} onPress={() => nudgeMap(0, 128)} accessibilityRole="button" accessibilityLabel="Pan map south">
+          <Text style={styles.panText}>S</Text>
+        </TouchableOpacity>
+      </View>
+
+      {showGpsStatus && !currentPosition && (
         <View style={styles.gpsOverlay} pointerEvents="none">
           <Text style={styles.gpsText}>Acquiring GPS...</Text>
         </View>
@@ -217,5 +353,183 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
+  },
+  tacticalTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(7,17,12,0.14)',
+  },
+  gridOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  gridLineVertical: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: 'rgba(145,230,163,0.16)',
+  },
+  gridLineHorizontal: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(145,230,163,0.16)',
+  },
+  crosshair: {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    width: 46,
+    height: 46,
+    marginLeft: -23,
+    marginTop: -23,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crosshairHorizontal: {
+    position: 'absolute',
+    width: 46,
+    height: 1,
+    backgroundColor: 'rgba(145,230,163,0.75)',
+  },
+  crosshairVertical: {
+    position: 'absolute',
+    width: 1,
+    height: 46,
+    backgroundColor: 'rgba(145,230,163,0.75)',
+  },
+  crosshairBox: {
+    width: 14,
+    height: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.9)',
+  },
+  topHud: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: 'rgba(3,10,7,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.34)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  hudTitle: {
+    color: '#91e6a3',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+  },
+  hudText: {
+    color: '#dfe8da',
+    fontSize: 11,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  scaleWrap: {
+    position: 'absolute',
+    left: 14,
+    bottom: 14,
+    gap: 3,
+  },
+  scaleBar: {
+    width: 72,
+    height: 5,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#dfe8da',
+  },
+  scaleText: {
+    color: '#dfe8da',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  zoomControls: {
+    position: 'absolute',
+    top: 72,
+    right: 12,
+    gap: 6,
+  },
+  mapButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 6,
+    backgroundColor: 'rgba(3,10,7,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapButtonText: {
+    color: '#dfe8da',
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 24,
+  },
+  followButton: {
+    minWidth: 38,
+    height: 30,
+    borderRadius: 6,
+    backgroundColor: 'rgba(3,10,7,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  followButtonActive: {
+    backgroundColor: '#91e6a3',
+    borderColor: '#91e6a3',
+  },
+  followButtonText: {
+    color: '#dfe8da',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  followButtonTextActive: {
+    color: '#07110c',
+  },
+  panPad: {
+    position: 'absolute',
+    right: 12,
+    bottom: 16,
+    width: 104,
+    height: 104,
+  },
+  panButton: {
+    position: 'absolute',
+    width: 34,
+    height: 34,
+    borderRadius: 6,
+    backgroundColor: 'rgba(3,10,7,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  panNorth: {
+    top: 0,
+    left: 35,
+  },
+  panWest: {
+    top: 35,
+    left: 0,
+  },
+  panEast: {
+    top: 35,
+    right: 0,
+  },
+  panSouth: {
+    bottom: 0,
+    left: 35,
+  },
+  panText: {
+    color: '#dfe8da',
+    fontSize: 12,
+    fontWeight: '900',
   },
 });
