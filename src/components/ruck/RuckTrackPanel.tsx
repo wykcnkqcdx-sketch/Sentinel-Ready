@@ -17,12 +17,26 @@ export type RuckSaveDraft = {
   notes: string;
 };
 
+export type RuckMissionDraft = {
+  targetDistanceKm: string;
+  targetMinutes: string;
+  packWeightKg: string;
+  checkpointIntervalKm: string;
+};
+
 export const DEFAULT_RUCK_SAVE_DRAFT: RuckSaveDraft = {
   sessionType: 'GPS Tracked Ruck',
   packWeightKg: '15',
   readiness: '6',
   rpe: '6',
   notes: '',
+};
+
+export const DEFAULT_RUCK_MISSION_DRAFT: RuckMissionDraft = {
+  targetDistanceKm: '8',
+  targetMinutes: '90',
+  packWeightKg: '15',
+  checkpointIntervalKm: '1',
 };
 
 function formatPace(pace: number): string {
@@ -49,6 +63,132 @@ function formatDurationFromSeconds(seconds: number): string {
   const totalMinutes = Math.max(1, Math.round(seconds / 60));
   return formatDuration(totalMinutes);
 }
+
+function getNumberInput(value: string, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function progressPercent(value: number, target: number) {
+  if (target <= 0) return 0;
+  return Math.max(0, Math.min(100, (value / target) * 100));
+}
+
+const MissionSetupPanel = memo(function MissionSetupPanel({
+  draft,
+  onChange,
+}: {
+  draft: RuckMissionDraft;
+  onChange: (draft: RuckMissionDraft) => void;
+}) {
+  return (
+    <View style={styles.missionPanel}>
+      <View style={styles.missionHeader}>
+        <Text style={styles.missionKicker}>MISSION SETUP</Text>
+        <Text style={styles.missionText}>Set intent before stepping off.</Text>
+      </View>
+      <View style={styles.missionGrid}>
+        <View style={styles.missionField}>
+          <Text style={styles.missionLabel}>KM</Text>
+          <TextInput
+            style={styles.missionInput}
+            value={draft.targetDistanceKm}
+            onChangeText={(targetDistanceKm) => onChange({ ...draft, targetDistanceKm })}
+            keyboardType="numeric"
+            placeholder="8"
+            placeholderTextColor="#617061"
+          />
+        </View>
+        <View style={styles.missionField}>
+          <Text style={styles.missionLabel}>MIN</Text>
+          <TextInput
+            style={styles.missionInput}
+            value={draft.targetMinutes}
+            onChangeText={(targetMinutes) => onChange({ ...draft, targetMinutes })}
+            keyboardType="numeric"
+            placeholder="90"
+            placeholderTextColor="#617061"
+          />
+        </View>
+        <View style={styles.missionField}>
+          <Text style={styles.missionLabel}>KG</Text>
+          <TextInput
+            style={styles.missionInput}
+            value={draft.packWeightKg}
+            onChangeText={(packWeightKg) => onChange({ ...draft, packWeightKg })}
+            keyboardType="numeric"
+            placeholder="15"
+            placeholderTextColor="#617061"
+          />
+        </View>
+        <View style={styles.missionField}>
+          <Text style={styles.missionLabel}>CHK</Text>
+          <TextInput
+            style={styles.missionInput}
+            value={draft.checkpointIntervalKm}
+            onChangeText={(checkpointIntervalKm) => onChange({ ...draft, checkpointIntervalKm })}
+            keyboardType="numeric"
+            placeholder="1"
+            placeholderTextColor="#617061"
+          />
+        </View>
+      </View>
+    </View>
+  );
+});
+
+const MissionProgressPanel = memo(function MissionProgressPanel({
+  draft,
+  distanceKm,
+  elapsedSeconds,
+}: {
+  draft: RuckMissionDraft;
+  distanceKm: number;
+  elapsedSeconds: number;
+}) {
+  const targetDistance = Math.max(0, getNumberInput(draft.targetDistanceKm, 0));
+  const targetMinutes = Math.max(0, getNumberInput(draft.targetMinutes, 0));
+  const checkpointInterval = Math.max(0, getNumberInput(draft.checkpointIntervalKm, 1));
+  const elapsedMinutes = elapsedSeconds / 60;
+  const distanceProgress = progressPercent(distanceKm, targetDistance);
+  const timeProgress = progressPercent(elapsedMinutes, targetMinutes);
+  const nextCheckpoint = checkpointInterval > 0
+    ? Math.ceil(Math.max(distanceKm, 0.01) / checkpointInterval) * checkpointInterval
+    : 0;
+  const remainingKm = Math.max(0, targetDistance - distanceKm);
+  const targetPace = targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : 0;
+  const currentPace = distanceKm > 0 ? elapsedMinutes / distanceKm : 0;
+  const paceDelta = currentPace > 0 && targetPace > 0 ? currentPace - targetPace : 0;
+
+  return (
+    <View style={styles.progressPanel} pointerEvents="none">
+      <View style={styles.progressHeader}>
+        <Text style={styles.missionKicker}>MISSION PROGRESS</Text>
+        <Text style={styles.progressMeta}>
+          {remainingKm.toFixed(1)} km left · {draft.packWeightKg || '0'} kg
+        </Text>
+      </View>
+      <View style={styles.progressRow}>
+        <Text style={styles.progressLabel}>DIST</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${distanceProgress}%` }]} />
+        </View>
+        <Text style={styles.progressValue}>{Math.round(distanceProgress)}%</Text>
+      </View>
+      <View style={styles.progressRow}>
+        <Text style={styles.progressLabel}>TIME</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFillWarn, { width: `${timeProgress}%` }]} />
+        </View>
+        <Text style={styles.progressValue}>{Math.round(timeProgress)}%</Text>
+      </View>
+      <Text style={styles.progressHint}>
+        Next checkpoint {nextCheckpoint > 0 ? `${nextCheckpoint.toFixed(1)} km` : '--'}
+        {paceDelta !== 0 ? ` · ${paceDelta > 0 ? '+' : ''}${Math.abs(paceDelta).toFixed(1)} min/km target` : ''}
+      </Text>
+    </View>
+  );
+});
 
 const RuckSavePanel = memo(function RuckSavePanel({
   draft,
@@ -142,7 +282,9 @@ export type RuckTrackPanelProps = {
   tracking: ReturnType<typeof useRuckTracking>;
   overlays: MapOverlay[];
   loadingOverlay: boolean;
+  missionDraft: RuckMissionDraft;
   saveDraft: RuckSaveDraft;
+  onMissionDraftChange: (draft: RuckMissionDraft) => void;
   onSaveDraftChange: (draft: RuckSaveDraft) => void;
   onImportOverlay: () => void;
   onToggleOverlay: (id: string) => void;
@@ -155,7 +297,9 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   tracking,
   overlays,
   loadingOverlay,
+  missionDraft,
   saveDraft,
+  onMissionDraftChange,
   onSaveDraftChange,
   onImportOverlay,
   onToggleOverlay,
@@ -198,6 +342,20 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
           trackingState={tracking.trackingState}
         />
       </View>
+
+      {tracking.trackingState === 'idle' ? (
+        <View style={styles.missionWrapper}>
+          <MissionSetupPanel draft={missionDraft} onChange={onMissionDraftChange} />
+        </View>
+      ) : tracking.trackingState !== 'finished' ? (
+        <View style={styles.missionWrapper}>
+          <MissionProgressPanel
+            draft={missionDraft}
+            distanceKm={tracking.distanceKm}
+            elapsedSeconds={tracking.elapsedSeconds}
+          />
+        </View>
+      ) : null}
 
       <View style={styles.overlayBarWrapper}>
         <TouchableOpacity
@@ -300,6 +458,56 @@ const styles = StyleSheet.create({
   overlayChipHidden: { opacity: 0.4 },
   overlayDot: { width: 8, height: 8, borderRadius: 4 },
   overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
+
+  missionWrapper: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 286,
+  },
+  missionPanel: {
+    backgroundColor: 'rgba(7,17,12,0.92)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+    padding: 12,
+    gap: 10,
+  },
+  missionHeader: { gap: 2 },
+  missionKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  missionText: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
+  missionGrid: { flexDirection: 'row', gap: 8 },
+  missionField: { flex: 1, gap: 4 },
+  missionLabel: { color: '#8fbf8f', fontSize: 9, fontWeight: '900' },
+  missionInput: {
+    backgroundColor: '#07110c',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#203529',
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '900',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    textAlign: 'center',
+  },
+  progressPanel: {
+    backgroundColor: 'rgba(7,17,12,0.92)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+    padding: 12,
+    gap: 8,
+  },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+  progressMeta: { color: '#dfe8da', fontSize: 11, fontWeight: '900' },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  progressLabel: { width: 32, color: '#8fbf8f', fontSize: 9, fontWeight: '900' },
+  progressTrack: { flex: 1, height: 7, borderRadius: 999, overflow: 'hidden', backgroundColor: '#203529' },
+  progressFill: { height: '100%', backgroundColor: '#91e6a3' },
+  progressFillWarn: { height: '100%', backgroundColor: '#ffb86b' },
+  progressValue: { width: 34, color: '#ffffff', fontSize: 10, fontWeight: '900', textAlign: 'right' },
+  progressHint: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
 
   savePanel: {
     position: 'absolute',

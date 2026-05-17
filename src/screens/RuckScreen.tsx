@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
+import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT, RuckMissionDraft, DEFAULT_RUCK_MISSION_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
@@ -209,6 +209,7 @@ export default function RuckScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
   const [saveDraft, setSaveDraft] = useState<RuckSaveDraft>(DEFAULT_RUCK_SAVE_DRAFT);
+  const [missionDraft, setMissionDraft] = useState<RuckMissionDraft>(DEFAULT_RUCK_MISSION_DRAFT);
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
   const [overlays, setOverlays] = useState<MapOverlay[]>([]);
@@ -219,7 +220,7 @@ export default function RuckScreen() {
       Alert.alert('Too Short', 'Route must be at least 100m to save.');
       return;
     }
-    const packWeightKg = Math.max(0, getNumberInput(saveDraft.packWeightKg, 0));
+    const packWeightKg = Math.max(0, getNumberInput(saveDraft.packWeightKg || missionDraft.packWeightKg, 0));
     const readiness = Math.max(1, Math.min(10, Math.round(getNumberInput(saveDraft.readiness, 6))));
     const rpe = Math.max(1, Math.min(10, Math.round(getNumberInput(saveDraft.rpe, 6))));
     const durationSeconds = tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds;
@@ -260,9 +261,13 @@ export default function RuckScreen() {
     setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
     router.push({ pathname: '/ruck-review/[id]', params: { id: String(savedLog.id) } });
-  }, [tracking, saveDraft, addLog, router]);
+  }, [tracking, saveDraft, missionDraft.packWeightKg, addLog, router]);
 
   const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
+  const handleMissionDraftChange = useCallback((draft: RuckMissionDraft) => {
+    setMissionDraft(draft);
+    setSaveDraft((prev) => ({ ...prev, packWeightKg: draft.packWeightKg }));
+  }, []);
   const handleReviewRuck = useCallback((id: number) => {
     router.push({ pathname: '/ruck-review/[id]', params: { id: String(id) } });
   }, [router]);
@@ -638,7 +643,9 @@ export default function RuckScreen() {
           tracking={tracking}
           overlays={overlays}
           loadingOverlay={loadingOverlay}
+          missionDraft={missionDraft}
           saveDraft={saveDraft}
+          onMissionDraftChange={handleMissionDraftChange}
           onSaveDraftChange={setSaveDraft}
           onImportOverlay={handleImportOverlay}
           onToggleOverlay={handleToggleOverlay}
