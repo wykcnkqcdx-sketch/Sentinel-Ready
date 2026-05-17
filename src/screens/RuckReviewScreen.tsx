@@ -74,6 +74,49 @@ function getNextRecommendation(log: TrainingLog): string {
   return `Hold distance near ${distance.toFixed(1)} km. If recovery is good, add 1-2 kg or improve pace slightly, but not both.`;
 }
 
+function getMissionOutcome(log: TrainingLog): { label: string; tone: 'good' | 'warn' | 'bad'; text: string } {
+  const mission = log.ruck?.mission;
+  const ruck = log.ruck;
+  if (!ruck || !mission) {
+    return {
+      label: 'Baseline',
+      tone: 'good',
+      text: 'No mission target was stored for this ruck. Use this session as a baseline for the next planned effort.',
+    };
+  }
+
+  const distanceMet = ruck.distanceKm >= mission.targetDistanceKm * 0.98;
+  const timeMet = ruck.durationSeconds / 60 <= mission.targetMinutes * 1.05;
+  const gpsOk = ruck.routeConfidence !== 'Low';
+  const effortHigh = ruck.rpe >= 8 || isFatigueWatch(log.readiness);
+
+  if (distanceMet && timeMet && gpsOk && !effortHigh) {
+    return {
+      label: 'Mission Met',
+      tone: 'good',
+      text: 'Distance and time were inside target with usable GPS confidence. This is a clean progression point.',
+    };
+  }
+
+  if (!gpsOk || effortHigh) {
+    return {
+      label: 'Review Required',
+      tone: 'bad',
+      text: !gpsOk
+        ? 'GPS confidence was low, so avoid using this route as a hard progression benchmark.'
+        : 'Effort or readiness suggests this was a high strain session. Hold load and distance next time.',
+    };
+  }
+
+  return {
+    label: 'Partial',
+    tone: 'warn',
+    text: distanceMet
+      ? 'Distance was met, but time was outside target. Hold distance and improve pace before adding load.'
+      : 'Time was controlled, but distance target was missed. Repeat the mission before progressing.',
+  };
+}
+
 function logToSession(log: TrainingLog): TrainingSession {
   return {
     id: String(log.id),
@@ -123,6 +166,7 @@ export default function RuckReviewScreen() {
   const averageAccuracy = log?.ruck?.averageAccuracyMeters;
   const canExportGpx = routePoints.length >= 2;
   const mission = log?.ruck?.mission;
+  const outcome = log ? getMissionOutcome(log) : null;
   const actualMinutes = log?.ruck ? log.ruck.durationSeconds / 60 : 0;
   const distanceDelta = mission && log?.ruck ? log.ruck.distanceKm - mission.targetDistanceKm : 0;
   const timeDelta = mission ? actualMinutes - mission.targetMinutes : 0;
@@ -235,6 +279,18 @@ export default function RuckReviewScreen() {
         <Stat label="Readiness" value={`${log.readiness}/10`} />
       </View>
 
+      {outcome ? (
+        <View style={
+          outcome.tone === 'bad' ? styles.badCard
+          : outcome.tone === 'warn' ? styles.warnCard
+          : styles.card
+        }>
+          <Text style={styles.cardKicker}>SESSION OUTCOME</Text>
+          <Text style={styles.cardTitle}>{outcome.label}</Text>
+          <Text style={styles.cardText}>{outcome.text}</Text>
+        </View>
+      ) : null}
+
       {mission ? (
         <View style={styles.card}>
           <Text style={styles.cardKicker}>PLANNED VS ACTUAL</Text>
@@ -331,6 +387,7 @@ const styles = StyleSheet.create({
   statLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
   card: { backgroundColor: '#0d1812', borderRadius: 8, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 8 },
   warnCard: { backgroundColor: '#21140b', borderRadius: 8, padding: 14, borderWidth: 1, borderColor: '#7a4a1f', gap: 8 },
+  badCard: { backgroundColor: '#261010', borderRadius: 8, padding: 14, borderWidth: 1, borderColor: '#8a2f2a', gap: 8 },
   cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   cardTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
   cardText: { color: '#c4cec0', fontSize: 13, lineHeight: 20, fontWeight: '700' },
