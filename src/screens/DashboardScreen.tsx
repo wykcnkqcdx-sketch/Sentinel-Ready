@@ -16,7 +16,7 @@ import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
@@ -82,6 +82,7 @@ export default function DashboardScreen() {
   const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
 
   const weeklyLoadData = useMemo(() => weeklyLoadSeries(logs, 8), [logs]);
+  const [showFullReport, setShowFullReport] = useState(false);
 
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
@@ -184,7 +185,8 @@ export default function DashboardScreen() {
   if (isLoading) return <View style={styles.screen} />;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.kicker}>SENTINEL READY</Text>
         <Text style={styles.title}>Operational Fitness Dashboard</Text>
@@ -236,6 +238,19 @@ export default function DashboardScreen() {
       </SentinelCard>
 
       <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
+
+      <TouchableOpacity
+        style={styles.reportToggle}
+        onPress={() => setShowFullReport((v) => !v)}
+        accessibilityRole="button"
+        accessibilityLabel={showFullReport ? 'Collapse full report' : 'View full report'}
+      >
+        <Text style={styles.reportToggleText}>
+          {showFullReport ? '▲  COLLAPSE REPORT' : '▼  VIEW FULL REPORT'}
+        </Text>
+      </TouchableOpacity>
+
+      {showFullReport && <>
 
       <SentinelCard title="Recovery Debt" variant={recoveryDebt.status === 'red' ? 'warning' : 'default'}>
         <View style={styles.recoveryDebtRow}>
@@ -432,6 +447,8 @@ export default function DashboardScreen() {
         </View>
       </SentinelCard>
 
+      </>}
+
       <View style={styles.grid}>
         <MissionStat label="Ruck" value={ruckVal} status={ruckVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
         <MissionStat label="Strength" value={strengthVal} status={strengthVal !== 'N/A' ? 'Force output' : 'Awaiting data'} />
@@ -614,12 +631,43 @@ export default function DashboardScreen() {
         ) : null}
       </View>
     </ScrollView>
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/add-log')}
+        accessibilityRole="button"
+        accessibilityLabel="Log a training session"
+      >
+        <Text style={styles.fabText}>＋  LOG SESSION</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
-  content: { padding: 20, gap: 18, paddingBottom: 50, maxWidth: 1100, width: '100%', alignSelf: 'center' },
+  screen: { flex: 1, backgroundColor: '#07110c', position: 'relative' },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    left: 20,
+    right: 20,
+    backgroundColor: '#91e6a3',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabText: {
+    color: '#07110c',
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  content: { padding: 20, gap: 18, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
   header: { gap: 10 },
   kicker: { color: '#8fbf8f', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   title: { color: '#f2f5ef', fontSize: 32, fontWeight: '900' },
@@ -733,6 +781,20 @@ const styles = StyleSheet.create({
   barFill: { width: '100%', borderRadius: 4 },
   barLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800', marginTop: 8 },
 
+  reportToggle: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#1a2e1f',
+    backgroundColor: '#0a170e',
+  },
+  reportToggleText: {
+    color: '#91e6a3',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
   loadCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
   loadCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 12 },
   loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
@@ -767,7 +829,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2,
   },
-  connectRow: { flexDirection: 'row', gap: 10 },
+  connectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   connectPill: {
     flexDirection: 'row',
     alignItems: 'center',

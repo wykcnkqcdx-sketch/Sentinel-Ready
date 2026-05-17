@@ -56,8 +56,8 @@ function ScaleRow({
 
 const scaleStyles = StyleSheet.create({
   labelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  labelLeft: { color: '#4a7a5a', fontSize: 10 },
-  labelRight: { color: '#4a7a5a', fontSize: 10 },
+  labelLeft: { color: '#7db88a', fontSize: 12 },
+  labelRight: { color: '#7db88a', fontSize: 12 },
   pip: {
     flex: 1,
     aspectRatio: 1,
@@ -112,9 +112,9 @@ function StarRating({
 
 const starStyles = StyleSheet.create({
   star: { flex: 1, alignItems: 'center' },
-  starText: { fontSize: 26, color: '#1a2e22' },
+  starText: { fontSize: 26, color: '#2a4a33' },
   starActive: { color: '#91e6a3' },
-  label: { color: '#4a7a5a', fontSize: 10 },
+  label: { color: '#7db88a', fontSize: 12 },
 });
 
 // ---------------------------------------------------------------------------
@@ -399,9 +399,9 @@ const s = StyleSheet.create({
 
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   stepBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#1a2e22',
     borderWidth: 1,
     borderColor: '#2f6b3c',
