@@ -1,0 +1,15 @@
+C:\Users\mcwemyss\Documents\Sentinel-Ready-main\node_modules\expo\node_modules\@expo\cli\build\src\utils\errors.js:130
+    throw error;
+    ^
+
+Error: EPERM: operation not permitted, open 'C:\Users\mcwemyss\Documents\Sentinel-Ready-main\.gitignore'
+    at Object.readFileSync (node:fs:441:20)
+    at upsertGitIgnoreContents (C:\Users\mcwemyss\Documents\Sentinel-Ready-main\node_modules\expo\node_modules\@expo\cli\src\utils\mergeGitIgnorePaths.ts:121:30)
+    at startTypescriptTypeGenerationAsync (C:\Users\mcwemyss\Documents\Sentinel-Ready-main\node_modules\expo\node_modules\@expo\cli\src\start\server\type-generation\startTypescriptTypeGeneration.ts:46:30) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'open',
+  path: 'C:\\Users\\mcwemyss\\Documents\\Sentinel-Ready-main\\.gitignore'
+}
+
+Node.js v24.15.0
