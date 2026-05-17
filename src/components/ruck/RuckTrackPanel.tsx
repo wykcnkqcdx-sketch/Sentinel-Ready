@@ -39,6 +39,21 @@ export const DEFAULT_RUCK_MISSION_DRAFT: RuckMissionDraft = {
   checkpointIntervalKm: '1',
 };
 
+const MISSION_PRESETS: { label: string; draft: RuckMissionDraft }[] = [
+  {
+    label: 'Base',
+    draft: { targetDistanceKm: '8', targetMinutes: '90', packWeightKg: '15', checkpointIntervalKm: '1' },
+  },
+  {
+    label: 'Tempo',
+    draft: { targetDistanceKm: '6', targetMinutes: '60', packWeightKg: '12', checkpointIntervalKm: '1' },
+  },
+  {
+    label: 'Long',
+    draft: { targetDistanceKm: '12', targetMinutes: '150', packWeightKg: '18', checkpointIntervalKm: '2' },
+  },
+];
+
 function formatPace(pace: number): string {
   if (!pace) return '--';
   let mins = Math.floor(pace);
@@ -86,6 +101,19 @@ const MissionSetupPanel = memo(function MissionSetupPanel({
       <View style={styles.missionHeader}>
         <Text style={styles.missionKicker}>MISSION SETUP</Text>
         <Text style={styles.missionText}>Set intent before stepping off.</Text>
+      </View>
+      <View style={styles.presetRow}>
+        {MISSION_PRESETS.map((preset) => (
+          <TouchableOpacity
+            key={preset.label}
+            style={styles.presetButton}
+            onPress={() => onChange(preset.draft)}
+            accessibilityRole="button"
+            accessibilityLabel={`Use ${preset.label} ruck preset`}
+          >
+            <Text style={styles.presetText}>{preset.label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
       <View style={styles.missionGrid}>
         <View style={styles.missionField}>
@@ -476,6 +504,17 @@ const styles = StyleSheet.create({
   missionHeader: { gap: 2 },
   missionKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
   missionText: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
+  presetRow: { flexDirection: 'row', gap: 6 },
+  presetButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+    borderRadius: 8,
+    paddingVertical: 7,
+    alignItems: 'center',
+    backgroundColor: '#102d1a',
+  },
+  presetText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   missionGrid: { flexDirection: 'row', gap: 8 },
   missionField: { flex: 1, gap: 4 },
   missionLabel: { color: '#8fbf8f', fontSize: 9, fontWeight: '900' },
