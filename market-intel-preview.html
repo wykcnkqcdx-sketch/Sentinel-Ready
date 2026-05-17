@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL READY · MARKET INTELLIGENCE BRIEF 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050e09;
+    --bg-panel: #0a1610;
+    --bg-deep: #030a06;
+    --border: #172c20;
+    --border-bright: #235c32;
+    --green: #91e6a3;
+    --green-dim: #3a6b46;
+    --green-mid: #5a9a68;
+    --amber: #ffaa44;
+    --red: #e05050;
+    --electric: #3fc8e4;
+    --text: #edf5ea;
+    --text-dim: #7a9480;
+    --text-faint: #3a5040;
+    --font-display: 'Orbitron', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Scanline overlay ─────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(5,14,9,0.08) 2px,
+      rgba(5,14,9,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── Grid noise bg ────────────────────────────────────────── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(145,230,163,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145,230,163,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── Top nav bar ──────────────────────────────────────────── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,14,9,0.97);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+  .topbar-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 20px; }
+  .topbar-logo {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: 3px;
+  }
+  .topbar-sep { width: 1px; height: 20px; background: var(--border-bright); }
+  .topbar-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green-dim);
+    letter-spacing: 2px;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 24px; }
+  .topbar-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--green-dim);
+    letter-spacing: 1.5px;
+  }
+  .topbar-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .topbar-class {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--amber);
+    letter-spacing: 2px;
+    border: 1px solid rgba(255,170,68,0.3);
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  /* ── Hero ─────────────────────────────────────────────────── */
+  .hero {
+    padding: 80px 0 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse, rgba(145,230,163,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .hero-line { height: 1px; width: 40px; background: var(--green-dim); }
+  .hero-eyebrow-text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green-dim);
+    letter-spacing: 3px;
+  }
+  .hero-headline {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 5vw, 56px);
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .hero-headline span { color: var(--green); }
+  .hero-sub {
+    font-family: var(--font-display);
+    font-size: clamp(14px, 2vw, 20px);
+    font-weight: 400;
+    color: var(--green-dim);
+    letter-spacing: 4px;
+    margin-bottom: 32px;
+  }
+  .hero-desc {
+    max-width: 640px;
+    color: var(--text-dim);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.65;
+    margin-bottom: 40px;
+  }
+
+  /* ── KPI strip ────────────────────────────────────────────── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    margin-bottom: 72px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--border);
+  }
+  .kpi-cell {
+    background: var(--bg-panel);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-cell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi-cell.green::before { background: var(--green); }
+  .kpi-cell.amber::before { background: var(--amber); }
+  .kpi-cell.electric::before { background: var(--electric); }
+  .kpi-cell.red::before { background: var(--red); }
+  .kpi-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--green-dim);
+    letter-spacing: 2.5px;
+    margin-bottom: 8px;
+  }
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-value.green { color: var(--green); }
+  .kpi-value.amber { color: var(--amber); }
+  .kpi-value.electric { color: var(--electric); }
+  .kpi-sub { font-size: 11px; color: var(--text-dim); font-weight: 600; }
+
+  /* ── Section header ───────────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green-dim);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+  .section-meta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--green-dim);
+    letter-spacing: 1.5px;
+  }
+
+  /* ── Category grid ────────────────────────────────────────── */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 72px;
+  }
+  .cat-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .cat-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+  .cat-card-accent { height: 3px; flex-shrink: 0; }
+  .cat-card-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .cat-num {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-faint);
+    letter-spacing: 2px;
+  }
+  .cat-title {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1.5px;
+    line-height: 1.3;
+  }
+  .cat-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+    line-height: 1.55;
+    flex: 1;
+  }
+  .cat-market {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .cat-market-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--green-dim);
+    letter-spacing: 1.5px;
+  }
+  .cat-market-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .cat-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .cat-tag {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    letter-spacing: 1.5px;
+    padding: 3px 7px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+
+  /* ── App showcase ─────────────────────────────────────────── */
+  .showcase-section { margin-bottom: 72px; }
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .showcase-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    transition: border-color 0.2s;
+  }
+  .showcase-card:hover { border-color: var(--border-bright); }
+  .showcase-accent { width: 3px; flex-shrink: 0; }
+  .showcase-inner { flex: 1; display: flex; gap: 0; }
+  .showcase-img-wrap {
+    width: 110px;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg-deep);
+  }
+  .showcase-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    filter: saturate(0.6) contrast(1.1);
+    transition: filter 0.3s;
+  }
+  .showcase-card:hover .showcase-img { filter: saturate(0.8) contrast(1.1); }
+  .showcase-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 70%, var(--bg-panel));
+  }
+  .showcase-content { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .showcase-cat {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 2px;
+  }
+  .showcase-name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+  .showcase-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+    line-height: 1.5;
+    flex: 1;
+  }
+  .showcase-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .showcase-stat-val {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .showcase-stat-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--green-dim);
+    letter-spacing: 1px;
+  }
+
+  /* ── Full-width showcase (featured) ─────────────────────── */
+  .showcase-featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .cat-card.wide { grid-column: span 1; }
+
+  /* ── Trends grid ──────────────────────────────────────────── */
+  .trends-section { margin-bottom: 72px; }
+  .trends-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .trend-cell {
+    background: var(--bg-panel);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .trend-icon {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--green);
+    margin-bottom: 2px;
+  }
+  .trend-title {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1.5px;
+    line-height: 1.3;
+  }
+  .trend-body {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+    line-height: 1.55;
+  }
+  .trend-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    border: 1px solid rgba(145,230,163,0.25);
+    color: var(--green);
+    background: rgba(145,230,163,0.06);
+    width: fit-content;
+  }
+
+  /* ── Sentinel positioning ─────────────────────────────────── */
+  .position-section { margin-bottom: 72px; }
+  .position-banner {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 20px;
+  }
+  .position-accent-bar { width: 4px; background: var(--green); flex-shrink: 0; }
+  .position-inner { flex: 1; padding: 28px 32px; }
+  .position-kicker {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--green-dim);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+  .position-headline {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+  .position-headline span { color: var(--green); }
+  .position-body {
+    font-size: 15px;
+    color: var(--text-dim);
+    font-weight: 500;
+    line-height: 1.65;
+    max-width: 720px;
+  }
+
+  .capability-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .cap-cell {
+    background: var(--bg-panel);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cap-cell::after {
+    content: attr(data-n);
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 900;
+    color: rgba(145,230,163,0.04);
+    line-height: 1;
+  }
+  .cap-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
+  .cap-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .cap-title {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+  .cap-body {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* ── Market map table ─────────────────────────────────────── */
+  .table-section { margin-bottom: 72px; }
+  .intel-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .intel-table thead tr {
+    background: var(--bg-deep);
+  }
+  .intel-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--green-dim);
+    letter-spacing: 2px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .intel-table td {
+    padding: 13px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .intel-table tr:last-child td { border-bottom: none; }
+  .intel-table tr:nth-child(even) td { background: rgba(5,14,9,0.4); }
+  .intel-table tr:hover td { background: rgba(145,230,163,0.03); }
+  .td-cat {
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+  .td-size { font-family: var(--font-mono); font-size: 11px; }
+  .td-cagr { font-family: var(--font-mono); font-size: 11px; color: var(--green); }
+  .td-threat { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; padding: 2px 8px; border-radius: 2px; border: 1px solid; display: inline-block; }
+  .threat-high { color: var(--red); border-color: rgba(224,80,80,0.3); background: rgba(224,80,80,0.08); }
+  .threat-med { color: var(--amber); border-color: rgba(255,170,68,0.3); background: rgba(255,170,68,0.08); }
+  .threat-low { color: var(--green); border-color: rgba(145,230,163,0.3); background: rgba(145,230,163,0.08); }
+  .td-sentinel { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+  .td-sentinel strong { color: var(--green); font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; }
+
+  /* ── CTA ──────────────────────────────────────────────────── */
+  .cta-section {
+    margin-bottom: 80px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+  }
+  .cta-accent { width: 4px; background: linear-gradient(180deg, var(--green) 0%, var(--electric) 100%); flex-shrink: 0; }
+  .cta-inner { flex: 1; padding: 40px 48px; }
+  .cta-kicker {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--green-dim);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+  .cta-headline {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 3vw, 36px);
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    line-height: 1.15;
+  }
+  .cta-headline span { color: var(--green); }
+  .cta-body {
+    font-size: 15px;
+    color: var(--text-dim);
+    font-weight: 500;
+    line-height: 1.65;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+  .cta-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-primary {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--bg);
+    background: var(--green);
+    border: none;
+    border-radius: 4px;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #adf5bc; }
+  .btn-ghost {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--green);
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--green); }
+
+  /* ── Footer ───────────────────────────────────────────────── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-left {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--green-dim);
+    letter-spacing: 2px;
+  }
+  .footer-right {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 1.5px;
+  }
+
+  /* ── Section spacing ──────────────────────────────────────── */
+  .section-gap { margin-bottom: 72px; }
+
+  /* ── Alert bar ────────────────────────────────────────────── */
+  .alert-bar {
+    background: rgba(255,170,68,0.06);
+    border: 1px solid rgba(255,170,68,0.2);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .alert-bar-tag {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--amber);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .alert-bar-text {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  /* ── Responsive ───────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .page { padding: 0 20px; }
+    .topbar-inner { padding: 0 20px; }
+    .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+    .cat-grid { grid-template-columns: repeat(2, 1fr); }
+    .showcase-grid { grid-template-columns: 1fr; }
+    .capability-grid { grid-template-columns: repeat(2, 1fr); }
+    .trends-grid { grid-template-columns: repeat(2, 1fr); }
+    .showcase-featured { grid-template-columns: 1fr; }
+    .cta-inner { padding: 28px 24px; }
+  }
+  @media (max-width: 600px) {
+    .cat-grid { grid-template-columns: 1fr; }
+    .kpi-strip { grid-template-columns: 1fr 1fr; }
+    .capability-grid { grid-template-columns: 1fr 1fr; }
+    .trends-grid { grid-template-columns: 1fr; }
+    .hero-headline { font-size: 28px; }
+  }
+
+  /* ── Animations ───────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.6s ease both; }
+  .fade-up-1 { animation-delay: 0.1s; }
+  .fade-up-2 { animation-delay: 0.2s; }
+  .fade-up-3 { animation-delay: 0.3s; }
+  .fade-up-4 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- ── Top nav ─────────────────────────────────────────────── -->
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <div class="topbar-logo">SENTINEL·READY</div>
+      <div class="topbar-sep"></div>
+      <div class="topbar-tag">MARKET INTELLIGENCE</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-status">
+        <div class="topbar-dot"></div>
+        LIVE · 2026
+      </div>
+      <div class="topbar-class">STRATEGIC</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────── -->
+<div class="page">
+  <section class="hero">
+    <div class="hero-eyebrow fade-up">
+      <div class="hero-line"></div>
+      <div class="hero-eyebrow-text">INTEL BRIEF · FITNESS APP SECTOR · FIELD REPORT 2026</div>
+    </div>
+    <h1 class="hero-headline fade-up fade-up-1">
+      THE FITNESS APP<br>
+      <span>BATTLE SPACE</span>
+    </h1>
+    <div class="hero-sub fade-up fade-up-2">MARKET INTELLIGENCE · COMPETITIVE LANDSCAPE · 2026</div>
+    <p class="hero-desc fade-up fade-up-3">
+      In 2026, the blend of technology and fitness is changing the way we work out. With IoT, AI, and augmented reality, fitness apps now offer personalized and operationally precise experiences that go beyond one-size-fits-all routines. The market favors newcomers with bold, differentiated positions — and Sentinel Ready is one of them.
+    </p>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip fade-up fade-up-4">
+      <div class="kpi-cell green">
+        <div class="kpi-label">GLOBAL MARKET SIZE · 2033</div>
+        <div class="kpi-value green">$33.6B</div>
+        <div class="kpi-sub">Projected fitness app revenue</div>
+      </div>
+      <div class="kpi-cell amber">
+        <div class="kpi-label">IN-APP PURCHASE REVENUE · 2025</div>
+        <div class="kpi-value amber">$4.5B</div>
+        <div class="kpi-sub">Record-breaking IAP revenue</div>
+      </div>
+      <div class="kpi-cell electric">
+        <div class="kpi-label">MARKET CAGR · 2026–2033</div>
+        <div class="kpi-value electric">13.4%</div>
+        <div class="kpi-sub">Compound annual growth rate</div>
+      </div>
+      <div class="kpi-cell red">
+        <div class="kpi-label">CONNECTED GYM MARKET · 2033</div>
+        <div class="kpi-value" style="color:var(--red)">$9.9B</div>
+        <div class="kpi-sub">From $1.2B in 2024</div>
+      </div>
+      <div class="kpi-cell amber">
+        <div class="kpi-label">AVG MVP BUILD COST</div>
+        <div class="kpi-value amber">$67K</div>
+        <div class="kpi-sub">Typical fitness app MVP</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── App categories ─────────────────────────────────────── -->
+  <section class="section-gap">
+    <div class="section-header">
+      <div>
+        <div class="section-num">// 01</div>
+        <div class="section-title">7 BOOMING APP CATEGORIES</div>
+      </div>
+      <div class="section-meta">COMPETITIVE TERRAIN · 2026</div>
+    </div>
+
+    <div class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-card-accent" style="background:var(--green)"></div>
+        <div class="cat-card-body">
+          <div class="cat-num">// CAT-01</div>
+          <div class="cat-title">AI-BASED FITNESS</div>
+          <div class="cat-desc">Hyper-personalized workouts driven by LLMs, computer vision for movement analysis, and emotionally intelligent coaching. AI generates plans, adjusts in real-time, and replaces human trainers at scale.</div>
+          <div class="cat-tags">
+            <span class="cat-tag" style="color:var(--green);border-color:rgba(145,230,163,0.25)">LLM</span>
+            <span class="cat-tag" style="color:var(--green);border-color:rgba(145,230,163,0.25)">COMPUTER VISION</span>
+            <span class="cat-tag" style="color:var(--green);border-color:rgba(145,230,163,0.25)">PERSONALIZATION</span>
+          </div>
+          <div class="cat-market">
+            <div class="cat-market-label">EXAMPLES</div>
+            <div class="cat-market-val" style="color:var(--green)">Zing Coach · Ochy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-card-accent" style="background:var(--electric)"></div>
+        <div class="cat-card-body">
+          <div class="cat-num">// CAT-02</div>
+          <div class="cat-title">ONE-ON-ONE COACHING</div>
+          <div class="cat-desc">Direct 1:1 digital personal training connecting users with real coaches for tailored weekly plans, real-time adjustments, and accountability. 94% of users discuss nutrition, stress, and sleep with their coach.</div>
+          <div class="cat-tags">
+            <span class="cat-tag" style="color:var(--electric);border-color:rgba(63,200,228,0.25)">COACHING</span>
+            <span class="cat-tag" style="color:var(--electric);border-color:rgba(63,200,228,0.25)">1:1 SESSIONS</span>
+          </div>
+          <div class="cat-market">
+            <div class="cat-market-label">EXAMPLES</div>
+            <div class="cat-market-val" style="color:var(--electric)">Echelon Coach · Future</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-card-accent" style="background:var(--text-dim)"></div>
+        <div class="cat-card-body">
+          <div class="cat-num">// CAT-03</div>
+          <div class="cat-title">MEDITATION & MINDFULNESS</div>
+          <div class="cat-desc">Stress reduction, anxiety management, sleep improvement via guided meditation, breathwork, and soundscapes. Market growing from $2.2B in 2025 to $6.99B by 2033 — adjacent to operational recovery.</div>
+          <div class="cat-tags">
+            <span class="cat-tag" style="color:var(--text-dim);border-color:rgba(122,148,128,0.25)">RECOVERY</span>
+            <span class="cat-tag" style="color:var(--text-dim);border-color:rgba(122,148,128,0.25)">SLEEP</span>
+          </div>
+          <div class="cat-market">
+            <div class="cat-market-label">EXAMPLES</div>
+            <div class="cat-market-val" style="color:var(--text-dim)">InsightTimer · Aura</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-card-accent" style="background:var(--amber)"></div>
+        <div class="cat-card-body">
+          <div class="cat-num">// CAT-04</div>
+          <div class="cat-title">DIET & NUTRITION</div>
+          <div class="cat-desc">Calorie tracking, macro management, gut microbiome analysis, and food scoring. Market at $2.1B in 2024, projected $4.56B by 2030. Scientific-led nutrition platforms command premium subscriptions.</div>
+          <div class="cat-tags">
+            <span class="cat-tag" style="color:var(--amber);border-color:rgba(255,170,68,0.25)">NUTRITION</span>
+            <span class="cat-tag" style="color:var(--amber);border-color:rgba(255,170,68,0.25)">BIOMETRICS</span>
+          </div>
+          <div class="cat-market">
+            <div class="cat-market-label">EXAMPLES</div>
+            <div class="cat-market-val" style="color:var(--amber)">ZOE · Fooducate</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-card-accent" style="background:var(--green)"></div>
+        <div class="cat-card-body">
+          <div class="cat-num">// CAT-05</div>
+          <div class="cat-title">CONNECTED FITNESS</div>
+          <div class="cat-desc">IoT + AI bridge gym and home. 72% of Gen Z exercisers run hybrid workouts. Companion apps for smart equipment — AI dumbbells, cable machines, VBT optimization. Market: $1.2B → $9.9B by 2033.</div>
+          <div class="cat-tags">
+            <span class="cat-tag" style="color:var(--green);border-color:rgba(145,230,163,0.25)">IoT</span>
+            <span class="cat-tag" style="color:var(--green);border-color:rgba(145,230,163,0.25)">AI HARDWARE</span>
+            <span class="cat-tag" style="color:var(--green);border-color:rgba(145,230,163,0.25)">VBT</span>
+          </div>
+          <div class="cat-market">
+            <div class="cat-market-label">EXAMPLES</div>
+            <div class="cat-market-val" style="color:var(--green)">Kabata · Tonal</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-card-accent" style="background:var(--red)"></div>
+        <div class="cat-card-body">
+          <div class="cat-num">// CAT-06</div>
+          <div class="cat-title">PHYSICAL THERAPY</div>
+          <div class="cat-desc">Remote PT matching, prescribed exercise video plans, care coordination and telehealth. Market from $1.5B in 2025 to $3.8B by 2034. Reduces admin, staffing strain and billing errors for healthcare providers.</div>
+          <div class="cat-tags">
+            <span class="cat-tag" style="color:var(--red);border-color:rgba(224,80,80,0.25)">TELEHEALTH</span>
+            <span class="cat-tag" style="color:var(--red);border-color:rgba(224,80,80,0.25)">REHABILITATION</span>
+          </div>
+          <div class="cat-market">
+            <div class="cat-market-label">EXAMPLES</div>
+            <div class="cat-market-val" style="color:var(--red)">Luna · Kins</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card" style="grid-column: span 3;">
+        <div class="cat-card-accent" style="background:var(--electric)"></div>
+        <div class="cat-card-body" style="flex-direction:row;align-items:center;gap:24px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div class="cat-num">// CAT-07</div>
+            <div class="cat-title">SOCIAL FITNESS</div>
+          </div>
+          <div class="cat-desc" style="flex:2;min-width:280px;">Community-driven fitness: group challenges, leaderboards, shared achievements. Strava data shows group efforts go 40% longer than solo. Gamification, accountability and belonging are the hook. Hybrids like fitness-dating (FITFCK) and employee wellbeing (GoJoe) capture niche audiences.</div>
+          <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:6px;">
+            <div class="cat-tags">
+              <span class="cat-tag" style="color:var(--electric);border-color:rgba(63,200,228,0.25)">COMMUNITY</span>
+              <span class="cat-tag" style="color:var(--electric);border-color:rgba(63,200,228,0.25)">GAMIFICATION</span>
+            </div>
+            <div class="cat-market">
+              <div class="cat-market-label">EXAMPLES</div>
+              <div class="cat-market-val" style="color:var(--electric)">FITFCK · GoJoe · SweatPals</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── App showcase with images ───────────────────────────── -->
+  <section class="showcase-section">
+    <div class="section-header">
+      <div>
+        <div class="section-num">// 02</div>
+        <div class="section-title">COMPETITIVE INTELLIGENCE · NOTABLE ASSETS</div>
+      </div>
+      <div class="section-meta">FIELD EXAMPLES · LIVE PRODUCTS</div>
+    </div>
+
+    <div class="alert-bar">
+      <div class="alert-bar-tag">◆ INTEL NOTE</div>
+      <div class="alert-bar-text">These platforms define user expectations in 2026. Sentinel Ready occupies the military fitness vertical — a segment none of these competitors serve with specificity.</div>
+    </div>
+
+    <div class="showcase-grid">
+
+      <!-- AI-BASED FITNESS -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--green)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/zing.webp" alt="Zing Coach" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--green)">// AI-BASED FITNESS</div>
+            <div class="showcase-name">ZING COACH</div>
+            <div class="showcase-desc">Hyper-personalized workouts using LLMs and computer vision. AI Recommender dynamically adjusts the journey based on real-time performance data, vitals, activity, and emotional profile.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--green)">1M+</div>
+              <div class="showcase-stat-label">USERS · BODY SCAN + GAIT ANALYSIS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--green)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://cdn.prod.website-files.com/68790c4fc8ffdd3d4103299d/687b4560ac9066d475967834_ochy_openGraph%20(1).png" alt="Ochy" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--green)">// AI MOVEMENT ANALYSIS</div>
+            <div class="showcase-name">OCHY</div>
+            <div class="showcase-desc">Proprietary pose estimation analyzes running form via short video clips. Underpinned by 200+ peer-reviewed studies. Partnered with England Athletics for AI gait analysis and corrective programming.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--green)">€1.7M</div>
+              <div class="showcase-stat-label">PRE-SEED · 2025 · ENGLAND ATHLETICS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ONE-ON-ONE COACHING -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--electric)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-8.png" alt="Echelon Coach" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--electric)">// ONE-ON-ONE TRAINING</div>
+            <div class="showcase-name">ECHELON COACH</div>
+            <div class="showcase-desc">Personal training across boxing, cardio, HIIT, and yoga with top trainers. Bundles nutrition guides, physical therapy, pre/post-natal support, and meditation in one platform.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--electric)">MULTI-MODAL</div>
+              <div class="showcase-stat-label">BOXING · HIIT · YOGA · NUTRITION</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--electric)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-217.png" alt="Future" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--electric)">// ONE-ON-ONE TRAINING</div>
+            <div class="showcase-name">FUTURE</div>
+            <div class="showcase-desc">Real coaches, not bots — on-call support with weekly personalized plans and real-time adjustments. 94% of members discuss nutrition, stress, sleep, and injury with their Future coach.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--electric)">94%</div>
+              <div class="showcase-stat-label">MEMBERS DISCUSS HOLISTIC HEALTH</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEDITATION & MINDFULNESS -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--text-dim)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-222.png" alt="InsightTimer" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--text-dim)">// MEDITATION PLATFORM</div>
+            <div class="showcase-name">INSIGHT TIMER</div>
+            <div class="showcase-desc">World's largest free meditation library — 200,000+ guided sessions. Community-driven platform for 17M+ users with group meditations, live events, and circles. Creator monetization model.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--text-dim)">17M+</div>
+              <div class="showcase-stat-label">USERS · 200K MEDITATIONS FREE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--text-dim)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-244.png" alt="Aura Health" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--text-dim)">// ALL-IN-ONE WELLNESS</div>
+            <div class="showcase-name">AURA HEALTH</div>
+            <div class="showcase-desc">Meditations, stories, CBT, therapists, coaches, and storytellers in one app. First wellness platform using marketplace + data science for personalized content recommendations.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--text-dim)">8M+</div>
+              <div class="showcase-stat-label">USERS · 100K PAYING SUBSCRIBERS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIET & NUTRITION -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--amber)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-246.png" alt="ZOE" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--amber)">// DIET & NUTRITION</div>
+            <div class="showcase-name">ZOE</div>
+            <div class="showcase-desc">At-home testing analyzes blood glucose, blood fat, and gut microbiome. Every logged meal gets a ZOE score. New risk scale categorizes processed foods into 4 groups by health impact.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--amber)">100K+</div>
+              <div class="showcase-stat-label">USERS · BIOMARKER-LED NUTRITION</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--amber)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-270.png" alt="Fooducate" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--amber)">// DIET & NUTRITION</div>
+            <div class="showcase-name">FOODUCATE</div>
+            <div class="showcase-desc">Nutritional grading algorithm scores foods A–D by quality. Barcode scanning auto-calculates calories, macros, and micronutrients. Also tracks physical activity, sleep, and mood.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--amber)">A–D</div>
+              <div class="showcase-stat-label">FOOD GRADE SCORE · BARCODE SCAN</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONNECTED FITNESS -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--green)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/kabata.png" alt="Kabata" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--green)">// CONNECTED FITNESS</div>
+            <div class="showcase-name">KABATA</div>
+            <div class="showcase-desc">World's first AI-powered dumbbell companion app. Velocity-based training optimizes workout intensity based on rep speed in real time — no manual load selection needed.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--green)">VBT</div>
+              <div class="showcase-stat-label">VELOCITY-BASED TRAINING · AI LOAD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--green)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://tonal.com/cdn/shop/articles/Build-Your-Own-Custom-Workout-Hero.jpg?v=1742330491" alt="Tonal" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--green)">// CONNECTED FITNESS</div>
+            <div class="showcase-name">TONAL</div>
+            <div class="showcase-desc">Smart home gym ecosystem companion app. Tracks workouts and progress, connects friends, and delivers personalized training programs. Hundreds of guided workouts plus nutrition tips and training stories.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--green)">AI LOAD</div>
+              <div class="showcase-stat-label">SMART CABLE · GUIDED TRAINING</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHYSICAL THERAPY -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--red)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-250.png" alt="Luna" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--red)">// PHYSICAL THERAPY</div>
+            <div class="showcase-name">LUNA</div>
+            <div class="showcase-desc">Matches individuals with 3,000+ licensed outpatient therapists for at-home 1:1 treatment. Integrated care coordination with doctor notes, prescribed video exercises, and secure messaging.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--red)">3,000+</div>
+              <div class="showcase-stat-label">LICENSED THERAPISTS · AT-HOME PT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--red)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-271.png" alt="Kins" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--red)">// PHYSICAL THERAPY</div>
+            <div class="showcase-name">KINS</div>
+            <div class="showcase-desc">One-on-one sessions with vetted PTs, in-home or via telehealth. Matches eligible individuals with therapists who draw up personalized programs based on in-person assessment results.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--red)">TELEHEALTH</div>
+              <div class="showcase-stat-label">IN-HOME OR VIRTUAL · VETTED PTs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL FITNESS -->
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--electric)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-268.png" alt="FITFCK" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--electric)">// SOCIAL FITNESS</div>
+            <div class="showcase-name">FITFCK</div>
+            <div class="showcase-desc">Fitness meets dating — gym-goers connect via gym-related icebreakers, swiping, and live events. Since 2020: 10,000+ members and 1.3M app engagements. A niche that owns its audience.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--electric)">1.3M</div>
+              <div class="showcase-stat-label">APP ENGAGEMENTS · 10K MEMBERS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="showcase-accent" style="background:var(--electric)"></div>
+        <div class="showcase-inner">
+          <div class="showcase-img-wrap">
+            <img class="showcase-img" src="https://img.orangesoft.co/media/image-273.png" alt="GoJoe" loading="lazy">
+            <div class="showcase-img-overlay"></div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-cat" style="color:var(--electric)">// SOCIAL FITNESS</div>
+            <div class="showcase-name">GOJOE</div>
+            <div class="showcase-desc">Employee wellbeing platform combining fitness and engagement. Multi-team challenges, team leaderboards, interactive tracker maps, and curated news feeds — designed for corporate health programs.</div>
+            <div class="showcase-stat">
+              <div class="showcase-stat-val" style="color:var(--electric)">B2B</div>
+              <div class="showcase-stat-label">TEAM CHALLENGES · CORPORATE WELLNESS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Strategic trends ────────────────────────────────────── -->
+  <section class="trends-section">
+    <div class="section-header">
+      <div>
+        <div class="section-num">// 03</div>
+        <div class="section-title">5 WINNING VECTORS · 2026</div>
+      </div>
+      <div class="section-meta">COMPETITIVE DIFFERENTIATORS</div>
+    </div>
+
+    <div class="trends-grid">
+      <div class="trend-cell">
+        <div class="trend-icon">◈</div>
+        <div class="trend-title">BUILD COMMUNITY</div>
+        <div class="trend-body">Group efforts go 40% longer than solo (Strava). Social accountability drives performance. Leaderboards, shared goals, and squad challenges are table-stakes for retention in 2026.</div>
+        <div class="trend-tag">SENTINEL → UNIT BOARDS</div>
+      </div>
+      <div class="trend-cell">
+        <div class="trend-icon">◈</div>
+        <div class="trend-title">GAMIFICATION</div>
+        <div class="trend-body">Badges, progress bars, and financial rewards (Paceline) turn training into competition. Engagement and retention both spike when achievement is visible and shareable.</div>
+        <div class="trend-tag">SENTINEL → READINESS SCORE</div>
+      </div>
+      <div class="trend-cell">
+        <div class="trend-icon">◈</div>
+        <div class="trend-title">PERSONALIZE WITH AI</div>
+        <div class="trend-body">60%+ of users leverage AI for workouts, 49% for nutrition. ML-driven recommendations, on-the-fly adjustments, and technique analysis are now expected — not optional.</div>
+        <div class="trend-tag">SENTINEL → ADAPTIVE PLANS</div>
+      </div>
+      <div class="trend-cell">
+        <div class="trend-icon">◈</div>
+        <div class="trend-title">WEARABLE SYNC</div>
+        <div class="trend-body">Smartwatches, fitness bands, smart glasses. Users expect seamless data consolidation across all their gear. Multi-device tracking is the new baseline for serious fitness platforms.</div>
+        <div class="trend-tag">SENTINEL → GPS + HRM SYNC</div>
+      </div>
+      <div class="trend-cell">
+        <div class="trend-icon">◈</div>
+        <div class="trend-title">FITNESS × LONGEVITY</div>
+        <div class="trend-body">60%+ of gym-goers prioritize healthspan. Equinox + Function Health, FITNESS SF diagnostics. Apps expanding into biomarker tracking, DNA-informed coaching, and preventive health.</div>
+        <div class="trend-tag">SENTINEL → RECOVERY OPS</div>
+      </div>
+      <div class="trend-cell">
+        <div class="trend-icon">◈</div>
+        <div class="trend-title">CONNECTED HARDWARE</div>
+        <div class="trend-body">AI dumbbells, smart cables, VBT systems. $9.9B connected gym market by 2033. Companion apps that bridge hardware and adaptive training programs win device-loyal audiences.</div>
+        <div class="trend-tag">SENTINEL → RUCK + LOADOUT</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Competitive map table ───────────────────────────────── -->
+  <section class="table-section">
+    <div class="section-header">
+      <div>
+        <div class="section-num">// 04</div>
+        <div class="section-title">MARKET MAP · THREAT ASSESSMENT</div>
+      </div>
+      <div class="section-meta">WHERE SENTINEL READY OPERATES</div>
+    </div>
+
+    <table class="intel-table">
+      <thead>
+        <tr>
+          <th>CATEGORY</th>
+          <th>MARKET SIZE · 2025</th>
+          <th>CAGR</th>
+          <th>DIRECT THREAT</th>
+          <th>SENTINEL READY RESPONSE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-cat">AI FITNESS</td>
+          <td class="td-size" style="color:var(--text)">Part of $33.6B total</td>
+          <td class="td-cagr">13.4%</td>
+          <td><span class="td-threat threat-med">MEDIUM</span></td>
+          <td class="td-sentinel">Military-specific AI coaching; adaptive ruck plans <strong>→ UNIQUE VERTICAL</strong></td>
+        </tr>
+        <tr>
+          <td class="td-cat">CONNECTED FITNESS</td>
+          <td class="td-size" style="color:var(--text)">$1.2B (equip market)</td>
+          <td class="td-cagr">26%+</td>
+          <td><span class="td-threat threat-low">LOW</span></td>
+          <td class="td-sentinel">GPS tracking, tactical hardware integration <strong>→ COMPLEMENTARY</strong></td>
+        </tr>
+        <tr>
+          <td class="td-cat">SOCIAL FITNESS</td>
+          <td class="td-size" style="color:var(--text)">Embedded across apps</td>
+          <td class="td-cagr">N/A</td>
+          <td><span class="td-threat threat-med">MEDIUM</span></td>
+          <td class="td-sentinel">Unit leaderboards, shared ruck logs, challenge ops <strong>→ MILITARY FOCUS</strong></td>
+        </tr>
+        <tr>
+          <td class="td-cat">DIET & NUTRITION</td>
+          <td class="td-size" style="color:var(--text)">$2.1B</td>
+          <td class="td-cagr">13.7%</td>
+          <td><span class="td-threat threat-low">LOW</span></td>
+          <td class="td-sentinel">Operational nutrition tracking; field-context meal plans <strong>→ EXPANSION LANE</strong></td>
+        </tr>
+        <tr>
+          <td class="td-cat">PHYSICAL THERAPY</td>
+          <td class="td-size" style="color:var(--text)">$1.5B</td>
+          <td class="td-cagr">11%+</td>
+          <td><span class="td-threat threat-low">LOW</span></td>
+          <td class="td-sentinel">Injury prevention; load management for field personnel <strong>→ ADJACENT OPP</strong></td>
+        </tr>
+        <tr>
+          <td class="td-cat">MEDITATION / RECOVERY</td>
+          <td class="td-size" style="color:var(--text)">$2.2B</td>
+          <td class="td-cagr">15.2%</td>
+          <td><span class="td-threat threat-low">LOW</span></td>
+          <td class="td-sentinel">Operational recovery protocols; sleep readiness scoring <strong>→ CORE FEATURE</strong></td>
+        </tr>
+        <tr>
+          <td class="td-cat">MILITARY FITNESS <span style="color:var(--green);font-size:9px;font-family:var(--font-mono)">← SENTINEL</span></td>
+          <td class="td-size" style="color:var(--green)">Underserved niche</td>
+          <td class="td-cagr" style="color:var(--green)">HIGH</td>
+          <td><span class="td-threat threat-low" style="color:var(--green);border-color:rgba(145,230,163,0.3);background:rgba(145,230,163,0.08)">OWNED</span></td>
+          <td class="td-sentinel" style="color:var(--green)"><strong style="color:var(--green)">→ CATEGORY CREATOR</strong> — no direct competitor serves this with specificity</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── Sentinel positioning ────────────────────────────────── -->
+  <section class="position-section">
+    <div class="section-header">
+      <div>
+        <div class="section-num">// 05</div>
+        <div class="section-title">SENTINEL READY · STRATEGIC POSITION</div>
+      </div>
+      <div class="section-meta">COMPETITIVE ADVANTAGE</div>
+    </div>
+
+    <div class="position-banner">
+      <div class="position-accent-bar"></div>
+      <div class="position-inner">
+        <div class="position-kicker">// STRATEGIC POSITIONING BRIEF</div>
+        <div class="position-headline">
+          THE ONLY FITNESS APP BUILT<br>
+          <span>FOR THE FIELD OPERATOR</span>
+        </div>
+        <p class="position-body">
+          Every major fitness app in 2026 targets the general consumer. Zing Coach, Ochy, Echelon — they optimize for comfort, personalization, and gym aesthetics. Sentinel Ready is the first military fitness platform that treats operational readiness as the primary metric. Ruck tracking, load management, APFT-standard assessments, unit cohesion tools, and field-relevant recovery protocols. The $33.6B market has a blind spot — and Sentinel Ready is filling it.
+        </p>
+      </div>
+    </div>
+
+    <div class="capability-grid">
+      <div class="cap-cell" data-n="01">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--green)"></div>
+          <span style="color:var(--green);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">ACTIVE</span>
+        </div>
+        <div class="cap-title">TACTICAL RUCK TRACKING</div>
+        <div class="cap-body">GPS route recording, load monitoring, pace vs target, split analysis. 3 display modes: Simple, Mission, Map. Real-time safety alerts for overload conditions.</div>
+      </div>
+      <div class="cap-cell" data-n="02">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--green)"></div>
+          <span style="color:var(--green);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">ACTIVE</span>
+        </div>
+        <div class="cap-title">OPERATIONAL READINESS SCORE</div>
+        <div class="cap-body">Composite readiness metric from training load, recovery, sleep, and test results. Visual ring on dashboard. Red/Amber/Green status with contextual advice.</div>
+      </div>
+      <div class="cap-cell" data-n="03">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--amber)"></div>
+          <span style="color:var(--amber);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">IN DEV</span>
+        </div>
+        <div class="cap-title">UNIT LEADERBOARDS</div>
+        <div class="cap-body">Squad-level performance comparison, unit challenges, shared mission objectives. Social accountability layer built for hierarchical team structures — not flat consumer networks.</div>
+      </div>
+      <div class="cap-cell" data-n="04">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--amber)"></div>
+          <span style="color:var(--amber);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">IN DEV</span>
+        </div>
+        <div class="cap-title">ADAPTIVE MISSION PLANNER</div>
+        <div class="cap-body">AI-driven training plan generation targeting specific fitness tests (APFT, occupational standards). Adjusts automatically to readiness score and injury flags.</div>
+      </div>
+      <div class="cap-cell" data-n="05">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--text-faint)"></div>
+          <span style="color:var(--text-faint);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">ROADMAP</span>
+        </div>
+        <div class="cap-title">WEARABLE INTEGRATION</div>
+        <div class="cap-body">Heart rate monitor sync, smart watch data ingestion, GPS device pairing. Multi-source data fusion for accurate operational readiness picture.</div>
+      </div>
+      <div class="cap-cell" data-n="06">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--text-faint)"></div>
+          <span style="color:var(--text-faint);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">ROADMAP</span>
+        </div>
+        <div class="cap-title">OPERATIONAL NUTRITION</div>
+        <div class="cap-body">Field-context calorie and macro tracking tuned for physical workload profiles. Ration-compatible meal logging for deployed personnel without civilian food infrastructure.</div>
+      </div>
+      <div class="cap-cell" data-n="07">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--text-faint)"></div>
+          <span style="color:var(--text-faint);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">ROADMAP</span>
+        </div>
+        <div class="cap-title">RECOVERY PROTOCOLS</div>
+        <div class="cap-body">Sleep quality scoring, fatigue monitoring, structured deload recommendations. Operationally-relevant recovery tied directly to readiness score and upcoming mission demands.</div>
+      </div>
+      <div class="cap-cell" data-n="08">
+        <div class="cap-status">
+          <div class="cap-dot" style="background:var(--text-faint)"></div>
+          <span style="color:var(--text-faint);font-family:var(--font-mono);font-size:7px;letter-spacing:1.5px">ROADMAP</span>
+        </div>
+        <div class="cap-title">INJURY RISK INTELLIGENCE</div>
+        <div class="cap-body">Load spike detection, chronic:acute ratio monitoring, injury history logging. Proactive alerts before load-related breakdown — keeping operators in the field, not on the bench.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ─────────────────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-accent"></div>
+    <div class="cta-inner">
+      <div class="cta-kicker">// MISSION DIRECTIVE · NEXT STEPS</div>
+      <h2 class="cta-headline">
+        THE MARKET IS OPEN.<br>
+        <span>THE MISSION IS CLEAR.</span>
+      </h2>
+      <p class="cta-body">
+        The global fitness app market is heading to $33.6 billion by 2033 — and the military fitness vertical is completely unowned. Sentinel Ready is the operational readiness platform built for those who train like their life depends on it. Bold design. Tactical intelligence. No compromises.
+      </p>
+      <div class="cta-buttons">
+        <a href="#" class="btn-primary">▶  LAUNCH APP</a>
+        <a href="#" class="btn-ghost">◈  VIEW CAPABILITIES</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-left">SENTINEL·READY · MARKET INTEL BRIEF · 2026</div>
+    <div class="footer-right">CLASSIFICATION: STRATEGIC · DISTRIBUTION: INTERNAL</div>
+  </footer>
+</div>
+
+</body>
+</html>
