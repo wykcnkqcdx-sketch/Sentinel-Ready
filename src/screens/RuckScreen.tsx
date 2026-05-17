@@ -139,14 +139,21 @@ function getNextSessionAdvice(
   return `Aim for ${nextDist} km${loadStr}. Steady pace — log notes on foot condition and breathing rhythm.`;
 }
 
-const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }: {
+const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb, onReview }: {
   log: TrainingLog;
   metrics: RuckMetrics;
   paceVsPb: number | null;
+  onReview?: (id: number) => void;
 }) {
   const fatigue = isFatigueWatch(log.readiness);
   return (
-    <View style={fatigue ? styles.sessionCardWarn : styles.sessionCard}>
+    <TouchableOpacity
+      style={fatigue ? styles.sessionCardWarn : styles.sessionCard}
+      onPress={() => onReview?.(log.id)}
+      disabled={!onReview}
+      accessibilityRole={onReview ? 'button' : undefined}
+      accessibilityLabel={onReview ? `Review ${log.type} from ${log.date}` : undefined}
+    >
       <View style={styles.sessionHeader}>
         <View style={styles.sessionHeaderLeft}>
           <Text style={styles.sessionDate}>{log.date}</Text>
@@ -194,7 +201,7 @@ const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }
       {log.notes ? (
         <Text style={styles.sessionNotes} numberOfLines={2}>{log.notes}</Text>
       ) : null}
-    </View>
+    </TouchableOpacity>
   );
 });
 
@@ -256,6 +263,9 @@ export default function RuckScreen() {
   }, [tracking, saveDraft, addLog, router]);
 
   const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
+  const handleReviewRuck = useCallback((id: number) => {
+    router.push({ pathname: '/ruck-review/[id]', params: { id: String(id) } });
+  }, [router]);
 
   async function handleImportOverlay() {
     setLoadingOverlay(true);
@@ -527,6 +537,17 @@ export default function RuckScreen() {
                   ) : null}
                 </View>
               </View>
+
+              {latest.ruck ? (
+                <TouchableOpacity
+                  style={styles.reviewButton}
+                  onPress={() => handleReviewRuck(latest.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open latest ruck review"
+                >
+                  <Text style={styles.reviewButtonText}>Open Review</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           ) : null}
 
@@ -544,7 +565,13 @@ export default function RuckScreen() {
             const m = recentMetricsSlice[i];
             const paceVsPb = m?.pace > 0 && bestPace !== Infinity ? m.pace - bestPace : null;
             return (
-              <RuckSessionCard key={log.id} log={log} metrics={m} paceVsPb={paceVsPb} />
+              <RuckSessionCard
+                key={log.id}
+                log={log}
+                metrics={m}
+                paceVsPb={paceVsPb}
+                onReview={log.ruck ? handleReviewRuck : undefined}
+              />
             );
           })}
         </>
@@ -666,6 +693,8 @@ const styles = StyleSheet.create({
   latestStatLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800' },
   deltaGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   deltaWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  reviewButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#91e6a3', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  reviewButtonText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
 
   readinessBadge: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   readinessBadgeWarn: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
