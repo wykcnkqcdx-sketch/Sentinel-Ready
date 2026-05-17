@@ -1,9 +1,11 @@
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import type { TrainingSession } from '@/src/types/map';
+import { exportSessionGpx } from '@/src/utils/gpxExport';
 import { isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function formatDuration(seconds: number): string {
   const safeSeconds = Math.max(0, Math.round(seconds));
@@ -63,6 +65,24 @@ function getNextRecommendation(log: TrainingLog): string {
   return `Hold distance near ${distance.toFixed(1)} km. If recovery is good, add 1-2 kg or improve pace slightly, but not both.`;
 }
 
+function logToSession(log: TrainingLog): TrainingSession {
+  return {
+    id: String(log.id),
+    type: 'Ruck',
+    title: `${log.type} - ${log.distanceLoad}`,
+    score: 0,
+    durationMinutes: Math.round((log.ruck?.durationSeconds ?? 0) / 60),
+    rpe: log.ruck?.rpe ?? 6,
+    loadKg: log.ruck?.packWeightKg,
+    routePoints: log.routePoints,
+    note: log.notes,
+    routeConfidence: log.ruck?.routeConfidence,
+    rejectedPointCount: log.ruck?.rejectedPointCount,
+    averageAccuracyMeters: log.ruck?.averageAccuracyMeters,
+    completedAt: `${log.date}T12:00:00`,
+  };
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.stat}>
@@ -76,6 +96,7 @@ export default function RuckReviewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { logs, isLoading } = useTraining();
+  const [exporting, setExporting] = useState(false);
   const logId = Number(id);
 
   const log = useMemo(
@@ -90,6 +111,24 @@ export default function RuckReviewScreen() {
   const confidence = log?.ruck?.routeConfidence ?? 'High';
   const rejected = log?.ruck?.rejectedPointCount ?? 0;
   const averageAccuracy = log?.ruck?.averageAccuracyMeters;
+  const canExportGpx = routePoints.length >= 2;
+
+  const handleExportGpx = useCallback(async () => {
+    if (!log) return;
+    if (!canExportGpx) {
+      Alert.alert('No Route Data', 'This ruck does not have enough GPS points to export as GPX.');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      await exportSessionGpx(logToSession(log));
+    } catch (error) {
+      Alert.alert('Export Failed', error instanceof Error ? error.message : 'Could not export GPX.');
+    } finally {
+      setExporting(false);
+    }
+  }, [canExportGpx, log]);
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -114,6 +153,16 @@ export default function RuckReviewScreen() {
       <Text style={styles.kicker}>RUCK REVIEW</Text>
       <Text style={styles.title}>{log.type}</Text>
       <Text style={styles.subtitle}>{log.date}</Text>
+
+      <TouchableOpacity
+        style={[styles.exportButton, (!canExportGpx || exporting) && styles.exportButtonDisabled]}
+        onPress={handleExportGpx}
+        disabled={!canExportGpx || exporting}
+        accessibilityRole="button"
+        accessibilityLabel="Export this ruck as GPX"
+      >
+        <Text style={styles.exportButtonText}>{exporting ? 'Exporting...' : 'Export GPX'}</Text>
+      </TouchableOpacity>
 
       <View style={styles.mapFrame}>
         <RuckMapView
@@ -186,6 +235,9 @@ const styles = StyleSheet.create({
   kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 2.2 },
   title: { color: '#ffffff', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#aeb8aa', fontSize: 14, fontWeight: '800' },
+  exportButton: { alignSelf: 'flex-start', backgroundColor: '#91e6a3', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 },
+  exportButtonDisabled: { opacity: 0.45 },
+  exportButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
   mapFrame: { height: 320, borderWidth: 1, borderColor: '#2f6b3c', overflow: 'hidden', backgroundColor: '#07110c' },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   stat: { width: '31%', minWidth: 104, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#203529', borderRadius: 8, padding: 12, gap: 4 },
