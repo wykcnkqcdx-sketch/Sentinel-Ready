@@ -1,0 +1,7 @@
+
+> sentinel-ready@1.0.0 web
+> expo start --web --port 8092 --clear
+
+Starting project at C:\Users\mcwemyss\Documents\Sentinel-Ready-main
+React Compiler enabled
+Starting Metro Bundler
