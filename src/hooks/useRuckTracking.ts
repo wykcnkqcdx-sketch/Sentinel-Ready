@@ -3,8 +3,10 @@ import { MapLayerKey } from '@/src/utils/mapTiles';
 import { decimateRouteForMap, evaluateRoutePoint, WEAK_ACCURACY_METERS } from '@/src/utils/routeQuality';
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 
 type TrackingState = 'idle' | 'recording' | 'paused' | 'finished';
+type LocationSubscription = { remove: () => void };
 
 interface SessionResult {
   distanceKm: number;
@@ -81,7 +83,7 @@ export function useRuckTracking(): RuckTrackingState {
   const [averageAccuracyMeters, setAverageAccuracyMeters] = useState<number | null>(INITIAL_STATE.averageAccuracyMeters);
   const [routeConfidence, setRouteConfidence] = useState<'High' | 'Medium' | 'Low'>(INITIAL_STATE.routeConfidence);
 
-  const locationSubRef = useRef<Location.LocationSubscription | null>(null);
+  const locationSubRef = useRef<LocationSubscription | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastAcceptedRef = useRef<TrackPoint | undefined>(undefined);
   const routePointsRef = useRef<TrackPoint[]>([]);
@@ -98,12 +100,115 @@ export function useRuckTracking(): RuckTrackingState {
   const activeSegmentStartRef = useRef(0);
   const accumulatedTimeRef = useRef(0);
 
+  const removeLocationSubscription = useCallback(() => {
+    if (!locationSubRef.current) return;
+
+    const subscription = locationSubRef.current;
+    locationSubRef.current = null;
+
+    try {
+      subscription.remove();
+    } catch (error) {
+      console.warn('Ruck tracking: failed to remove location subscription', error);
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
-      locationSubRef.current?.remove();
+      removeLocationSubscription();
       if (timerRef.current) clearInterval(timerRef.current);
     };
+  }, [removeLocationSubscription]);
+
+  const handleLocationUpdate = useCallback((location: Location.LocationObject) => {
+    if (trackingStateRef.current !== 'recording') return;
+
+    const point: TrackPoint = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      altitude: location.coords.altitude,
+      accuracy: location.coords.accuracy,
+      timestamp: location.timestamp,
+    };
+
+    setCurrentPosition(point);
+
+    const result = evaluateRoutePoint(lastAcceptedRef.current, point);
+    if (result.accepted) {
+      distanceRef.current += result.distanceKm;
+      lastAcceptedRef.current = point;
+      routePointsRef.current = [...routePointsRef.current, point];
+      acceptedPointCountRef.current += 1;
+
+      if (point.accuracy != null) {
+        accuracyTotalRef.current += point.accuracy;
+        accuracyCountRef.current += 1;
+        setAverageAccuracyMeters(accuracyTotalRef.current / accuracyCountRef.current);
+      }
+
+      while (distanceRef.current >= nextSplitKmRef.current) {
+        const elapsedSecondsForSplit = elapsedRef.current;
+        const split: RuckSplit = {
+          km: nextSplitKmRef.current,
+          elapsedSeconds: elapsedSecondsForSplit,
+          splitSeconds: elapsedSecondsForSplit - lastSplitElapsedRef.current,
+        };
+        splitsRef.current = [...splitsRef.current, split];
+        lastSplitElapsedRef.current = elapsedSecondsForSplit;
+        nextSplitKmRef.current += 1;
+        setSplits(splitsRef.current);
+      }
+
+      setRoutePoints(routePointsRef.current);
+      setDistanceKm(distanceRef.current);
+      setGpsQualityWarning(null);
+    } else {
+      rejectedPointCountRef.current += 1;
+      setRejectedPointCount(rejectedPointCountRef.current);
+      setGpsQualityWarning(result.reason);
+    }
   }, []);
+
+  const watchPosition = useCallback(async () => {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          handleLocationUpdate({
+            coords: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              altitude: position.coords.altitude,
+              accuracy: position.coords.accuracy,
+              altitudeAccuracy: position.coords.altitudeAccuracy,
+              heading: position.coords.heading,
+              speed: position.coords.speed,
+            },
+            timestamp: position.timestamp,
+          });
+        },
+        () => setGpsQualityWarning('Location updates unavailable'),
+        {
+          enableHighAccuracy: true,
+          maximumAge: 1000,
+          timeout: 10000,
+        },
+      );
+
+      return {
+        remove: () => navigator.geolocation.clearWatch(watchId),
+      };
+    }
+
+    return Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: 2000,
+        distanceInterval: 2,
+      },
+      handleLocationUpdate,
+    );
+  }, [handleLocationUpdate]);
+
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -136,10 +241,7 @@ export function useRuckTracking(): RuckTrackingState {
       return;
     }
 
-    if (locationSubRef.current) {
-      locationSubRef.current.remove();
-      locationSubRef.current = null;
-    }
+    removeLocationSubscription();
 
     lastAcceptedRef.current = undefined;
     routePointsRef.current = [];
@@ -165,71 +267,16 @@ export function useRuckTracking(): RuckTrackingState {
     setAverageAccuracyMeters(null);
     setRouteConfidence('High');
 
-    const sub = await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: 2000,
-        distanceInterval: 2,
-      },
-      (location) => {
-        if (trackingStateRef.current !== 'recording') return;
-
-        const point: TrackPoint = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          altitude: location.coords.altitude,
-          accuracy: location.coords.accuracy,
-          timestamp: location.timestamp,
-        };
-
-        setCurrentPosition(point);
-
-        const result = evaluateRoutePoint(lastAcceptedRef.current, point);
-        if (result.accepted) {
-          distanceRef.current += result.distanceKm;
-          lastAcceptedRef.current = point;
-          routePointsRef.current = [...routePointsRef.current, point];
-          acceptedPointCountRef.current += 1;
-
-          if (point.accuracy != null) {
-            accuracyTotalRef.current += point.accuracy;
-            accuracyCountRef.current += 1;
-            setAverageAccuracyMeters(accuracyTotalRef.current / accuracyCountRef.current);
-          }
-
-          while (distanceRef.current >= nextSplitKmRef.current) {
-            const elapsedSecondsForSplit = elapsedRef.current;
-            const split: RuckSplit = {
-              km: nextSplitKmRef.current,
-              elapsedSeconds: elapsedSecondsForSplit,
-              splitSeconds: elapsedSecondsForSplit - lastSplitElapsedRef.current,
-            };
-            splitsRef.current = [...splitsRef.current, split];
-            lastSplitElapsedRef.current = elapsedSecondsForSplit;
-            nextSplitKmRef.current += 1;
-            setSplits(splitsRef.current);
-          }
-
-          setRoutePoints(routePointsRef.current);
-          setDistanceKm(distanceRef.current);
-          setGpsQualityWarning(null);
-        } else {
-          rejectedPointCountRef.current += 1;
-          setRejectedPointCount(rejectedPointCountRef.current);
-          setGpsQualityWarning(result.reason);
-        }
-      },
-    );
+    const sub = await watchPosition();
 
     locationSubRef.current = sub;
     trackingStateRef.current = 'recording';
     setTrackingState('recording');
     startTimer();
-  }, [startTimer]);
+  }, [removeLocationSubscription, startTimer, watchPosition]);
 
   const stopRecording = useCallback(() => {
-    locationSubRef.current?.remove();
-    locationSubRef.current = null;
+    removeLocationSubscription();
     stopTimer();
 
     const decimated = decimateRouteForMap(routePointsRef.current);
@@ -254,7 +301,7 @@ export function useRuckTracking(): RuckTrackingState {
     setRouteConfidence(confidence);
     trackingStateRef.current = 'finished';
     setTrackingState('finished');
-  }, [stopTimer]);
+  }, [removeLocationSubscription, stopTimer]);
 
   const pauseRecording = useCallback(() => {
     stopTimer();
@@ -275,8 +322,7 @@ export function useRuckTracking(): RuckTrackingState {
   }, []);
 
   const resetSession = useCallback(() => {
-    locationSubRef.current?.remove();
-    locationSubRef.current = null;
+    removeLocationSubscription();
     stopTimer();
     lastAcceptedRef.current = undefined;
     routePointsRef.current = [];
@@ -303,7 +349,7 @@ export function useRuckTracking(): RuckTrackingState {
     setRejectedPointCount(INITIAL_STATE.rejectedPointCount);
     setAverageAccuracyMeters(INITIAL_STATE.averageAccuracyMeters);
     setRouteConfidence(INITIAL_STATE.routeConfidence);
-  }, [stopTimer]);
+  }, [removeLocationSubscription, stopTimer]);
 
   return {
     trackingState,

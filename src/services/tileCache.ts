@@ -1,9 +1,8 @@
-import * as FileSystem from 'expo-file-system';
-import { cacheDirectory } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getTileUrl } from '../utils/mapTiles';
 import type { MapLayerKey } from '../utils/mapTiles';
 
-const TILE_DIR = (cacheDirectory ?? '') + 'maptiles/';
+const TILE_DIR = (FileSystem.cacheDirectory ?? '') + 'maptiles/';
 
 export function latLonToTileXY(lat: number, lon: number, zoom: number): { x: number; y: number } {
   const tileCount = Math.pow(2, zoom);
@@ -123,9 +122,10 @@ export async function getCacheStats(): Promise<{ tileCount: number; totalBytes: 
       if (entry.endsWith('.png')) {
         tileCount++;
         try {
-          const info = await FileSystem.getInfoAsync(fullPath, { size: true });
-          if (info.exists && 'size' in info) {
-            totalBytes += (info as FileSystem.FileInfo & { size: number }).size;
+          const info = await FileSystem.getInfoAsync(fullPath);
+          const size = (info as { size?: unknown }).size;
+          if (info.exists && typeof size === 'number') {
+            totalBytes += size;
           }
         } catch {
           // skip unreadable file info

@@ -190,7 +190,11 @@ export default function CheckInScreen() {
       await saveReadinessLog(log);
       try {
         const notifPrefs = await loadNotificationPrefs();
-        const isRedReadiness = log.mood <= 2 || log.stress >= 4 || (log.sleepHours < 5.5 && log.sleepQuality <= 2);
+        const mood = log.mood ?? 3;
+        const stress = log.stress ?? 3;
+        const sleepHours = log.sleepHours ?? 7;
+        const sleepQuality = log.sleepQuality ?? 3;
+        const isRedReadiness = mood <= 2 || stress >= 4 || (sleepHours < 5.5 && sleepQuality <= 2);
         if (notifPrefs.restNudgeEnabled && isRedReadiness) {
           await scheduleRestNudge();
         }
