@@ -8,15 +8,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import type { MapLayerKey } from '../utils/mapTiles';
 import {
   clearTileCache,
   downloadRegion,
-  getCacheStats,
-  tilesForBounds,
   enforceCacheLimit,
+  getCacheStats,
   MAX_CACHE_BYTES,
+  tilesForBounds,
 } from '../services/tileCache';
+import type { MapLayerKey } from '../utils/mapTiles';
 
 const LAST_POSITION_KEY = 'sentinel_last_position';
 const DUBLIN = { latitude: 53.3498, longitude: -6.2603 };
@@ -129,7 +129,7 @@ export default function OfflineMapScreen() {
       if (ac.signal.aborted) {
         setStatusMsg('Download cancelled.');
     } else if (wasCleared) {
-      setStatusMsg('Download exceeded 500MB limit. Cache was automatically cleared.');
+      setStatusMsg('Download exceeded 500MB limit. Oldest tiles were automatically removed.');
       } else {
         setStatusMsg(`Download complete. ${result.downloaded} tiles saved, ${result.skipped} already cached, ${result.failed} failed.`);
       }
@@ -141,7 +141,6 @@ export default function OfflineMapScreen() {
         setAbortController(null);
       }
     }
-  }, [center, radius, layer]);
   }, [center, radius, layer, stats.totalBytes, estimatedTiles]);
 
   const handleCancel = useCallback(() => {
