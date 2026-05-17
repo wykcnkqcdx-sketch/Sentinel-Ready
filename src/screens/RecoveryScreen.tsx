@@ -9,7 +9,7 @@ import {
   isFatigueWatch,
 } from '@/src/utils/trainingLogUtils';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function daysSince(dateStr: string): number {
   const then = new Date(dateStr + 'T00:00:00').getTime();
@@ -23,6 +23,23 @@ function getRecoveryScore(recentSortedLogs: TrainingLog[]) {
   const avg = recent.reduce((sum, l) => sum + getReadinessNumber(l.readiness), 0) / recent.length;
   return Math.round((avg / 10) * 100);
 }
+
+function detectDeloadWeek(logs: TrainingLog[]): { needed: boolean; reason: string } {
+  const sorted = [...logs].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const last14 = sorted.slice(0, 14);
+  if (last14.length < 7) return { needed: false, reason: '' };
+
+  const fatigueCount = last14.filter((l) => isFatigueWatch(l.readiness)).length;
+  const ruckCount = last14.filter((l) => l.category === 'Ruck').length;
+  const highLoadDays = last14.filter((l) => ['Ruck', 'Strength', 'Run', 'Military'].includes(l.category)).length;
+
+  if (fatigueCount >= 3) return { needed: true, reason: `${fatigueCount} fatigue-watch sessions in 14 days` };
+  if (highLoadDays >= 10) return { needed: true, reason: `${highLoadDays} high-load sessions in 14 days` };
+  if (ruckCount >= 5) return { needed: true, reason: `${ruckCount} ruck sessions in 14 days` };
+  return { needed: false, reason: '' };
+}
+
+const SLEEP_SCORES = ['4h', '5h', '6h', '7h', '8h', '9h+'];
 
 function getProtocol(score: number) {
   if (score >= 75) {
@@ -75,6 +92,7 @@ function getProtocol(score: number) {
 export default function RecoveryScreen() {
   const { logs, isLoading } = useTraining();
   const { injuryNotes } = useUser();
+  const [sleepIdx, setSleepIdx] = React.useState(3);
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => {
@@ -91,6 +109,7 @@ export default function RecoveryScreen() {
   const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
   const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
   const injuryWatch = useMemo(() => buildInjuryWatch(logs, injuryNotes), [logs, injuryNotes]);
+  const deload = useMemo(() => detectDeloadWeek(logs), [logs]);
 
   const latestRecoveryLog = useMemo(() => recentSorted.find((l) => l.category === 'Recovery'), [recentSorted]);
   const recentFatigueLogs = useMemo(() => recentSorted.filter((l) => isFatigueWatch(l.readiness)).slice(0, 3), [recentSorted]);
@@ -118,6 +137,10 @@ export default function RecoveryScreen() {
 
   if (isLoading) return <View style={styles.screen} />;
 
+  const sleepHours = SLEEP_SCORES[sleepIdx];
+  const sleepScore = Math.round((sleepIdx / (SLEEP_SCORES.length - 1)) * 100);
+  const sleepColor = sleepScore >= 70 ? '#91e6a3' : sleepScore >= 45 ? '#ffaa44' : '#e05050';
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>SENTINEL READY</Text>
@@ -125,6 +148,45 @@ export default function RecoveryScreen() {
       <Text style={styles.subtitle}>
         Fatigue, readiness trend and recovery habits reviewed from your training logs.
       </Text>
+
+      {/* Deload recommendation */}
+      {deload.needed && (
+        <View style={styles.deloadBanner}>
+          <View style={styles.deloadBannerAccent} />
+          <View style={styles.deloadBannerInner}>
+            <Text style={styles.deloadBannerKicker}>◆ DELOAD WEEK RECOMMENDED</Text>
+            <Text style={styles.deloadBannerTitle}>Reduce volume by 40% this week</Text>
+            <Text style={styles.deloadBannerReason}>{deload.reason}</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Sleep tracker */}
+      <View style={styles.sleepCard}>
+        <View style={[styles.sleepAccent, { backgroundColor: sleepColor }]} />
+        <View style={styles.sleepInner}>
+          <View style={styles.sleepHeader}>
+            <Text style={styles.cardKicker}>LAST NIGHT SLEEP</Text>
+            <Text style={[styles.sleepVal, { color: sleepColor }]}>{sleepHours}</Text>
+          </View>
+          <View style={styles.sleepChips}>
+            {SLEEP_SCORES.map((s, i) => (
+              <TouchableOpacity
+                key={s}
+                style={[styles.sleepChip, sleepIdx === i && { backgroundColor: sleepColor + '22', borderColor: sleepColor }]}
+                onPress={() => setSleepIdx(i)}
+              >
+                <Text style={[styles.sleepChipText, sleepIdx === i && { color: sleepColor }]}>{s}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={styles.sleepTip}>
+            {sleepScore >= 70 ? 'Good sleep. Training quality should be high today.'
+              : sleepScore >= 45 ? 'Moderate sleep. Avoid high-intensity sessions today.'
+              : 'Poor sleep. Consider rest or light mobility only.'}
+          </Text>
+        </View>
+      </View>
 
       <View style={mainCardStyle}>
         <View style={styles.scoreHeader}>
