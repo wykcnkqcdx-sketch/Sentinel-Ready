@@ -573,6 +573,15 @@ export default function DashboardScreen() {
             <View style={[styles.connectPillDot, styles.connectPillDotProgress]} />
             <Text style={styles.connectPillText}>Progress</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/body-comp')}
+            accessibilityRole="button"
+            accessibilityLabel="Open body composition tracker"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotBodyComp]} />
+            <Text style={styles.connectPillText}>Body Comp</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -853,5 +862,6 @@ const styles = StyleSheet.create({
   connectPillDotOffline: { backgroundColor: '#4ECDC4' },
   connectPillDotAlerts: { backgroundColor: '#FFB86B' },
   connectPillDotProgress: { backgroundColor: '#4a9eff' },
+  connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
   connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
 });
