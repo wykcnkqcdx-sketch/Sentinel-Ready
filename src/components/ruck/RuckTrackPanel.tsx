@@ -195,10 +195,12 @@ const MissionProgressPanel = memo(function MissionProgressPanel({
   draft,
   distanceKm,
   elapsedSeconds,
+  gpsQualityWarning,
 }: {
   draft: RuckMissionDraft;
   distanceKm: number;
   elapsedSeconds: number;
+  gpsQualityWarning: string | null;
 }) {
   const targetDistance = Math.max(0, getNumberInput(draft.targetDistanceKm, 0));
   const targetMinutes = Math.max(0, getNumberInput(draft.targetMinutes, 0));
@@ -217,6 +219,17 @@ const MissionProgressPanel = memo(function MissionProgressPanel({
   const projectedDelta = projectedFinishMinutes > 0 && targetMinutes > 0
     ? projectedFinishMinutes - targetMinutes
     : 0;
+  const packWeight = Math.max(0, getNumberInput(draft.packWeightKg, 0));
+  const riskLevel =
+    gpsQualityWarning || projectedDelta > 10 || packWeight >= 25 ? 'RED'
+    : projectedDelta > 5 || packWeight >= 18 ? 'AMBER'
+    : 'GREEN';
+  const riskStyle = riskLevel === 'RED'
+    ? styles.riskRed
+    : riskLevel === 'AMBER'
+      ? styles.riskAmber
+      : styles.riskGreen;
+  const riskTextStyle = riskLevel === 'GREEN' ? styles.riskTextDark : styles.riskTextLight;
 
   return (
     <View style={styles.progressPanel} pointerEvents="none">
@@ -248,6 +261,19 @@ const MissionProgressPanel = memo(function MissionProgressPanel({
         Projected finish {projectedFinishMinutes > 0 ? formatDuration(Math.round(projectedFinishMinutes)) : '--'}
         {projectedDelta !== 0 ? ` · ${projectedDelta > 0 ? '+' : ''}${Math.round(projectedDelta)} min` : ''}
       </Text>
+      <View style={styles.riskRow}>
+        <Text style={styles.progressLabel}>RISK</Text>
+        <View style={[styles.riskBadge, riskStyle]}>
+          <Text style={riskTextStyle}>{riskLevel}</Text>
+        </View>
+        <Text style={styles.riskReason} numberOfLines={1}>
+          {riskLevel === 'RED'
+            ? gpsQualityWarning ? 'GPS weak' : 'Adjust pace/load'
+            : riskLevel === 'AMBER'
+              ? 'Monitor effort'
+              : 'Within plan'}
+        </Text>
+      </View>
     </View>
   );
 });
@@ -440,6 +466,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
             draft={missionDraft}
             distanceKm={tracking.distanceKm}
             elapsedSeconds={tracking.elapsedSeconds}
+            gpsQualityWarning={tracking.gpsQualityWarning}
           />
         </View>
       ) : null}
@@ -614,6 +641,14 @@ const styles = StyleSheet.create({
   progressHint: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
   progressGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   progressWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  riskRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  riskBadge: { borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  riskGreen: { backgroundColor: '#91e6a3' },
+  riskAmber: { backgroundColor: '#ffb86b' },
+  riskRed: { backgroundColor: '#d1493f' },
+  riskTextDark: { color: '#07110c', fontSize: 10, fontWeight: '900' },
+  riskTextLight: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
+  riskReason: { flex: 1, color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
 
   savePanel: {
     position: 'absolute',
