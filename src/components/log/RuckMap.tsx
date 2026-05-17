@@ -6,7 +6,7 @@ import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
-import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Stop, Polyline as SvgPolyline, Rect } from 'react-native-svg';
+import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
 
 function interpolateColor(color1: string, color2: string, factor: number) {
   const hex1 = parseInt(color1.substring(1), 16);
@@ -25,9 +25,15 @@ interface RuckMapProps {
   colorScheme: 'light' | 'dark';
 }
 
+const ELEVATION_GRAPH_HEIGHT = 40;
+const ELEVATION_GRAPH_PADDING = 5;
+const ELEVATION_USABLE_HEIGHT = ELEVATION_GRAPH_HEIGHT - (ELEVATION_GRAPH_PADDING * 2);
+const FALLBACK_ROUTE_COLOR = '#3B82F6';
+
 export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
   const mapRef = useRef<MapView>(null);
+  const routeColor = theme.mapRoute || FALLBACK_ROUTE_COLOR;
 
   // Decode the polyline string into an array of { latitude, longitude } for react-native-maps
   const coordinates = useMemo(() => {
@@ -95,13 +101,13 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
     
     const pts = alts.map((alt, i) => {
       const x = (i / (alts.length - 1)) * 100;
-      const y = 40 - ((alt - min) / range) * 35; // Leave 5px padding at the top
+      const y = ELEVATION_GRAPH_HEIGHT - ELEVATION_GRAPH_PADDING - ((alt - min) / range) * ELEVATION_USABLE_HEIGHT;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });
     
     return {
       polylinePoints: pts.join(' '),
-      polygonPoints: `0,40 ${pts.join(' ')} 100,40`,
+      polygonPoints: `0,${ELEVATION_GRAPH_HEIGHT} ${pts.join(' ')} 100,${ELEVATION_GRAPH_HEIGHT}`,
       minAlt: Math.round(min),
       maxAlt: Math.round(max),
     };
@@ -121,13 +127,24 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
     const animationDuration = 1500; // 1.5 seconds to draw the full route
     let start: number | null = null;
     let animationFrameId: number;
+    let lastDrawnIndex = 0;
+    let lastDrawTime = 0;
+    // Target ~30fps for Android bridge performance. Decrease to 16 for 60fps.
+    const THROTTLE_MS = 32;
 
     const animateDraw = (timestamp: number) => {
       if (!start) start = timestamp;
       const progress = timestamp - start;
       const percentage = Math.min(progress / animationDuration, 1);
       
-      setDrawIndex(Math.max(1, Math.floor(percentage * totalPoints)));
+      const nextIndex = Math.max(1, Math.floor(percentage * totalPoints));
+
+      // Only trigger a React re-render if the index changed AND enough time has passed
+      if (nextIndex !== lastDrawnIndex && (timestamp - lastDrawTime > THROTTLE_MS || progress >= animationDuration)) {
+        lastDrawnIndex = nextIndex;
+        lastDrawTime = timestamp;
+        setDrawIndex(nextIndex);
+      }
 
       if (progress < animationDuration) {
         animationFrameId = requestAnimationFrame(animateDraw);
@@ -194,7 +211,7 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
 
         <Polyline
           coordinates={visibleCoordinates}
-          strokeColor={theme.mapRoute || '#3B82F6'} // 👈 Fallback for Android
+          strokeColor={routeColor} // 👈 Fallback for Android
           strokeColors={visibleColors}              // 👈 Gradient applied on iOS
           strokeWidth={4}
           lineCap="round"
@@ -211,8 +228,8 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
             zIndex={1}
             onPress={() => handleMarkerPress(marker.coordinate)}
           >
-            <View style={[styles.kmMarker, { borderColor: theme.mapRoute || '#3B82F6' }]}>
-              <Text style={[styles.kmMarkerText, { color: theme.mapRoute || '#3B82F6' }]}>{marker.km}</Text>
+            <View style={[styles.kmMarker, { borderColor: routeColor }]}>
+              <Text style={[styles.kmMarkerText, { color: routeColor }]}>{marker.km}</Text>
             </View>
           </Marker>
         ))}
@@ -265,19 +282,19 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
             <Text style={styles.elevationLabel}>ELEVATION</Text>
             <Text style={styles.elevationRange}>{minAlt}m - {maxAlt}m</Text>
           </View>
-          <Svg width="100%" height={40} viewBox="0 0 100 40" preserveAspectRatio="none">
+          <Svg width="100%" height={ELEVATION_GRAPH_HEIGHT} viewBox={`0 0 100 ${ELEVATION_GRAPH_HEIGHT}`} preserveAspectRatio="none">
             <Defs>
               <LinearGradient id="eleGrad" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0%" stopColor={theme.mapRoute || '#3B82F6'} stopOpacity="0.4" />
-                <Stop offset="100%" stopColor={theme.mapRoute || '#3B82F6'} stopOpacity="0.0" />
+                <Stop offset="0%" stopColor={routeColor} stopOpacity="0.4" />
+                <Stop offset="100%" stopColor={routeColor} stopOpacity="0.0" />
               </LinearGradient>
               <ClipPath id="revealClip">
-                <Rect x="0" y="0" width={drawPercentage} height={40} />
+                <Rect x="0" y="0" width={drawPercentage} height={ELEVATION_GRAPH_HEIGHT} />
               </ClipPath>
             </Defs>
             <G clipPath="url(#revealClip)">
               <Polygon points={polygonPoints} fill="url(#eleGrad)" />
-              <SvgPolyline points={polylinePoints} fill="none" stroke={theme.mapRoute || '#3B82F6'} strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+              <SvgPolyline points={polylinePoints} fill="none" stroke={routeColor} strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
             </G>
           </Svg>
         </View>
