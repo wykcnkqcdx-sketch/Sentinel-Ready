@@ -1,5 +1,6 @@
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
+import { exportSessionAsCoT, loadFTSConfig } from '@/src/services/atak';
 import type { TrainingSession } from '@/src/types/map';
 import { exportSessionGpx } from '@/src/utils/gpxExport';
 import { isFatigueWatch } from '@/src/utils/trainingLogUtils';
@@ -96,7 +97,8 @@ export default function RuckReviewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { logs, isLoading } = useTraining();
-  const [exporting, setExporting] = useState(false);
+  const [exportingGpx, setExportingGpx] = useState(false);
+  const [exportingCot, setExportingCot] = useState(false);
   const logId = Number(id);
 
   const log = useMemo(
@@ -120,15 +122,42 @@ export default function RuckReviewScreen() {
       return;
     }
 
-    setExporting(true);
+    setExportingGpx(true);
     try {
       await exportSessionGpx(logToSession(log));
     } catch (error) {
       Alert.alert('Export Failed', error instanceof Error ? error.message : 'Could not export GPX.');
     } finally {
-      setExporting(false);
+      setExportingGpx(false);
     }
   }, [canExportGpx, log]);
+
+  const handleExportCot = useCallback(async () => {
+    if (!log) return;
+    if (!canExportGpx) {
+      Alert.alert('No Route Data', 'This ruck does not have enough GPS points to export to ATAK.');
+      return;
+    }
+
+    setExportingCot(true);
+    try {
+      const config = await loadFTSConfig();
+      if (!config?.host) {
+        Alert.alert('ATAK Not Configured', 'Open the ATAK screen and configure your FreeTAKServer host before exporting CoT.');
+        return;
+      }
+
+      const result = await exportSessionAsCoT(config, routePoints, log.notes);
+      Alert.alert(
+        'CoT Export Complete',
+        `Sent ${result.sent} track points to ${config.host}.${result.failed > 0 ? ` ${result.failed} failed.` : ''}`,
+      );
+    } catch (error) {
+      Alert.alert('CoT Export Failed', error instanceof Error ? error.message : 'Could not export to ATAK.');
+    } finally {
+      setExportingCot(false);
+    }
+  }, [canExportGpx, log, routePoints]);
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -154,15 +183,26 @@ export default function RuckReviewScreen() {
       <Text style={styles.title}>{log.type}</Text>
       <Text style={styles.subtitle}>{log.date}</Text>
 
-      <TouchableOpacity
-        style={[styles.exportButton, (!canExportGpx || exporting) && styles.exportButtonDisabled]}
-        onPress={handleExportGpx}
-        disabled={!canExportGpx || exporting}
-        accessibilityRole="button"
-        accessibilityLabel="Export this ruck as GPX"
-      >
-        <Text style={styles.exportButtonText}>{exporting ? 'Exporting...' : 'Export GPX'}</Text>
-      </TouchableOpacity>
+      <View style={styles.exportRow}>
+        <TouchableOpacity
+          style={[styles.exportButton, (!canExportGpx || exportingGpx) && styles.exportButtonDisabled]}
+          onPress={handleExportGpx}
+          disabled={!canExportGpx || exportingGpx}
+          accessibilityRole="button"
+          accessibilityLabel="Export this ruck as GPX"
+        >
+          <Text style={styles.exportButtonText}>{exportingGpx ? 'Exporting...' : 'Export GPX'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.secondaryExportButton, (!canExportGpx || exportingCot) && styles.exportButtonDisabled]}
+          onPress={handleExportCot}
+          disabled={!canExportGpx || exportingCot}
+          accessibilityRole="button"
+          accessibilityLabel="Export this ruck to ATAK as CoT"
+        >
+          <Text style={styles.secondaryExportButtonText}>{exportingCot ? 'Sending...' : 'Send CoT'}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.mapFrame}>
         <RuckMapView
@@ -235,9 +275,12 @@ const styles = StyleSheet.create({
   kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 2.2 },
   title: { color: '#ffffff', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#aeb8aa', fontSize: 14, fontWeight: '800' },
+  exportRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   exportButton: { alignSelf: 'flex-start', backgroundColor: '#91e6a3', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 },
   exportButtonDisabled: { opacity: 0.45 },
   exportButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
+  secondaryExportButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#91e6a3', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 },
+  secondaryExportButtonText: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   mapFrame: { height: 320, borderWidth: 1, borderColor: '#2f6b3c', overflow: 'hidden', backgroundColor: '#07110c' },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   stat: { width: '31%', minWidth: 104, backgroundColor: '#0d1812', borderWidth: 1, borderColor: '#203529', borderRadius: 8, padding: 12, gap: 4 },
