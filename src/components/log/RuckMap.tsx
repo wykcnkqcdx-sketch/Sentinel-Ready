@@ -1,17 +1,31 @@
 import { Colors } from '@/constants/theme';
+import type { TrackPoint } from '@/src/types/map';
 import type { RouteData } from '@/src/utils/trainingLogUtils';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
+import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Stop, Polyline as SvgPolyline, Rect } from 'react-native-svg';
+
+function interpolateColor(color1: string, color2: string, factor: number) {
+  const hex1 = parseInt(color1.substring(1), 16);
+  const hex2 = parseInt(color2.substring(1), 16);
+  const r1 = (hex1 >> 16) & 255, g1 = (hex1 >> 8) & 255, b1 = hex1 & 255;
+  const r2 = (hex2 >> 16) & 255, g2 = (hex2 >> 8) & 255, b2 = hex2 & 255;
+  const r = Math.round(r1 + factor * (r2 - r1));
+  const g = Math.round(g1 + factor * (g2 - g1));
+  const b = Math.round(b1 + factor * (b2 - b1));
+  return `#${(1 << 24 | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
 
 interface RuckMapProps {
   route: RouteData;
+  routePoints?: TrackPoint[];
   colorScheme: 'light' | 'dark';
 }
 
-export default function RuckMap({ route, colorScheme }: RuckMapProps) {
+export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
   const mapRef = useRef<MapView>(null);
 
@@ -60,6 +74,39 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
     return markers;
   }, [coordinates]);
 
+  // Pre-calculate a gorgeous color gradient from Start (Emerald) to End (Red)
+  const routeColors = useMemo(() => {
+    const total = coordinates.length;
+    if (total === 0) return [];
+    return coordinates.map((_, index) =>
+      interpolateColor('#10B981', '#EF4444', index / Math.max(1, total - 1))
+    );
+  }, [coordinates]);
+
+  // Extract and map elevation data for the profile graph
+  const { polylinePoints, polygonPoints, minAlt, maxAlt } = useMemo(() => {
+    if (!routePoints) return { polylinePoints: '', polygonPoints: '', minAlt: 0, maxAlt: 0 };
+    const alts = routePoints.map(p => p.altitude).filter(a => a !== null) as number[];
+    if (alts.length < 2) return { polylinePoints: '', polygonPoints: '', minAlt: 0, maxAlt: 0 };
+    
+    const min = Math.min(...alts);
+    const max = Math.max(...alts);
+    const range = max - min || 1;
+    
+    const pts = alts.map((alt, i) => {
+      const x = (i / (alts.length - 1)) * 100;
+      const y = 40 - ((alt - min) / range) * 35; // Leave 5px padding at the top
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    
+    return {
+      polylinePoints: pts.join(' '),
+      polygonPoints: `0,40 ${pts.join(' ')} 100,40`,
+      minAlt: Math.round(min),
+      maxAlt: Math.round(max),
+    };
+  }, [routePoints]);
+
   // State to control how many coordinates of the polyline are currently visible
   const [drawIndex, setDrawIndex] = useState(0);
 
@@ -93,6 +140,10 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
 
   const visibleCoordinates = useMemo(() => coordinates.slice(0, drawIndex), [coordinates, drawIndex]);
   const visibleDistanceMarkers = useMemo(() => distanceMarkers.filter(m => m.index < drawIndex), [distanceMarkers, drawIndex]);
+  const visibleColors = useMemo(() => routeColors.slice(0, drawIndex), [routeColors, drawIndex]);
+
+  // Convert the current drawing index into a percentage (0 to 100) for the SVG clip path
+  const drawPercentage = coordinates.length > 0 ? (drawIndex / coordinates.length) * 100 : 100;
 
   const handleMarkerPress = useCallback((coordinate: { latitude: number; longitude: number }) => {
     mapRef.current?.animateToRegion({
@@ -126,12 +177,13 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
     : 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.mapBackground }]}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        mapType="none" // Disables the default Apple/Google basemaps
-        initialRegion={{
+    <View style={styles.container}>
+      <View style={[styles.mapFrame, { backgroundColor: theme.mapBackground }]}>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          mapType="none" // Disables the default Apple/Google basemaps
+          initialRegion={{
           latitude: coordinates[0].latitude,
           longitude: coordinates[0].longitude,
           latitudeDelta: 0.012, // Start zoomed in for the "follow" effect
@@ -142,7 +194,8 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
 
         <Polyline
           coordinates={visibleCoordinates}
-          strokeColor={theme.mapRoute || '#3B82F6'}
+          strokeColor={theme.mapRoute || '#3B82F6'} // 👈 Fallback for Android
+          strokeColors={visibleColors}              // 👈 Gradient applied on iOS
           strokeWidth={4}
           lineCap="round"
           lineJoin="round"
@@ -203,12 +256,39 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
           <MaterialCommunityIcons name="fit-to-page-outline" size={24} color={theme.text || '#ffffff'} />
         </TouchableOpacity>
       )}
+      </View>
+
+      {/* Elevation Profile Graph */}
+      {polygonPoints !== '' && (
+        <View style={styles.elevationContainer}>
+          <View style={styles.elevationHeader}>
+            <Text style={styles.elevationLabel}>ELEVATION</Text>
+            <Text style={styles.elevationRange}>{minAlt}m - {maxAlt}m</Text>
+          </View>
+          <Svg width="100%" height={40} viewBox="0 0 100 40" preserveAspectRatio="none">
+            <Defs>
+              <LinearGradient id="eleGrad" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0%" stopColor={theme.mapRoute || '#3B82F6'} stopOpacity="0.4" />
+                <Stop offset="100%" stopColor={theme.mapRoute || '#3B82F6'} stopOpacity="0.0" />
+              </LinearGradient>
+              <ClipPath id="revealClip">
+                <Rect x="0" y="0" width={drawPercentage} height={40} />
+              </ClipPath>
+            </Defs>
+            <G clipPath="url(#revealClip)">
+              <Polygon points={polygonPoints} fill="url(#eleGrad)" />
+              <SvgPolyline points={polylinePoints} fill="none" stroke={theme.mapRoute || '#3B82F6'} strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+            </G>
+          </Svg>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { height: 300, width: '100%', borderRadius: 12, overflow: 'hidden' },
+  container: { width: '100%', gap: 10 },
+  mapFrame: { height: 300, width: '100%', borderRadius: 12, overflow: 'hidden' },
   map: { ...StyleSheet.absoluteFillObject },
   fallbackContainer: { height: 300, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
   customMarker: {
@@ -264,4 +344,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  elevationContainer: { width: '100%', paddingHorizontal: 4, gap: 4 },
+  elevationHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  elevationLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  elevationRange: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
 });

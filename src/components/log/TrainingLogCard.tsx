@@ -45,7 +45,7 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
 
       {log.category === 'Ruck' && log.route ? (
         <View style={styles.mapContainer}>
-          <RuckMap route={log.route} colorScheme={colorScheme} />
+          <RuckMap route={log.route} routePoints={log.routePoints} colorScheme={colorScheme} />
         </View>
       ) : null}
 
