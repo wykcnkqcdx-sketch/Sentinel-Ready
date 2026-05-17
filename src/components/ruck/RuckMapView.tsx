@@ -97,6 +97,7 @@ export function RuckMapView({
   const [mapCenter, setMapCenter] = useState<TrackPoint | null>(null);
   const [isFollowing, setIsFollowing] = useState(true);
   const panStartRef = useRef<{ x: number; y: number; center: TrackPoint } | null>(null);
+  const panFrameRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
 
   const liveCenter: TrackPoint =
     currentPosition ?? (routePoints.length > 0 ? routePoints[routePoints.length - 1] : DUBLIN);
@@ -112,10 +113,18 @@ export function RuckMapView({
     }
   }, [isFollowing, liveCenter]);
 
+  useEffect(() => {
+    return () => {
+      if (panFrameRef.current != null) {
+        cancelAnimationFrame(panFrameRef.current);
+      }
+    };
+  }, []);
+
   const panResponder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: () => interactive,
+    onStartShouldSetPanResponder: () => false,
     onMoveShouldSetPanResponder: (_, gesture) =>
-      interactive && (Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3),
+      interactive && (Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8),
     onPanResponderGrant: () => {
       panStartRef.current = { x: 0, y: 0, center };
     },
@@ -125,8 +134,15 @@ export function RuckMapView({
 
       const pixel = latLonToWorldPixel(start.center.latitude, start.center.longitude, mapZoom);
       const next = worldPixelToLatLon(pixel.x - gesture.dx, pixel.y - gesture.dy, mapZoom);
-      setIsFollowing(false);
-      setMapCenter(toTrackPoint(next.latitude, next.longitude));
+
+      if (panFrameRef.current != null) {
+        cancelAnimationFrame(panFrameRef.current);
+      }
+      panFrameRef.current = requestAnimationFrame(() => {
+        setIsFollowing(false);
+        setMapCenter(toTrackPoint(next.latitude, next.longitude));
+        panFrameRef.current = null;
+      });
     },
     onPanResponderRelease: () => {
       panStartRef.current = null;
@@ -136,22 +152,34 @@ export function RuckMapView({
     },
   }), [center, interactive, mapZoom, viewport.height, viewport.width]);
 
-  const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
+  const tiles = useMemo(
+    () => buildVisibleTiles(center, viewport, layer, mapZoom),
+    [center, layer, mapZoom, viewport],
+  );
   const uriMap = useResolvedTileUris(tiles);
 
-  const projectedPoints = Svg && Polyline && routePoints.length >= 2
-    ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
-    : [];
+  const projectedPoints = useMemo(
+    () => Svg && Polyline && routePoints.length >= 2
+      ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
+      : [],
+    [center, mapZoom, routePoints, viewport],
+  );
 
-  const projectedCurrent = Svg && Circle && currentPosition
-    ? getMercatorRoutePoints([currentPosition], center, viewport, mapZoom)[0]
-    : null;
+  const projectedCurrent = useMemo(
+    () => Svg && Circle && currentPosition
+      ? getMercatorRoutePoints([currentPosition], center, viewport, mapZoom)[0]
+      : null,
+    [center, currentPosition, mapZoom, viewport],
+  );
 
-  const polylinePoints = projectedPoints.map((p) => `${p.x},${p.y}`).join(' ');
+  const polylinePoints = useMemo(
+    () => projectedPoints.map((p) => `${p.x},${p.y}`).join(' '),
+    [projectedPoints],
+  );
 
   function handleLayout(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
-    if (width > 0 && height > 0) {
+    if (width > 0 && height > 0 && (width !== viewport.width || height !== viewport.height)) {
       setViewport({ width, height });
     }
   }
@@ -177,7 +205,7 @@ export function RuckMapView({
     <View
       style={[styles.container, fullHeight && styles.fullHeight]}
       onLayout={handleLayout}
-      {...panResponder.panHandlers}
+      {...(interactive ? panResponder.panHandlers : {})}
     >
       {tiles.map((tile) => (
         <Image key={tile.id} source={{ uri: uriMap.get(tile.id) ?? tile.url }} style={tile.style} />
