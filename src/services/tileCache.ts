@@ -1,8 +1,9 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import { getTileUrl } from '../utils/mapTiles';
 import type { MapLayerKey } from '../utils/mapTiles';
+import { getTileUrl } from '../utils/mapTiles';
 
 const TILE_DIR = (FileSystem.cacheDirectory ?? '') + 'maptiles/';
+export const MAX_CACHE_BYTES = 500 * 1024 * 1024; // 500 MB
 
 export function latLonToTileXY(lat: number, lon: number, zoom: number): { x: number; y: number } {
   const tileCount = Math.pow(2, zoom);
@@ -141,4 +142,67 @@ export async function getCacheStats(): Promise<{ tileCount: number; totalBytes: 
 
 export async function clearTileCache(): Promise<void> {
   await FileSystem.deleteAsync(TILE_DIR, { idempotent: true });
+}
+
+export async function pruneCacheToSize(targetBytes: number): Promise<void> {
+  const rootInfo = await FileSystem.getInfoAsync(TILE_DIR);
+  if (!rootInfo.exists) return;
+
+  const files: { path: string; size: number; modificationTime: number }[] = [];
+  let totalBytes = 0;
+  const queue: string[] = [TILE_DIR];
+
+  while (queue.length > 0) {
+    const dir = queue.pop()!;
+    let entries: string[];
+    try {
+      entries = await FileSystem.readDirectoryAsync(dir);
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = dir.endsWith('/') ? dir + entry : dir + '/' + entry;
+      if (entry.endsWith('.png')) {
+        try {
+          const info = await FileSystem.getInfoAsync(fullPath);
+          const size = (info as { size?: unknown }).size;
+          const modificationTime = (info as { modificationTime?: unknown }).modificationTime;
+          if (info.exists && typeof size === 'number' && typeof modificationTime === 'number') {
+            totalBytes += size;
+            files.push({ path: fullPath, size, modificationTime });
+          }
+        } catch {
+          // skip unreadable file info
+        }
+      } else {
+        queue.push(fullPath);
+      }
+    }
+  }
+
+  if (totalBytes <= targetBytes) return;
+
+  // Sort files by modification time ascending (oldest first)
+  files.sort((a, b) => a.modificationTime - b.modificationTime);
+
+  let currentBytes = totalBytes;
+  for (const file of files) {
+    if (currentBytes <= targetBytes) break;
+    try {
+      await FileSystem.deleteAsync(file.path, { idempotent: true });
+      currentBytes -= file.size;
+    } catch {
+      // skip failed deletions
+    }
+  }
+}
+
+export async function enforceCacheLimit(): Promise<boolean> {
+  const stats = await getCacheStats();
+  if (stats.totalBytes > MAX_CACHE_BYTES) {
+    // Prune down to 80% of max capacity (400MB) to give the cache breathing room
+    await pruneCacheToSize(MAX_CACHE_BYTES * 0.8);
+    return true;
+  }
+  return false;
 }

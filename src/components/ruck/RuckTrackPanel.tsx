@@ -73,6 +73,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   const showMissionSetup = !isFinished && tracking.trackingState === 'idle' && displayMode === 'mission';
   const showMissionProgress = !isFinished && tracking.trackingState !== 'idle' && displayMode === 'mission';
   const showMapTools = !isFinished && displayMode === 'map';
+  const mapInteractive = !isFinished && displayMode === 'map';
 
   return (
     <View style={styles.container}>
@@ -82,6 +83,8 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         layer={tracking.activeLayer}
         overlays={showMapTools ? overlays : []}
         fullHeight
+        interactive={mapInteractive}
+        showGpsStatus={mapInteractive}
       />
 
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
