@@ -78,9 +78,19 @@ export interface RuckMapViewProps {
   overlays?: MapOverlay[];
   fullHeight?: boolean;
   showGpsStatus?: boolean;
+  interactive?: boolean;
 }
 
-export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays, fullHeight = false, showGpsStatus = true }: RuckMapViewProps) {
+export function RuckMapView({
+  routePoints,
+  currentPosition,
+  layer,
+  zoom = 15,
+  overlays,
+  fullHeight = false,
+  showGpsStatus = true,
+  interactive = true,
+}: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
   const [mapZoom, setMapZoom] = useState(clampZoom(zoom));
@@ -103,8 +113,9 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
   }, [isFollowing, liveCenter]);
 
   const panResponder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3,
+    onStartShouldSetPanResponder: () => interactive,
+    onMoveShouldSetPanResponder: (_, gesture) =>
+      interactive && (Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3),
     onPanResponderGrant: () => {
       panStartRef.current = { x: 0, y: 0, center };
     },
@@ -123,7 +134,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
     onPanResponderTerminate: () => {
       panStartRef.current = null;
     },
-  }), [center, mapZoom, viewport.height, viewport.width]);
+  }), [center, interactive, mapZoom, viewport.height, viewport.width]);
 
   const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
   const uriMap = useResolvedTileUris(tiles);
@@ -287,38 +298,42 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
         <Text style={styles.scaleText}>FIELD GRID</Text>
       </View>
 
-      <View style={styles.zoomControls}>
-        <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(1)} accessibilityRole="button" accessibilityLabel="Zoom in">
-          <Text style={styles.mapButtonText}>+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(-1)} accessibilityRole="button" accessibilityLabel="Zoom out">
-          <Text style={styles.mapButtonText}>-</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.followButton, isFollowing && styles.followButtonActive]}
-          onPress={recenterMap}
-          accessibilityRole="button"
-          accessibilityLabel="Recenter map on current position"
-          accessibilityState={{ selected: isFollowing }}
-        >
-          <Text style={[styles.followButtonText, isFollowing && styles.followButtonTextActive]}>CTR</Text>
-        </TouchableOpacity>
-      </View>
+      {interactive ? (
+        <>
+          <View style={styles.zoomControls}>
+            <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(1)} accessibilityRole="button" accessibilityLabel="Zoom in">
+              <Text style={styles.mapButtonText}>+</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(-1)} accessibilityRole="button" accessibilityLabel="Zoom out">
+              <Text style={styles.mapButtonText}>-</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.followButton, isFollowing && styles.followButtonActive]}
+              onPress={recenterMap}
+              accessibilityRole="button"
+              accessibilityLabel="Recenter map on current position"
+              accessibilityState={{ selected: isFollowing }}
+            >
+              <Text style={[styles.followButtonText, isFollowing && styles.followButtonTextActive]}>CTR</Text>
+            </TouchableOpacity>
+          </View>
 
-      <View style={styles.panPad}>
-        <TouchableOpacity style={[styles.panButton, styles.panNorth]} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
-          <Text style={styles.panText}>N</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.panButton, styles.panWest]} onPress={() => nudgeMap(-128, 0)} accessibilityRole="button" accessibilityLabel="Pan map west">
-          <Text style={styles.panText}>W</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.panButton, styles.panEast]} onPress={() => nudgeMap(128, 0)} accessibilityRole="button" accessibilityLabel="Pan map east">
-          <Text style={styles.panText}>E</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.panButton, styles.panSouth]} onPress={() => nudgeMap(0, 128)} accessibilityRole="button" accessibilityLabel="Pan map south">
-          <Text style={styles.panText}>S</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.panPad}>
+            <TouchableOpacity style={[styles.panButton, styles.panNorth]} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
+              <Text style={styles.panText}>N</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.panButton, styles.panWest]} onPress={() => nudgeMap(-128, 0)} accessibilityRole="button" accessibilityLabel="Pan map west">
+              <Text style={styles.panText}>W</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.panButton, styles.panEast]} onPress={() => nudgeMap(128, 0)} accessibilityRole="button" accessibilityLabel="Pan map east">
+              <Text style={styles.panText}>E</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.panButton, styles.panSouth]} onPress={() => nudgeMap(0, 128)} accessibilityRole="button" accessibilityLabel="Pan map south">
+              <Text style={styles.panText}>S</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : null}
 
       {showGpsStatus && !currentPosition && (
         <View style={styles.gpsOverlay} pointerEvents="none">
