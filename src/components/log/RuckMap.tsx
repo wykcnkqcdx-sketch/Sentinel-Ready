@@ -134,10 +134,9 @@ export default function RuckMap({ route, colorScheme }: RuckMapProps) {
         initialRegion={{
           latitude: coordinates[0].latitude,
           longitude: coordinates[0].longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitudeDelta: 0.012, // Start zoomed in for the "follow" effect
+          longitudeDelta: 0.012,
         }}
-        onMapReady={handleRecenter}
       >
         <UrlTile urlTemplate={tileUrl} maximumZ={19} flipY={false} />
 
