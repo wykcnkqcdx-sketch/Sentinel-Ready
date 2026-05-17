@@ -199,8 +199,8 @@ export default function LogScreen() {
 
             <ReadinessTrendCard trend={readinessTrend} />
 
-            <View style={styles.insightsCard}>
-              <Text style={styles.categorySummaryTitle}>Training Insights</Text>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoCardTitle}>Training Insights</Text>
               {insights.slice(0, 3).map((insight) => (
                 <View key={insight.title} style={insight.severity === 'warning' ? styles.insightRowWarn : styles.insightRow}>
                   <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
@@ -209,9 +209,9 @@ export default function LogScreen() {
               ))}
             </View>
 
-            <View style={styles.categorySummary}>
-              <Text style={styles.categorySummaryTitle}>Training Split</Text>
-              <Text style={styles.categorySummaryText}>
+            <View style={[styles.infoCard, { gap: 4 }]}>
+              <Text style={styles.infoCardTitle}>Training Split</Text>
+              <Text style={styles.infoCardText}>
                 Ruck {summary.ruck} · Strength {summary.strength} · Run {summary.run} · Recovery {summary.recovery} · Weak {summary.weakLogs}
               </Text>
             </View>
@@ -290,10 +290,9 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
   secondaryButton: { borderWidth: 1, borderColor: '#91e6a3', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 16 },
   secondaryButtonText: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
-  categorySummary: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529' },
-  categorySummaryTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
-  categorySummaryText: { color: '#aeb8aa', fontSize: 13, marginTop: 5 },
-  insightsCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
+  infoCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
+  infoCardTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  infoCardText: { color: '#aeb8aa', fontSize: 13 },
   insightRow: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 10, gap: 3 },
   insightRowWarn: { backgroundColor: '#21140b', borderRadius: 12, borderWidth: 1, borderColor: '#7a4a1f', padding: 10, gap: 3 },
   insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },

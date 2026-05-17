@@ -9,6 +9,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const categories: GoalCategory[] = ['Ruck', 'Run', 'Strength', 'Recovery', 'Test', 'Consistency'];
+const dfiftStandards = dfiftJson as DfiftStandards;
 
 const blankGoal = {
   category: 'Ruck' as GoalCategory,
@@ -77,7 +78,6 @@ export default function GoalsScreen() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const summary = useMemo(() => buildGoalSummary(goals), [goals]);
   const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
-  const dfiftStandards = dfiftJson as DfiftStandards;
   const suggestions = useMemo(
     () => buildGoalSuggestions(logs, goals, { standards: dfiftStandards, gender }),
     [logs, goals, gender]
