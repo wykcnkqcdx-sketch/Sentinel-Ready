@@ -381,6 +381,10 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   onSaveSession,
   onDiscardDraft,
 }: RuckTrackPanelProps) {
+  const targetDistance = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
+  const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));
+  const targetPaceMinutesPerKm = targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : undefined;
+
   return (
     <View style={styles.container}>
       <RuckMapView
@@ -414,6 +418,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
           elapsedSeconds={tracking.elapsedSeconds}
           gpsQualityWarning={tracking.gpsQualityWarning}
           trackingState={tracking.trackingState}
+          targetPaceMinutesPerKm={targetPaceMinutesPerKm}
         />
       </View>
 

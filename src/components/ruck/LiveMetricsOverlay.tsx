@@ -7,6 +7,7 @@ export interface LiveMetricsOverlayProps {
   elapsedSeconds: number;
   gpsQualityWarning: string | null;
   trackingState: 'idle' | 'recording' | 'paused' | 'finished';
+  targetPaceMinutesPerKm?: number;
 }
 
 function formatElapsed(seconds: number): string {
@@ -23,7 +24,21 @@ export function LiveMetricsOverlay({
   elapsedSeconds,
   gpsQualityWarning,
   trackingState,
+  targetPaceMinutesPerKm,
 }: LiveMetricsOverlayProps) {
+  const elapsedMinutes = elapsedSeconds / 60;
+  const currentPace = distanceKm > 0 ? elapsedMinutes / distanceKm : 0;
+  const paceDelta = currentPace > 0 && targetPaceMinutesPerKm && targetPaceMinutesPerKm > 0
+    ? currentPace - targetPaceMinutesPerKm
+    : 0;
+  const paceStatus = paceDelta === 0
+    ? null
+    : Math.abs(paceDelta) <= 0.5
+      ? 'ON PACE'
+      : paceDelta < 0
+        ? 'AHEAD'
+        : 'BEHIND';
+
   return (
     <View style={styles.container} pointerEvents="none">
       <Text style={styles.distance}>{distanceKm.toFixed(2)} km</Text>
@@ -38,6 +53,14 @@ export function LiveMetricsOverlay({
       {trackingState === 'idle' && (
         <Text style={styles.hint}>Press START to begin</Text>
       )}
+
+      {trackingState !== 'idle' && paceStatus ? (
+        <View style={paceStatus === 'BEHIND' ? styles.paceBadgeWarn : styles.paceBadgeGood}>
+          <Text style={paceStatus === 'BEHIND' ? styles.paceBadgeTextWarn : styles.paceBadgeTextGood}>
+            {paceStatus}
+          </Text>
+        </View>
+      ) : null}
 
       {gpsQualityWarning && (
         <View style={styles.warningRow}>
@@ -93,6 +116,36 @@ const styles = StyleSheet.create({
     color: colours.mutedText,
     fontSize: 11,
     marginTop: 4,
+  },
+  paceBadgeGood: {
+    marginTop: 6,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#91e6a3',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+  },
+  paceBadgeWarn: {
+    marginTop: 6,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colours.amber,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+  },
+  paceBadgeTextGood: {
+    color: '#91e6a3',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  paceBadgeTextWarn: {
+    color: colours.amber,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
   warningRow: {
     flexDirection: 'row',
