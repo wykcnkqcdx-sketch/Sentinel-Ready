@@ -54,6 +54,15 @@ const MISSION_PRESETS: { label: string; draft: RuckMissionDraft }[] = [
   },
 ];
 
+const SAVE_NOTE_CHIPS = [
+  'Feet OK',
+  'Hot spots',
+  'Pack rub',
+  'Hydration low',
+  'Calves tight',
+  'Strong finish',
+];
+
 function formatPace(pace: number): string {
   if (!pace) return '--';
   let mins = Math.floor(pace);
@@ -236,6 +245,12 @@ const RuckSavePanel = memo(function RuckSavePanel({
   onChange: (draft: RuckSaveDraft) => void;
 }) {
   const paceSeconds = distanceKm > 0 ? elapsedSeconds / distanceKm : 0;
+  function addNoteChip(note: string) {
+    const currentNotes = draft.notes.trim();
+    if (currentNotes.toLowerCase().includes(note.toLowerCase())) return;
+    onChange({ ...draft, notes: currentNotes ? `${currentNotes}. ${note}` : note });
+  }
+
   return (
     <View style={styles.savePanel}>
       <View style={styles.saveHeader}>
@@ -302,6 +317,20 @@ const RuckSavePanel = memo(function RuckSavePanel({
         placeholderTextColor="#617061"
         multiline
       />
+
+      <View style={styles.noteChipRow}>
+        {SAVE_NOTE_CHIPS.map((note) => (
+          <TouchableOpacity
+            key={note}
+            style={styles.noteChip}
+            onPress={() => addNoteChip(note)}
+            accessibilityRole="button"
+            accessibilityLabel={`Add note: ${note}`}
+          >
+            <Text style={styles.noteChipText}>{note}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 });
@@ -581,5 +610,23 @@ const styles = StyleSheet.create({
   saveNotes: {
     minHeight: 62,
     textAlignVertical: 'top',
+  },
+  noteChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  noteChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#2f6b3c',
+    backgroundColor: '#102d1a',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  noteChipText: {
+    color: '#91e6a3',
+    fontSize: 11,
+    fontWeight: '900',
   },
 });
