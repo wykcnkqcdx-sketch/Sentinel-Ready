@@ -37,6 +37,11 @@ export type TrainingLog = {
     routeConfidence?: 'High' | 'Medium' | 'Low';
     rejectedPointCount?: number;
     averageAccuracyMeters?: number;
+    mission?: {
+      targetDistanceKm: number;
+      targetMinutes: number;
+      checkpointIntervalKm: number;
+    };
   };
 };
 

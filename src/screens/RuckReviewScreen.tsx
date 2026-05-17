@@ -24,6 +24,14 @@ function formatPace(secondsPerKm: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}/km`;
 }
 
+function formatMinutes(minutes: number): string {
+  if (!minutes) return '--';
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  if (hours > 0) return `${hours}h ${String(mins).padStart(2, '0')}m`;
+  return `${mins}m`;
+}
+
 function getRecoveryWarning(log: TrainingLog): { tone: 'good' | 'warn'; text: string } {
   const rpe = log.ruck?.rpe ?? 0;
   const readiness = Number(log.readiness) || 0;
@@ -114,6 +122,10 @@ export default function RuckReviewScreen() {
   const rejected = log?.ruck?.rejectedPointCount ?? 0;
   const averageAccuracy = log?.ruck?.averageAccuracyMeters;
   const canExportGpx = routePoints.length >= 2;
+  const mission = log?.ruck?.mission;
+  const actualMinutes = log?.ruck ? log.ruck.durationSeconds / 60 : 0;
+  const distanceDelta = mission && log?.ruck ? log.ruck.distanceKm - mission.targetDistanceKm : 0;
+  const timeDelta = mission ? actualMinutes - mission.targetMinutes : 0;
 
   const handleExportGpx = useCallback(async () => {
     if (!log) return;
@@ -223,6 +235,37 @@ export default function RuckReviewScreen() {
         <Stat label="Readiness" value={`${log.readiness}/10`} />
       </View>
 
+      {mission ? (
+        <View style={styles.card}>
+          <Text style={styles.cardKicker}>PLANNED VS ACTUAL</Text>
+          <View style={styles.planRow}>
+            <View style={styles.planStat}>
+              <Text style={styles.planLabel}>Distance</Text>
+              <Text style={styles.planValue}>
+                {log.ruck.distanceKm.toFixed(2)} / {mission.targetDistanceKm.toFixed(1)} km
+              </Text>
+              <Text style={distanceDelta >= 0 ? styles.planGood : styles.planWarn}>
+                {distanceDelta >= 0 ? '+' : ''}{distanceDelta.toFixed(2)} km
+              </Text>
+            </View>
+            <View style={styles.planStat}>
+              <Text style={styles.planLabel}>Time</Text>
+              <Text style={styles.planValue}>
+                {formatMinutes(actualMinutes)} / {formatMinutes(mission.targetMinutes)}
+              </Text>
+              <Text style={timeDelta <= 0 ? styles.planGood : styles.planWarn}>
+                {timeDelta > 0 ? '+' : ''}{Math.round(timeDelta)} min
+              </Text>
+            </View>
+            <View style={styles.planStat}>
+              <Text style={styles.planLabel}>Checkpoints</Text>
+              <Text style={styles.planValue}>{mission.checkpointIntervalKm.toFixed(1)} km</Text>
+              <Text style={styles.planMeta}>interval</Text>
+            </View>
+          </View>
+        </View>
+      ) : null}
+
       <View style={confidence === 'Low' ? styles.warnCard : styles.card}>
         <Text style={styles.cardKicker}>GPS CONFIDENCE</Text>
         <Text style={styles.cardTitle}>{confidence}</Text>
@@ -291,6 +334,13 @@ const styles = StyleSheet.create({
   cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   cardTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
   cardText: { color: '#c4cec0', fontSize: 13, lineHeight: 20, fontWeight: '700' },
+  planRow: { flexDirection: 'row', gap: 10 },
+  planStat: { flex: 1, gap: 4 },
+  planLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  planValue: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
+  planGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  planWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
+  planMeta: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
   splitRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#203529', paddingTop: 8, gap: 10 },
   splitKm: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
   splitText: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },

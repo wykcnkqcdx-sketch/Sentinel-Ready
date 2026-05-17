@@ -1,7 +1,8 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT, RuckMissionDraft, DEFAULT_RUCK_MISSION_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
@@ -25,6 +26,7 @@ const COLON_TIME_REGEX = /(\d+):(\d+)/;
 const HR_REGEX = /(\d+)\s*hr/i;
 const MIN_REGEX = /(\d+)\s*min/i;
 const NUM_REGEX = /(\d+)/;
+const RUCK_MISSION_STORAGE_KEY = 'sentinel_ruck_mission_defaults';
 
 function parseRuckMetrics(log: TrainingLog): RuckMetrics {
   if (log.ruck) {
@@ -89,6 +91,17 @@ function formatDurationFromSeconds(seconds: number): string {
 function getNumberInput(value: string, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function isMissionDraft(value: unknown): value is RuckMissionDraft {
+  if (typeof value !== 'object' || value === null) return false;
+  const draft = value as Record<string, unknown>;
+  return (
+    typeof draft.targetDistanceKm === 'string' &&
+    typeof draft.targetMinutes === 'string' &&
+    typeof draft.packWeightKg === 'string' &&
+    typeof draft.checkpointIntervalKm === 'string'
+  );
 }
 
 function getThisWeekKm(ruckLogs: TrainingLog[], metrics: RuckMetrics[]): { sessions: number; km: number } {
@@ -215,6 +228,26 @@ export default function RuckScreen() {
   const [overlays, setOverlays] = useState<MapOverlay[]>([]);
   const [loadingOverlay, setLoadingOverlay] = useState(false);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    AsyncStorage.getItem(RUCK_MISSION_STORAGE_KEY).then((raw) => {
+      if (!isMounted || !raw) return;
+      try {
+        const parsed = JSON.parse(raw) as unknown;
+        if (!isMissionDraft(parsed)) return;
+        setMissionDraft(parsed);
+        setSaveDraft((prev) => ({ ...prev, packWeightKg: parsed.packWeightKg }));
+      } catch {
+        // Ignore invalid saved mission defaults.
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleSaveSession = useCallback(async () => {
     if (tracking.distanceKm < 0.1) {
       Alert.alert('Too Short', 'Route must be at least 100m to save.');
@@ -228,6 +261,9 @@ export default function RuckScreen() {
     const routePoints = tracking.sessionResult?.routePoints ?? tracking.routePoints;
     const paceSecondsPerKm = distanceKm > 0 ? durationSeconds / distanceKm : 0;
     const notes = saveDraft.notes.trim();
+    const targetDistanceKm = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
+    const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));
+    const checkpointIntervalKm = Math.max(0, getNumberInput(missionDraft.checkpointIntervalKm, 0));
 
     const savedLog = await addLog({
       date: new Date().toISOString().slice(0, 10),
@@ -255,18 +291,26 @@ export default function RuckScreen() {
         routeConfidence: tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence,
         rejectedPointCount: tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount,
         averageAccuracyMeters: tracking.sessionResult?.averageAccuracyMeters ?? tracking.averageAccuracyMeters ?? undefined,
+        mission: {
+          targetDistanceKm,
+          targetMinutes,
+          checkpointIntervalKm,
+        },
       },
     });
     tracking.resetSession();
     setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
     router.push({ pathname: '/ruck-review/[id]', params: { id: String(savedLog.id) } });
-  }, [tracking, saveDraft, missionDraft.packWeightKg, addLog, router]);
+  }, [tracking, saveDraft, missionDraft, addLog, router]);
 
   const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
   const handleMissionDraftChange = useCallback((draft: RuckMissionDraft) => {
     setMissionDraft(draft);
     setSaveDraft((prev) => ({ ...prev, packWeightKg: draft.packWeightKg }));
+    AsyncStorage.setItem(RUCK_MISSION_STORAGE_KEY, JSON.stringify(draft)).catch((error) =>
+      console.error('Failed to save ruck mission defaults', error)
+    );
   }, []);
   const handleReviewRuck = useCallback((id: number) => {
     router.push({ pathname: '/ruck-review/[id]', params: { id: String(id) } });
