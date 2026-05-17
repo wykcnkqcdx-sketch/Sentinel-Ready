@@ -1,4 +1,4 @@
-import type { TrainingCategory, TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
+import type { TrainingGoal, TrainingLog } from '@/src/screens/TrainingContext';
 import { buildWeekSummary } from '@/src/utils/trainingLogUtils';
 
 export type PlanAdherenceStatus = 'on-track' | 'partial' | 'off-track' | 'no-data';

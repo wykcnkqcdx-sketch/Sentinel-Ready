@@ -1,2 +1,1 @@
-import ATAKScreen from '@/src/screens/ATAKScreen';
-export default ATAKScreen;
+export { default } from '@/src/screens/ATAKScreen';

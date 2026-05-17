@@ -378,7 +378,7 @@ export default function RuckScreen() {
 
       let overlay: MapOverlay;
       if (lowerName.endsWith('.kmz')) {
-        const b64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
+        const b64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
         const kmlContent = extractKmlFromKmz(b64);
         overlay = parseKmlOverlay(kmlContent, name, color, 'kmz');
       } else if (lowerName.endsWith('.kml')) {

@@ -84,13 +84,11 @@ export default function TestsScreen() {
   const { logs, isLoading } = useTraining();
   const { gender, testDate } = useUser();
   const router = useRouter();
-  if (isLoading) return <View style={styles.screen} />;
 
   const {
     testLogs,
     grouped,
     testTypes,
-    lastTestDate,
     daysSinceLast,
     pushLog,
     sitLog,
@@ -156,7 +154,8 @@ export default function TestsScreen() {
   }, [readinessPercentage]);
 
   const navigateToProfile = useCallback(() => router.push('/profile'), [router]);
-  const navigateToAddLog = useCallback(() => router.push('/add-log'), [router]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

@@ -75,7 +75,6 @@ function getProtocol(score: number) {
 export default function RecoveryScreen() {
   const { logs, isLoading } = useTraining();
   const { injuryNotes } = useUser();
-  if (isLoading) return <View style={styles.screen} />;
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => {
@@ -116,6 +115,8 @@ export default function RecoveryScreen() {
   const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : recoveryScore > 0 ? styles.badgeText : styles.badgeTextNeutral;
 
   const protocol = useMemo(() => getProtocol(recoveryScore), [recoveryScore]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

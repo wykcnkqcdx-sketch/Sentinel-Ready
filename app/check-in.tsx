@@ -1,2 +1,1 @@
-import CheckInScreen from '@/src/screens/CheckInScreen';
-export default CheckInScreen;
+export { default } from '@/src/screens/CheckInScreen';

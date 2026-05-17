@@ -11,6 +11,7 @@ let Polyline: React.ComponentType<any> | null = null;
 let Circle: React.ComponentType<any> | null = null;
 let Polygon: React.ComponentType<any> | null = null;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const rnSvg = require('react-native-svg');
   Svg = rnSvg.default;
   Polyline = rnSvg.Polyline;

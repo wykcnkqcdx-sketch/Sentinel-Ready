@@ -42,7 +42,6 @@ export default function TrainingScreen() {
   const { logs, goals, isLoading } = useTraining();
   const profile = useUser();
   const router = useRouter();
-  if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
@@ -96,6 +95,8 @@ export default function TrainingScreen() {
   const badgeBg = isRecovery ? '#2a1a0d' : isProgressive ? '#102d1a' : '#0b2a14';
   const badgeBorder = isRecovery ? '#7a4a1f' : isProgressive ? '#2f6b3c' : '#58d77a';
   const badgeTextColor = isRecovery ? '#ffb86b' : '#91e6a3';
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

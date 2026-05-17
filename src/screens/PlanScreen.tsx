@@ -66,7 +66,6 @@ export default function PlanScreen() {
   const { logs, goals, isLoading } = useTraining();
   const profile = useUser();
   const router = useRouter();
-  if (isLoading) return <View style={styles.screen} />;
 
   const { thisWeek, trend, balance } = useMemo(() => ({
     thisWeek: buildWeekSummary(logs, 0),
@@ -111,6 +110,8 @@ export default function PlanScreen() {
       },
     });
   }, [router]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

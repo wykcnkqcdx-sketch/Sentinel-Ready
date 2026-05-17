@@ -13,7 +13,7 @@ export type RuckScoreInput = {
 export type RuckScoreBreakdown = {
   score: number;
   loadAdjustedPace: string;
-  factors: Array<{ label: string; value: string; points: number }>;
+  factors: { label: string; value: string; points: number }[];
   finding: string;
   recommendation: string;
 };

@@ -118,7 +118,7 @@ export default function OfflineMapScreen() {
       } else {
         setStatusMsg(`Download complete. ${result.downloaded} tiles saved, ${result.skipped} already cached, ${result.failed} failed.`);
       }
-    } catch (err) {
+    } catch {
       if (mountedRef.current) setStatusMsg('Download failed. Check your connection.');
     } finally {
       if (mountedRef.current) {

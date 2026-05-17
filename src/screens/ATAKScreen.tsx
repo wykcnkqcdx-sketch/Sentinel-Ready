@@ -13,7 +13,6 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useTraining } from '@/src/screens/TrainingContext';
 import {
-  clearFTSConfig,
   CotObject,
   DEFAULT_FTS_CONFIG,
   exportSessionAsCoT,
@@ -25,7 +24,7 @@ import {
   sendPositionCoT,
 } from '@/src/services/atak';
 
-// ── Team colour mapping ───────────────────────────────────────────────────────
+// -- Team colour mapping -------------------------------------------------------
 
 const TEAM_COLOURS: Record<string, string> = {
   Cyan: '#00BCD4',
@@ -45,7 +44,7 @@ function teamColour(team: string): string {
   return TEAM_COLOURS[team] ?? '#91e6a3';
 }
 
-// ── Stale check ───────────────────────────────────────────────────────────────
+// -- Stale check ---------------------------------------------------------------
 
 function isStale(staleIso: string): boolean {
   if (!staleIso) return false;
@@ -56,7 +55,7 @@ function isStale(staleIso: string): boolean {
   }
 }
 
-// ── Status dot colour ─────────────────────────────────────────────────────────
+// -- Status dot colour ---------------------------------------------------------
 
 function dotColour(status: FTSStatus): string {
   if (status === 'connected') return '#91e6a3';
@@ -67,7 +66,7 @@ function dotColour(status: FTSStatus): string {
 
 type FTSStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
-// ── Edit config form ──────────────────────────────────────────────────────────
+// -- Edit config form ----------------------------------------------------------
 
 type EditFormProps = {
   draft: FTSConfig;
@@ -172,7 +171,7 @@ const EditConfigForm = memo(function EditConfigForm({ draft, onChange, onSave, o
   );
 });
 
-// ── CotObject row ─────────────────────────────────────────────────────────────
+// -- CotObject row -------------------------------------------------------------
 
 const CotRow = memo(function CotRow({ obj }: { obj: CotObject }) {
 
@@ -203,7 +202,7 @@ const CotRow = memo(function CotRow({ obj }: { obj: CotObject }) {
   );
 });
 
-// ── Main screen ───────────────────────────────────────────────────────────────
+// -- Main screen ---------------------------------------------------------------
 
 export default function ATAKScreen() {
 
@@ -213,7 +212,6 @@ export default function ATAKScreen() {
   const [config, setConfig] = useState<FTSConfig>(DEFAULT_FTS_CONFIG);
   const [draft, setDraft] = useState<FTSConfig>(DEFAULT_FTS_CONFIG);
   const [status, setStatus] = useState<FTSStatus>('disconnected');
-  const [statusMessage, setStatusMessage] = useState('');
   const [cotObjects, setCotObjects] = useState<CotObject[]>([]);
   const [exporting, setExporting] = useState(false);
   const [editingConfig, setEditingConfig] = useState(false);
@@ -242,7 +240,6 @@ export default function ATAKScreen() {
     setEditingConfig(false);
     setStatus('disconnected');
     setPingResult('none');
-    setStatusMessage('');
   }, [draft]);
 
   const handleCancelEdit = useCallback(() => {
@@ -256,16 +253,13 @@ export default function ATAKScreen() {
       return;
     }
     setStatus('connecting');
-    setStatusMessage('Testing connection...');
     setPingResult('none');
     const ok = await pingFTSServer(config);
     if (ok) {
       setStatus('connected');
-      setStatusMessage(`Connected to ${config.host}`);
       setPingResult('ok');
     } else {
       setStatus('error');
-      setStatusMessage('Connection failed');
       setPingResult('fail');
     }
   }, [config]);
@@ -291,7 +285,7 @@ export default function ATAKScreen() {
         loc.coords.heading ?? undefined,
       );
       Alert.alert('Position Sent', `CoT ping sent from ${config.callsign}.`);
-    } catch (e) {
+    } catch {
       Alert.alert('Send Failed', 'Could not send position to FreeTAKServer.');
     }
   }, [config]);
@@ -347,7 +341,7 @@ export default function ATAKScreen() {
     }
   }, [logs, config]);
 
-  // ── Status label ────────────────────────────────────────────────────────────
+  // -- Status label ------------------------------------------------------------
 
   function statusLabel(): string {
     if (status === 'connected') return `Connected to ${config.host}`;
@@ -356,7 +350,7 @@ export default function ATAKScreen() {
     return 'Not connected';
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // -- Render ------------------------------------------------------------------
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -502,9 +496,9 @@ export default function ATAKScreen() {
 
     </ScrollView>
   );
-});
+}
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// -- Styles --------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   screen: {

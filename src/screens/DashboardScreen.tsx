@@ -79,8 +79,6 @@ export default function DashboardScreen() {
   const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
   const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
 
-  if (isLoading) return <View style={styles.screen} />;
-
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
   const weekProgress = Math.min(thisWeek.total / WEEKLY_TARGET, 1);
@@ -178,6 +176,8 @@ export default function DashboardScreen() {
   const navigateToGpx = useCallback(() => router.push('/gpx'), [router]);
   const navigateToOfflineMap = useCallback(() => router.push('/offline-map'), [router]);
   const navigateToNotifications = useCallback(() => router.push('/notifications'), [router]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

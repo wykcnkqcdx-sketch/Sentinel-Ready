@@ -1,8 +1,9 @@
 import * as FileSystem from 'expo-file-system';
+import { cacheDirectory } from 'expo-file-system';
 import { getTileUrl } from '../utils/mapTiles';
 import type { MapLayerKey } from '../utils/mapTiles';
 
-const TILE_DIR = FileSystem.cacheDirectory + 'maptiles/';
+const TILE_DIR = (cacheDirectory ?? '') + 'maptiles/';
 
 export function latLonToTileXY(lat: number, lon: number, zoom: number): { x: number; y: number } {
   const tileCount = Math.pow(2, zoom);
@@ -17,7 +18,7 @@ export function latLonToTileXY(lat: number, lon: number, zoom: number): { x: num
 export function tilesForBounds(
   bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number },
   zoom: number,
-): Array<{ x: number; y: number }> {
+): { x: number; y: number }[] {
   const topLeft = latLonToTileXY(bounds.maxLat, bounds.minLon, zoom);
   const bottomRight = latLonToTileXY(bounds.minLat, bounds.maxLon, zoom);
   const tileCount = Math.pow(2, zoom);
@@ -25,7 +26,7 @@ export function tilesForBounds(
   const maxX = Math.min(tileCount - 1, bottomRight.x);
   const minY = Math.max(0, topLeft.y);
   const maxY = Math.min(tileCount - 1, bottomRight.y);
-  const tiles: Array<{ x: number; y: number }> = [];
+  const tiles: { x: number; y: number }[] = [];
   for (let x = minX; x <= maxX; x++) {
     for (let y = minY; y <= maxY; y++) {
       tiles.push({ x, y });
@@ -66,7 +67,7 @@ export async function downloadRegion(
   onProgress: (downloaded: number, total: number) => void,
   signal?: AbortSignal,
 ): Promise<{ downloaded: number; skipped: number; failed: number }> {
-  const allTiles: Array<{ zoom: number; x: number; y: number }> = [];
+  const allTiles: { zoom: number; x: number; y: number }[] = [];
   for (const zoom of zoomLevels) {
     for (const { x, y } of tilesForBounds(bounds, zoom)) {
       allTiles.push({ zoom, x, y });

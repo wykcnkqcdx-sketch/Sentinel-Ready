@@ -109,7 +109,6 @@ export default function WeeklyReportScreen() {
   const { logs, goals, isLoading } = useTraining();
   const { gender, injuryNotes } = useUser();
   const router = useRouter();
-  if (isLoading) return <View style={styles.screen} />;
 
   const thisWeek = buildWeekSummary(logs, 0);
   const lastWeek = buildWeekSummary(logs, 1);
@@ -149,6 +148,8 @@ export default function WeeklyReportScreen() {
       Alert.alert('Share Failed', 'The weekly report could not be shared. You can still select the report text below.');
     }
   }, [report]);
+
+  if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
