@@ -1,21 +1,31 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import * as Network from 'expo-network';
+import * as Notifications from 'expo-notifications';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { PMTILES_PATH } from '../services/pmtilesService';
 import {
+  buildBounds,
   clearTileCache,
-  downloadRegion,
+  downloadRoute,
   enforceCacheLimit,
   getCacheStats,
   MAX_CACHE_BYTES,
   tilesForBounds,
+  tilesForRoute
 } from '../services/tileCache';
+import { parseGpxCoordinates } from '../utils/fieldMapping';
 import type { MapLayerKey } from '../utils/mapTiles';
 
 const LAST_POSITION_KEY = 'sentinel_last_position';
@@ -38,19 +48,8 @@ interface Position {
   longitude: number;
 }
 
-function buildBounds(center: Position, radiusKm: number) {
-  const latDelta = radiusKm / 111;
-  const lonDelta = radiusKm / (111 * Math.cos((center.latitude * Math.PI) / 180));
-  return {
-    minLat: center.latitude - latDelta,
-    maxLat: center.latitude + latDelta,
-    minLon: center.longitude - lonDelta,
-    maxLon: center.longitude + lonDelta,
-  };
-}
-
 function estimateTileCount(center: Position, radiusKm: number): number {
-  const bounds = buildBounds(center, radiusKm);
+  const bounds = buildBounds(center.latitude, center.longitude, radiusKm);
   return ZOOM_LEVELS.reduce((sum, z) => sum + tilesForBounds(bounds, z).length, 0);
 }
 
@@ -63,7 +62,12 @@ export default function OfflineMapScreen() {
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
   const [position, setPosition] = useState<Position | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [wifiOnly, setWifiOnly] = useState(true);
+  const [eta, setEta] = useState('');
   const mountedRef = useRef(true);
+  const isPausedRef = useRef(false);
+  const speedStateRef = useRef({ lastTime: 0, lastDownloaded: 0, speedEma: 0 });
 
   useEffect(() => {
     mountedRef.current = true;
@@ -77,7 +81,18 @@ export default function OfflineMapScreen() {
       AsyncStorage.getItem(LAST_POSITION_KEY),
     ]);
     if (!mountedRef.current) return;
-    setStats(statsResult);
+
+    try {
+      const info = await FileSystem.getInfoAsync(PMTILES_PATH);
+      if (info.exists && !info.isDirectory) {
+        setStats({ tileCount: statsResult.tileCount, totalBytes: info.size ?? statsResult.totalBytes });
+      } else {
+        setStats(statsResult);
+      }
+    } catch {
+      setStats(statsResult);
+    }
+
     if (positionResult) {
       try {
         setPosition(JSON.parse(positionResult));
@@ -93,7 +108,58 @@ export default function OfflineMapScreen() {
   const estimatedTiles = useMemo(() => estimateTileCount(center, radius), [center, radius]);
   const estimatedMB = ((estimatedTiles * BYTES_PER_TILE_ESTIMATE) / (1024 * 1024)).toFixed(1);
 
+  const togglePause = useCallback(() => {
+    isPausedRef.current = !isPausedRef.current;
+    setPaused(isPausedRef.current);
+    if (isPausedRef.current) {
+      setStatusMsg('Download paused.');
+    } else {
+      setStatusMsg('');
+      // Reset the time tracker so the pause duration isn't mistakenly calculated as slow speed
+      speedStateRef.current.lastTime = Date.now();
+    }
+  }, []);
+
+  const handleProgress = useCallback((dl: number, total: number) => {
+    if (!mountedRef.current) return;
+    setProgress({ downloaded: dl, total });
+
+    if (isPausedRef.current) return;
+
+    const now = Date.now();
+    const state = speedStateRef.current;
+    const deltaMs = now - state.lastTime;
+
+    // Update our speed estimate roughly every second
+    if (deltaMs >= 1000) {
+      const deltaTiles = dl - state.lastDownloaded;
+      const currentSpeed = deltaTiles / deltaMs; // tiles per millisecond
+
+      // Exponential Moving Average (30% new reading, 70% historical) smooths out spikes
+      state.speedEma = state.speedEma === 0 ? currentSpeed : (currentSpeed * 0.3) + (state.speedEma * 0.7);
+      state.lastTime = now;
+      state.lastDownloaded = dl;
+
+      if (state.speedEma > 0) {
+        const remainingMs = (total - dl) / state.speedEma;
+        if (remainingMs > 60000) setEta(`~${Math.ceil(remainingMs / 60000)} min left`);
+        else setEta(`~${Math.ceil(remainingMs / 1000)} sec left`);
+      }
+    }
+  }, []);
+
   const handleDownload = useCallback(async () => {
+    if (wifiOnly) {
+      const networkState = await Network.getNetworkStateAsync();
+      if (networkState.type !== Network.NetworkStateType.WIFI) {
+        Alert.alert(
+          'Wi-Fi Required',
+          'You have selected to download only over Wi-Fi, but you are not currently connected to a Wi-Fi network.'
+        );
+        return;
+      }
+    }
+
     const estimatedBytes = estimatedTiles * BYTES_PER_TILE_ESTIMATE;
     if (stats.totalBytes + estimatedBytes > MAX_CACHE_BYTES) {
       Alert.alert(
@@ -108,40 +174,138 @@ export default function OfflineMapScreen() {
     setDownloading(true);
     setStatusMsg('');
     setProgress({ downloaded: 0, total: 0 });
-
-    const bounds = buildBounds(center, radius);
+    isPausedRef.current = false;
+    setPaused(false);
+    speedStateRef.current = { lastTime: Date.now(), lastDownloaded: 0, speedEma: 0 };
+    setEta('Calculating time...');
+    await activateKeepAwakeAsync();
 
     try {
-      const result = await downloadRegion(
-        bounds,
-        ZOOM_LEVELS,
-        layer,
-        (dl, total) => {
-          if (mountedRef.current) setProgress({ downloaded: dl, total });
-        },
-        ac.signal,
+      // A freely available PMTiles extract hosted by Protomaps
+      const downloadUrl = 'https://build.protomaps.com/20240517.pmtiles';
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        downloadUrl,
+        PMTILES_PATH,
+        {},
+        (progressObj) => {
+          const percent = progressObj.totalBytesWritten / progressObj.totalBytesExpectedToWrite;
+          if (mountedRef.current) {
+            setProgress({ downloaded: Math.round(percent * 100), total: 100 });
+          }
+        }
       );
     
-    const wasCleared = await enforceCacheLimit(); // Failsafe if tile byte sizes were unusually large
-      const newStats = await getCacheStats();
-      if (!mountedRef.current) return;
-      setStats(newStats);
-      if (ac.signal.aborted) {
-        setStatusMsg('Download cancelled.');
-    } else if (wasCleared) {
-      setStatusMsg('Download exceeded 500MB limit. Oldest tiles were automatically removed.');
-      } else {
-        setStatusMsg(`Download complete. ${result.downloaded} tiles saved, ${result.skipped} already cached, ${result.failed} failed.`);
+      await downloadResumable.downloadAsync();
+      
+      if (mountedRef.current) {
+        setStatusMsg('PMTiles vector map downloaded successfully!');
+        loadInitialData();
       }
-    } catch {
+    } catch (e) {
       if (mountedRef.current) setStatusMsg('Download failed. Check your connection.');
     } finally {
       if (mountedRef.current) {
         setDownloading(false);
         setAbortController(null);
+        deactivateKeepAwake();
       }
     }
-  }, [center, radius, layer, stats.totalBytes, estimatedTiles]);
+  }, [estimatedTiles, stats.totalBytes, wifiOnly]);
+
+  const handleDownloadGpx = useCallback(async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || result.assets.length === 0) return;
+
+      const fileUri = result.assets[0].uri;
+      const gpxString = await FileSystem.readAsStringAsync(fileUri);
+      const coordinates = parseGpxCoordinates(gpxString);
+
+      if (coordinates.length === 0) {
+        Alert.alert('Invalid GPX', 'No coordinates found in the selected file.');
+        return;
+      }
+
+      if (wifiOnly) {
+        const networkState = await Network.getNetworkStateAsync();
+        if (networkState.type !== Network.NetworkStateType.WIFI) {
+          Alert.alert(
+            'Wi-Fi Required',
+            'You have selected to download only over Wi-Fi, but you are not currently connected to a Wi-Fi network.'
+          );
+          return;
+        }
+      }
+
+      // Use our new route bounds calculator to predict exactly how many tiles this will take
+      const routeTiles = tilesForRoute(coordinates, 1.0, ZOOM_LEVELS);
+      const estimatedBytes = routeTiles.length * BYTES_PER_TILE_ESTIMATE;
+
+      if (stats.totalBytes + estimatedBytes > MAX_CACHE_BYTES) {
+        Alert.alert(
+          'Storage Limit',
+          'This download would exceed the 500MB offline maps limit. Please clear your cache or select a smaller region.'
+        );
+        return;
+      }
+
+      const ac = new AbortController();
+      setAbortController(ac);
+      setDownloading(true);
+      setStatusMsg('Starting GPX route download...');
+      setProgress({ downloaded: 0, total: routeTiles.length });
+      isPausedRef.current = false;
+      setPaused(false);
+      speedStateRef.current = { lastTime: Date.now(), lastDownloaded: 0, speedEma: 0 };
+      setEta('Calculating time...');
+      await activateKeepAwakeAsync();
+
+      const dlResult = await downloadRoute(
+        coordinates,
+        1.0, // 1km buffer around the route
+        ZOOM_LEVELS,
+        layer,
+        handleProgress,
+        ac.signal,
+        () => isPausedRef.current
+      );
+
+      const wasCleared = await enforceCacheLimit();
+      const newStats = await getCacheStats();
+      if (!mountedRef.current) return;
+      setStats(newStats);
+
+      if (ac.signal.aborted) {
+        setStatusMsg('Download cancelled.');
+      } else if (wasCleared) {
+        setStatusMsg('Download exceeded 500MB limit. Oldest tiles were automatically removed.');
+      } else {
+        setStatusMsg(`Download complete. ${dlResult.downloaded} tiles saved, ${dlResult.skipped} already cached, ${dlResult.failed} failed.`);
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'GPX Route Maps Ready',
+            body: `Downloaded ${dlResult.downloaded} new tiles successfully.`,
+            sound: true,
+          },
+          trigger: null,
+        });
+      }
+    } catch (error) {
+      console.error('GPX Download failed:', error);
+      if (mountedRef.current) setStatusMsg('Download failed. Check your connection or file.');
+    } finally {
+      if (mountedRef.current) {
+        setDownloading(false);
+        setAbortController(null);
+        deactivateKeepAwake();
+      }
+    }
+  }, [layer, stats.totalBytes]);
 
   const handleCancel = useCallback(() => {
     abortController?.abort();
@@ -157,11 +321,16 @@ export default function OfflineMapScreen() {
           text: 'Clear',
           style: 'destructive',
           onPress: async () => {
-            await clearTileCache();
-            const newStats = await getCacheStats();
-            if (mountedRef.current) {
-              setStats(newStats);
-              setStatusMsg('Cache cleared.');
+            try {
+              await clearTileCache();
+              await FileSystem.deleteAsync(PMTILES_PATH, { idempotent: true });
+              const newStats = await getCacheStats();
+              if (mountedRef.current) {
+                setStats(newStats);
+                setStatusMsg('Cache cleared.');
+              }
+            } catch (err) {
+              console.error(err);
             }
           },
         },
@@ -171,6 +340,12 @@ export default function OfflineMapScreen() {
 
   const statsMB = (stats.totalBytes / (1024 * 1024)).toFixed(1);
   const progressPct = progress.total > 0 ? progress.downloaded / progress.total : 0;
+
+  const maxMB = (MAX_CACHE_BYTES / (1024 * 1024)).toFixed(0);
+  const capacityPct = Math.min(stats.totalBytes / MAX_CACHE_BYTES, 1);
+  let capacityColor = '#91e6a3'; // safe (green)
+  if (capacityPct > 0.9) capacityColor = '#ff6b6b'; // danger (red)
+  else if (capacityPct > 0.75) capacityColor = '#ffb86b'; // warning (amber)
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -223,6 +398,18 @@ export default function OfflineMapScreen() {
         </View>
       </View>
 
+    <View style={styles.card}>
+      <View style={styles.rowBetween}>
+        <Text style={styles.cardLabel}>DOWNLOAD OVER WI-FI ONLY</Text>
+        <Switch
+          value={wifiOnly}
+          onValueChange={setWifiOnly}
+          trackColor={{ false: '#203529', true: '#2f6b3c' }}
+          thumbColor={wifiOnly ? '#91e6a3' : '#4a7a5a'}
+        />
+      </View>
+    </View>
+
       <View style={styles.card}>
         <Text style={styles.cardLabel}>ZOOM LEVELS</Text>
         <Text style={styles.cardValue}>
@@ -232,23 +419,38 @@ export default function OfflineMapScreen() {
 
       {downloading && (
         <View style={styles.card}>
+          <Text style={styles.cardLabel}>{paused ? 'PAUSED' : 'DOWNLOADING'}</Text>
           <Text style={styles.cardLabel}>DOWNLOADING</Text>
-          <Text style={styles.progressText}>
-            {progress.downloaded} / {progress.total} tiles
-          </Text>
+          <View style={styles.rowBetween}>
+            <Text style={styles.progressText}>
+              {progress.downloaded} / {progress.total} tiles
+              {progress.downloaded}%
+            </Text>
+            <Text style={styles.etaText}>{paused ? 'Paused' : eta}</Text>
+          </View>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progressPct * 100}%` as `${number}%` }]} />
           </View>
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+          <View style={styles.downloadActionRow}>
+            <TouchableOpacity style={styles.pauseButton} onPress={togglePause}>
+              <Text style={styles.pauseButtonText}>{paused ? 'Resume' : 'Pause'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
       {!downloading && (
-        <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
-          <Text style={styles.downloadButtonText}>Download Region</Text>
-        </TouchableOpacity>
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
+            <Text style={styles.downloadButtonText}>Download Region</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.downloadGpxButton} onPress={handleDownloadGpx}>
+            <Text style={styles.downloadGpxButtonText}>Download from GPX</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {statusMsg !== '' && (
@@ -265,12 +467,15 @@ export default function OfflineMapScreen() {
             <Text style={styles.statsLabel}>tiles</Text>
           </View>
           <View>
-            <Text style={styles.statsValue}>{statsMB} MB</Text>
-            <Text style={styles.statsLabel}>on disk</Text>
+            <Text style={styles.statsValue}>{statsMB} <Text style={styles.statsValueMax}>/ {maxMB} MB</Text></Text>
+            <Text style={styles.statsLabel}>storage used</Text>
           </View>
           <TouchableOpacity style={styles.clearButton} onPress={handleClearCache}>
-            <Text style={styles.clearButtonText}>Clear Cache</Text>
+            <Text style={styles.clearButtonText}>Clear</Text>
           </TouchableOpacity>
+        </View>
+        <View style={styles.capacityTrack}>
+          <View style={[styles.capacityFill, { width: `${capacityPct * 100}%` as `${number}%`, backgroundColor: capacityColor }]} />
         </View>
       </View>
     </ScrollView>
@@ -295,6 +500,7 @@ const styles = StyleSheet.create({
   cardLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   cardValue: { color: '#f2f5ef', fontSize: 15, fontWeight: '700' },
   cardValueMuted: { color: '#6f7d70', fontSize: 15, fontWeight: '700' },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     borderWidth: 1,
@@ -314,6 +520,7 @@ const styles = StyleSheet.create({
   pillText: { color: '#91e6a3', fontSize: 13, fontWeight: '800' },
   pillTextActive: { color: '#07110c', fontSize: 13, fontWeight: '900' },
   progressText: { color: '#aeb8aa', fontSize: 13, fontWeight: '700' },
+  etaText: { color: '#ffb86b', fontSize: 13, fontWeight: '800' },
   progressTrack: {
     height: 8,
     backgroundColor: '#07110c',
@@ -323,15 +530,28 @@ const styles = StyleSheet.create({
     borderColor: '#26382c',
   },
   progressFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 999 },
+  downloadActionRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  pauseButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ffb86b',
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  pauseButtonText: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
   cancelButton: {
-    alignSelf: 'flex-start',
+    flex: 1,
     borderWidth: 1,
     borderColor: '#7a4a1f',
     borderRadius: 999,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
-  cancelButtonText: { color: '#ffb86b', fontSize: 13, fontWeight: '800' },
+  cancelButtonText: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
+  actionRow: { gap: 12 },
   downloadButton: {
     backgroundColor: '#91e6a3',
     borderRadius: 999,
@@ -339,6 +559,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   downloadButtonText: { color: '#07110c', fontSize: 15, fontWeight: '900' },
+  downloadGpxButton: {
+    backgroundColor: '#0d1812',
+    borderWidth: 1,
+    borderColor: '#91e6a3',
+    borderRadius: 999,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  downloadGpxButtonText: { color: '#91e6a3', fontSize: 15, fontWeight: '900' },
   statusCard: {
     backgroundColor: '#102d1a',
     borderRadius: 14,
@@ -349,6 +578,7 @@ const styles = StyleSheet.create({
   statusText: { color: '#91e6a3', fontSize: 13, fontWeight: '700', lineHeight: 20 },
   statsRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
   statsValue: { color: '#f2f5ef', fontSize: 22, fontWeight: '900' },
+  statsValueMax: { color: '#6f7d70', fontSize: 16, fontWeight: '800' },
   statsLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
   clearButton: {
     marginLeft: 'auto',
@@ -359,4 +589,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   clearButtonText: { color: '#ff6b6b', fontSize: 13, fontWeight: '800' },
+  capacityTrack: {
+    height: 8,
+    backgroundColor: '#07110c',
+    borderRadius: 999,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#26382c',
+    marginTop: 6,
+  },
+  capacityFill: { height: '100%', borderRadius: 999 },
 });

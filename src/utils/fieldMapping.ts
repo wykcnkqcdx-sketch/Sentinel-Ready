@@ -322,3 +322,26 @@ export function formatMeasureArea(areaSquareMeters: number) {
   if (areaSquareMeters >= 10000) return `${(areaSquareMeters / 10000).toFixed(2)} ha`;
   return `${Math.round(areaSquareMeters)} sq m`;
 }
+
+export function parseGpxCoordinates(content: string): { latitude: number; longitude: number }[] {
+  const points: { latitude: number; longitude: number }[] = [];
+  // Matches any track point, route point, or waypoint tag and captures its attributes
+  const pointRegex = /<(?:trkpt|rtept|wpt)\s+([^>]+)>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = pointRegex.exec(content)) !== null) {
+    const attributes = match[1];
+    // Extract lat and lon regardless of attribute order or quote style
+    const latMatch = /lat=["']([^"']+)["']/i.exec(attributes);
+    const lonMatch = /lon=["']([^"']+)["']/i.exec(attributes);
+
+    if (latMatch && lonMatch) {
+      const lat = Number.parseFloat(latMatch[1]);
+      const lon = Number.parseFloat(lonMatch[1]);
+      if (Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+        points.push({ latitude: lat, longitude: lon });
+      }
+    }
+  }
+  return points;
+}

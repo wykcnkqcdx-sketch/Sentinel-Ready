@@ -35,6 +35,56 @@ export function tilesForBounds(
   return tiles;
 }
 
+export function buildBounds(lat: number, lon: number, radiusKm: number) {
+  const latDelta = radiusKm / 111;
+  const lonDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
+  return {
+    minLat: lat - latDelta,
+    maxLat: lat + latDelta,
+    minLon: lon - lonDelta,
+    maxLon: lon + lonDelta,
+  };
+}
+
+export function tilesForRoute(
+  routePoints: { latitude: number; longitude: number }[],
+  bufferRadiusKm: number,
+  zoomLevels: number[]
+): { zoom: number; x: number; y: number }[] {
+  const uniqueTiles = new Map<string, { zoom: number; x: number; y: number }>();
+  
+  // Optimization: Downsample the route to only calculate bounds for points 
+  // that are spaced out by roughly half the buffer radius.
+  const stepDistanceKm = Math.max(0.1, bufferRadiusKm / 2);
+  let lastPt: { latitude: number; longitude: number } | null = null;
+  
+  const p = 0.017453292519943295; // Math.PI / 180
+  const c = Math.cos;
+
+  for (let i = 0; i < routePoints.length; i++) {
+    const pt = routePoints[i];
+    
+    if (lastPt && i !== routePoints.length - 1) {
+      const a = 0.5 - c((pt.latitude - lastPt.latitude) * p) / 2 +
+                c(lastPt.latitude * p) * c(pt.latitude * p) * (1 - c((pt.longitude - lastPt.longitude) * p)) / 2;
+      const distKm = 12742 * Math.asin(Math.sqrt(a));
+      if (distKm < stepDistanceKm) continue;
+    }
+
+    lastPt = pt;
+    const bounds = buildBounds(pt.latitude, pt.longitude, bufferRadiusKm);
+    for (const zoom of zoomLevels) {
+      for (const tile of tilesForBounds(bounds, zoom)) {
+        const key = `${zoom}-${tile.x}-${tile.y}`;
+        if (!uniqueTiles.has(key)) {
+          uniqueTiles.set(key, { zoom, x: tile.x, y: tile.y });
+        }
+      }
+    }
+  }
+  return Array.from(uniqueTiles.values());
+}
+
 function localPath(layer: MapLayerKey, zoom: number, x: number, y: number): string {
   return `${TILE_DIR}${layer}/${zoom}/${x}/${y}.png`;
 }
@@ -60,20 +110,13 @@ export async function getResolvedTileUri(
   return getTileUrl(layer, zoom, x, y);
 }
 
-export async function downloadRegion(
-  bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number },
-  zoomLevels: number[],
+export async function downloadTileList(
+  allTiles: { zoom: number; x: number; y: number }[],
   layer: MapLayerKey,
   onProgress: (downloaded: number, total: number) => void,
   signal?: AbortSignal,
+  isPaused?: () => boolean,
 ): Promise<{ downloaded: number; skipped: number; failed: number }> {
-  const allTiles: { zoom: number; x: number; y: number }[] = [];
-  for (const zoom of zoomLevels) {
-    for (const { x, y } of tilesForBounds(bounds, zoom)) {
-      allTiles.push({ zoom, x, y });
-    }
-  }
-
   let downloaded = 0;
   let skipped = 0;
   let failed = 0;
@@ -81,6 +124,13 @@ export async function downloadRegion(
 
   for (const { zoom, x, y } of allTiles) {
     if (signal?.aborted) break;
+
+    while (isPaused && isPaused()) {
+      if (signal?.aborted) break;
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    if (signal?.aborted) break;
+
     const path = localPath(layer, zoom, x, y);
     const info = await FileSystem.getInfoAsync(path);
     if (info.exists) {
@@ -100,6 +150,36 @@ export async function downloadRegion(
   }
 
   return { downloaded, skipped, failed };
+}
+
+export async function downloadRegion(
+  bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number },
+  zoomLevels: number[],
+  layer: MapLayerKey,
+  onProgress: (downloaded: number, total: number) => void,
+  signal?: AbortSignal,
+  isPaused?: () => boolean,
+): Promise<{ downloaded: number; skipped: number; failed: number }> {
+  const allTiles: { zoom: number; x: number; y: number }[] = [];
+  for (const zoom of zoomLevels) {
+    for (const { x, y } of tilesForBounds(bounds, zoom)) {
+      allTiles.push({ zoom, x, y });
+    }
+  }
+  return downloadTileList(allTiles, layer, onProgress, signal, isPaused);
+}
+
+export async function downloadRoute(
+  routePoints: { latitude: number; longitude: number }[],
+  bufferRadiusKm: number,
+  zoomLevels: number[],
+  layer: MapLayerKey,
+  onProgress: (downloaded: number, total: number) => void,
+  signal?: AbortSignal,
+  isPaused?: () => boolean,
+): Promise<{ downloaded: number; skipped: number; failed: number }> {
+  const allTiles = tilesForRoute(routePoints, bufferRadiusKm, zoomLevels);
+  return downloadTileList(allTiles, layer, onProgress, signal, isPaused);
 }
 
 export async function getCacheStats(): Promise<{ tileCount: number; totalBytes: number }> {
@@ -151,6 +231,7 @@ export async function pruneCacheToSize(targetBytes: number): Promise<void> {
   const files: { path: string; size: number; modificationTime: number }[] = [];
   let totalBytes = 0;
   const queue: string[] = [TILE_DIR];
+  const directories: string[] = [];
 
   while (queue.length > 0) {
     const dir = queue.pop()!;
@@ -160,6 +241,9 @@ export async function pruneCacheToSize(targetBytes: number): Promise<void> {
     } catch {
       continue;
     }
+
+    if (dir !== TILE_DIR) directories.push(dir);
+
     for (const entry of entries) {
       const fullPath = dir.endsWith('/') ? dir + entry : dir + '/' + entry;
       if (entry.endsWith('.png')) {
@@ -193,6 +277,19 @@ export async function pruneCacheToSize(targetBytes: number): Promise<void> {
       currentBytes -= file.size;
     } catch {
       // skip failed deletions
+    }
+  }
+
+  // Cleanup empty directories (bottom-up traversal)
+  directories.sort((a, b) => b.length - a.length);
+  for (const dir of directories) {
+    try {
+      const dirEntries = await FileSystem.readDirectoryAsync(dir);
+      if (dirEntries.length === 0) {
+        await FileSystem.deleteAsync(dir, { idempotent: true });
+      }
+    } catch {
+      // skip if directory was already deleted or inaccessible
     }
   }
 }

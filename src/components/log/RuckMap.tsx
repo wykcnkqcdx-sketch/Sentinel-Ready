@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
+import MapboxGL from '@maplibre/maplibre-react-native';
 import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
 
 function interpolateColor(color1: string, color2: string, factor: number) {
@@ -32,7 +32,7 @@ const FALLBACK_ROUTE_COLOR = '#3B82F6';
 
 export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
-  const mapRef = useRef<MapView>(null);
+  const cameraRef = useRef<MapboxGL.Camera>(null);
   const routeColor = theme.mapRoute || FALLBACK_ROUTE_COLOR;
 
   // Decode the polyline string into an array of { latitude, longitude } for react-native-maps
@@ -162,21 +162,35 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
   // Convert the current drawing index into a percentage (0 to 100) for the SVG clip path
   const drawPercentage = coordinates.length > 0 ? (drawIndex / coordinates.length) * 100 : 100;
 
-  const handleMarkerPress = useCallback((coordinate: { latitude: number; longitude: number }) => {
-    mapRef.current?.animateToRegion({
-      latitude: coordinate.latitude,
-      longitude: coordinate.longitude,
-      latitudeDelta: 0.01, // Defines the zoom level (smaller is closer)
-      longitudeDelta: 0.01,
-    }, 1000); // 1000ms (1 second) animation duration
+  // Convert to Mapbox/GeoJSON [longitude, latitude] arrays
+  const mapboxCoordinates = useMemo(() => coordinates.map(c => [c.longitude, c.latitude]), [coordinates]);
+  const visibleMapboxCoords = useMemo(() => visibleCoordinates.map(c => [c.longitude, c.latitude]), [visibleCoordinates]);
+
+  const routeGeoJSON = useMemo<any>(() => ({
+    type: 'FeatureCollection',
+    features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: visibleMapboxCoords }, properties: {} }],
+  }), [visibleMapboxCoords]);
+
+  const handleMarkerPress = useCallback((coordinate: number[]) => {
+    cameraRef.current?.setCamera({
+      centerCoordinate: coordinate,
+      zoomLevel: 15,
+      animationDuration: 1000,
+    });
   }, []);
 
   const handleRecenter = useCallback(() => {
     if (coordinates.length > 1) {
-      mapRef.current?.fitToCoordinates(coordinates, {
-        edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
-        animated: true,
-      });
+      const lats = coordinates.map(c => c.latitude);
+      const lngs = coordinates.map(c => c.longitude);
+      const camera = cameraRef.current;
+      if (!camera) return;
+      camera.fitBounds(
+        [Math.max(...lngs), Math.max(...lats)],
+        [Math.min(...lngs), Math.min(...lats)],
+        [40, 40, 40, 40],
+        1000
+      );
     }
   }, [coordinates]);
 
@@ -196,72 +210,61 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
   return (
     <View style={styles.container}>
       <View style={[styles.mapFrame, { backgroundColor: theme.mapBackground }]}>
-        <MapView
-          ref={mapRef}
+        <MapboxGL.MapView
           style={styles.map}
-          mapType="none" // Disables the default Apple/Google basemaps
-          initialRegion={{
-          latitude: coordinates[0].latitude,
-          longitude: coordinates[0].longitude,
-          latitudeDelta: 0.012, // Start zoomed in for the "follow" effect
-          longitudeDelta: 0.012,
-        }}
-      >
-        <UrlTile urlTemplate={tileUrl} maximumZ={19} flipY={false} />
-
-        <Polyline
-          coordinates={visibleCoordinates}
-          strokeColor={routeColor} // 👈 Fallback for Android
-          strokeColors={visibleColors}              // 👈 Gradient applied on iOS
-          strokeWidth={4}
-          lineCap="round"
-          lineJoin="round"
-        />
-
-        {/* 1km Distance Markers */}
-        {visibleDistanceMarkers.map((marker) => (
-          <Marker
-            key={`km-${marker.km}`}
-            coordinate={marker.coordinate}
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
-            zIndex={1}
-            onPress={() => handleMarkerPress(marker.coordinate)}
-          >
-            <View style={[styles.kmMarker, { borderColor: routeColor }]}>
-              <Text style={[styles.kmMarkerText, { color: routeColor }]}>{marker.km}</Text>
-            </View>
-          </Marker>
-        ))}
-
-        <Marker
-          coordinate={coordinates[0]}
-          title="Start"
-          anchor={{ x: 0.5, y: 0.5 }}
-          tracksViewChanges={false}
-          zIndex={2}
-          onPress={() => handleMarkerPress(coordinates[0])}
+          styleURL="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          logoEnabled={false}
+          compassEnabled={false}
+          attributionEnabled={false}
         >
-          <View style={[styles.customMarker, styles.startMarker]}>
-            <MaterialCommunityIcons name="play" size={18} color="white" />
-          </View>
-        </Marker>
-        
-        {drawIndex === coordinates.length && coordinates.length > 1 && (
-          <Marker
-            coordinate={coordinates[coordinates.length - 1]}
-            title="End"
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
-            zIndex={2}
-            onPress={() => handleMarkerPress(coordinates[coordinates.length - 1])}
-          >
-            <View style={[styles.customMarker, styles.endMarker]}>
-              <MaterialCommunityIcons name="flag-checkered" size={16} color="white" />
+          <MapboxGL.Camera
+            ref={cameraRef}
+            zoomLevel={14}
+            centerCoordinate={mapboxCoordinates[0]}
+            animationDuration={1000}
+          />
+
+          {/* Offline PMTiles Vector Source */}
+          <MapboxGL.VectorSource id="offline-pmtiles" tileUrlTemplates={['pmtiles://offline_region/{z}/{x}/{y}']}>
+            <MapboxGL.LineLayer id="roads" sourceLayer="roads" style={{ lineColor: '#444', lineWidth: 1.5 }} />
+          </MapboxGL.VectorSource>
+
+          {/* Route Polyline rendered via GeoJSON */}
+          <MapboxGL.ShapeSource id="routeSource" shape={routeGeoJSON}>
+            <MapboxGL.LineLayer
+              id="routeLine"
+              style={{ lineColor: routeColor, lineWidth: 4, lineCap: 'round', lineJoin: 'round' }}
+            />
+          </MapboxGL.ShapeSource>
+
+          {/* 1km Distance Markers */}
+          {visibleDistanceMarkers.map((marker) => (
+            <MapboxGL.PointAnnotation
+              key={`km-${marker.km}`}
+              id={`km-${marker.km}`}
+              coordinate={[marker.coordinate.longitude, marker.coordinate.latitude]}
+              onSelected={() => handleMarkerPress([marker.coordinate.longitude, marker.coordinate.latitude])}
+            >
+              <View style={[styles.kmMarker, { borderColor: routeColor }]}>
+                <Text style={[styles.kmMarkerText, { color: routeColor }]}>{marker.km}</Text>
+              </View>
+            </MapboxGL.PointAnnotation>
+          ))}
+
+          <MapboxGL.PointAnnotation id="start" coordinate={mapboxCoordinates[0]} onSelected={() => handleMarkerPress(mapboxCoordinates[0])}>
+            <View style={[styles.customMarker, styles.startMarker]}>
+              <MaterialCommunityIcons name="play" size={18} color="white" />
             </View>
-          </Marker>
-        )}
-      </MapView>
+          </MapboxGL.PointAnnotation>
+          
+          {drawIndex === coordinates.length && coordinates.length > 1 && (
+            <MapboxGL.PointAnnotation id="end" coordinate={mapboxCoordinates[mapboxCoordinates.length - 1]} onSelected={() => handleMarkerPress(mapboxCoordinates[mapboxCoordinates.length - 1])}>
+              <View style={[styles.customMarker, styles.endMarker]}>
+                <MaterialCommunityIcons name="flag-checkered" size={16} color="white" />
+              </View>
+            </MapboxGL.PointAnnotation>
+          )}
+        </MapboxGL.MapView>
 
       {coordinates.length > 1 && (
         <TouchableOpacity 
