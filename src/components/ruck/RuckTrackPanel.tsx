@@ -52,6 +52,10 @@ const MISSION_PRESETS: { label: string; draft: RuckMissionDraft }[] = [
     label: 'Long',
     draft: { targetDistanceKm: '12', targetMinutes: '150', packWeightKg: '18', checkpointIntervalKm: '2' },
   },
+  {
+    label: 'Heavy',
+    draft: { targetDistanceKm: '5', targetMinutes: '70', packWeightKg: '25', checkpointIntervalKm: '1' },
+  },
 ];
 
 const SAVE_NOTE_CHIPS = [
@@ -105,6 +109,15 @@ const MissionSetupPanel = memo(function MissionSetupPanel({
   draft: RuckMissionDraft;
   onChange: (draft: RuckMissionDraft) => void;
 }) {
+  function isActivePreset(preset: RuckMissionDraft) {
+    return (
+      draft.targetDistanceKm === preset.targetDistanceKm &&
+      draft.targetMinutes === preset.targetMinutes &&
+      draft.packWeightKg === preset.packWeightKg &&
+      draft.checkpointIntervalKm === preset.checkpointIntervalKm
+    );
+  }
+
   return (
     <View style={styles.missionPanel}>
       <View style={styles.missionHeader}>
@@ -112,17 +125,21 @@ const MissionSetupPanel = memo(function MissionSetupPanel({
         <Text style={styles.missionText}>Set intent before stepping off.</Text>
       </View>
       <View style={styles.presetRow}>
-        {MISSION_PRESETS.map((preset) => (
-          <TouchableOpacity
-            key={preset.label}
-            style={styles.presetButton}
-            onPress={() => onChange(preset.draft)}
-            accessibilityRole="button"
-            accessibilityLabel={`Use ${preset.label} ruck preset`}
-          >
-            <Text style={styles.presetText}>{preset.label}</Text>
-          </TouchableOpacity>
-        ))}
+        {MISSION_PRESETS.map((preset) => {
+          const active = isActivePreset(preset.draft);
+          return (
+            <TouchableOpacity
+              key={preset.label}
+              style={[styles.presetButton, active && styles.presetButtonActive]}
+              onPress={() => onChange(preset.draft)}
+              accessibilityRole="button"
+              accessibilityLabel={`Use ${preset.label} ruck preset`}
+              accessibilityState={{ selected: active }}
+            >
+              <Text style={[styles.presetText, active && styles.presetTextActive]}>{preset.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
       <View style={styles.missionGrid}>
         <View style={styles.missionField}>
@@ -533,9 +550,10 @@ const styles = StyleSheet.create({
   missionHeader: { gap: 2 },
   missionKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
   missionText: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
-  presetRow: { flexDirection: 'row', gap: 6 },
+  presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   presetButton: {
     flex: 1,
+    minWidth: 64,
     borderWidth: 1,
     borderColor: '#2f6b3c',
     borderRadius: 8,
@@ -543,7 +561,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#102d1a',
   },
+  presetButtonActive: {
+    backgroundColor: '#91e6a3',
+    borderColor: '#91e6a3',
+  },
   presetText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  presetTextActive: { color: '#07110c' },
   missionGrid: { flexDirection: 'row', gap: 8 },
   missionField: { flex: 1, gap: 4 },
   missionLabel: { color: '#8fbf8f', fontSize: 9, fontWeight: '900' },
