@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SENTINEL READY — Tactical Ruck HUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050e09;
+    --panel: #0a1610;
+    --panel-dim: #080f0b;
+    --border: #172c20;
+    --border-bright: rgba(145,230,163,0.28);
+    --green: #91e6a3;
+    --green-dim: #3a6b46;
+    --amber: #ffaa44;
+    --red: #e05050;
+    --electric: #3fc8e4;
+    --text: #edf5ea;
+    --text-muted: #7a9480;
+    --fhud: 'Orbitron', monospace;
+    --fbody: 'Rajdhani', sans-serif;
+    --fdata: 'Share Tech Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: var(--fbody); color: var(--text); min-height: 100vh; }
+
+  /* Layout: two phones side by side */
+  .canvas { display: flex; gap: 32px; justify-content: center; padding: 32px; flex-wrap: wrap; align-items: flex-start; }
+
+  /* Phone frame */
+  .phone {
+    width: 375px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 780px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(145,230,163,0.05);
+  }
+
+  .phone-label { font-family: var(--fdata); font-size: 9px; letter-spacing: 3px; color: var(--green-dim); text-align: center; padding: 12px 0 4px; text-transform: uppercase; }
+
+  /* Top notch */
+  .notch { height: 36px; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+  .notch-pill { width: 100px; height: 28px; background: #030605; border-radius: 20px; border: 1px solid #0d1810; }
+
+  /* Metrics bar */
+  .metrics-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(5,14,9,0.98);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    gap: 4px;
+  }
+  .metric { flex: 1; text-align: center; }
+  .metric-val { font-family: var(--fhud); font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; display: block; }
+  .metric-unit { font-family: var(--fdata); font-size: 8px; letter-spacing: 2px; color: var(--green-dim); display: block; margin-top: 1px; }
+  .sep { width: 1px; height: 28px; background: var(--border); }
+
+  /* GPS dots */
+  .gps-block { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .gps-dots { display: flex; gap: 3px; align-items: flex-end; }
+  .gps-dot { width: 4px; border-radius: 1px; }
+  .gps-dot.on { background: var(--green); height: 12px; }
+  .gps-dot.off { background: var(--border); height: 6px; }
+  .state-chip { border: 1px solid rgba(145,230,163,0.3); border-radius: 3px; padding: 2px 5px; font-family: var(--fdata); font-size: 8px; letter-spacing: 1.5px; color: var(--green); }
+  .state-chip.paused { border-color: rgba(255,170,68,0.3); color: var(--amber); }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex;
+    background: rgba(5,14,9,0.98);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+  }
+  .mode-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-family: var(--fdata);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--green-dim);
+    cursor: pointer;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .mode-btn.active { color: var(--green); }
+  .mode-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 12px; right: 12px;
+    height: 2px;
+    background: var(--green);
+    border-radius: 1px;
+  }
+
+  /* Content area */
+  .content { flex: 1; overflow: hidden; position: relative; }
+
+  /* SIMPLE mode */
+  .simple-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 100%; }
+  .big-dist { font-family: var(--fhud); font-size: 88px; font-weight: 900; color: var(--text); letter-spacing: -4px; line-height: 1; }
+  .big-unit { font-family: var(--fdata); font-size: 14px; letter-spacing: 6px; color: var(--green-dim); text-align: center; }
+
+  /* MISSION mode */
+  .mission-panel {
+    margin: 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(5,14,9,0.97);
+    display: flex;
+    overflow: hidden;
+  }
+  .panel-accent { width: 3px; background: var(--green); flex-shrink: 0; }
+  .panel-accent.amber { background: var(--amber); }
+  .panel-accent.red { background: var(--red); }
+  .panel-accent.electric { background: var(--electric); }
+  .panel-inner { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; }
+  .panel-kicker { font-family: var(--fdata); font-size: 9px; letter-spacing: 2.5px; color: var(--green-dim); }
+  .panel-meta { font-family: var(--fdata); font-size: 10px; color: var(--text-muted); }
+
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-label { width: 30px; font-family: var(--fdata); font-size: 8px; letter-spacing: 1.5px; color: var(--green-dim); }
+  .bar-track { flex: 1; height: 5px; border-radius: 2px; background: #0d1a12; border: 1px solid var(--border); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 2px; background: var(--green); }
+  .bar-fill.electric { background: var(--electric); }
+  .bar-fill.amber { background: var(--amber); }
+  .bar-pct { width: 28px; font-family: var(--fdata); font-size: 10px; color: var(--text); text-align: right; font-weight: 700; }
+  .bar-detail { font-family: var(--fdata); font-size: 10px; color: #5a7a62; margin-top: -6px; padding-left: 38px; }
+
+  .divider { height: 1px; background: var(--border); }
+
+  .stats-row { display: flex; gap: 12px; }
+  .stat-block { flex: 1; }
+  .stat-label { font-family: var(--fdata); font-size: 8px; letter-spacing: 1.5px; color: var(--green-dim); display: block; margin-bottom: 3px; }
+  .stat-value { font-family: var(--fhud); font-size: 12px; font-weight: 700; color: var(--text); }
+  .stat-value.amber { color: var(--amber); }
+
+  .risk-row { display: flex; align-items: center; gap: 10px; }
+  .risk-badge { border-radius: 3px; border: 1px solid; padding: 3px 8px; }
+  .risk-badge.green { border-color: rgba(145,230,163,0.3); background: rgba(145,230,163,0.1); }
+  .risk-badge.amber { border-color: rgba(255,170,68,0.3); background: rgba(255,170,68,0.1); }
+  .risk-badge.red { border-color: rgba(224,80,80,0.3); background: rgba(224,80,80,0.1); }
+  .risk-badge span { font-family: var(--fdata); font-size: 9px; letter-spacing: 2px; font-weight: 700; }
+  .risk-badge.green span { color: var(--green); }
+  .risk-badge.amber span { color: var(--amber); }
+  .risk-badge.red span { color: var(--red); }
+  .risk-advice { flex: 1; font-family: var(--fdata); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--amber); }
+  .risk-advice.green { color: var(--green); }
+
+  /* MAP mode placeholder */
+  .map-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 40% 60%, rgba(0,50,25,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(0,40,20,0.3) 0%, transparent 50%),
+      #060d08;
+  }
+  .map-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,80,40,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,80,40,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .map-route {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .map-route svg { width: 100%; height: 100%; opacity: 0.7; }
+  .map-overlay-label { position: absolute; top: 10px; left: 10px; font-family: var(--fdata); font-size: 9px; letter-spacing: 1.5px; color: var(--green); opacity: 0.7; }
+  .map-gps-badge { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; background: rgba(5,14,9,0.85); border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; }
+  .map-gps-text { font-family: var(--fdata); font-size: 9px; letter-spacing: 1px; color: var(--green); }
+
+  .map-tools {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .overlay-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .overlay-chip { display: flex; align-items: center; gap: 5px; border-radius: 4px; border: 1px solid var(--border); background: rgba(5,14,9,0.85); padding: 6px 10px; font-family: var(--fdata); font-size: 10px; color: #b8cbb8; font-weight: 700; }
+  .overlay-dot-c { width: 6px; height: 6px; border-radius: 3px; }
+  .import-btn { border-radius: 4px; border: 1px solid #235c32; background: rgba(5,14,9,0.85); padding: 6px 12px; font-family: var(--fdata); font-size: 9px; letter-spacing: 2px; color: var(--green); font-weight: 700; }
+  .layer-row { display: flex; gap: 6px; }
+  .layer-chip { border-radius: 4px; border: 1px solid var(--border); background: rgba(5,14,9,0.7); padding: 6px 10px; font-family: var(--fdata); font-size: 9px; letter-spacing: 1.5px; color: var(--green-dim); font-weight: 700; }
+  .layer-chip.active { border-color: #235c32; background: rgba(0,80,40,0.4); color: var(--green); }
+
+  /* SAVE / FINISHED mode */
+  .save-scroll { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .save-stats { display: flex; gap: 8px; }
+  .save-stat { flex: 1; border-radius: 4px; border: 1px solid var(--border); background: #080f0b; overflow: hidden; }
+  .save-stat-bar { height: 2px; background: var(--green); }
+  .save-stat-inner { padding: 10px; }
+  .save-stat-label { font-family: var(--fdata); font-size: 8px; letter-spacing: 2px; color: var(--green-dim); display: block; margin-bottom: 3px; }
+  .save-stat-value { font-family: var(--fhud); font-size: 15px; font-weight: 700; color: var(--green); }
+
+  .rpe-row { display: flex; gap: 4px; }
+  .rpe-chip { flex: 1; text-align: center; padding: 8px 0; border-radius: 4px; border: 1px solid var(--border); font-family: var(--fdata); font-size: 12px; font-weight: 700; color: var(--green-dim); background: #050e09; }
+  .rpe-chip.active-green { border-color: rgba(145,230,163,0.5); background: rgba(145,230,163,0.1); color: var(--green); }
+  .rpe-chip.active-amber { border-color: rgba(255,170,68,0.5); background: rgba(255,170,68,0.1); color: var(--amber); }
+  .rpe-chip.active-red { border-color: rgba(224,80,80,0.5); background: rgba(224,80,80,0.1); color: var(--red); }
+
+  .note-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .note-chip { border-radius: 4px; border: 1px solid var(--border); background: #050e09; padding: 6px 10px; font-family: var(--fdata); font-size: 11px; color: var(--green-dim); font-weight: 700; }
+  .note-chip.active { border-color: rgba(255,170,68,0.5); background: rgba(255,170,68,0.1); color: var(--amber); }
+
+  /* Control dock */
+  .control-dock {
+    padding: 12px 16px 14px;
+    border-top: 1px solid var(--border);
+    background: rgba(5,14,9,0.98);
+    display: flex;
+    gap: 10px;
+  }
+  .dock-btn { flex: 1; border-radius: 6px; padding: 15px; text-align: center; font-family: var(--fdata); font-size: 12px; font-weight: 700; letter-spacing: 2px; cursor: pointer; }
+  .dock-btn.primary { background: var(--green); color: var(--bg); }
+  .dock-btn.ghost { background: transparent; border: 1px solid #235c32; color: #7aad82; }
+  .dock-btn.danger { background: #1c0c0c; border: 1px solid #6b1e1e; color: var(--red); }
+
+  /* Tab bar */
+  .tab-bar { height: 62px; background: #040a07; border-top: 1px solid #1a3022; display: flex; align-items: center; }
+  .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .tab-icon { font-size: 18px; }
+  .tab-lbl { font-family: var(--fdata); font-size: 9px; letter-spacing: 1.5px; font-weight: 700; }
+  .tab-item.active .tab-icon, .tab-item.active .tab-lbl { color: var(--green); }
+  .tab-item:not(.active) .tab-icon, .tab-item:not(.active) .tab-lbl { color: #2e5038; }
+</style>
+</head>
+<body>
+<div style="text-align:center; padding: 24px 0 0; font-family: 'Share Tech Mono', monospace; color: #3a6b46; font-size: 10px; letter-spacing: 3px;">// SENTINEL READY · TACTICAL RUCK HUD · DISPLAY MODES //</div>
+
+<div class="canvas">
+
+  <!-- PHONE 1: SIMPLE MODE (Recording) -->
+  <div>
+    <div class="phone-label">SIMPLE MODE · ACTIVE</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-pill"></div></div>
+      <div class="metrics-bar">
+        <div class="metric"><span class="metric-val">12.42</span><span class="metric-unit">KM</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">01:42:33</span><span class="metric-unit">ELAPSED</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">4:48</span><span class="metric-unit">/KM</span></div>
+        <div class="sep"></div>
+        <div class="gps-block">
+          <div class="gps-dots">
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot off"></div>
+          </div>
+          <div class="state-chip">REC</div>
+        </div>
+      </div>
+      <div class="mode-toggle">
+        <div class="mode-btn active">SIMPLE</div>
+        <div class="mode-btn">MISSION</div>
+        <div class="mode-btn">MAP</div>
+      </div>
+      <div class="content" style="display:flex;">
+        <div class="simple-center">
+          <div class="big-dist">12.42</div>
+          <div class="big-unit">KM</div>
+        </div>
+      </div>
+      <div class="control-dock">
+        <div class="dock-btn ghost">⏸  PAUSE</div>
+        <div class="dock-btn danger">⬛  STOP</div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">LOG</span></div>
+        <div class="tab-item">📊<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">DASH</span></div>
+        <div class="tab-item">💪<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">TRAIN</span></div>
+        <div class="tab-item active">🗺️<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#91e6a3;margin-top:3px;display:block;">RUCK</span></div>
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">PLAN</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 2: MISSION MODE (Recording) -->
+  <div>
+    <div class="phone-label">MISSION MODE · ACTIVE</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-pill"></div></div>
+      <div class="metrics-bar">
+        <div class="metric"><span class="metric-val">12.42</span><span class="metric-unit">KM</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">01:42:33</span><span class="metric-unit">ELAPSED</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">4:48</span><span class="metric-unit">/KM</span></div>
+        <div class="sep"></div>
+        <div class="gps-block">
+          <div class="gps-dots">
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot off"></div>
+          </div>
+          <div class="state-chip">REC</div>
+        </div>
+      </div>
+      <div class="mode-toggle">
+        <div class="mode-btn">SIMPLE</div>
+        <div class="mode-btn active">MISSION</div>
+        <div class="mode-btn">MAP</div>
+      </div>
+      <div class="content" style="display:flex; align-items:flex-end; padding-bottom:14px;">
+        <div style="width:100%; padding:0 14px;">
+          <div class="mission-panel">
+            <div class="panel-accent amber"></div>
+            <div class="panel-inner">
+              <div class="panel-header">
+                <span class="panel-kicker">MISSION PROGRESS</span>
+                <span class="panel-meta">7.6 km left · 20 kg</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">DIST</span>
+                <div class="bar-track"><div class="bar-fill" style="width:62%"></div></div>
+                <span class="bar-pct">62%</span>
+              </div>
+              <div class="bar-detail">12.42 / 20 km</div>
+              <div class="bar-row">
+                <span class="bar-label">TIME</span>
+                <div class="bar-track"><div class="bar-fill amber" style="width:57%"></div></div>
+                <span class="bar-pct">57%</span>
+              </div>
+              <div class="bar-detail">01:42 / 3:00:00</div>
+              <div class="divider"></div>
+              <div class="stats-row">
+                <div class="stat-block">
+                  <span class="stat-label">PACE vs TGT</span>
+                  <span class="stat-value amber">+0.3 min/km</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-label">PROJ FINISH</span>
+                  <span class="stat-value amber">3:26 (+5m)</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-label">CHECKPOINT</span>
+                  <span class="stat-value">15.0 km</span>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="risk-row">
+                <div class="risk-badge amber"><span>AMBER</span></div>
+                <span class="risk-advice">◆ MONITOR EFFORT · STAY HYDRATED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="control-dock">
+        <div class="dock-btn ghost">⏸  PAUSE</div>
+        <div class="dock-btn danger">⬛  STOP</div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">LOG</span></div>
+        <div class="tab-item">📊<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">DASH</span></div>
+        <div class="tab-item">💪<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">TRAIN</span></div>
+        <div class="tab-item active">🗺️<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#91e6a3;margin-top:3px;display:block;">RUCK</span></div>
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">PLAN</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 3: MAP MODE -->
+  <div>
+    <div class="phone-label">MAP MODE · ACTIVE</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-pill"></div></div>
+      <div class="metrics-bar">
+        <div class="metric"><span class="metric-val">12.42</span><span class="metric-unit">KM</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">01:42:33</span><span class="metric-unit">ELAPSED</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">4:48</span><span class="metric-unit">/KM</span></div>
+        <div class="sep"></div>
+        <div class="gps-block">
+          <div class="gps-dots">
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+          </div>
+          <div class="state-chip">HIGH</div>
+        </div>
+      </div>
+      <div class="mode-toggle">
+        <div class="mode-btn">SIMPLE</div>
+        <div class="mode-btn">MISSION</div>
+        <div class="mode-btn active">MAP</div>
+      </div>
+      <div class="content" style="position:relative;">
+        <div class="map-bg"></div>
+        <div class="map-grid"></div>
+        <div class="map-route">
+          <svg viewBox="0 0 375 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Route trace -->
+            <polyline points="60,350 90,300 120,260 145,230 175,200 210,190 240,185 265,200 280,230 270,270 245,300 210,320 175,330 140,340 105,350" fill="none" stroke="#91e6a3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+            <!-- Route completed (brighter) -->
+            <polyline points="60,350 90,300 120,260 145,230 175,200 210,190" fill="none" stroke="#91e6a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Waypoints -->
+            <circle cx="60" cy="350" r="6" fill="#3fc8e4" opacity="0.9"/>
+            <circle cx="145" cy="230" r="5" fill="#91e6a3" opacity="0.8"/>
+            <circle cx="210" cy="190" r="8" fill="#91e6a3"/>
+            <circle cx="210" cy="190" r="14" fill="none" stroke="#91e6a3" stroke-width="1.5" opacity="0.4"/>
+            <!-- Current position triangle -->
+            <polygon points="210,178 218,200 202,200" fill="#91e6a3"/>
+            <!-- Destination -->
+            <circle cx="105" cy="350" r="5" fill="#e05050" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="map-overlay-label">SECTOR 7-ALPHA</div>
+        <div class="map-gps-badge">
+          <div class="gps-dot on" style="height:10px;"></div>
+          <span class="map-gps-text">GPS HIGH</span>
+        </div>
+        <div class="map-tools">
+          <div class="overlay-row">
+            <div class="import-btn">+ OVERLAY</div>
+            <div class="overlay-chip"><div class="overlay-dot-c" style="background:#3fc8e4"></div>Route Alpha</div>
+            <div class="overlay-chip" style="opacity:0.4"><div class="overlay-dot-c" style="background:#ffaa44"></div>Hazard Z1</div>
+          </div>
+          <div class="layer-row">
+            <div class="layer-chip active">TOPO</div>
+            <div class="layer-chip">SAT</div>
+            <div class="layer-chip">OSM</div>
+            <div class="layer-chip">OFFLINE</div>
+          </div>
+        </div>
+      </div>
+      <div class="control-dock">
+        <div class="dock-btn ghost">⏸  PAUSE</div>
+        <div class="dock-btn danger">⬛  STOP</div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">LOG</span></div>
+        <div class="tab-item">📊<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">DASH</span></div>
+        <div class="tab-item">💪<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">TRAIN</span></div>
+        <div class="tab-item active">🗺️<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#91e6a3;margin-top:3px;display:block;">RUCK</span></div>
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">PLAN</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 4: FINISHED / SAVE STATE -->
+  <div>
+    <div class="phone-label">FINISHED STATE · SAVE PANEL</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-pill"></div></div>
+      <div class="metrics-bar">
+        <div class="metric"><span class="metric-val">19.3</span><span class="metric-unit">KM</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">03:42:11</span><span class="metric-unit">ELAPSED</span></div>
+        <div class="sep"></div>
+        <div class="metric"><span class="metric-val">11:31</span><span class="metric-unit">/KM</span></div>
+        <div class="sep"></div>
+        <div class="gps-block">
+          <div class="gps-dots">
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot on"></div>
+            <div class="gps-dot off"></div>
+          </div>
+          <div class="state-chip">DONE</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="save-scroll">
+
+          <!-- Stats panel -->
+          <div class="mission-panel">
+            <div class="panel-accent"></div>
+            <div class="panel-inner">
+              <div class="panel-header">
+                <span class="panel-kicker">// SAVE RUCK //</span>
+                <div style="display:flex;align-items:center;gap:5px;border:1px solid rgba(145,230,163,0.2);border-radius:4px;padding:4px 8px;">
+                  <div style="width:5px;height:5px;border-radius:3px;background:#91e6a3;"></div>
+                  <span style="font-family:'Share Tech Mono';font-size:8px;letter-spacing:1.5px;color:#91e6a3;">GPS HIGH</span>
+                </div>
+              </div>
+              <div class="save-stats">
+                <div class="save-stat"><div class="save-stat-bar"></div><div class="save-stat-inner"><span class="save-stat-label">DIST</span><span class="save-stat-value">19.3km</span></div></div>
+                <div class="save-stat"><div class="save-stat-bar"></div><div class="save-stat-inner"><span class="save-stat-label">TIME</span><span class="save-stat-value">3:42:11</span></div></div>
+                <div class="save-stat"><div class="save-stat-bar" style="background:#3fc8e4"></div><div class="save-stat-inner"><span class="save-stat-label">PACE</span><span class="save-stat-value" style="color:#3fc8e4;font-size:13px;">11:31/km</span></div></div>
+                <div class="save-stat"><div class="save-stat-bar" style="background:#ffaa44"></div><div class="save-stat-inner"><span class="save-stat-label">PACK</span><span class="save-stat-value" style="color:#ffaa44;">20 kg</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RPE -->
+          <div class="mission-panel">
+            <div class="panel-accent electric" style="background:#3fc8e4"></div>
+            <div class="panel-inner">
+              <span class="panel-kicker">EFFORT · RPE</span>
+              <div class="rpe-row">
+                <div class="rpe-chip">1</div>
+                <div class="rpe-chip">2</div>
+                <div class="rpe-chip">3</div>
+                <div class="rpe-chip">4</div>
+                <div class="rpe-chip">5</div>
+                <div class="rpe-chip">6</div>
+                <div class="rpe-chip active-amber">7</div>
+                <div class="rpe-chip">8</div>
+                <div class="rpe-chip">9</div>
+                <div class="rpe-chip">10</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Readiness -->
+          <div class="mission-panel">
+            <div class="panel-accent"></div>
+            <div class="panel-inner">
+              <span class="panel-kicker">READINESS AFTER</span>
+              <div class="rpe-row">
+                <div class="rpe-chip">1</div>
+                <div class="rpe-chip">2</div>
+                <div class="rpe-chip">3</div>
+                <div class="rpe-chip">4</div>
+                <div class="rpe-chip">5</div>
+                <div class="rpe-chip active-green">6</div>
+                <div class="rpe-chip">7</div>
+                <div class="rpe-chip">8</div>
+                <div class="rpe-chip">9</div>
+                <div class="rpe-chip">10</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Note chips -->
+          <div class="mission-panel">
+            <div class="panel-accent" style="background:#ffaa44"></div>
+            <div class="panel-inner">
+              <span class="panel-kicker">FIELD NOTES</span>
+              <div class="note-chips">
+                <div class="note-chip active">Feet OK</div>
+                <div class="note-chip">Hot spots</div>
+                <div class="note-chip">Pack rub</div>
+                <div class="note-chip active">Hydration low</div>
+                <div class="note-chip">Calves tight</div>
+                <div class="note-chip">Strong finish</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="control-dock">
+        <div class="dock-btn ghost">✕  DISCARD</div>
+        <div class="dock-btn primary">✓  SAVE RUCK</div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">LOG</span></div>
+        <div class="tab-item">📊<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">DASH</span></div>
+        <div class="tab-item">💪<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">TRAIN</span></div>
+        <div class="tab-item active">🗺️<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#91e6a3;margin-top:3px;display:block;">RUCK</span></div>
+        <div class="tab-item">📋<span style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.5px;color:#2e5038;margin-top:3px;display:block;">PLAN</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

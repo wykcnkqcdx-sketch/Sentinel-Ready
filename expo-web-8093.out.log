@@ -1,0 +1,14 @@
+
+> sentinel-ready@1.0.0 web
+> expo start --web --port 8093 --clear
+
+Starting project at C:\Users\mcwemyss\Documents\Sentinel-Ready-main
+React Compiler enabled
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8093
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ node_modules\expo-router\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓░░░░░░░░░░░░░ 23.0% (12/25)
+λ node_modules\expo-router\node\render.js ▓▓░░░░░░░░░░░░░░ 13.5% ( 91/248)
