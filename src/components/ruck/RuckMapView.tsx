@@ -77,9 +77,10 @@ export interface RuckMapViewProps {
   zoom?: number;
   overlays?: MapOverlay[];
   fullHeight?: boolean;
+  showGpsStatus?: boolean;
 }
 
-export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays, fullHeight = false }: RuckMapViewProps) {
+export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, overlays, fullHeight = false, showGpsStatus = true }: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
   const [mapZoom, setMapZoom] = useState(clampZoom(zoom));
@@ -319,7 +320,7 @@ export function RuckMapView({ routePoints, currentPosition, layer, zoom = 15, ov
         </TouchableOpacity>
       </View>
 
-      {!currentPosition && (
+      {showGpsStatus && !currentPosition && (
         <View style={styles.gpsOverlay} pointerEvents="none">
           <Text style={styles.gpsText}>Acquiring GPS...</Text>
         </View>

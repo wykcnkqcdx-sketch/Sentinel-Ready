@@ -1,5 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { useRouter } from 'expo-router';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
@@ -198,6 +199,7 @@ const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb }
 });
 
 export default function RuckScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
   const [saveDraft, setSaveDraft] = useState<RuckSaveDraft>(DEFAULT_RUCK_SAVE_DRAFT);
   const tracking = useRuckTracking();
@@ -219,7 +221,7 @@ export default function RuckScreen() {
     const paceSecondsPerKm = distanceKm > 0 ? durationSeconds / distanceKm : 0;
     const notes = saveDraft.notes.trim();
 
-    await addLog({
+    const savedLog = await addLog({
       date: new Date().toISOString().slice(0, 10),
       category: 'Ruck',
       type: saveDraft.sessionType.trim() || 'GPS Tracked Ruck',
@@ -250,7 +252,8 @@ export default function RuckScreen() {
     tracking.resetSession();
     setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
-  }, [tracking, saveDraft, addLog]);
+    router.push({ pathname: '/ruck-review/[id]', params: { id: String(savedLog.id) } });
+  }, [tracking, saveDraft, addLog, router]);
 
   const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
 

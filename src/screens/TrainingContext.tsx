@@ -212,7 +212,7 @@ const starterGoals: TrainingGoal[] = [
 interface TrainingContextType {
   logs: TrainingLog[];
   goals: TrainingGoal[];
-  addLog: (log: Omit<TrainingLog, 'id'>) => Promise<void>;
+  addLog: (log: Omit<TrainingLog, 'id'>) => Promise<TrainingLog>;
   updateLog: (id: number, log: Omit<TrainingLog, 'id'>) => Promise<void>;
   deleteLog: (id: number) => Promise<void>;
   duplicateLog: (id: number) => Promise<void>;
@@ -310,6 +310,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   const addLog = useCallback(async (log: Omit<TrainingLog, 'id'>) => {
     const newLog: TrainingLog = { ...log, id: createNumericId() };
     await updateAndSaveLogs((prev) => [newLog, ...prev]);
+    return newLog;
   }, [updateAndSaveLogs]);
 
   const updateLog = useCallback(async (id: number, logUpdates: Omit<TrainingLog, 'id'>) => {
