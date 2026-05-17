@@ -1,5 +1,6 @@
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
+import { loadCustomPlan } from '@/src/services/customPlanService';
 import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
@@ -13,7 +14,7 @@ import {
   getDayPlanDetails,
 } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
@@ -66,6 +67,13 @@ export default function PlanScreen() {
   const { logs, goals, isLoading } = useTraining();
   const profile = useUser();
   const router = useRouter();
+  const [hasCustomPlan, setHasCustomPlan] = useState(false);
+
+  useEffect(() => {
+    loadCustomPlan().then((saved) => {
+      setHasCustomPlan(saved !== null);
+    });
+  }, []);
 
   const { thisWeek, trend, balance } = useMemo(() => ({
     thisWeek: buildWeekSummary(logs, 0),
@@ -115,11 +123,38 @@ export default function PlanScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>SENTINEL READY</Text>
-      <Text style={styles.title}>7-Day Training Plan</Text>
+      <View style={styles.planHeader}>
+        <View style={styles.planHeaderLeft}>
+          <Text style={styles.kicker}>SENTINEL READY</Text>
+          <Text style={styles.title}>7-Day Training Plan</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.editPlanButton}
+          onPress={() => router.push('/plan-builder')}
+        >
+          <Text style={styles.editPlanButtonText}>Edit Plan</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.subtitle}>
         {"Generated from your readiness, fatigue watch and this week's training split."}
       </Text>
+      <View style={styles.planModePillRow}>
+        <View
+          style={[
+            styles.planModePill,
+            hasCustomPlan ? styles.planModePillAmber : styles.planModePillMuted,
+          ]}
+        >
+          <Text
+            style={[
+              styles.planModePillText,
+              hasCustomPlan ? styles.planModePillTextAmber : styles.planModePillTextMuted,
+            ]}
+          >
+            {hasCustomPlan ? 'CUSTOM PLAN' : 'AUTO PLAN'}
+          </Text>
+        </View>
+      </View>
 
       <View style={styles.thisWeekCard}>
         <Text style={styles.cardKicker}>THIS WEEK SO FAR</Text>
@@ -232,6 +267,29 @@ export default function PlanScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#06100b' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
+  planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  planHeaderLeft: { flex: 1 },
+  editPlanButton: {
+    borderWidth: 1,
+    borderColor: '#1a2e1f',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 4,
+  },
+  editPlanButtonText: { color: '#91e6a3', fontSize: 12, fontWeight: '700' },
+  planModePillRow: { flexDirection: 'row' },
+  planModePill: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  planModePillAmber: { borderColor: '#FFB86B', backgroundColor: '#1a1208' },
+  planModePillMuted: { borderColor: '#2a3328', backgroundColor: '#0e1812' },
+  planModePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  planModePillTextAmber: { color: '#FFB86B' },
+  planModePillTextMuted: { color: '#aeb8aa' },
   kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#f4f7f0', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#c4cec0', fontSize: 15, lineHeight: 22 },
