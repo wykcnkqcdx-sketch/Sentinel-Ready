@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { formatDurationFromSeconds, formatPace } from './ruckPanelUtils';
 
 export type RuckSaveDraft = {
@@ -18,14 +18,29 @@ export const DEFAULT_RUCK_SAVE_DRAFT: RuckSaveDraft = {
   notes: '',
 };
 
-const SAVE_NOTE_CHIPS = [
-  'Feet OK',
-  'Hot spots',
-  'Pack rub',
-  'Hydration low',
-  'Calves tight',
-  'Strong finish',
-];
+const NOTE_CHIPS = ['Feet OK', 'Hot spots', 'Pack rub', 'Hydration low', 'Calves tight', 'Strong finish'];
+const RPE_VALUES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+const READINESS_VALUES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+function StatBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={stat.block}>
+      <View style={stat.topBar} />
+      <View style={stat.inner}>
+        <Text style={stat.label}>{label}</Text>
+        <Text style={stat.value}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+const stat = StyleSheet.create({
+  block: { flex: 1, borderRadius: 4, borderWidth: 1, borderColor: '#172c20', overflow: 'hidden', backgroundColor: '#080f0b' },
+  topBar: { height: 2, backgroundColor: '#91e6a3' },
+  inner: { padding: 10, gap: 3 },
+  label: { color: '#3a6b46', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  value: { color: '#91e6a3', fontSize: 16, fontWeight: '900', letterSpacing: -0.5 },
+});
 
 export const RuckSavePanel = memo(function RuckSavePanel({
   draft,
@@ -47,142 +62,207 @@ export const RuckSavePanel = memo(function RuckSavePanel({
   const paceSeconds = distanceKm > 0 ? elapsedSeconds / distanceKm : 0;
 
   function addNoteChip(note: string) {
-    const currentNotes = draft.notes.trim();
-    if (currentNotes.toLowerCase().includes(note.toLowerCase())) return;
-    onChange({ ...draft, notes: currentNotes ? `${currentNotes}. ${note}` : note });
+    const cur = draft.notes.trim();
+    if (cur.toLowerCase().includes(note.toLowerCase())) return;
+    onChange({ ...draft, notes: cur ? `${cur}. ${note}` : note });
   }
 
+  const confidenceColor =
+    routeConfidence === 'High' ? '#91e6a3'
+    : routeConfidence === 'Medium' ? '#ffaa44'
+    : '#e05050';
+
   return (
-    <View style={styles.savePanel}>
-      <View style={styles.saveHeader}>
-        <Text style={styles.saveKicker}>SAVE RUCK</Text>
-        <Text style={styles.saveSummary}>
-          {distanceKm.toFixed(2)} km · {formatDurationFromSeconds(elapsedSeconds)}
-          {paceSeconds > 0 ? ` · ${formatPace(paceSeconds / 60)}` : ''}
-        </Text>
-        <Text style={styles.saveMeta}>
-          {splitCount} splits · {routeConfidence} GPS
-          {rejectedPointCount > 0 ? ` · ${rejectedPointCount} points filtered` : ''}
-        </Text>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+
+      {/* Header */}
+      <View style={styles.panel}>
+        <View style={styles.accentBar} />
+        <View style={styles.panelInner}>
+          <View style={styles.headerRow}>
+            <Text style={styles.kicker}>// SAVE RUCK //</Text>
+            <View style={[styles.confidenceBadge, { borderColor: confidenceColor + '55' }]}>
+              <View style={[styles.confidenceDot, { backgroundColor: confidenceColor }]} />
+              <Text style={[styles.confidenceText, { color: confidenceColor }]}>
+                GPS {routeConfidence.toUpperCase()}
+              </Text>
+            </View>
+          </View>
+
+          {/* Stats grid */}
+          <View style={styles.statsGrid}>
+            <StatBlock label="DISTANCE" value={`${distanceKm.toFixed(2)} km`} />
+            <StatBlock label="TIME" value={formatDurationFromSeconds(elapsedSeconds)} />
+            <StatBlock label="AVG PACE" value={paceSeconds > 0 ? formatPace(paceSeconds / 60) : '--'} />
+            <StatBlock label="PACK" value={`${draft.packWeightKg} kg`} />
+          </View>
+
+          <View style={styles.metaRow}>
+            <Text style={styles.metaText}>{splitCount} splits</Text>
+            {rejectedPointCount > 0 && (
+              <Text style={[styles.metaText, { color: '#ffaa44' }]}>{rejectedPointCount} pts filtered</Text>
+            )}
+          </View>
+        </View>
       </View>
 
+      {/* Session type */}
       <TextInput
-        style={styles.saveInput}
+        style={styles.typeInput}
         value={draft.sessionType}
         onChangeText={(sessionType) => onChange({ ...draft, sessionType })}
         placeholder="Session type"
-        placeholderTextColor="#617061"
+        placeholderTextColor="#2e5038"
       />
 
-      <View style={styles.saveGrid}>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>KG</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.packWeightKg}
-            onChangeText={(packWeightKg) => onChange({ ...draft, packWeightKg })}
-            keyboardType="numeric"
-            placeholder="15"
-            placeholderTextColor="#617061"
-          />
+      {/* RPE */}
+      <View style={styles.panel}>
+        <View style={[styles.accentBar, { backgroundColor: '#3fc8e4' }]} />
+        <View style={styles.panelInner}>
+          <Text style={styles.sectionLabel}>EFFORT · RPE</Text>
+          <View style={styles.chipRow}>
+            {RPE_VALUES.map((v) => {
+              const active = draft.rpe === v;
+              const color = Number(v) >= 8 ? '#e05050' : Number(v) >= 6 ? '#ffaa44' : '#91e6a3';
+              return (
+                <TouchableOpacity
+                  key={v}
+                  style={[styles.rpeChip, active && { backgroundColor: color + '22', borderColor: color }]}
+                  onPress={() => onChange({ ...draft, rpe: v })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`RPE ${v}`}
+                >
+                  <Text style={[styles.rpeText, active && { color }]}>{v}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>READINESS</Text>
-          <TextInput
-            style={styles.saveInput}
-            value={draft.readiness}
-            onChangeText={(readiness) => onChange({ ...draft, readiness })}
-            keyboardType="numeric"
-            placeholder="6"
-            placeholderTextColor="#617061"
-          />
+      </View>
+
+      {/* Readiness */}
+      <View style={styles.panel}>
+        <View style={[styles.accentBar, { backgroundColor: '#91e6a3' }]} />
+        <View style={styles.panelInner}>
+          <Text style={styles.sectionLabel}>READINESS AFTER</Text>
+          <View style={styles.chipRow}>
+            {READINESS_VALUES.map((v) => {
+              const active = draft.readiness === v;
+              const color = Number(v) <= 4 ? '#e05050' : Number(v) <= 6 ? '#ffaa44' : '#91e6a3';
+              return (
+                <TouchableOpacity
+                  key={v}
+                  style={[styles.rpeChip, active && { backgroundColor: color + '22', borderColor: color }]}
+                  onPress={() => onChange({ ...draft, readiness: v })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Readiness ${v}`}
+                >
+                  <Text style={[styles.rpeText, active && { color }]}>{v}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
-        <View style={styles.saveField}>
-          <Text style={styles.saveLabel}>RPE</Text>
+      </View>
+
+      {/* Note chips */}
+      <View style={styles.panel}>
+        <View style={[styles.accentBar, { backgroundColor: '#ffaa44' }]} />
+        <View style={styles.panelInner}>
+          <Text style={styles.sectionLabel}>FIELD NOTES</Text>
+          <View style={styles.noteRow}>
+            {NOTE_CHIPS.map((note) => {
+              const active = draft.notes.toLowerCase().includes(note.toLowerCase());
+              return (
+                <TouchableOpacity
+                  key={note}
+                  style={[styles.noteChip, active && styles.noteChipActive]}
+                  onPress={() => addNoteChip(note)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add note: ${note}`}
+                >
+                  <Text style={[styles.noteText, active && styles.noteTextActive]}>{note}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
           <TextInput
-            style={styles.saveInput}
-            value={draft.rpe}
-            onChangeText={(rpe) => onChange({ ...draft, rpe })}
-            keyboardType="numeric"
-            placeholder="6"
-            placeholderTextColor="#617061"
+            style={styles.notesInput}
+            value={draft.notes}
+            onChangeText={(notes) => onChange({ ...draft, notes })}
+            placeholder="Additional notes…"
+            placeholderTextColor="#2e5038"
+            multiline
           />
         </View>
       </View>
 
-      <TextInput
-        style={[styles.saveInput, styles.saveNotes]}
-        value={draft.notes}
-        onChangeText={(notes) => onChange({ ...draft, notes })}
-        placeholder="Notes: feet, breathing, terrain, hot spots"
-        placeholderTextColor="#617061"
-        multiline
-      />
-
-      <View style={styles.noteChipRow}>
-        {SAVE_NOTE_CHIPS.map((note) => (
-          <TouchableOpacity
-            key={note}
-            style={styles.noteChip}
-            onPress={() => addNoteChip(note)}
-            accessibilityRole="button"
-            accessibilityLabel={`Add note: ${note}`}
-          >
-            <Text style={styles.noteChipText}>{note}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
+    </ScrollView>
   );
 });
 
 const styles = StyleSheet.create({
-  savePanel: {
-    backgroundColor: '#0d1812',
-    borderRadius: 14,
+  scroll: { flex: 1 },
+  container: { gap: 10, paddingBottom: 8 },
+  panel: { flexDirection: 'row', overflow: 'hidden', borderRadius: 6, borderWidth: 1, borderColor: '#172c20', backgroundColor: '#0a1610' },
+  accentBar: { width: 3, flexShrink: 0, backgroundColor: '#91e6a3' },
+  panelInner: { flex: 1, padding: 14, gap: 10 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  kicker: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  confidenceBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  confidenceDot: { width: 5, height: 5, borderRadius: 3 },
+  confidenceText: { fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  statsGrid: { flexDirection: 'row', gap: 8 },
+  metaRow: { flexDirection: 'row', gap: 12 },
+  metaText: { color: '#3a6b46', fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  typeInput: {
+    backgroundColor: '#0a1610',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
-    padding: 12,
-    gap: 10,
-  },
-  saveHeader: { gap: 3 },
-  saveKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  saveSummary: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  saveMeta: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
-  saveGrid: { flexDirection: 'row', gap: 8 },
-  saveField: { flex: 1, gap: 4 },
-  saveLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
-  saveInput: {
-    backgroundColor: '#07110c',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#203529',
-    color: '#ffffff',
+    borderColor: '#172c20',
+    color: '#edf5ea',
     fontSize: 13,
-    fontWeight: '800',
-    paddingHorizontal: 10,
-    paddingVertical: 9,
+    fontWeight: '700',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  saveNotes: {
-    minHeight: 62,
-    textAlignVertical: 'top',
-  },
-  noteChipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  noteChip: {
-    borderRadius: 999,
+  sectionLabel: { color: '#3a6b46', fontSize: 8, fontWeight: '900', letterSpacing: 2.5 },
+  chipRow: { flexDirection: 'row', gap: 4 },
+  rpeChip: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
-    backgroundColor: '#102d1a',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    borderColor: '#172c20',
+    backgroundColor: '#050e09',
   },
-  noteChipText: {
-    color: '#91e6a3',
-    fontSize: 11,
-    fontWeight: '900',
+  rpeText: { color: '#3a6b46', fontSize: 12, fontWeight: '900' },
+  noteRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  noteChip: {
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#172c20',
+    backgroundColor: '#050e09',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  noteChipActive: {
+    backgroundColor: 'rgba(255,170,68,0.1)',
+    borderColor: '#6b3c16',
+  },
+  noteText: { color: '#3a6b46', fontSize: 11, fontWeight: '800' },
+  noteTextActive: { color: '#ffaa44' },
+  notesInput: {
+    backgroundColor: '#050e09',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#172c20',
+    color: '#edf5ea',
+    fontSize: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 58,
+    textAlignVertical: 'top',
   },
 });

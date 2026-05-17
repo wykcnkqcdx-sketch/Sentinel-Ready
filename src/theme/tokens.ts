@@ -1,42 +1,49 @@
 import { colours } from './colours';
 
 export const tokens = {
-  // Base surfaces
-  bgScreen: '#07110c',
-  bgPanel: '#0d1812',
-  bgPanelAlt: '#102d1a',
-  bgPanelDim: '#101a14',
-  bgPanelWarn: '#21140b',
+  // Base surfaces — darker, crisper
+  bgScreen: '#050e09',
+  bgPanel: '#0a1610',
+  bgPanelAlt: '#0e2018',
+  bgPanelDim: '#080f0b',
+  bgPanelWarn: '#1c0f08',
 
-  // Borders
-  borderDefault: '#203529',
-  borderAlt: '#2f6b3c',
-  borderWarn: '#7a4a1f',
-  borderChip: '#274b32',
-  borderDim: '#26382c',
-  divider: '#162218',
+  // Borders — tighter, more tactical
+  borderDefault: '#172c20',
+  borderAlt: '#235c32',
+  borderWarn: '#6b3c16',
+  borderBright: 'rgba(145,230,163,0.28)',
+  borderChip: '#1e3d28',
+  borderDim: '#1a2e22',
+  divider: '#101e15',
 
   // Text
-  textPrimary: '#f2f5ef',
+  textPrimary: '#edf5ea',
   textPrimaryBright: '#ffffff',
-  textMuted: '#aeb8aa',
-  textMuted2: '#c4cec0',
+  textMuted: '#96b09a',
+  textMuted2: '#b8cbb8',
   textMuted3: '#91e6a3',
   textOk: '#91e6a3',
-  textWarn: '#ffb86b',
-  textNeutral: '#8fbf8f',
+  textWarn: '#ffaa44',
+  textNeutral: '#7aad82',
 
   // Accents / semantic
   accentGood: '#91e6a3',
-  accentWarn: '#ffb86b',
-  accentNeutral: '#8fbf8f',
+  accentWarn: '#ffaa44',
+  accentElectric: '#3fc8e4',
+  accentNeutral: '#7aad82',
+  accentDanger: '#e05050',
+
+  // Card radius — angular/tactical
+  radiusCard: 6,
+  radiusChip: 4,
+  radiusFab: 8,
 
   // Inputs
-  inputBg: '#07110c',
-  inputBorder: '#203529',
-  placeholder: '#617061',
+  inputBg: '#050e09',
+  inputBorder: '#172c20',
+  placeholder: '#4a6050',
 
-  // Reuse existing palette for anything else not explicitly tokenized yet
   raw: colours,
 } as const;
 

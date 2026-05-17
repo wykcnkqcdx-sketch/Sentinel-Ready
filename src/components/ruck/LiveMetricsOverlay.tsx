@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colours } from '../../theme/colours';
 
 export interface LiveMetricsOverlayProps {
   distanceKm: number;
@@ -19,6 +18,15 @@ function formatElapsed(seconds: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+function formatPaceMins(minutesPerKm: number): string {
+  if (!minutesPerKm || minutesPerKm <= 0) return '--:--';
+  const mins = Math.floor(minutesPerKm);
+  const secs = Math.round((minutesPerKm - mins) * 60);
+  return `${mins}:${String(secs).padStart(2, '0')}`;
+}
+
+const GPS_DOTS = 5;
+
 export function LiveMetricsOverlay({
   distanceKm,
   elapsedSeconds,
@@ -27,141 +35,160 @@ export function LiveMetricsOverlay({
   targetPaceMinutesPerKm,
 }: LiveMetricsOverlayProps) {
   const elapsedMinutes = elapsedSeconds / 60;
-  const currentPace = distanceKm > 0 ? elapsedMinutes / distanceKm : 0;
-  const paceDelta = currentPace > 0 && targetPaceMinutesPerKm && targetPaceMinutesPerKm > 0
-    ? currentPace - targetPaceMinutesPerKm
-    : 0;
-  const paceStatus = paceDelta === 0
-    ? null
-    : Math.abs(paceDelta) <= 0.5
-      ? 'ON PACE'
-      : paceDelta < 0
-        ? 'AHEAD'
-        : 'BEHIND';
+  const currentPace = distanceKm > 0.01 ? elapsedMinutes / distanceKm : 0;
+
+  const paceDelta =
+    currentPace > 0 && targetPaceMinutesPerKm && targetPaceMinutesPerKm > 0
+      ? currentPace - targetPaceMinutesPerKm
+      : null;
+
+  const gpsSignal = gpsQualityWarning ? 1 : 4;
+
+  const stateLabel =
+    trackingState === 'paused' ? 'PAUSED'
+    : trackingState === 'idle' ? 'READY'
+    : trackingState === 'finished' ? 'DONE'
+    : null;
 
   return (
-    <View style={styles.container} pointerEvents="none">
-      <Text style={styles.distance}>{distanceKm.toFixed(2)} km</Text>
-      <Text style={styles.time}>{formatElapsed(elapsedSeconds)}</Text>
+    <View style={styles.bar}>
+      {/* Distance */}
+      <View style={styles.metric}>
+        <Text style={styles.value}>{distanceKm.toFixed(2)}</Text>
+        <Text style={styles.unit}>KM</Text>
+      </View>
 
-      {trackingState === 'paused' && (
-        <View style={styles.pausedBadge}>
-          <Text style={styles.pausedText}>PAUSED</Text>
+      <View style={styles.sep} />
+
+      {/* Elapsed */}
+      <View style={styles.metric}>
+        <Text style={styles.value}>{formatElapsed(elapsedSeconds)}</Text>
+        <Text style={styles.unit}>ELAPSED</Text>
+      </View>
+
+      <View style={styles.sep} />
+
+      {/* Pace */}
+      <View style={styles.metric}>
+        <Text style={styles.value}>{formatPaceMins(currentPace)}</Text>
+        <Text style={styles.unit}>/KM</Text>
+      </View>
+
+      <View style={styles.sep} />
+
+      {/* GPS + State */}
+      <View style={styles.gpsBlock}>
+        <View style={styles.gpsDots}>
+          {Array.from({ length: GPS_DOTS }).map((_, i) => (
+            <View
+              key={i}
+              style={[styles.dot, i < gpsSignal ? styles.dotActive : styles.dotInactive]}
+            />
+          ))}
         </View>
-      )}
-
-      {trackingState === 'idle' && (
-        <Text style={styles.hint}>Press START to begin</Text>
-      )}
-
-      {trackingState !== 'idle' && paceStatus ? (
-        <View style={paceStatus === 'BEHIND' ? styles.paceBadgeWarn : styles.paceBadgeGood}>
-          <Text style={paceStatus === 'BEHIND' ? styles.paceBadgeTextWarn : styles.paceBadgeTextGood}>
-            {paceStatus}
-          </Text>
-        </View>
-      ) : null}
-
-      {gpsQualityWarning && (
-        <View style={styles.warningRow}>
-          <View style={styles.warningDot} />
-          <Text style={styles.warningText} numberOfLines={1}>
-            {gpsQualityWarning.length > 30
-              ? `${gpsQualityWarning.slice(0, 30)}…`
-              : gpsQualityWarning}
-          </Text>
-        </View>
-      )}
+        {stateLabel ? (
+          <View style={[styles.stateChip, trackingState === 'paused' && styles.stateChipAmber]}>
+            <Text style={[styles.stateText, trackingState === 'paused' && styles.stateTextAmber]}>
+              {stateLabel}
+            </Text>
+          </View>
+        ) : null}
+        {paceDelta !== null && trackingState === 'recording' ? (
+          <View style={[styles.paceChip, paceDelta > 0.5 ? styles.paceChipWarn : styles.paceChipOk]}>
+            <Text style={[styles.paceChipText, paceDelta > 0.5 ? styles.paceChipTextWarn : styles.paceChipTextOk]}>
+              {paceDelta > 0.5 ? 'BEHIND' : paceDelta < -0.5 ? 'AHEAD' : 'ON TGT'}
+            </Text>
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    borderRadius: 8,
-    padding: 10,
-    minWidth: 100,
-  },
-  distance: {
-    color: colours.text,
-    fontSize: 22,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  time: {
-    color: colours.text,
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  pausedBadge: {
-    marginTop: 6,
-    backgroundColor: colours.amber,
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-  },
-  pausedText: {
-    color: '#000',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  hint: {
-    color: colours.mutedText,
-    fontSize: 11,
-    marginTop: 4,
-  },
-  paceBadgeGood: {
-    marginTop: 6,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#91e6a3',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-  },
-  paceBadgeWarn: {
-    marginTop: 6,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colours.amber,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-  },
-  paceBadgeTextGood: {
-    color: '#91e6a3',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  paceBadgeTextWarn: {
-    color: colours.amber,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  warningRow: {
+  bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 5,
+    backgroundColor: 'rgba(5,14,9,0.95)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#172c20',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     gap: 4,
   },
-  warningDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: colours.amber,
-  },
-  warningText: {
-    color: colours.amber,
-    fontSize: 11,
+  metric: {
     flex: 1,
+    alignItems: 'center',
+    gap: 2,
   },
+  value: {
+    color: '#edf5ea',
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    fontVariant: ['tabular-nums'],
+  },
+  unit: {
+    color: '#3a6b46',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  sep: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#172c20',
+  },
+  gpsBlock: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  gpsDots: {
+    flexDirection: 'row',
+    gap: 3,
+    alignItems: 'flex-end',
+  },
+  dot: {
+    width: 4,
+    borderRadius: 1,
+  },
+  dotActive: {
+    backgroundColor: '#91e6a3',
+    height: 12,
+  },
+  dotInactive: {
+    backgroundColor: '#172c20',
+    height: 6,
+  },
+  stateChip: {
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#235c32',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  stateChipAmber: {
+    borderColor: '#6b3c16',
+  },
+  stateText: {
+    color: '#91e6a3',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
+  stateTextAmber: {
+    color: '#ffaa44',
+  },
+  paceChip: {
+    borderRadius: 3,
+    borderWidth: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  paceChipOk: { borderColor: '#235c32' },
+  paceChipWarn: { borderColor: '#6b3c16' },
+  paceChipText: { fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+  paceChipTextOk: { color: '#91e6a3' },
+  paceChipTextWarn: { color: '#ffaa44' },
 });

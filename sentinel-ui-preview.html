@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL READY — Military Fitness Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-void: #030608;
+    --bg-deep: #060d12;
+    --bg-surface: #0b1822;
+    --bg-raised: #0f2030;
+    --bg-card: #0d1f2e;
+    --grid-line: rgba(0, 180, 120, 0.06);
+    --phosphor: #00ff9d;
+    --phosphor-dim: rgba(0, 255, 157, 0.15);
+    --phosphor-glow: rgba(0, 255, 157, 0.5);
+    --electric: #00c8ff;
+    --electric-dim: rgba(0, 200, 255, 0.12);
+    --amber: #ffaa00;
+    --amber-dim: rgba(255, 170, 0, 0.15);
+    --danger: #ff3c3c;
+    --danger-dim: rgba(255, 60, 60, 0.12);
+    --text-primary: #e8f4f0;
+    --text-secondary: rgba(180, 210, 200, 0.65);
+    --text-muted: rgba(120, 160, 150, 0.45);
+    --border: rgba(0, 255, 157, 0.12);
+    --border-bright: rgba(0, 255, 157, 0.35);
+    --shadow-phosphor: 0 0 20px rgba(0, 255, 157, 0.15);
+    --shadow-electric: 0 0 20px rgba(0, 200, 255, 0.15);
+    --font-hud: 'Orbitron', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+    --font-data: 'Share Tech Mono', monospace;
+    --nav-width: 72px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-void);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ── GLOBAL GRID OVERLAY ─────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── LAYOUT ──────────────────────────────────────── */
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── SIDEBAR NAV ─────────────────────────────────── */
+  .sidebar {
+    width: var(--nav-width);
+    background: rgba(6, 13, 18, 0.95);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--phosphor), transparent);
+    animation: scan-h 3s ease-in-out infinite;
+  }
+
+  .logo-mark {
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid var(--phosphor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 32px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: rgba(0, 255, 157, 0.08);
+  }
+
+  .logo-mark svg { width: 22px; height: 22px; fill: var(--phosphor); }
+
+  .nav-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 0 10px;
+    flex: 1;
+  }
+
+  .nav-item {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    border: 1px solid transparent;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .nav-item:hover { background: rgba(0,255,157,0.06); border-color: var(--border); }
+  .nav-item.active {
+    background: rgba(0,255,157,0.1);
+    border-color: var(--border-bright);
+    box-shadow: 0 0 12px rgba(0,255,157,0.1);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    width: 3px; height: 24px;
+    background: var(--phosphor);
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 8px var(--phosphor);
+  }
+
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-item.active svg { stroke: var(--phosphor); }
+  .nav-item:not(.active) svg { stroke: var(--text-muted); }
+
+  .nav-label {
+    font-family: var(--font-body);
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .nav-item.active .nav-label { color: var(--phosphor); }
+  .nav-item:not(.active) .nav-label { color: var(--text-muted); }
+
+  .nav-bottom {
+    margin-top: auto;
+    padding: 0 10px;
+    width: 100%;
+  }
+
+  .operator-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0f2030 0%, #1a3545 100%);
+    border: 2px solid var(--border-bright);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-hud);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--phosphor);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-phosphor);
+    position: relative;
+  }
+
+  .operator-badge::after {
+    content: '';
+    position: absolute;
+    bottom: 2px; right: 2px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    border: 1.5px solid var(--bg-deep);
+    animation: pulse-dot 2s infinite;
+  }
+
+  /* ── MAIN CONTENT ────────────────────────────────── */
+  .main-content {
+    flex: 1;
+    margin-left: var(--nav-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ─────────────────────────────────────── */
+  .topbar {
+    height: 64px;
+    background: rgba(6, 13, 18, 0.9);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+  }
+
+  .topbar-title {
+    font-family: var(--font-hud);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--phosphor);
+    text-shadow: 0 0 12px var(--phosphor-glow);
+  }
+
+  .topbar-sub {
+    font-family: var(--font-data);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .topbar-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+  }
+
+  .topbar-spacer { flex: 1; }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: var(--font-data);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+
+  .status-pill.green {
+    background: rgba(0,255,157,0.08);
+    border-color: rgba(0,255,157,0.3);
+    color: var(--phosphor);
+  }
+
+  .status-pill.amber {
+    background: rgba(255,170,0,0.08);
+    border-color: rgba(255,170,0,0.3);
+    color: var(--amber);
+  }
+
+  .status-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse-dot 2s infinite;
+  }
+
+  .topbar-time {
+    font-family: var(--font-data);
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 0.12em;
+  }
+
+  /* ── PAGE CONTENT ────────────────────────────────── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .content-area {
+    padding: 28px;
+    max-width: 1400px;
+  }
+
+  /* ── SECTION HEADERS ─────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .section-tag {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .section-title {
+    font-family: var(--font-hud);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border-bright), transparent);
+  }
+
+  /* ── CARDS ───────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--phosphor-dim), transparent);
+  }
+
+  .card:hover { border-color: rgba(0,255,157,0.25); }
+
+  /* HUD corner decorations */
+  .card-hud::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 20px; height: 20px;
+    border-bottom: 1.5px solid var(--border-bright);
+    border-right: 1.5px solid var(--border-bright);
+  }
+
+  /* ── MISSION READY SCORE ─────────────────────────── */
+  .mission-ready-block {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .mrs-card {
+    padding: 28px;
+    background: linear-gradient(135deg, #060d12 0%, #0b1822 100%);
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mrs-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 60%, rgba(0,255,157,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .mrs-label {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--phosphor);
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  .mrs-ring {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 20px;
+  }
+
+  .mrs-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .mrs-ring-bg {
+    fill: none;
+    stroke: rgba(0,255,157,0.08);
+    stroke-width: 8;
+  }
+
+  .mrs-ring-fill {
+    fill: none;
+    stroke: var(--phosphor);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 502;
+    stroke-dashoffset: 80;
+    filter: drop-shadow(0 0 6px var(--phosphor));
+    animation: ring-fill 2s ease-out forwards;
+  }
+
+  .mrs-ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mrs-score {
+    font-family: var(--font-hud);
+    font-size: 44px;
+    font-weight: 900;
+    color: var(--phosphor);
+    text-shadow: 0 0 20px var(--phosphor-glow);
+    line-height: 1;
+  }
+
+  .mrs-max {
+    font-family: var(--font-data);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  .mrs-status-text {
+    font-family: var(--font-hud);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--phosphor);
+    text-shadow: 0 0 8px var(--phosphor-glow);
+  }
+
+  .mrs-tier-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 16px;
+    width: 100%;
+  }
+
+  .tier-seg {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+  }
+
+  .tier-seg.filled { background: var(--phosphor); box-shadow: 0 0 6px var(--phosphor-glow); }
+  .tier-seg.empty { background: rgba(0,255,157,0.12); }
+
+  /* ── VITAL STATS ROW ─────────────────────────────── */
+  .vitals-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .vital-card {
+    padding: 18px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .vital-card:hover {
+    border-color: rgba(0,255,157,0.3);
+    transform: translateY(-1px);
+  }
+
+  .vital-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    width: var(--fill, 75%);
+    border-radius: 0 2px 0 0;
+  }
+
+  .vital-card.vc-green::after { background: var(--phosphor); box-shadow: 0 0 6px var(--phosphor-glow); }
+  .vital-card.vc-blue::after { background: var(--electric); box-shadow: 0 0 6px rgba(0,200,255,0.5); }
+  .vital-card.vc-amber::after { background: var(--amber); box-shadow: 0 0 6px rgba(255,170,0,0.5); }
+  .vital-card.vc-red::after { background: var(--danger); box-shadow: 0 0 6px rgba(255,60,60,0.5); }
+
+  .vital-label {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .vital-icon { width: 12px; height: 12px; opacity: 0.6; }
+
+  .vital-value {
+    font-family: var(--font-hud);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .vital-card.vc-green .vital-value { color: var(--phosphor); }
+  .vital-card.vc-blue .vital-value { color: var(--electric); }
+  .vital-card.vc-amber .vital-value { color: var(--amber); }
+  .vital-card.vc-red .vital-value { color: var(--danger); }
+
+  .vital-unit {
+    font-family: var(--font-data);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .vital-delta {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-family: var(--font-data);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  .delta-up { color: var(--phosphor); background: rgba(0,255,157,0.1); }
+  .delta-down { color: var(--danger); background: rgba(255,60,60,0.1); }
+
+  /* ── ACTIVITY FEED + MAP ─────────────────────────── */
+  .lower-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  /* ── ACTIVITY LOG ────────────────────────────────── */
+  .activity-card {
+    padding: 22px;
+  }
+
+  .activity-list { display: flex; flex-direction: column; gap: 2px; }
+
+  .activity-item {
+    display: grid;
+    grid-template-columns: 40px 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .activity-item:hover { background: rgba(0,255,157,0.04); }
+
+  .activity-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 54px; right: 14px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .activity-item:last-child::after { display: none; }
+
+  .activity-type-badge {
+    width: 38px; height: 38px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .badge-run { background: rgba(0,255,157,0.1); border: 1px solid rgba(0,255,157,0.2); }
+  .badge-ruck { background: rgba(0,200,255,0.1); border: 1px solid rgba(0,200,255,0.2); }
+  .badge-strength { background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.2); }
+  .badge-swim { background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.2); }
+
+  .activity-type-badge svg { width: 16px; height: 16px; }
+  .badge-run svg { stroke: var(--phosphor); }
+  .badge-ruck svg { stroke: var(--electric); }
+  .badge-strength svg { stroke: var(--amber); }
+  .badge-swim svg { stroke: #64b4ff; }
+
+  .activity-name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .activity-meta {
+    font-family: var(--font-data);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+
+  .activity-stat {
+    text-align: right;
+    font-family: var(--font-data);
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  .activity-stat-primary {
+    font-family: var(--font-hud);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .activity-score-badge {
+    font-family: var(--font-data);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .score-ex { color: var(--phosphor); border-color: rgba(0,255,157,0.3); background: rgba(0,255,157,0.06); }
+  .score-good { color: var(--electric); border-color: rgba(0,200,255,0.3); background: rgba(0,200,255,0.06); }
+  .score-pass { color: var(--amber); border-color: rgba(255,170,0,0.3); background: rgba(255,170,0,0.06); }
+
+  /* ── TACTICAL MAP PANEL ──────────────────────────── */
+  .map-panel {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .map-area {
+    flex: 1;
+    min-height: 220px;
+    background: #050d14;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-canvas { width: 100%; height: 100%; }
+
+  .map-overlay-label {
+    position: absolute;
+    top: 10px; left: 10px;
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--phosphor);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  .map-crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px; height: 20px;
+    pointer-events: none;
+  }
+
+  .map-crosshair::before,
+  .map-crosshair::after {
+    content: '';
+    position: absolute;
+    background: var(--phosphor);
+    opacity: 0.5;
+  }
+
+  .map-crosshair::before { width: 1px; height: 100%; left: 50%; top: 0; }
+  .map-crosshair::after { height: 1px; width: 100%; top: 50%; left: 0; }
+
+  .route-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .route-stat {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .route-stat-val {
+    font-family: var(--font-hud);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--electric);
+    display: block;
+  }
+
+  .route-stat-lbl {
+    font-family: var(--font-data);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* ── TRAINING PAGE ───────────────────────────────── */
+  .training-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .training-event {
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .training-event:hover {
+    border-color: rgba(0,255,157,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  .training-event::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+
+  .te-run::before { background: var(--phosphor); }
+  .te-strength::before { background: var(--amber); }
+  .te-ruck::before { background: var(--electric); }
+
+  .te-day {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .te-title {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.03em;
+    margin-bottom: 10px;
+  }
+
+  .te-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .te-target {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-data);
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  .te-target-val {
+    font-family: var(--font-hud);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .te-run .te-target-val { color: var(--phosphor); }
+  .te-strength .te-target-val { color: var(--amber); }
+  .te-ruck .te-target-val { color: var(--electric); }
+
+  /* ── HEART RATE ZONES ────────────────────────────── */
+  .hr-zones-card {
+    padding: 22px;
+    margin-top: 20px;
+  }
+
+  .hr-zones {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .hr-zone {
+    display: grid;
+    grid-template-columns: 80px 1fr 60px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hr-zone-name {
+    font-family: var(--font-data);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .hr-bar-track {
+    height: 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .hr-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.5s ease-out;
+  }
+
+  .zone-1 .hr-zone-name { color: #64b4ff; }
+  .zone-1 .hr-bar-fill { background: #64b4ff; width: 12%; }
+  .zone-2 .hr-zone-name { color: var(--phosphor); }
+  .zone-2 .hr-bar-fill { background: var(--phosphor); width: 38%; }
+  .zone-3 .hr-zone-name { color: var(--amber); }
+  .zone-3 .hr-bar-fill { background: var(--amber); width: 27%; }
+  .zone-4 .hr-zone-name { color: #ff8800; }
+  .zone-4 .hr-bar-fill { background: #ff8800; width: 18%; }
+  .zone-5 .hr-zone-name { color: var(--danger); }
+  .zone-5 .hr-bar-fill { background: var(--danger); width: 5%; }
+
+  .hr-zone-pct {
+    font-family: var(--font-data);
+    font-size: 11px;
+    text-align: right;
+    color: var(--text-secondary);
+  }
+
+  /* ── LEADERBOARD PAGE ────────────────────────────── */
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .leaderboard-table thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .leaderboard-table th {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 16px 12px;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  .leaderboard-table td {
+    padding: 13px 16px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text-primary);
+    border-bottom: 1px solid rgba(0,255,157,0.04);
+  }
+
+  .leaderboard-table tr:hover td { background: rgba(0,255,157,0.03); }
+
+  .rank-num {
+    font-family: var(--font-hud);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .rank-1 { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.4); }
+  .rank-2 { color: #c0c0c0; }
+  .rank-3 { color: #cd7f32; }
+
+  .operator-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .op-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-hud);
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--bg-raised);
+    flex-shrink: 0;
+  }
+
+  .op-name {
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .op-unit {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-data);
+    letter-spacing: 0.08em;
+  }
+
+  .lb-score {
+    font-family: var(--font-hud);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--phosphor);
+  }
+
+  .lb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .lb-badge.ex { background: rgba(0,255,157,0.1); color: var(--phosphor); border: 1px solid rgba(0,255,157,0.2); }
+  .lb-badge.good { background: rgba(0,200,255,0.1); color: var(--electric); border: 1px solid rgba(0,200,255,0.2); }
+  .lb-badge.pass { background: rgba(255,170,0,0.1); color: var(--amber); border: 1px solid rgba(255,170,0,0.2); }
+
+  /* ── PERFORMANCE PAGE ────────────────────────────── */
+  .perf-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .chart-card {
+    padding: 22px;
+    min-height: 220px;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 140px;
+    margin-top: 14px;
+  }
+
+  canvas.chart { width: 100% !important; height: 140px !important; }
+
+  /* ── ACFT SCORES ─────────────────────────────────── */
+  .acft-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .acft-event {
+    padding: 14px 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    text-align: center;
+  }
+
+  .acft-event-name {
+    font-family: var(--font-data);
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .acft-event-score {
+    font-family: var(--font-hud);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--phosphor);
+    display: block;
+    line-height: 1;
+  }
+
+  .acft-event-max {
+    font-family: var(--font-data);
+    font-size: 9px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .acft-mini-bar {
+    height: 3px;
+    background: rgba(0,255,157,0.1);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .acft-mini-fill {
+    height: 100%;
+    background: var(--phosphor);
+    border-radius: 2px;
+    box-shadow: 0 0 4px var(--phosphor-glow);
+  }
+
+  /* ── ANIMATIONS ──────────────────────────────────── */
+  @keyframes scan-h {
+    0% { opacity: 0; transform: translateX(-100%); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(100%); }
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  @keyframes ring-fill {
+    from { stroke-dashoffset: 502; }
+    to { stroke-dashoffset: 80; }
+  }
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes glitch {
+    0%, 90%, 100% { transform: translate(0); }
+    91% { transform: translate(-1px, 1px); }
+    93% { transform: translate(1px, -1px); }
+    95% { transform: translate(-1px, 0); }
+    97% { transform: translate(1px, 0); }
+  }
+
+  @keyframes sweep-bar {
+    0% { transform: scaleX(0); transform-origin: left; }
+    100% { transform: scaleX(1); transform-origin: left; }
+  }
+
+  .animate-in {
+    animation: fade-in-up 0.4s ease-out both;
+  }
+
+  .animate-in:nth-child(1) { animation-delay: 0.05s; }
+  .animate-in:nth-child(2) { animation-delay: 0.10s; }
+  .animate-in:nth-child(3) { animation-delay: 0.15s; }
+  .animate-in:nth-child(4) { animation-delay: 0.20s; }
+  .animate-in:nth-child(5) { animation-delay: 0.25s; }
+
+  .glitch-text { animation: glitch 8s ease-in-out infinite; }
+
+  /* ── SCROLLBAR ───────────────────────────────────── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg-void); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,255,157,0.2); border-radius: 2px; }
+
+  /* ── RESPONSIVE HELPERS ──────────────────────────── */
+  .w100 { width: 100%; }
+  .flex { display: flex; }
+  .flex-col { display: flex; flex-direction: column; }
+  .gap-12 { gap: 12px; }
+  .mt-16 { margin-top: 16px; }
+
+  /* ── NOTIFICATION BAR ────────────────────────────── */
+  .notif-bar {
+    background: rgba(0, 200, 255, 0.05);
+    border: 1px solid rgba(0, 200, 255, 0.2);
+    border-radius: 3px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    animation: fade-in-up 0.3s ease-out;
+  }
+
+  .notif-icon { width: 14px; height: 14px; stroke: var(--electric); flex-shrink: 0; }
+
+  .notif-text {
+    font-family: var(--font-data);
+    font-size: 11px;
+    color: var(--electric);
+    letter-spacing: 0.08em;
+  }
+
+  .notif-dismiss {
+    margin-left: auto;
+    cursor: pointer;
+    opacity: 0.5;
+    font-size: 14px;
+    color: var(--electric);
+    line-height: 1;
+    padding: 2px 4px;
+  }
+
+  .notif-dismiss:hover { opacity: 1; }
+
+  /* ── LIVE HEARTRATE BADGE ────────────────────────── */
+  .live-hr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(255,60,60,0.08);
+    border: 1px solid rgba(255,60,60,0.2);
+    border-radius: 20px;
+  }
+
+  .live-hr-icon {
+    color: var(--danger);
+    animation: pulse-dot 0.8s infinite;
+    font-size: 14px;
+  }
+
+  .live-hr-val {
+    font-family: var(--font-hud);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--danger);
+  }
+
+  .live-hr-label {
+    font-family: var(--font-data);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+  }
+
+  /* ── BOTTOM DATA STRIP ───────────────────────────── */
+  .data-strip {
+    background: rgba(3, 6, 8, 0.95);
+    border-top: 1px solid var(--border);
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+  }
+
+  .ds-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ds-label {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ds-value {
+    font-family: var(--font-data);
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  .ds-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+  }
+
+  .ds-spacer { flex: 1; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L3 7v10l9 5 9-5V7L12 2zm0 2.8l6.2 3.4-6.2 3.5-6.2-3.5L12 4.8zM5 9.2l6 3.4V19l-6-3.3V9.2zm8 9.8v-7.2l6-3.4v6.5l-6 4.1z"/>
+      </svg>
+    </div>
+
+    <div class="nav-items">
+      <div class="nav-item active" onclick="switchPage('dashboard', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-label">HQ</span>
+      </div>
+      <div class="nav-item" onclick="switchPage('training', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11m-11 11h11M6.5 6.5L12 2l5.5 4.5M6.5 17.5L12 22l5.5-4.5M2 12h20"/></svg>
+        <span class="nav-label">OPS</span>
+      </div>
+      <div class="nav-item" onclick="switchPage('performance', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-label">PERF</span>
+      </div>
+      <div class="nav-item" onclick="switchPage('leaderboard', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h.01M12 6h.01M8 12h.01M12 12h.01M8 18h.01M12 18h.01M16 6h.01M16 12h.01M16 18h.01"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        <span class="nav-label">UNIT</span>
+      </div>
+    </div>
+
+    <div class="nav-bottom">
+      <div class="operator-badge">SR</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <span class="topbar-title glitch-text">SENTINEL READY</span>
+      <div class="topbar-divider"></div>
+      <span class="topbar-sub">OPERATOR // SGT RILEY · A CO 2-75 RGR</span>
+      <div class="topbar-spacer"></div>
+      <div class="live-hr">
+        <span class="live-hr-icon">♥</span>
+        <span class="live-hr-val" id="liveHR">68</span>
+        <span class="live-hr-label">BPM</span>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="status-pill green">
+        <span class="status-dot"></span>
+        MISSION READY
+      </div>
+      <div class="topbar-divider"></div>
+      <span class="topbar-time" id="clock">00:00:00Z</span>
+    </header>
+
+    <!-- ═══════════════════════════════════════════ DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="content-area">
+
+        <div class="notif-bar" id="notif">
+          <svg class="notif-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="notif-text">APFT WINDOW OPENS IN 14 DAYS — CURRENT MISSION READY SCORE: 87/100 — SUSTAIN CURRENT TRAINING TEMPO</span>
+          <span class="notif-dismiss" onclick="this.parentElement.remove()">×</span>
+        </div>
+
+        <!-- MISSION READY + VITALS -->
+        <div class="mission-ready-block">
+          <!-- MRS Card -->
+          <div class="mrs-card card-hud">
+            <div class="mrs-label">// MISSION READY SCORE //</div>
+            <div class="mrs-ring">
+              <svg viewBox="0 0 180 180">
+                <circle class="mrs-ring-bg" cx="90" cy="90" r="80"/>
+                <circle class="mrs-ring-fill" cx="90" cy="90" r="80"/>
+              </svg>
+              <div class="mrs-ring-inner">
+                <span class="mrs-score">87</span>
+                <span class="mrs-max">/ 100</span>
+              </div>
+            </div>
+            <div class="mrs-status-text">COMBAT READY</div>
+            <div class="mrs-tier-bar">
+              <div class="tier-seg filled"></div>
+              <div class="tier-seg filled"></div>
+              <div class="tier-seg filled"></div>
+              <div class="tier-seg filled"></div>
+              <div class="tier-seg empty"></div>
+            </div>
+          </div>
+
+          <!-- Vitals -->
+          <div class="vitals-grid">
+            <div class="vital-card vc-green animate-in" style="--fill: 82%">
+              <div class="vital-label">
+                <svg class="vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                VO2 MAX
+              </div>
+              <div class="vital-value">58.4</div>
+              <div class="vital-unit">mL/kg/min</div>
+              <div class="vital-delta delta-up">+1.2</div>
+            </div>
+            <div class="vital-card vc-blue animate-in" style="--fill: 91%">
+              <div class="vital-label">
+                <svg class="vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                WEEKLY VOL
+              </div>
+              <div class="vital-value">68.2</div>
+              <div class="vital-unit">km this week</div>
+              <div class="vital-delta delta-up">+4.5km</div>
+            </div>
+            <div class="vital-card vc-amber animate-in" style="--fill: 67%">
+              <div class="vital-label">
+                <svg class="vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                TRAINING LOAD
+              </div>
+              <div class="vital-value">847</div>
+              <div class="vital-unit">ATL score</div>
+              <div class="vital-delta delta-down">HIGH</div>
+            </div>
+            <div class="vital-card vc-green animate-in" style="--fill: 78%">
+              <div class="vital-label">
+                <svg class="vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 12c-6 0-9 2-9 4v2h18v-2c0-2-3-4-9-4z"/></svg>
+                RECOVERY
+              </div>
+              <div class="vital-value">78%</div>
+              <div class="vital-unit">HRV index</div>
+              <div class="vital-delta delta-up">+3</div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="vital-card vc-blue animate-in" style="--fill: 55%">
+              <div class="vital-label">RESTING HR</div>
+              <div class="vital-value">54</div>
+              <div class="vital-unit">bpm avg</div>
+              <div class="vital-delta delta-up">-2</div>
+            </div>
+            <div class="vital-card vc-green animate-in" style="--fill: 88%">
+              <div class="vital-label">SLEEP QUAL</div>
+              <div class="vital-value">7.4</div>
+              <div class="vital-unit">hrs / night</div>
+              <div class="vital-delta delta-up">GOOD</div>
+            </div>
+            <div class="vital-card vc-amber animate-in" style="--fill: 62%">
+              <div class="vital-label">RUCK PACE</div>
+              <div class="vital-value">14:20</div>
+              <div class="vital-unit">min/mi · 45lb</div>
+              <div class="vital-delta delta-up">-0:45</div>
+            </div>
+            <div class="vital-card vc-red animate-in" style="--fill: 44%">
+              <div class="vital-label">STRESS LOAD</div>
+              <div class="vital-value">44</div>
+              <div class="vital-unit">composite</div>
+              <div class="vital-delta delta-down">ELEVATED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: RECENT OPS -->
+        <div class="section-header">
+          <span class="section-tag">// LOG</span>
+          <span class="section-title">Recent Operations</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="lower-grid">
+          <div class="card activity-card card-hud">
+            <div class="activity-list">
+
+              <div class="activity-item animate-in">
+                <div class="activity-type-badge badge-run">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm-2 4l-3 8h2l1-3 3 3 2-8"/></svg>
+                </div>
+                <div>
+                  <div class="activity-name">Combat Conditioning Run</div>
+                  <div class="activity-meta">TODAY · 0530 · FORT LIBERTY, NC</div>
+                </div>
+                <div class="activity-stat">
+                  <div class="activity-stat-primary">12.4 km</div>
+                  <div>4:48/km</div>
+                </div>
+                <span class="activity-score-badge score-ex">EXCELLENT</span>
+              </div>
+
+              <div class="activity-item animate-in">
+                <div class="activity-type-badge badge-strength">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L4 9l2.5 2.5M17.5 6.5L20 9l-2.5 2.5M3 12h18M8 5v14M16 5v14"/></svg>
+                </div>
+                <div>
+                  <div class="activity-name">ACFT Prep — Lower Body</div>
+                  <div class="activity-meta">YESTERDAY · 1400 · UNIT GYM</div>
+                </div>
+                <div class="activity-stat">
+                  <div class="activity-stat-primary">58 min</div>
+                  <div>5 sets</div>
+                </div>
+                <span class="activity-score-badge score-good">GOOD</span>
+              </div>
+
+              <div class="activity-item animate-in">
+                <div class="activity-type-badge badge-ruck">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect x="3" y="10" width="18" height="11" rx="2"/></svg>
+                </div>
+                <div>
+                  <div class="activity-name">Ruck March — 12 Mile</div>
+                  <div class="activity-meta">MON · 0600 · TRAIL SECTOR 7</div>
+                </div>
+                <div class="activity-stat">
+                  <div class="activity-stat-primary">19.3 km</div>
+                  <div>3h 42min</div>
+                </div>
+                <span class="activity-score-badge score-ex">EXCELLENT</span>
+              </div>
+
+              <div class="activity-item animate-in">
+                <div class="activity-type-badge badge-swim">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-4 6-4 6 4 6 4 3-4 6-4"/><path d="M2 18s3-4 6-4 6 4 6 4 3-4 6-4"/></svg>
+                </div>
+                <div>
+                  <div class="activity-name">Combat Swim Qual</div>
+                  <div class="activity-meta">SUN · 0700 · AQUATIC FACILITY</div>
+                </div>
+                <div class="activity-stat">
+                  <div class="activity-stat-primary">2,400 m</div>
+                  <div>44:12</div>
+                </div>
+                <span class="activity-score-badge score-good">GOOD</span>
+              </div>
+
+              <div class="activity-item animate-in">
+                <div class="activity-type-badge badge-run">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm-2 4l-3 8h2l1-3 3 3 2-8"/></svg>
+                </div>
+                <div>
+                  <div class="activity-name">Interval Training — Track</div>
+                  <div class="activity-meta">SAT · 0600 · UNIT TRACK</div>
+                </div>
+                <div class="activity-stat">
+                  <div class="activity-stat-primary">8×400m</div>
+                  <div>1:28 avg</div>
+                </div>
+                <span class="activity-score-badge score-ex">EXCELLENT</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- MAP PANEL -->
+          <div class="card map-panel">
+            <div class="section-header" style="margin-bottom: 12px;">
+              <span class="section-tag">// TAC</span>
+              <span class="section-title">Last Route</span>
+            </div>
+
+            <div class="map-area">
+              <span class="map-overlay-label">SECTOR 7-ALPHA · FORT LIBERTY</span>
+              <div class="map-crosshair"></div>
+              <canvas id="mapCanvas" class="map-canvas"></canvas>
+            </div>
+
+            <div class="route-stats">
+              <div class="route-stat">
+                <span class="route-stat-val">12.4</span>
+                <span class="route-stat-lbl">km</span>
+              </div>
+              <div class="route-stat">
+                <span class="route-stat-val">312</span>
+                <span class="route-stat-lbl">m elev</span>
+              </div>
+              <div class="route-stat">
+                <span class="route-stat-val">847</span>
+                <span class="route-stat-lbl">kcal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ TRAINING PAGE -->
+    <div class="page" id="page-training">
+      <div class="content-area">
+
+        <div class="section-header">
+          <span class="section-tag">// OPS</span>
+          <span class="section-title">This Week's Training Plan</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="training-grid">
+          <div class="training-event te-run card animate-in">
+            <div class="te-day">MON · COMPLETED ✓</div>
+            <div class="te-title">Interval Speed Work</div>
+            <div class="te-targets">
+              <div class="te-target"><span>Distance</span><span class="te-target-val">8×400m</span></div>
+              <div class="te-target"><span>Target Pace</span><span class="te-target-val">&lt; 1:30</span></div>
+              <div class="te-target"><span>Rest</span><span class="te-target-val">90 sec</span></div>
+            </div>
+          </div>
+
+          <div class="training-event te-strength card animate-in">
+            <div class="te-day">TUE · COMPLETED ✓</div>
+            <div class="te-title">ACFT Lower Body Prep</div>
+            <div class="te-targets">
+              <div class="te-target"><span>Deadlift</span><span class="te-target-val">3×5 @200lb</span></div>
+              <div class="te-target"><span>Leg Tuck</span><span class="te-target-val">5×max</span></div>
+              <div class="te-target"><span>Sprint-Drag-Carry</span><span class="te-target-val">3 sets</span></div>
+            </div>
+          </div>
+
+          <div class="training-event te-ruck card animate-in">
+            <div class="te-day">WED · COMPLETED ✓</div>
+            <div class="te-title">12-Mile Ruck March</div>
+            <div class="te-targets">
+              <div class="te-target"><span>Load</span><span class="te-target-val">45 lb</span></div>
+              <div class="te-target"><span>Target</span><span class="te-target-val">&lt; 3h 45m</span></div>
+              <div class="te-target"><span>Terrain</span><span class="te-target-val">Mixed Trail</span></div>
+            </div>
+          </div>
+
+          <div class="training-event te-run card animate-in">
+            <div class="te-day">THU · TODAY</div>
+            <div class="te-title">Zone 2 Aerobic Base</div>
+            <div class="te-targets">
+              <div class="te-target"><span>Distance</span><span class="te-target-val">14 km</span></div>
+              <div class="te-target"><span>HR Zone</span><span class="te-target-val">Zone 2</span></div>
+              <div class="te-target"><span>Duration</span><span class="te-target-val">~75 min</span></div>
+            </div>
+          </div>
+
+          <div class="training-event te-strength card animate-in">
+            <div class="te-day">FRI · UPCOMING</div>
+            <div class="te-title">Upper Body + Core</div>
+            <div class="te-targets">
+              <div class="te-target"><span>Push-ups</span><span class="te-target-val">5×40</span></div>
+              <div class="te-target"><span>Pull-ups</span><span class="te-target-val">5×15</span></div>
+              <div class="te-target"><span>Plank Hold</span><span class="te-target-val">3×3min</span></div>
+            </div>
+          </div>
+
+          <div class="training-event te-ruck card animate-in">
+            <div class="te-day">SAT · UPCOMING</div>
+            <div class="te-title">Long Ruck + Navigation</div>
+            <div class="te-targets">
+              <div class="te-target"><span>Load</span><span class="te-target-val">35 lb</span></div>
+              <div class="te-target"><span>Distance</span><span class="te-target-val">20 km</span></div>
+              <div class="te-target"><span>Nav Points</span><span class="te-target-val">6 waypoints</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HR ZONES -->
+        <div class="section-header">
+          <span class="section-tag">// PHYS</span>
+          <span class="section-title">Heart Rate Distribution — 7 Days</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="card hr-zones-card card-hud">
+          <div class="hr-zones">
+            <div class="hr-zone zone-1">
+              <span class="hr-zone-name">ZONE 1<br><span style="font-size:8px;opacity:0.6">RECOVERY</span></span>
+              <div class="hr-bar-track"><div class="hr-bar-fill"></div></div>
+              <span class="hr-zone-pct">12%</span>
+            </div>
+            <div class="hr-zone zone-2">
+              <span class="hr-zone-name">ZONE 2<br><span style="font-size:8px;opacity:0.6">BASE</span></span>
+              <div class="hr-bar-track"><div class="hr-bar-fill"></div></div>
+              <span class="hr-zone-pct">38%</span>
+            </div>
+            <div class="hr-zone zone-3">
+              <span class="hr-zone-name">ZONE 3<br><span style="font-size:8px;opacity:0.6">AEROBIC</span></span>
+              <div class="hr-bar-track"><div class="hr-bar-fill"></div></div>
+              <span class="hr-zone-pct">27%</span>
+            </div>
+            <div class="hr-zone zone-4">
+              <span class="hr-zone-name">ZONE 4<br><span style="font-size:8px;opacity:0.6">THRESHOLD</span></span>
+              <div class="hr-bar-track"><div class="hr-bar-fill"></div></div>
+              <span class="hr-zone-pct">18%</span>
+            </div>
+            <div class="hr-zone zone-5">
+              <span class="hr-zone-name">ZONE 5<br><span style="font-size:8px;opacity:0.6">MAX</span></span>
+              <div class="hr-bar-track"><div class="hr-bar-fill"></div></div>
+              <span class="hr-zone-pct">5%</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ PERFORMANCE PAGE -->
+    <div class="page" id="page-performance">
+      <div class="content-area">
+
+        <div class="section-header">
+          <span class="section-tag">// ACFT</span>
+          <span class="section-title">ACFT Event Scores</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="card" style="padding: 22px;">
+          <div class="acft-grid">
+            <div class="acft-event animate-in">
+              <span class="acft-event-name">MDL</span>
+              <span class="acft-event-score">96</span>
+              <span class="acft-event-max">/ 100</span>
+              <div class="acft-mini-bar"><div class="acft-mini-fill" style="width:96%"></div></div>
+            </div>
+            <div class="acft-event animate-in">
+              <span class="acft-event-name">SPT</span>
+              <span class="acft-event-score">88</span>
+              <span class="acft-event-max">/ 100</span>
+              <div class="acft-mini-bar"><div class="acft-mini-fill" style="width:88%"></div></div>
+            </div>
+            <div class="acft-event animate-in">
+              <span class="acft-event-name">HRP</span>
+              <span class="acft-event-score">91</span>
+              <span class="acft-event-max">/ 100</span>
+              <div class="acft-mini-bar"><div class="acft-mini-fill" style="width:91%"></div></div>
+            </div>
+            <div class="acft-event animate-in">
+              <span class="acft-event-name">SDC</span>
+              <span class="acft-event-score">85</span>
+              <span class="acft-event-max">/ 100</span>
+              <div class="acft-mini-bar"><div class="acft-mini-fill" style="width:85%"></div></div>
+            </div>
+            <div class="acft-event animate-in">
+              <span class="acft-event-name">LTK</span>
+              <span class="acft-event-score">78</span>
+              <span class="acft-event-max">/ 100</span>
+              <div class="acft-mini-bar"><div class="acft-mini-fill" style="width:78%;background:var(--amber)"></div></div>
+            </div>
+            <div class="acft-event animate-in">
+              <span class="acft-event-name">2MR</span>
+              <span class="acft-event-score">93</span>
+              <span class="acft-event-max">/ 100</span>
+              <div class="acft-mini-bar"><div class="acft-mini-fill" style="width:93%"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-family:var(--font-data); font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-muted);">TOTAL SCORE</span>
+              <div style="font-family:var(--font-hud); font-size:28px; font-weight:900; color:var(--phosphor); text-shadow: 0 0 16px var(--phosphor-glow);">531 <span style="font-size:14px; color:var(--text-muted);">/ 600</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:var(--font-data); font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px;">CLASSIFICATION</div>
+              <div style="font-family:var(--font-hud); font-size:14px; font-weight:700; letter-spacing:0.15em; color:var(--phosphor);">EXCELLENT</div>
+              <div style="font-family:var(--font-data); font-size:10px; color:var(--text-muted); margin-top:2px;">LAST TESTED: 15 APR 2026</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="perf-charts-row mt-16">
+          <div class="card chart-card card-hud">
+            <div class="section-header" style="margin-bottom:0">
+              <span class="section-tag">// TREND</span>
+              <span class="section-title">VO2 Max — 12 Weeks</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="vo2Chart" class="chart"></canvas>
+            </div>
+          </div>
+          <div class="card chart-card card-hud">
+            <div class="section-header" style="margin-bottom:0">
+              <span class="section-tag">// TREND</span>
+              <span class="section-title">Weekly Volume (km)</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="volChart" class="chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ LEADERBOARD PAGE -->
+    <div class="page" id="page-leaderboard">
+      <div class="content-area">
+
+        <div class="section-header">
+          <span class="section-tag">// UNIT</span>
+          <span class="section-title">A Co · 2-75 Ranger Regiment · MRS Rankings</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="card" style="padding: 22px;">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th style="width:50px">RANK</th>
+                <th>OPERATOR</th>
+                <th>MRS</th>
+                <th>ACFT</th>
+                <th>VOL KM</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="rank-num rank-1">#1</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar" style="border-color:rgba(255,215,0,0.4); color:#ffd700;">CJ</div>
+                    <div>
+                      <div class="op-name">CPL JENSEN</div>
+                      <div class="op-unit">1ST PLT · ALPHA TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score">94</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">567</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">82.4</td>
+                <td><span class="lb-badge ex">EXCELLENT</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-num rank-2">#2</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar" style="border-color:rgba(200,200,200,0.3); color:#c0c0c0;">MT</div>
+                    <div>
+                      <div class="op-name">SGT TORRES</div>
+                      <div class="op-unit">2ND PLT · BRAVO TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score">91</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">554</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">79.1</td>
+                <td><span class="lb-badge ex">EXCELLENT</span></td>
+              </tr>
+              <tr style="background: rgba(0,255,157,0.03); outline: 1px solid rgba(0,255,157,0.15);">
+                <td><span class="rank-num rank-3">#3</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar" style="border-color:var(--border-bright); color:var(--phosphor);">SR</div>
+                    <div>
+                      <div class="op-name" style="color:var(--phosphor);">SGT RILEY <span style="font-size:9px; color:var(--text-muted); font-family:var(--font-data);">— YOU</span></div>
+                      <div class="op-unit">1ST PLT · ALPHA TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score">87</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">531</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">68.2</td>
+                <td><span class="lb-badge ex">EXCELLENT</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-num">#4</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar">BK</div>
+                    <div>
+                      <div class="op-name">SPC KOWALSKI</div>
+                      <div class="op-unit">3RD PLT · CHARLIE TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score" style="color:var(--electric);">83</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">514</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">71.8</td>
+                <td><span class="lb-badge good">GOOD</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-num">#5</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar">AR</div>
+                    <div>
+                      <div class="op-name">CPL RODRIGUEZ</div>
+                      <div class="op-unit">2ND PLT · ALPHA TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score" style="color:var(--electric);">81</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">498</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">65.3</td>
+                <td><span class="lb-badge good">GOOD</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-num">#6</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar">DM</div>
+                    <div>
+                      <div class="op-name">SPC MAKAROV</div>
+                      <div class="op-unit">1ST PLT · BRAVO TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score" style="color:var(--amber);">74</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">472</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">58.7</td>
+                <td><span class="lb-badge pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td><span class="rank-num">#7</span></td>
+                <td>
+                  <div class="operator-cell">
+                    <div class="op-avatar">JP</div>
+                    <div>
+                      <div class="op-name">PFC PATEL</div>
+                      <div class="op-unit">3RD PLT · DELTA TEAM</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="lb-score" style="color:var(--amber);">71</span></td>
+                <td style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary);">445</td>
+                <td style="font-family:var(--font-data); color:var(--text-secondary);">52.1</td>
+                <td><span class="lb-badge pass">PASS</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOTTOM STRIP -->
+    <div class="data-strip">
+      <div class="ds-item">
+        <span class="ds-label">GPS</span>
+        <span class="ds-value" id="gpsCoord">35.1744°N 79.0036°W</span>
+      </div>
+      <div class="ds-sep"></div>
+      <div class="ds-item">
+        <span class="ds-label">TEMP</span>
+        <span class="ds-value">22°C / 71°F</span>
+      </div>
+      <div class="ds-sep"></div>
+      <div class="ds-item">
+        <span class="ds-label">ELEV</span>
+        <span class="ds-value">74m ASL</span>
+      </div>
+      <div class="ds-sep"></div>
+      <div class="ds-item">
+        <span class="ds-label">UNIT</span>
+        <span class="ds-value">2-75 RGR · A CO</span>
+      </div>
+      <div class="ds-spacer"></div>
+      <div class="ds-item">
+        <span class="ds-label">BUILD</span>
+        <span class="ds-value">SENTINEL v2.4.1</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Clock ──────────────────────────────────────────────
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2,'0');
+    const m = String(now.getUTCMinutes()).padStart(2,'0');
+    const s = String(now.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}Z`;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ── Live HR Sim ────────────────────────────────────────
+  let hrBase = 68;
+  setInterval(() => {
+    hrBase += Math.round((Math.random() - 0.5) * 4);
+    hrBase = Math.max(55, Math.min(85, hrBase));
+    document.getElementById('liveHR').textContent = hrBase;
+  }, 2000);
+
+  // ── Page Navigation ────────────────────────────────────
+  function switchPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    el.classList.add('active');
+    if (name === 'performance') drawCharts();
+  }
+
+  // ── Tactical Map Canvas ────────────────────────────────
+  function drawMap() {
+    const canvas = document.getElementById('mapCanvas');
+    if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width || 380;
+    canvas.height = 220;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background gradient
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#050d14');
+    bg.addColorStop(1, '#060f18');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,255,157,0.05)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 24) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += 24) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    // Contour lines (terrain simulation)
+    ctx.strokeStyle = 'rgba(0,180,100,0.12)';
+    ctx.lineWidth = 1;
+    const contours = [
+      [[0.1, 0.6], [0.25, 0.45], [0.5, 0.55], [0.75, 0.4], [0.9, 0.5]],
+      [[0.05, 0.75], [0.3, 0.6], [0.55, 0.7], [0.8, 0.55], [0.95, 0.65]],
+      [[0.0, 0.45], [0.2, 0.35], [0.45, 0.42], [0.7, 0.3], [0.92, 0.38]],
+    ];
+    contours.forEach(pts => {
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => {
+        i === 0 ? ctx.moveTo(x * W, y * H) : ctx.lineTo(x * W, y * H);
+      });
+      ctx.stroke();
+    });
+
+    // Route
+    const route = [
+      [0.08, 0.85], [0.18, 0.72], [0.28, 0.58], [0.35, 0.44],
+      [0.48, 0.38], [0.6, 0.45], [0.7, 0.35], [0.8, 0.42],
+      [0.88, 0.55], [0.78, 0.68], [0.62, 0.72], [0.45, 0.78],
+      [0.28, 0.82], [0.14, 0.88]
+    ];
+
+    // Route shadow
+    ctx.shadowColor = 'rgba(0,255,157,0.4)';
+    ctx.shadowBlur = 8;
+    ctx.strokeStyle = 'rgba(0,255,157,0.25)';
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    route.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x*W, y*H) : ctx.lineTo(x*W, y*H));
+    ctx.stroke();
+
+    // Route main
+    ctx.shadowBlur = 4;
+    ctx.strokeStyle = '#00ff9d';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    route.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x*W, y*H) : ctx.lineTo(x*W, y*H));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Waypoints
+    const waypoints = [route[0], route[3], route[6], route[9], route[13]];
+    waypoints.forEach(([x, y], i) => {
+      const px = x * W, py = y * H;
+      ctx.shadowColor = 'rgba(0,255,157,0.6)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = i === 0 ? '#00ff9d' : (i === waypoints.length - 1 ? '#ff3c3c' : '#00c8ff');
+      ctx.beginPath();
+      ctx.arc(px, py, i === 0 || i === waypoints.length - 1 ? 5 : 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Dot ring
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.arc(px, py, 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+
+    // Operator position (midpoint)
+    const mid = route[7];
+    const mx = mid[0] * W, my = mid[1] * H;
+    ctx.shadowColor = 'rgba(0,255,157,0.8)';
+    ctx.shadowBlur = 12;
+    // Triangle marker
+    ctx.fillStyle = '#00ff9d';
+    ctx.beginPath();
+    ctx.moveTo(mx, my - 9);
+    ctx.lineTo(mx + 7, my + 5);
+    ctx.lineTo(mx - 7, my + 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // ── Charts ────────────────────────────────────────────
+  let chartsDrawn = false;
+  function drawCharts() {
+    if (chartsDrawn) return;
+    chartsDrawn = true;
+
+    drawLineChart('vo2Chart',
+      ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+      [52.1, 52.8, 53.2, 53.0, 53.9, 54.4, 55.1, 55.8, 56.2, 57.0, 57.8, 58.4],
+      '#00ff9d', 'rgba(0,255,157,0.08)'
+    );
+
+    drawLineChart('volChart',
+      ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+      [48, 52, 55, 50, 60, 58, 63, 61, 65, 62, 70, 68],
+      '#00c8ff', 'rgba(0,200,255,0.08)'
+    );
+  }
+
+  function drawLineChart(id, labels, data, color, fillColor) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth || 400;
+    const H = 140;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const pad = { top: 10, right: 10, bottom: 28, left: 38 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+    const minV = Math.min(...data) * 0.97;
+    const maxV = Math.max(...data) * 1.02;
+
+    function px(i) { return pad.left + (i / (data.length - 1)) * cW; }
+    function py(v) { return pad.top + cH - ((v - minV) / (maxV - minV)) * cH; }
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,255,157,0.05)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.top + (cH / 4) * i;
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+    }
+
+    // Fill
+    const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+    grad.addColorStop(0, fillColor);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(data[0]));
+    data.forEach((v, i) => i > 0 && ctx.lineTo(px(i), py(v)));
+    ctx.lineTo(px(data.length - 1), pad.top + cH);
+    ctx.lineTo(px(0), pad.top + cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    data.forEach((v, i) => i === 0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v)));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Dots (every 3)
+    data.forEach((v, i) => {
+      if (i % 3 !== 0 && i !== data.length - 1) return;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = i === data.length - 1 ? color : 'rgba(0,0,0,0.8)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px(i), py(v), 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    });
+
+    // Y-axis labels
+    ctx.fillStyle = 'rgba(120,160,150,0.5)';
+    ctx.font = '9px Share Tech Mono, monospace';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const v = minV + ((maxV - minV) / 4) * (4 - i);
+      ctx.fillText(v.toFixed(1), pad.left - 4, pad.top + (cH / 4) * i + 3);
+    }
+
+    // X-axis labels
+    ctx.textAlign = 'center';
+    data.forEach((_, i) => {
+      if (i % 3 !== 0 && i !== data.length - 1) return;
+      ctx.fillText(labels[i], px(i), H - 8);
+    });
+  }
+
+  // ── Init ──────────────────────────────────────────────
+  window.addEventListener('load', () => {
+    setTimeout(drawMap, 100);
+  });
+
+  window.addEventListener('resize', drawMap);
+</script>
+</body>
+</html>

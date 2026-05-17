@@ -4,9 +4,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 export type RuckDisplayMode = 'simple' | 'mission' | 'map';
 
 const OPTIONS: { key: RuckDisplayMode; label: string }[] = [
-  { key: 'simple', label: 'Simple' },
-  { key: 'mission', label: 'Mission' },
-  { key: 'map', label: 'Map' },
+  { key: 'simple', label: 'SIMPLE' },
+  { key: 'mission', label: 'MISSION' },
+  { key: 'map', label: 'MAP' },
 ];
 
 export function RuckDisplayModeToggle({
@@ -26,9 +26,10 @@ export function RuckDisplayModeToggle({
             style={[styles.button, active && styles.buttonActive]}
             onPress={() => onChange(option.key)}
             accessibilityRole="button"
-            accessibilityLabel={`${option.label} ruck display mode`}
+            accessibilityLabel={`${option.label} display mode`}
             accessibilityState={{ selected: active }}
           >
+            {active && <View style={styles.activeBar} />}
             <Text style={[styles.label, active && styles.labelActive]}>{option.label}</Text>
           </TouchableOpacity>
         );
@@ -40,27 +41,34 @@ export function RuckDisplayModeToggle({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 4,
-    backgroundColor: 'rgba(7,17,12,0.9)',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#203529',
-    padding: 4,
+    backgroundColor: 'rgba(5,14,9,0.95)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#172c20',
+    paddingHorizontal: 16,
   },
   button: {
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 6,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    position: 'relative',
   },
-  buttonActive: {
+  buttonActive: {},
+  activeBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 12,
+    right: 12,
+    height: 2,
     backgroundColor: '#91e6a3',
+    borderRadius: 1,
   },
   label: {
-    color: '#8fbf8f',
-    fontSize: 11,
+    color: '#3a6b46',
+    fontSize: 10,
     fontWeight: '900',
+    letterSpacing: 2,
   },
   labelActive: {
-    color: '#07110c',
+    color: '#91e6a3',
   },
 });

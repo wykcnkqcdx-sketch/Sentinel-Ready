@@ -3,6 +3,7 @@ import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import SparkLine from '@/src/components/charts/SparkLine';
+import Svg, { Circle } from 'react-native-svg';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
@@ -188,33 +189,61 @@ export default function DashboardScreen() {
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.kicker}>SENTINEL READY</Text>
-        <Text style={styles.title}>Operational Fitness Dashboard</Text>
-        <Text style={styles.subtitle}>
-          Readiness overview for strength, endurance, ruck performance and recovery.
-        </Text>
+        <View style={styles.headerTopRow}>
+          <View>
+            <Text style={styles.kicker}>// SENTINEL·READY //</Text>
+            <Text style={styles.title}>Operational Dashboard</Text>
+          </View>
+          <View style={[styles.statusPill, { borderColor: readinessStatus.prog + '55', backgroundColor: readinessStatus.bg }]}>
+            <View style={[styles.statusDot, { backgroundColor: readinessStatus.prog }]} />
+            <Text style={[styles.statusPillText, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
+          </View>
+        </View>
+        <View style={styles.headerDivider} />
       </View>
 
-      <SentinelCard title="Readiness Status" variant="success">
+      <SentinelCard title="Readiness Index" variant="success">
         <View style={styles.readinessRow}>
-          <View>
-            <Text style={styles.metric}>{readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}</Text>
+          <View style={styles.readinessRingWrap}>
+            {(() => {
+              const R = 52; const CIRC = 2 * Math.PI * R;
+              const offset = CIRC * (1 - (readinessPercentage > 0 ? readinessPercentage : 0) / 100);
+              return (
+                <Svg width={120} height={120} style={styles.readinessRingSvg}>
+                  <Circle cx={60} cy={60} r={R} fill="none" stroke="#172c20" strokeWidth={10} />
+                  <Circle cx={60} cy={60} r={R} fill="none" stroke={readinessStatus.prog}
+                    strokeWidth={10} strokeLinecap="round"
+                    strokeDasharray={CIRC} strokeDashoffset={offset} />
+                </Svg>
+              );
+            })()}
+            <View style={styles.readinessRingOverlay}>
+              <Text style={[styles.metric, { color: readinessStatus.prog }]}>
+                {readinessPercentage > 0 ? `${readinessPercentage}` : '--'}
+              </Text>
+              <Text style={styles.metricUnit}>PCT</Text>
+            </View>
+          </View>
+          <View style={styles.readinessSidePanel}>
             <Text style={styles.cardText}>{readinessStatus.msg}</Text>
-          </View>
-
-          <View style={[styles.statusBadge, { backgroundColor: readinessStatus.bg }]}>
-            <Text style={[styles.statusBadgeText, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
+            <View style={styles.readinessDetails}>
+              <View style={styles.detailChip}>
+                <View style={styles.detailChipDot} />
+                <Text style={styles.detailText}>STR  {strengthStatus}</Text>
+              </View>
+              <View style={styles.detailChip}>
+                <View style={styles.detailChipDot} />
+                <Text style={styles.detailText}>END  {enduranceStatus}</Text>
+              </View>
+              <View style={styles.detailChip}>
+                <View style={styles.detailChipDot} />
+                <Text style={styles.detailText}>REC  {recoveryStatus}</Text>
+              </View>
+            </View>
           </View>
         </View>
-
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${readinessPercentage}%`, backgroundColor: readinessStatus.prog }]} />
-        </View>
-
-        <View style={styles.readinessDetails}>
-          <Text style={styles.detailText}>Strength: {strengthStatus}</Text>
-          <Text style={styles.detailText}>Endurance: {enduranceStatus}</Text>
-          <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
+          <View style={[styles.progressFill, { width: `${readinessPercentage}%` as any, backgroundColor: readinessStatus.prog }]} />
         </View>
       </SentinelCard>
 
@@ -654,214 +683,264 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c', position: 'relative' },
+  screen: { flex: 1, backgroundColor: '#050e09', position: 'relative' },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    left: 20,
-    right: 20,
+    bottom: 20,
+    left: 16,
+    right: 16,
     backgroundColor: '#91e6a3',
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderRadius: 6,
+    paddingVertical: 15,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#91e6a3',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 8,
   },
   fabText: {
-    color: '#07110c',
-    fontSize: 15,
+    color: '#050e09',
+    fontSize: 12,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 3,
   },
-  content: { padding: 20, gap: 18, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
-  header: { gap: 10 },
-  kicker: { color: '#8fbf8f', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  title: { color: '#f2f5ef', fontSize: 32, fontWeight: '900' },
-  subtitle: { color: '#aeb8aa', fontSize: 15, lineHeight: 22 },
-  readinessRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' },
-  metric: { color: '#ffffff', fontSize: 56, fontWeight: '900', marginTop: 8 },
-  cardText: { color: '#aeb8aa', marginTop: 4, lineHeight: 20 },
-  statusBadge: { backgroundColor: '#143d22', borderColor: '#46d16d', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
-  statusBadgeText: { color: '#bfffcf', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
-  progressTrack: { height: 10, backgroundColor: '#07110c', borderRadius: 999, marginTop: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#26382c' },
-  progressFill: { width: '82%', height: '100%', backgroundColor: '#62d982', borderRadius: 999 },
-  readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
-  detailText: { color: '#d8e6d4', backgroundColor: '#0b1710', borderWidth: 1, borderColor: '#213c2b', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
+  content: { padding: 16, gap: 14, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
+
+  // Header
+  header: { gap: 0, marginBottom: 4 },
+  headerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  kicker: { color: '#3a6b46', fontSize: 10, fontWeight: '900', letterSpacing: 3.5 },
+  title: { color: '#edf5ea', fontSize: 28, fontWeight: '900', letterSpacing: -0.5, marginTop: 4 },
+  subtitle: { color: '#5a7a62', fontSize: 14, lineHeight: 20, marginTop: 4 },
+  headerDivider: { height: 1, backgroundColor: '#172c20', marginTop: 14 },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  statusDot: { width: 5, height: 5, borderRadius: 3 },
+  statusPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+
+  // Readiness ring
+  readinessRow: { flexDirection: 'row', gap: 16, alignItems: 'center' },
+  readinessRingWrap: { width: 120, height: 120, position: 'relative' },
+  readinessRingSvg: { transform: [{ rotate: '-90deg' }] },
+  readinessRingOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  metric: { fontSize: 36, fontWeight: '900', letterSpacing: -1 },
+  metricUnit: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2.5, marginTop: -2 },
+  readinessSidePanel: { flex: 1, gap: 10 },
+  cardText: { color: '#7a9480', fontSize: 13, lineHeight: 19 },
+  readinessDetails: { gap: 6 },
+  detailChip: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  detailChipDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#91e6a3', opacity: 0.6 },
+  detailText: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 0.5, fontVariant: ['tabular-nums'] },
+
+  // Legacy badge kept for statusBadge refs
+  statusBadge: { backgroundColor: '#0e2018', borderColor: '#235c32', borderWidth: 1, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4 },
+  statusBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+
+  progressTrack: { height: 4, backgroundColor: '#0d1a12', borderRadius: 2, marginTop: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
+  progressFill: { height: '100%', borderRadius: 2 },
+
+  // Mission brief
   briefHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   briefTitleBlock: { flex: 1 },
-  briefTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
-  briefTitleWarn: { color: '#ffb86b', fontSize: 22, fontWeight: '900' },
-  briefBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
-  briefBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
-  briefBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  briefBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
-  briefActionBox: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4, marginTop: 10 },
-  briefActionLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  briefActionText: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800' },
-  briefSecondary: { color: '#aeb8aa', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  briefTitle: { color: '#edf5ea', fontSize: 20, fontWeight: '900' },
+  briefTitleWarn: { color: '#ffaa44', fontSize: 20, fontWeight: '900' },
+  briefBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
+  briefBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
+  briefBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  briefBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  briefActionBox: { backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4, marginTop: 10 },
+  briefActionLabel: { color: '#91e6a3', fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  briefActionText: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700' },
+  briefSecondary: { color: '#7a9480', fontSize: 12, lineHeight: 18, fontWeight: '600', marginTop: 6 },
+
+  // Performance
   performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  performanceItem: { width: '47%', backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
-  performanceValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
-  performanceLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  performanceItem: { width: '47%', backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 3 },
+  performanceValue: { color: '#edf5ea', fontSize: 20, fontWeight: '900' },
+  performanceLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+
+  // Recovery debt
   recoveryDebtRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  recoveryDebtScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  recoveryDebtScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
-  recoveryDebtBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
-  recoveryDebtBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
-  recoveryDebtBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  recoveryDebtBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
-  recoveryDebtAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  recoveryDebtScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
+  recoveryDebtScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  recoveryDebtBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
+  recoveryDebtBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
+  recoveryDebtBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  recoveryDebtBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  recoveryDebtAction: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+
+  // Injury
   injuryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  injuryScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  injuryScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
-  injuryBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
-  injuryBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
-  injuryBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  injuryBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
-  injuryAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  injuryScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
+  injuryScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  injuryBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
+  injuryBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
+  injuryBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  injuryBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  injuryAction: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+
+  // Balance
   balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  balanceScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  balanceScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
-  balanceBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
-  balanceBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
-  balanceBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  balanceBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
-  balanceFocus: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  balanceScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
+  balanceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  balanceBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
+  balanceBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
+  balanceBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  balanceBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  balanceFocus: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+
+  // Forecast
   forecastHeader: { gap: 3 },
-  forecastTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
-  forecastTitleWarn: { color: '#ffb86b', fontSize: 22, fontWeight: '900' },
+  forecastTitle: { color: '#edf5ea', fontSize: 20, fontWeight: '900' },
+  forecastTitleWarn: { color: '#ffaa44', fontSize: 20, fontWeight: '900' },
   forecastRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, marginTop: 8 },
   forecastDay: { alignItems: 'center', gap: 6, flex: 1 },
-  forecastDayLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '900' },
-  forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#91e6a3' },
-  forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#f3d36b' },
-  forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffb86b' },
+  forecastDayLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  forecastDotGreen: { width: 12, height: 12, borderRadius: 2, backgroundColor: '#91e6a3' },
+  forecastDotAmber: { width: 12, height: 12, borderRadius: 2, backgroundColor: '#ffaa44' },
+  forecastDotRed: { width: 12, height: 12, borderRadius: 2, backgroundColor: '#e05050' },
+
+  // Adherence
   adherenceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  adherenceScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  adherenceScoreWarn: { color: '#ffb86b', fontSize: 34, fontWeight: '900' },
-  adherenceBadge: { backgroundColor: '#102d1a', borderRadius: 999, borderWidth: 1, borderColor: '#2f6b3c', paddingHorizontal: 12, paddingVertical: 8 },
-  adherenceBadgeWarn: { backgroundColor: '#2a1a0d', borderRadius: 999, borderWidth: 1, borderColor: '#7a4a1f', paddingHorizontal: 12, paddingVertical: 8 },
-  adherenceBadgeText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  adherenceBadgeTextWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
-  adherenceAction: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
-  adherenceMissing: { color: '#8fbf8f', fontSize: 12, lineHeight: 18, fontWeight: '800' },
-  insightItem: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4 },
-  insightItemGood: { backgroundColor: '#102d1a', borderRadius: 14, borderWidth: 1, borderColor: '#2f6b3c', padding: 12, gap: 4 },
-  insightItemWarn: { backgroundColor: '#21140b', borderRadius: 14, borderWidth: 1, borderColor: '#7a4a1f', padding: 12, gap: 4 },
-  insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  insightTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
-  insightText: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  adherenceScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
+  adherenceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  adherenceBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
+  adherenceBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
+  adherenceBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  adherenceBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  adherenceAction: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+  adherenceMissing: { color: '#3a6b46', fontSize: 11, lineHeight: 18, fontWeight: '800', letterSpacing: 0.5 },
+
+  // Insights
+  insightItem: { backgroundColor: '#050e09', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#172c20', borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4 },
+  insightItemGood: { backgroundColor: '#080f0c', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#91e6a3', borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4 },
+  insightItemWarn: { backgroundColor: '#110c06', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#ffaa44', borderWidth: 1, borderColor: '#3a2210', padding: 12, gap: 4 },
+  insightTitle: { color: '#edf5ea', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
+  insightTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
+  insightText: { color: '#7a9480', fontSize: 12, lineHeight: 18, fontWeight: '600' },
+
+  // Milestones
   milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
-  milestoneCount: { color: '#ffffff', fontSize: 28, fontWeight: '900' },
-  milestoneNext: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 10, maxWidth: '48%' },
-  milestoneNextLabel: { color: '#91e6a3', fontSize: 10, fontWeight: '900' },
-  milestoneNextTitle: { color: '#dfe8da', fontSize: 12, fontWeight: '900', marginTop: 2 },
-  milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  milestonePill: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
-  milestonePillEarned: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
-  milestonePillText: { color: '#8fbf8f', fontSize: 11, fontWeight: '900' },
-  milestonePillTextEarned: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  milestoneCount: { color: '#edf5ea', fontSize: 28, fontWeight: '900' },
+  milestoneNext: { backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 10, maxWidth: '48%' },
+  milestoneNextLabel: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  milestoneNextTitle: { color: '#cddec8', fontSize: 12, fontWeight: '800', marginTop: 3 },
+  milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  milestonePill: { borderWidth: 1, borderColor: '#1e3d28', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
+  milestonePillEarned: { backgroundColor: '#0e2018', borderWidth: 1, borderColor: '#235c32', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
+  milestonePillText: { color: '#3a6b46', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  milestonePillTextEarned: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+
+  // Goals
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
-  goalNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },
+  goalNumber: { color: '#edf5ea', fontSize: 26, fontWeight: '900' },
   goalNumberComplete: { color: '#91e6a3', fontSize: 26, fontWeight: '900' },
-  goalLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '800', marginTop: 2 },
-  goalButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
-  goalButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
-  goalTrack: { height: 8, backgroundColor: '#07110c', borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: '#26382c', marginTop: 12 },
-  goalFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 999 },
-  goalAction: { backgroundColor: '#07110c', borderRadius: 14, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 4, marginTop: 12 },
-  goalActionWarn: { backgroundColor: '#21140b', borderRadius: 14, borderWidth: 1, borderColor: '#7a4a1f', padding: 12, gap: 4, marginTop: 12 },
-  goalActionTitle: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
-  goalActionTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
-  goalActionText: { color: '#dfe8da', fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  section: { marginTop: 8, gap: 12 },
+  goalLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '900', marginTop: 2, letterSpacing: 2 },
+  goalButton: { backgroundColor: '#91e6a3', borderRadius: 4, paddingHorizontal: 14, paddingVertical: 9 },
+  goalButtonText: { color: '#050e09', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  goalTrack: { height: 4, backgroundColor: '#050e09', borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: '#172c20', marginTop: 12 },
+  goalFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 2 },
+  goalAction: { backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4, marginTop: 12 },
+  goalActionWarn: { backgroundColor: '#110c06', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#ffaa44', borderWidth: 1, borderColor: '#3a2210', padding: 12, gap: 4, marginTop: 12 },
+  goalActionTitle: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  goalActionTitleWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  goalActionText: { color: '#7a9480', fontSize: 12, lineHeight: 18, fontWeight: '600' },
+
+  // Grid & sections
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  section: { marginTop: 4, gap: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { color: '#f2f5ef', fontSize: 23, fontWeight: '900' },
-  sectionTag: { color: '#8fbf8f', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#26382c', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 140, marginTop: 4 },
-  barColumn: { alignItems: 'center', width: 40 },
-  barScore: { color: '#aeb8aa', fontSize: 11, fontWeight: '800', marginBottom: 6 },
-  barBackground: { width: 24, height: 100, backgroundColor: '#0b1710', borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: '#213c2b' },
-  barFill: { width: '100%', borderRadius: 4 },
-  barLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800', marginTop: 8 },
+  sectionTitle: { color: '#edf5ea', fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
+  sectionTag: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2, borderWidth: 1, borderColor: '#172c20', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3 },
+
+  // Readiness trend chart
+  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 130, marginTop: 4 },
+  barColumn: { alignItems: 'center', width: 36 },
+  barScore: { color: '#5a7a62', fontSize: 10, fontWeight: '800', marginBottom: 6 },
+  barBackground: { width: 20, height: 90, backgroundColor: '#0a1410', borderRadius: 3, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
+  barFill: { width: '100%', borderRadius: 2 },
+  barLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '800', marginTop: 6, letterSpacing: 0.5 },
 
   reportToggle: {
     alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 11,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#1a2e1f',
-    backgroundColor: '#0a170e',
+    borderColor: '#172c20',
+    backgroundColor: '#080f0b',
   },
   reportToggleText: {
     color: '#91e6a3',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '900',
-    letterSpacing: 1.5,
+    letterSpacing: 2.5,
   },
-  loadCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
-  loadCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 12 },
-  loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  loadKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  loadCount: { color: '#ffffff', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  loadCountWarn: { color: '#ffb86b', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  loadBadge: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
-  loadBadgeWarn: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
-  loadBadgeText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
-  loadBadgeTextWarn: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
-  loadTrack: { height: 8, backgroundColor: '#07110c', borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: '#26382c' },
-  loadFill: { height: '100%', borderRadius: 999 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6 },
-  pillText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
-  loadNoData: { color: '#6f7d70', fontSize: 13, fontWeight: '800' },
-  loadSubText: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
-  loadWarnText: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
 
-  // Connections section
+  // Weekly load
+  loadCard: { backgroundColor: '#0a1610', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: '#91e6a3', borderColor: '#172c20', gap: 12 },
+  loadCardWarn: { backgroundColor: '#100c08', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: '#ffaa44', borderColor: '#3a2210', gap: 12 },
+  loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  loadKicker: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
+  loadCount: { color: '#edf5ea', fontSize: 22, fontWeight: '900', marginTop: 4 },
+  loadCountWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900', marginTop: 4 },
+  loadBadge: { backgroundColor: '#0e2018', borderWidth: 1, borderColor: '#235c32', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
+  loadBadgeWarn: { backgroundColor: '#1c0e08', borderWidth: 1, borderColor: '#6b3c16', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
+  loadBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  loadBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  loadTrack: { height: 4, backgroundColor: '#050e09', borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
+  loadFill: { height: '100%', borderRadius: 2 },
+  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  pill: { backgroundColor: '#0e2018', borderWidth: 1, borderColor: '#235c32', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
+  pillText: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
+  loadNoData: { color: '#3a5040', fontSize: 13, fontWeight: '700' },
+  loadSubText: { color: '#3a6b46', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  loadWarnText: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
+
+  // Connect section
   connectSection: {
-    backgroundColor: '#0d1812',
-    borderRadius: 18,
+    backgroundColor: '#0a1610',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderLeftWidth: 3,
+    borderLeftColor: '#3fc8e4',
+    borderColor: '#172c20',
     padding: 16,
     gap: 12,
   },
-  connectKicker: {
-    color: '#91e6a3',
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  connectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  connectKicker: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
+  connectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   connectPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#07110c',
-    borderRadius: 999,
+    gap: 7,
+    backgroundColor: '#050e09',
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#203529',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderColor: '#172c20',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
-  connectPillDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FC4C02',
-  },
+  connectPillDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FC4C02' },
   connectPillDotAtak: { backgroundColor: '#3a7bd5' },
-  connectPillDotGpx: { backgroundColor: '#2f6b3c' },
+  connectPillDotGpx: { backgroundColor: '#235c32' },
   connectPillDotCheckin: { backgroundColor: '#91e6a3' },
-  connectPillDotOffline: { backgroundColor: '#4ECDC4' },
-  connectPillDotAlerts: { backgroundColor: '#FFB86B' },
+  connectPillDotOffline: { backgroundColor: '#3fc8e4' },
+  connectPillDotAlerts: { backgroundColor: '#ffaa44' },
   connectPillDotProgress: { backgroundColor: '#4a9eff' },
   connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
-  connectPillText: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
+  connectPillText: { color: '#b8cbb8', fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
 });

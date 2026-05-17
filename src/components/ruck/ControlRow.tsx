@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RuckTrackingState } from '@/src/hooks/useRuckTracking';
-import { colours } from '@/src/theme/colours';
 
 interface ControlRowProps {
   tracking: RuckTrackingState;
@@ -13,100 +12,130 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
   const { trackingState } = tracking;
 
   return (
-    <View style={styles.container}>
-      {trackingState === 'idle' ? (
-        <TouchableOpacity style={styles.primaryButton} onPress={tracking.startRecording}>
-          <Text style={styles.primaryText}>START</Text>
+    <View style={styles.row}>
+      {trackingState === 'idle' && (
+        <TouchableOpacity
+          style={styles.primaryBtn}
+          onPress={tracking.startRecording}
+          accessibilityRole="button"
+          accessibilityLabel="Start ruck"
+        >
+          <Text style={styles.primaryLabel}>▶  START RUCK</Text>
         </TouchableOpacity>
-      ) : null}
+      )}
 
-      {trackingState === 'recording' ? (
-        <>
-          <TouchableOpacity style={styles.secondaryButton} onPress={tracking.pauseRecording}>
-            <Text style={styles.secondaryText}>PAUSE</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.dangerButton} onPress={tracking.stopRecording}>
-            <Text style={styles.dangerText}>STOP</Text>
-          </TouchableOpacity>
-        </>
-      ) : null}
-
-      {trackingState === 'paused' ? (
-        <>
-          <TouchableOpacity style={styles.primaryButton} onPress={tracking.resumeRecording}>
-            <Text style={styles.primaryText}>RESUME</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.dangerButton} onPress={tracking.stopRecording}>
-            <Text style={styles.dangerText}>STOP</Text>
-          </TouchableOpacity>
-        </>
-      ) : null}
-
-      {trackingState === 'finished' ? (
+      {trackingState === 'recording' && (
         <>
           <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => {
-              tracking.resetSession();
-              onDiscard?.();
-            }}
+            style={styles.ghostBtn}
+            onPress={tracking.pauseRecording}
+            accessibilityRole="button"
+            accessibilityLabel="Pause ruck"
           >
-            <Text style={styles.secondaryText}>DISCARD</Text>
+            <Text style={styles.ghostLabel}>⏸  PAUSE</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.primaryButton} onPress={onSave}>
-            <Text style={styles.primaryText}>SAVE</Text>
+          <TouchableOpacity
+            style={styles.dangerBtn}
+            onPress={tracking.stopRecording}
+            accessibilityRole="button"
+            accessibilityLabel="Stop ruck"
+          >
+            <Text style={styles.dangerLabel}>⬛  STOP</Text>
           </TouchableOpacity>
         </>
-      ) : null}
+      )}
+
+      {trackingState === 'paused' && (
+        <>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={tracking.resumeRecording}
+            accessibilityRole="button"
+            accessibilityLabel="Resume ruck"
+          >
+            <Text style={styles.primaryLabel}>▶  RESUME</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dangerBtn}
+            onPress={tracking.stopRecording}
+            accessibilityRole="button"
+            accessibilityLabel="Stop ruck"
+          >
+            <Text style={styles.dangerLabel}>⬛  STOP</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {trackingState === 'finished' && (
+        <>
+          <TouchableOpacity
+            style={styles.ghostBtn}
+            onPress={() => { tracking.resetSession(); onDiscard?.(); }}
+            accessibilityRole="button"
+            accessibilityLabel="Discard ruck"
+          >
+            <Text style={styles.ghostLabel}>✕  DISCARD</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={onSave}
+            accessibilityRole="button"
+            accessibilityLabel="Save ruck"
+          >
+            <Text style={styles.primaryLabel}>✓  SAVE RUCK</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 18,
+  row: {
     flexDirection: 'row',
     gap: 10,
   },
-  primaryButton: {
+  primaryBtn: {
     flex: 1,
     backgroundColor: '#91e6a3',
-    borderRadius: 10,
+    borderRadius: 6,
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 15,
   },
-  secondaryButton: {
+  primaryLabel: {
+    color: '#050e09',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  ghostBtn: {
     flex: 1,
-    backgroundColor: colours.surface,
-    borderColor: colours.border,
-    borderRadius: 10,
+    backgroundColor: 'transparent',
     borderWidth: 1,
+    borderColor: '#235c32',
+    borderRadius: 6,
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 15,
   },
-  dangerButton: {
+  ghostLabel: {
+    color: '#7aad82',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  dangerBtn: {
     flex: 1,
-    backgroundColor: colours.fail,
-    borderRadius: 10,
+    backgroundColor: '#1c0c0c',
+    borderWidth: 1,
+    borderColor: '#6b1e1e',
+    borderRadius: 6,
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 15,
   },
-  primaryText: {
-    color: '#07110c',
-    fontSize: 13,
+  dangerLabel: {
+    color: '#e05050',
+    fontSize: 12,
     fontWeight: '900',
-  },
-  secondaryText: {
-    color: colours.text,
-    fontSize: 13,
-    fontWeight: '900',
-  },
-  dangerText: {
-    color: colours.text,
-    fontSize: 13,
-    fontWeight: '900',
+    letterSpacing: 2,
   },
 });

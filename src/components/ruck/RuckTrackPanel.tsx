@@ -21,7 +21,7 @@ import { getNumberInput } from '@/src/components/ruck/ruckPanelUtils';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
 import React, { memo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -29,11 +29,7 @@ export {
   DEFAULT_RUCK_MISSION_DRAFT,
   DEFAULT_RUCK_SAVE_DRAFT,
 };
-export type {
-  RuckDisplayMode,
-  RuckMissionDraft,
-  RuckSaveDraft,
-};
+export type { RuckDisplayMode, RuckMissionDraft, RuckSaveDraft };
 
 export type RuckTrackPanelProps = {
   tracking: ReturnType<typeof useRuckTracking>;
@@ -65,218 +61,268 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   onDiscardDraft,
 }: RuckTrackPanelProps) {
   const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('simple');
+
   const targetDistance = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
   const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));
-  const targetPaceMinutesPerKm = targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : undefined;
+  const targetPaceMinutesPerKm =
+    targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : undefined;
 
   const isFinished = tracking.trackingState === 'finished';
-  const showMissionSetup = !isFinished && tracking.trackingState === 'idle' && displayMode === 'mission';
-  const showMissionProgress = !isFinished && tracking.trackingState !== 'idle' && displayMode === 'mission';
+  const isIdle = tracking.trackingState === 'idle';
+
+  const showMissionSetup = !isFinished && isIdle && displayMode === 'mission';
+  const showMissionProgress = !isFinished && !isIdle && displayMode === 'mission';
   const showMapTools = !isFinished && displayMode === 'map';
-  const mapInteractive = !isFinished && displayMode === 'map';
+  const showSimpleData = !isFinished && displayMode === 'simple';
 
   return (
-    <View style={styles.container}>
-      <RuckMapView
-        routePoints={tracking.routePoints}
-        currentPosition={tracking.currentPosition}
-        layer={tracking.activeLayer}
-        overlays={showMapTools ? overlays : []}
-        fullHeight
-        interactive={mapInteractive}
-        showGpsStatus={mapInteractive}
-      />
+    <View style={styles.screen}>
 
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Svg width="100%" height="100%">
-          <Defs>
-            <LinearGradient id="topGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#07110c" stopOpacity="0.8" />
-              <Stop offset="0.25" stopColor="#07110c" stopOpacity="0" />
-            </LinearGradient>
-            <LinearGradient id="bottomGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0.5" stopColor="#07110c" stopOpacity="0" />
-              <Stop offset="1" stopColor="#07110c" stopOpacity="1" />
-            </LinearGradient>
-          </Defs>
-          <Rect width="100%" height="100%" fill="url(#topGrad)" />
-          <Rect width="100%" height="100%" fill="url(#bottomGrad)" />
-        </Svg>
-      </View>
-
-      {!isFinished ? (
-        <View style={styles.modeWrapper}>
-          <RuckDisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
-        </View>
-      ) : null}
-
-      <View style={styles.metricsWrapper}>
-        <LiveMetricsOverlay
-          distanceKm={tracking.distanceKm}
-          elapsedSeconds={tracking.elapsedSeconds}
-          gpsQualityWarning={tracking.gpsQualityWarning}
-          trackingState={tracking.trackingState}
-          targetPaceMinutesPerKm={targetPaceMinutesPerKm}
+      {/* ── Map — always rendering for GPS continuity ─────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <RuckMapView
+          routePoints={tracking.routePoints}
+          currentPosition={tracking.currentPosition}
+          layer={tracking.activeLayer}
+          overlays={showMapTools ? overlays : []}
+          fullHeight
+          interactive={showMapTools}
+          showGpsStatus={false}
         />
       </View>
 
-      {showMissionSetup ? (
-        <View style={styles.missionWrapper}>
-          <MissionSetupPanel draft={missionDraft} onChange={onMissionDraftChange} />
-        </View>
-      ) : null}
+      {/* Dark overlay masks map in simple/mission/finished modes */}
+      {displayMode !== 'map' && (
+        <View style={styles.darkMask} pointerEvents="none" />
+      )}
 
-      {showMissionProgress ? (
-        <View style={styles.missionWrapper}>
-          <MissionProgressPanel
-            draft={missionDraft}
+      {/* Gradient fade at top and bottom in map mode */}
+      {displayMode === 'map' && (
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Svg width="100%" height="100%">
+            <Defs>
+              <LinearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#050e09" stopOpacity="0.92" />
+                <Stop offset="0.22" stopColor="#050e09" stopOpacity="0" />
+              </LinearGradient>
+              <LinearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0.55" stopColor="#050e09" stopOpacity="0" />
+                <Stop offset="1" stopColor="#050e09" stopOpacity="0.98" />
+              </LinearGradient>
+            </Defs>
+            <Rect width="100%" height="100%" fill="url(#tg)" />
+            <Rect width="100%" height="100%" fill="url(#bg)" />
+          </Svg>
+        </View>
+      )}
+
+      {/* ── HUD Column — flex layout, never overlaps tab bar ─────── */}
+      <View style={styles.hud} pointerEvents="box-none">
+
+        {/* Top metrics bar */}
+        <View pointerEvents="none">
+          <LiveMetricsOverlay
             distanceKm={tracking.distanceKm}
             elapsedSeconds={tracking.elapsedSeconds}
             gpsQualityWarning={tracking.gpsQualityWarning}
+            trackingState={tracking.trackingState}
+            targetPaceMinutesPerKm={targetPaceMinutesPerKm}
           />
         </View>
-      ) : null}
 
-      {showMapTools ? (
-        <>
-          <View style={styles.overlayBarWrapper}>
-            <TouchableOpacity
-              style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
-              onPress={onImportOverlay}
-              disabled={loadingOverlay}
-              accessibilityRole="button"
-              accessibilityLabel="Import map overlay"
-            >
-              <Text style={styles.overlayImportBtnText}>
-                {loadingOverlay ? 'Loading...' : '+ Overlay'}
+        {/* Mode toggle */}
+        {!isFinished && (
+          <View pointerEvents="auto">
+            <RuckDisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
+          </View>
+        )}
+
+        {/* Middle content area */}
+        <View style={styles.middle} pointerEvents="box-none">
+
+          {/* SIMPLE: big outdoor numbers */}
+          {showSimpleData && (
+            <View style={styles.simplePanel} pointerEvents="none">
+              <Text style={styles.simpleDistance}>
+                {tracking.distanceKm.toFixed(2)}
               </Text>
-            </TouchableOpacity>
+              <Text style={styles.simpleDistanceUnit}>KM</Text>
+            </View>
+          )}
 
-            {overlays.map((overlay) => (
-              <Animated.View key={overlay.id} entering={FadeIn.duration(400)} exiting={FadeOut.duration(300)}>
+          {/* MISSION: setup or progress */}
+          {showMissionSetup && (
+            <View style={styles.panelPad} pointerEvents="auto">
+              <MissionSetupPanel draft={missionDraft} onChange={onMissionDraftChange} />
+            </View>
+          )}
+          {showMissionProgress && (
+            <View style={styles.panelPad} pointerEvents="none">
+              <MissionProgressPanel
+                draft={missionDraft}
+                distanceKm={tracking.distanceKm}
+                elapsedSeconds={tracking.elapsedSeconds}
+                gpsQualityWarning={tracking.gpsQualityWarning}
+              />
+            </View>
+          )}
+
+          {/* MAP: overlay tools */}
+          {showMapTools && (
+            <View style={styles.mapToolsWrapper} pointerEvents="auto">
+              <View style={styles.overlayRow}>
                 <TouchableOpacity
-                  style={[styles.overlayChip, !overlay.visible && styles.overlayChipHidden]}
-                  onPress={() => onToggleOverlay(overlay.id)}
-                  onLongPress={() => onRemoveOverlay(overlay.id)}
+                  style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
+                  onPress={onImportOverlay}
+                  disabled={loadingOverlay}
                   accessibilityRole="button"
-                  accessibilityLabel={`${overlay.name} overlay, ${overlay.visible ? 'visible' : 'hidden'}. Long press to remove.`}
-                  accessibilityHint="Tap to toggle visibility, long press to remove"
+                  accessibilityLabel="Import map overlay"
                 >
-                  <View style={[styles.overlayDot, { backgroundColor: overlay.color }]} />
-                  <Text style={styles.overlayChipText} numberOfLines={1}>{overlay.name}</Text>
+                  <Text style={styles.overlayImportText}>
+                    {loadingOverlay ? 'LOADING...' : '+ OVERLAY'}
+                  </Text>
                 </TouchableOpacity>
-              </Animated.View>
-            ))}
-          </View>
 
-          <View style={styles.layerPickerWrapper}>
-            <MapLayerPicker
-              activeLayer={tracking.activeLayer}
-              onSelect={tracking.setLayer}
-            />
-          </View>
-        </>
-      ) : null}
+                {overlays.map((overlay) => (
+                  <Animated.View key={overlay.id} entering={FadeIn.duration(300)} exiting={FadeOut.duration(250)}>
+                    <TouchableOpacity
+                      style={[styles.overlayChip, !overlay.visible && styles.overlayChipHidden]}
+                      onPress={() => onToggleOverlay(overlay.id)}
+                      onLongPress={() => onRemoveOverlay(overlay.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${overlay.name}, ${overlay.visible ? 'visible' : 'hidden'}. Long press to remove.`}
+                    >
+                      <View style={[styles.overlayDot, { backgroundColor: overlay.color }]} />
+                      <Text style={styles.overlayChipText} numberOfLines={1}>{overlay.name}</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                ))}
+              </View>
 
-      <View style={styles.controlDock}>
-        <ControlRow
-          tracking={tracking}
-          onSave={onSaveSession}
-          onDiscard={onDiscardDraft}
-        />
-      </View>
+              <MapLayerPicker activeLayer={tracking.activeLayer} onSelect={tracking.setLayer} />
+            </View>
+          )}
 
-      {isFinished ? (
-        <View style={styles.savePanelWrapper}>
-          <RuckSavePanel
-            draft={saveDraft}
-            distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
-            elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
-            splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
-            routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
-            rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
-            onChange={onSaveDraftChange}
+          {/* FINISHED: save panel fills the middle area */}
+          {isFinished && (
+            <View style={styles.savePanelArea} pointerEvents="auto">
+              <RuckSavePanel
+                draft={saveDraft}
+                distanceKm={tracking.sessionResult?.distanceKm ?? tracking.distanceKm}
+                elapsedSeconds={tracking.sessionResult?.elapsedSeconds ?? tracking.elapsedSeconds}
+                splitCount={(tracking.sessionResult?.splits ?? tracking.splits).length}
+                routeConfidence={tracking.sessionResult?.routeConfidence ?? tracking.routeConfidence}
+                rejectedPointCount={tracking.sessionResult?.rejectedPointCount ?? tracking.rejectedPointCount}
+                onChange={onSaveDraftChange}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* ── Control dock — flex child, never absolute ─────────── */}
+        <View style={styles.controlDock} pointerEvents="auto">
+          <ControlRow
+            tracking={tracking}
+            onSave={onSaveSession}
+            onDiscard={onDiscardDraft}
           />
         </View>
-      ) : null}
+
+      </View>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  modeWrapper: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
+  screen: {
+    flex: 1,
+    backgroundColor: '#050e09',
   },
-  metricsWrapper: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    right: 140,
+  darkMask: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(5, 14, 9, 0.94)',
   },
-  missionWrapper: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 286,
+  hud: {
+    flex: 1,
+    flexDirection: 'column',
   },
-  controlDock: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingBottom: 92,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    backgroundColor: 'rgba(7,17,12,0.92)',
-    borderTopWidth: 1,
-    borderTopColor: '#203529',
+  middle: {
+    flex: 1,
   },
-  layerPickerWrapper: {
-    position: 'absolute',
-    bottom: 168,
-    right: 16,
+  simplePanel: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
-  overlayBarWrapper: {
-    position: 'absolute',
-    bottom: 226,
-    left: 16,
-    right: 16,
+  simpleDistance: {
+    color: '#edf5ea',
+    fontSize: 88,
+    fontWeight: '900',
+    letterSpacing: -4,
+    lineHeight: 88,
+    fontVariant: ['tabular-nums'],
+  },
+  simpleDistanceUnit: {
+    color: '#3a6b46',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 6,
+    textAlign: 'center',
+  },
+  panelPad: {
+    padding: 14,
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  mapToolsWrapper: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+    gap: 10,
+  },
+  overlayRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
   overlayImportBtn: {
-    borderRadius: 16,
+    borderRadius: 4,
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    backgroundColor: '#0d1812',
+    paddingVertical: 7,
+    backgroundColor: 'rgba(5,14,9,0.85)',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: '#235c32',
   },
-  overlayImportBtnDisabled: { borderColor: '#203529' },
-  overlayImportBtnText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  overlayImportBtnDisabled: { borderColor: '#172c20' },
+  overlayImportText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   overlayChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    borderRadius: 16,
+    borderRadius: 4,
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: '#0d1812',
+    paddingVertical: 7,
+    backgroundColor: 'rgba(5,14,9,0.85)',
     borderWidth: 1,
-    borderColor: '#2a3a2a',
+    borderColor: '#172c20',
     maxWidth: 130,
   },
-  overlayChipHidden: { opacity: 0.4 },
-  overlayDot: { width: 8, height: 8, borderRadius: 4 },
-  overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
-  savePanelWrapper: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 150,
+  overlayChipHidden: { opacity: 0.35 },
+  overlayDot: { width: 6, height: 6, borderRadius: 3 },
+  overlayChipText: { color: '#b8cbb8', fontSize: 10, fontWeight: '800', flexShrink: 1 },
+  savePanelArea: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+  },
+  controlDock: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#172c20',
+    backgroundColor: 'rgba(5,14,9,0.97)',
   },
 });

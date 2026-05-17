@@ -22,13 +22,14 @@ export function MapLayerPicker({ activeLayer, onSelect }: MapLayerPickerProps) {
           <TouchableOpacity
             key={key}
             onPress={() => onSelect(key)}
-            style={[styles.pill, isActive ? styles.pillActive : styles.pillInactive]}
+            style={[styles.chip, isActive ? styles.chipActive : styles.chipInactive]}
             accessibilityRole="button"
             accessibilityLabel={`${label} map layer`}
             accessibilityState={{ selected: isActive }}
           >
+            {isActive && <Text style={styles.activeTag}>●  </Text>}
             <Text style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}>
-              {label}
+              {label.toUpperCase()}
             </Text>
           </TouchableOpacity>
         );
@@ -38,35 +39,38 @@ export function MapLayerPicker({ activeLayer, onSelect }: MapLayerPickerProps) {
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flexGrow: 0,
-  },
+  scroll: { flexGrow: 0 },
   row: {
     flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 6,
+    gap: 6,
+    paddingHorizontal: 0,
+    paddingVertical: 4,
   },
-  pill: {
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderWidth: 1,
   },
-  pillActive: {
-    backgroundColor: '#3B82F6',
+  chipActive: {
+    backgroundColor: 'rgba(0,80,40,0.5)',
+    borderColor: '#235c32',
   },
-  pillInactive: {
-    backgroundColor: '#1e1e2e',
+  chipInactive: {
+    backgroundColor: 'rgba(5,14,9,0.7)',
+    borderColor: '#172c20',
+  },
+  activeTag: {
+    color: '#91e6a3',
+    fontSize: 8,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1.5,
   },
-  labelActive: {
-    color: '#ffffff',
-  },
-  labelInactive: {
-    color: '#9ca3af',
-  },
+  labelActive: { color: '#91e6a3' },
+  labelInactive: { color: '#3a6b46' },
 });
