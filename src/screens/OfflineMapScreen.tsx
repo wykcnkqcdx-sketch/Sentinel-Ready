@@ -18,6 +18,7 @@ import { PMTILES_PATH } from '../services/pmtilesService';
 import {
   buildBounds,
   clearTileCache,
+  downloadRegion,
   downloadRoute,
   enforceCacheLimit,
   getCacheStats,
@@ -85,7 +86,7 @@ export default function OfflineMapScreen() {
     try {
       const info = await FileSystem.getInfoAsync(PMTILES_PATH);
       if (info.exists && !info.isDirectory) {
-        setStats({ tileCount: statsResult.tileCount, totalBytes: info.size ?? statsResult.totalBytes });
+        setStats({ tileCount: statsResult.tileCount, totalBytes: statsResult.totalBytes + (info.size ?? 0) });
       } else {
         setStats(statsResult);
       }
@@ -115,7 +116,7 @@ export default function OfflineMapScreen() {
       setStatusMsg('Download paused.');
     } else {
       setStatusMsg('');
-      // Reset the time tracker so the pause duration isn't mistakenly calculated as slow speed
+      // Reset the time tracker so pause duration is not counted as slow speed.
       speedStateRef.current.lastTime = Date.now();
     }
   }, []);
@@ -135,7 +136,7 @@ export default function OfflineMapScreen() {
       const deltaTiles = dl - state.lastDownloaded;
       const currentSpeed = deltaTiles / deltaMs; // tiles per millisecond
 
-      // Exponential Moving Average (30% new reading, 70% historical) smooths out spikes
+      // Exponential moving average smooths out network spikes.
       state.speedEma = state.speedEma === 0 ? currentSpeed : (currentSpeed * 0.3) + (state.speedEma * 0.7);
       state.lastTime = now;
       state.lastDownloaded = dl;
@@ -181,37 +182,46 @@ export default function OfflineMapScreen() {
     await activateKeepAwakeAsync();
 
     try {
-      // A freely available PMTiles extract hosted by Protomaps
-      const downloadUrl = 'https://build.protomaps.com/20240517.pmtiles';
-
-      const downloadResumable = FileSystem.createDownloadResumable(
-        downloadUrl,
-        PMTILES_PATH,
-        {},
-        (progressObj) => {
-          const percent = progressObj.totalBytesWritten / progressObj.totalBytesExpectedToWrite;
-          if (mountedRef.current) {
-            setProgress({ downloaded: Math.round(percent * 100), total: 100 });
-          }
-        }
+      const bounds = buildBounds(center.latitude, center.longitude, radius);
+      const dlResult = await downloadRegion(
+        bounds,
+        ZOOM_LEVELS,
+        layer,
+        handleProgress,
+        ac.signal,
+        () => isPausedRef.current
       );
-    
-      await downloadResumable.downloadAsync();
-      
-      if (mountedRef.current) {
-        setStatusMsg('PMTiles vector map downloaded successfully!');
-        loadInitialData();
+
+      const wasCleared = await enforceCacheLimit();
+      const newStats = await getCacheStats();
+      if (!mountedRef.current) return;
+      setStats(newStats);
+
+      if (ac.signal.aborted) {
+        setStatusMsg('Download cancelled.');
+      } else if (wasCleared) {
+        setStatusMsg('Download exceeded 500MB limit. Oldest tiles were automatically removed.');
+      } else {
+        setStatusMsg(`Download complete. ${dlResult.downloaded} tiles saved, ${dlResult.skipped} already cached, ${dlResult.failed} failed.`);
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Offline Region Ready',
+            body: `Downloaded ${dlResult.downloaded} new tiles successfully.`,
+            sound: true,
+          },
+          trigger: null,
+        });
       }
-    } catch (e) {
+    } catch {
       if (mountedRef.current) setStatusMsg('Download failed. Check your connection.');
     } finally {
+      deactivateKeepAwake();
       if (mountedRef.current) {
         setDownloading(false);
         setAbortController(null);
-        deactivateKeepAwake();
       }
     }
-  }, [estimatedTiles, stats.totalBytes, wifiOnly]);
+  }, [center.latitude, center.longitude, estimatedTiles, handleProgress, layer, radius, stats.totalBytes, wifiOnly]);
 
   const handleDownloadGpx = useCallback(async () => {
     try {
@@ -242,7 +252,6 @@ export default function OfflineMapScreen() {
         }
       }
 
-      // Use our new route bounds calculator to predict exactly how many tiles this will take
       const routeTiles = tilesForRoute(coordinates, 1.0, ZOOM_LEVELS);
       const estimatedBytes = routeTiles.length * BYTES_PER_TILE_ESTIMATE;
 
@@ -267,7 +276,7 @@ export default function OfflineMapScreen() {
 
       const dlResult = await downloadRoute(
         coordinates,
-        1.0, // 1km buffer around the route
+        1.0,
         ZOOM_LEVELS,
         layer,
         handleProgress,
@@ -299,13 +308,13 @@ export default function OfflineMapScreen() {
       console.error('GPX Download failed:', error);
       if (mountedRef.current) setStatusMsg('Download failed. Check your connection or file.');
     } finally {
+      deactivateKeepAwake();
       if (mountedRef.current) {
         setDownloading(false);
         setAbortController(null);
-        deactivateKeepAwake();
       }
     }
-  }, [layer, stats.totalBytes]);
+  }, [handleProgress, layer, stats.totalBytes, wifiOnly]);
 
   const handleCancel = useCallback(() => {
     abortController?.abort();
@@ -398,33 +407,31 @@ export default function OfflineMapScreen() {
         </View>
       </View>
 
-    <View style={styles.card}>
-      <View style={styles.rowBetween}>
-        <Text style={styles.cardLabel}>DOWNLOAD OVER WI-FI ONLY</Text>
-        <Switch
-          value={wifiOnly}
-          onValueChange={setWifiOnly}
-          trackColor={{ false: '#203529', true: '#2f6b3c' }}
-          thumbColor={wifiOnly ? '#91e6a3' : '#4a7a5a'}
-        />
+      <View style={styles.card}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.cardLabel}>DOWNLOAD OVER WI-FI ONLY</Text>
+          <Switch
+            value={wifiOnly}
+            onValueChange={setWifiOnly}
+            trackColor={{ false: '#203529', true: '#2f6b3c' }}
+            thumbColor={wifiOnly ? '#91e6a3' : '#4a7a5a'}
+          />
+        </View>
       </View>
-    </View>
 
       <View style={styles.card}>
         <Text style={styles.cardLabel}>ZOOM LEVELS</Text>
         <Text style={styles.cardValue}>
-          Zoom levels 13-15 · ~{estimatedTiles} tiles · ~{estimatedMB} MB
+          Zoom levels 13-15 - ~{estimatedTiles} tiles - ~{estimatedMB} MB
         </Text>
       </View>
 
       {downloading && (
         <View style={styles.card}>
           <Text style={styles.cardLabel}>{paused ? 'PAUSED' : 'DOWNLOADING'}</Text>
-          <Text style={styles.cardLabel}>DOWNLOADING</Text>
           <View style={styles.rowBetween}>
             <Text style={styles.progressText}>
-              {progress.downloaded} / {progress.total} tiles
-              {progress.downloaded}%
+              {progress.downloaded} / {progress.total} tiles ({Math.round(progressPct * 100)}%)
             </Text>
             <Text style={styles.etaText}>{paused ? 'Paused' : eta}</Text>
           </View>
@@ -600,3 +607,4 @@ const styles = StyleSheet.create({
   },
   capacityFill: { height: '100%', borderRadius: 999 },
 });
+

@@ -1,6 +1,6 @@
 import MapboxGL from '@maplibre/maplibre-react-native';
 import { PMTiles } from 'pmtiles';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const PMTILES_PATH = FileSystem.documentDirectory + 'offline_region.pmtiles';
 let pmtilesInstance: PMTiles | null = null;
@@ -14,13 +14,13 @@ export function initPMTilesProtocol() {
     if (request.url.startsWith('pmtiles://')) {
       const match = request.url.match(/pmtiles:\/\/(.+)\/(\d+)\/(\d+)\/(\d+)/);
       if (match && pmtilesInstance) {
-        const [_, name, z, x, y] = match;
+        const [, , z, x, y] = match;
         try {
           const tile = await pmtilesInstance.getZxy(+z, +x, +y);
           if (tile) {
             return { data: tile.data };
           }
-        } catch (e) {
+        } catch {
           // Tile doesn't exist in the local PMTiles archive
         }
       }
