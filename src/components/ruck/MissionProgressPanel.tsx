@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { buildLiveRuckSafetyAlerts } from '@/src/utils/ruckSafety';
 import type { RuckMissionDraft } from './MissionSetupPanel';
 import { formatDuration, getNumberInput, progressPercent } from './ruckPanelUtils';
 
@@ -42,6 +43,14 @@ export const MissionProgressPanel = memo(function MissionProgressPanel({
       ? styles.riskAmber
       : styles.riskGreen;
   const riskTextStyle = riskLevel === 'GREEN' ? styles.riskTextDark : styles.riskTextLight;
+  const alerts = buildLiveRuckSafetyAlerts({
+    distanceKm,
+    elapsedSeconds,
+    targetDistanceKm: targetDistance,
+    targetMinutes,
+    packWeightKg: packWeight,
+    gpsQualityWarning,
+  }).slice(0, 2);
 
   return (
     <View style={styles.progressPanel} pointerEvents="none">
@@ -86,6 +95,26 @@ export const MissionProgressPanel = memo(function MissionProgressPanel({
               : 'Within plan'}
         </Text>
       </View>
+      {alerts.length > 0 ? (
+        <View style={styles.alertStack}>
+          {alerts.map((alert) => (
+            <View
+              key={alert.id}
+              style={[
+                styles.alertRow,
+                alert.level === 'danger'
+                  ? styles.alertDanger
+                  : alert.level === 'warning'
+                    ? styles.alertWarning
+                    : styles.alertInfo,
+              ]}
+            >
+              <Text style={styles.alertTitle}>{alert.title}</Text>
+              <Text style={styles.alertText} numberOfLines={2}>{alert.message}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 });
@@ -119,4 +148,11 @@ const styles = StyleSheet.create({
   riskTextDark: { color: '#07110c', fontSize: 10, fontWeight: '900' },
   riskTextLight: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
   riskReason: { flex: 1, color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
+  alertStack: { gap: 6, borderTopWidth: 1, borderTopColor: '#203529', paddingTop: 8 },
+  alertRow: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 7, gap: 2 },
+  alertInfo: { backgroundColor: '#0d1812', borderColor: '#2f6b3c' },
+  alertWarning: { backgroundColor: '#21140b', borderColor: '#7a4a1f' },
+  alertDanger: { backgroundColor: '#261010', borderColor: '#8a2f2a' },
+  alertTitle: { color: '#ffffff', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
+  alertText: { color: '#c4cec0', fontSize: 11, lineHeight: 15, fontWeight: '700' },
 });

@@ -84,3 +84,47 @@ Web Bundled 45938ms node_modules\expo-router\entry.js (1453 modules)
 Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1453/1453)
 Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
 Web Bundled 7909ms node_modules\expo-router\entry.js (1 module)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 435ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 2435ms node_modules\expo-router\entry.js (1 module)
+λ Bundled 130ms node_modules\expo-router\node\render.js (1 module)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  1.0% (1/1)
+Web Bundled 1639ms node_modules\expo-router\entry.js (1 module)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 29.4% (187/345)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 43.0% (360/549)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 48.0% (403/594)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.1% (586/762)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 81.4% (855/953)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.0% (1032/1129)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:359:24):
+|   357 | 	}
+|   358 | .leaflet-control-layers-toggle {
+| > 359 | 	background-image: url(images/layers.png);
+|       | 	                      ^
+|   360 | 	width: 36px;
+|   361 | 	height: 36px;
+|   362 | 	}
+| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:364:24):
+|   362 | 	}
+|   363 | .leaflet-retina .leaflet-control-layers-toggle {
+| > 364 | 	background-image: url(images/layers-2x.png);
+|       | 	                      ^
+|   365 | 	background-size: 26px 26px;
+|   366 | 	}
+|   367 | .leaflet-touch .leaflet-control-layers-toggle {
+| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:407:24):
+|   405 | /* Default icon URLs */
+|   406 | .leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+| > 407 | 	background-image: url(images/marker-icon.png);
+|       | 	                      ^
+|   408 | 	}
+|   409 |
+|   410 |
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.5% (1351/1405)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 27675ms node_modules\expo-router\entry.js (1454 modules)
+Web Bundled 6360ms node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+ LOG  [web] Logs will appear in the browser console

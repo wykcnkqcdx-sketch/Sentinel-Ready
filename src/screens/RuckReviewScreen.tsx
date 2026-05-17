@@ -3,6 +3,7 @@ import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { exportSessionAsCoT, loadFTSConfig } from '@/src/services/atak';
 import type { TrainingSession } from '@/src/types/map';
 import { exportSessionGpx } from '@/src/utils/gpxExport';
+import { buildSavedRuckSafetyAlerts } from '@/src/utils/ruckSafety';
 import { isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -170,6 +171,17 @@ export default function RuckReviewScreen() {
   const actualMinutes = log?.ruck ? log.ruck.durationSeconds / 60 : 0;
   const distanceDelta = mission && log?.ruck ? log.ruck.distanceKm - mission.targetDistanceKm : 0;
   const timeDelta = mission ? actualMinutes - mission.targetMinutes : 0;
+  const safetyAlerts = log?.ruck ? buildSavedRuckSafetyAlerts({
+    distanceKm: log.ruck.distanceKm,
+    elapsedSeconds: log.ruck.durationSeconds,
+    targetDistanceKm: mission?.targetDistanceKm ?? 0,
+    targetMinutes: mission?.targetMinutes ?? 0,
+    packWeightKg: log.ruck.packWeightKg,
+    gpsQualityWarning: null,
+    readiness: Number(log.readiness) || 0,
+    rpe: log.ruck.rpe,
+    routeConfidence: log.ruck.routeConfidence ?? 'High',
+  }) : [];
 
   const handleExportGpx = useCallback(async () => {
     if (!log) return;
@@ -337,6 +349,28 @@ export default function RuckReviewScreen() {
         <Text style={styles.cardText}>{recovery?.text}</Text>
       </View>
 
+      {safetyAlerts.length > 0 ? (
+        <View style={styles.card}>
+          <Text style={styles.cardKicker}>SAFETY ALERTS</Text>
+          {safetyAlerts.map((alert) => (
+            <View
+              key={alert.id}
+              style={[
+                styles.safetyAlert,
+                alert.level === 'danger'
+                  ? styles.safetyDanger
+                  : alert.level === 'warning'
+                    ? styles.safetyWarning
+                    : styles.safetyInfo,
+              ]}
+            >
+              <Text style={styles.safetyTitle}>{alert.title}</Text>
+              <Text style={styles.safetyText}>{alert.message}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       <View style={styles.card}>
         <Text style={styles.cardKicker}>NEXT RUCK</Text>
         <Text style={styles.cardText}>{recommendation}</Text>
@@ -398,6 +432,12 @@ const styles = StyleSheet.create({
   planGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
   planWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
   planMeta: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
+  safetyAlert: { borderRadius: 8, borderWidth: 1, padding: 10, gap: 4 },
+  safetyInfo: { backgroundColor: '#0d1812', borderColor: '#2f6b3c' },
+  safetyWarning: { backgroundColor: '#21140b', borderColor: '#7a4a1f' },
+  safetyDanger: { backgroundColor: '#261010', borderColor: '#8a2f2a' },
+  safetyTitle: { color: '#ffffff', fontSize: 12, fontWeight: '900', letterSpacing: 0.8 },
+  safetyText: { color: '#c4cec0', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   splitRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#203529', paddingTop: 8, gap: 10 },
   splitKm: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
   splitText: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
