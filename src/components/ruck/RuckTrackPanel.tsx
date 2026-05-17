@@ -213,6 +213,10 @@ const MissionProgressPanel = memo(function MissionProgressPanel({
   const targetPace = targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : 0;
   const currentPace = distanceKm > 0 ? elapsedMinutes / distanceKm : 0;
   const paceDelta = currentPace > 0 && targetPace > 0 ? currentPace - targetPace : 0;
+  const projectedFinishMinutes = currentPace > 0 && targetDistance > 0 ? currentPace * targetDistance : 0;
+  const projectedDelta = projectedFinishMinutes > 0 && targetMinutes > 0
+    ? projectedFinishMinutes - targetMinutes
+    : 0;
 
   return (
     <View style={styles.progressPanel} pointerEvents="none">
@@ -239,6 +243,10 @@ const MissionProgressPanel = memo(function MissionProgressPanel({
       <Text style={styles.progressHint}>
         Next checkpoint {nextCheckpoint > 0 ? `${nextCheckpoint.toFixed(1)} km` : '--'}
         {paceDelta !== 0 ? ` · ${paceDelta > 0 ? '+' : ''}${Math.abs(paceDelta).toFixed(1)} min/km target` : ''}
+      </Text>
+      <Text style={projectedDelta > 0 ? styles.progressWarn : styles.progressGood}>
+        Projected finish {projectedFinishMinutes > 0 ? formatDuration(Math.round(projectedFinishMinutes)) : '--'}
+        {projectedDelta !== 0 ? ` · ${projectedDelta > 0 ? '+' : ''}${Math.round(projectedDelta)} min` : ''}
       </Text>
     </View>
   );
@@ -604,6 +612,8 @@ const styles = StyleSheet.create({
   progressFillWarn: { height: '100%', backgroundColor: '#ffb86b' },
   progressValue: { width: 34, color: '#ffffff', fontSize: 10, fontWeight: '900', textAlign: 'right' },
   progressHint: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
+  progressGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
+  progressWarn: { color: '#ffb86b', fontSize: 11, fontWeight: '900' },
 
   savePanel: {
     position: 'absolute',
