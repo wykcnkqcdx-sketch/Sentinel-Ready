@@ -7,6 +7,7 @@ export type UserProfile = {
   gender: Gender;
   testDate: string | null;
   age: string;
+  heightCm: string;
   role: string;
   trainingLevel: 'Foundation' | 'Intermediate' | 'Advanced';
   equipment: string;
@@ -26,6 +27,7 @@ export const defaultProfile: UserProfile = {
   gender: 'M',
   testDate: null,
   age: '',
+  heightCm: '',
   role: 'General readiness',
   trainingLevel: 'Intermediate',
   equipment: 'Ruck, running shoes, basic gym access',
