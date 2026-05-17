@@ -14,6 +14,8 @@ import {
   downloadRegion,
   getCacheStats,
   tilesForBounds,
+  enforceCacheLimit,
+  MAX_CACHE_BYTES,
 } from '../services/tileCache';
 
 const LAST_POSITION_KEY = 'sentinel_last_position';
@@ -92,6 +94,15 @@ export default function OfflineMapScreen() {
   const estimatedMB = ((estimatedTiles * BYTES_PER_TILE_ESTIMATE) / (1024 * 1024)).toFixed(1);
 
   const handleDownload = useCallback(async () => {
+    const estimatedBytes = estimatedTiles * BYTES_PER_TILE_ESTIMATE;
+    if (stats.totalBytes + estimatedBytes > MAX_CACHE_BYTES) {
+      Alert.alert(
+        'Storage Limit',
+        'This download would exceed the 500MB offline maps limit. Please clear your cache or select a smaller region.'
+      );
+      return;
+    }
+
     const ac = new AbortController();
     setAbortController(ac);
     setDownloading(true);
@@ -110,11 +121,15 @@ export default function OfflineMapScreen() {
         },
         ac.signal,
       );
+    
+    const wasCleared = await enforceCacheLimit(); // Failsafe if tile byte sizes were unusually large
       const newStats = await getCacheStats();
       if (!mountedRef.current) return;
       setStats(newStats);
       if (ac.signal.aborted) {
         setStatusMsg('Download cancelled.');
+    } else if (wasCleared) {
+      setStatusMsg('Download exceeded 500MB limit. Cache was automatically cleared.');
       } else {
         setStatusMsg(`Download complete. ${result.downloaded} tiles saved, ${result.skipped} already cached, ${result.failed} failed.`);
       }
@@ -127,6 +142,7 @@ export default function OfflineMapScreen() {
       }
     }
   }, [center, radius, layer]);
+  }, [center, radius, layer, stats.totalBytes, estimatedTiles]);
 
   const handleCancel = useCallback(() => {
     abortController?.abort();
