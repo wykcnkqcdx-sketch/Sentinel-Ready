@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-05-18T20:49:09.014Z",
+  "timestamp": "2026-05-18T21:02:21.245Z",
   "mode": "headless",
   "workerType": "audit",
   "model": "haiku",
-  "durationMs": 8452,
-  "executionId": "audit_1779137340562_ntofkc",
+  "durationMs": 12570,
+  "executionId": "audit_1779138128675_brq76a",
   "success": false,
   "findings": {
     "parseError": true,

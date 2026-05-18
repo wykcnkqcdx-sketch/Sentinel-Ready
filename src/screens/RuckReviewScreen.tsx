@@ -1,4 +1,5 @@
 import { RuckMapView } from '@/src/components/ruck/RuckMapView';
+import { SplitPaceChart } from '@/src/components/ruck/SplitPaceChart';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { exportSessionAsCoT, loadFTSConfig } from '@/src/services/atak';
 import type { TrainingSession } from '@/src/types/map';
@@ -378,14 +379,11 @@ export default function RuckReviewScreen() {
 
       {splits.length > 0 ? (
         <View style={styles.card}>
-          <Text style={styles.cardKicker}>SPLITS</Text>
-          {splits.map((split) => (
-            <View key={split.km} style={styles.splitRow}>
-              <Text style={styles.splitKm}>{split.km} km</Text>
-              <Text style={styles.splitText}>{formatDuration(split.splitSeconds)}</Text>
-              <Text style={styles.splitText}>{formatDuration(split.elapsedSeconds)}</Text>
-            </View>
-          ))}
+          <SplitPaceChart
+            splits={splits}
+            avgPaceSecondsPerKm={log.ruck.paceSecondsPerKm}
+            routePoints={routePoints}
+          />
         </View>
       ) : null}
 
@@ -438,9 +436,6 @@ const styles = StyleSheet.create({
   safetyDanger: { backgroundColor: '#261010', borderColor: '#8a2f2a' },
   safetyTitle: { color: '#ffffff', fontSize: 12, fontWeight: '900', letterSpacing: 0.8 },
   safetyText: { color: '#c4cec0', fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  splitRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#203529', paddingTop: 8, gap: 10 },
-  splitKm: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  splitText: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
-  primaryButton: { backgroundColor: '#91e6a3', borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
+primaryButton: { backgroundColor: '#91e6a3', borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
   primaryButtonText: { color: '#07110c', fontSize: 14, fontWeight: '900' },
 });
