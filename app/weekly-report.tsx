@@ -153,6 +153,15 @@ export default function WeeklyReportScreen() {
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
   const nextWeekIsGood = nextWeekAdvice.toLowerCase().includes('ready to progress');
 
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/log');
+  }, [router]);
+
   const shareReport = useCallback(async () => {
     try {
       await Share.share({
@@ -171,7 +180,7 @@ export default function WeeklyReportScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => { if (router.canGoBack()) router.back(); else router.replace('/log'); }}
+          onPress={handleBack}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
@@ -240,7 +249,7 @@ export default function WeeklyReportScreen() {
       <View style={adherence.status === 'off-track' ? styles.recoveryCardWarn : styles.performanceCard}>
         <Text style={styles.cardKicker}>PLAN ADHERENCE</Text>
         <Text style={adherence.status === 'off-track' ? styles.recoveryTitleWarn : styles.goalTitle}>
-          {adherence.label} {adherence.status === 'no-data' ? '' : `· ${adherence.score}%`}
+          {adherence.label} {adherence.status === 'no-data' ? '' : `- ${adherence.score}%`}
         </Text>
         <Text style={styles.goalAction}>{adherence.nextAction}</Text>
       </View>
@@ -276,7 +285,7 @@ export default function WeeklyReportScreen() {
         <Text style={styles.goalTitle}>{performance.consistencyLabel}</Text>
         <Text style={styles.goalAction}>{performance.highlight}</Text>
         <Text style={styles.adviceText}>
-          Best ruck {performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'} · Best run {performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : '--'} · Longest {performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : '--'}
+          Best ruck {performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'} - Best run {performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : '--'} - Longest {performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes} min` : '--'}
         </Text>
       </View>
 
@@ -291,7 +300,7 @@ export default function WeeklyReportScreen() {
       <View style={recoveryDebt.status === 'red' ? styles.recoveryCardWarn : styles.performanceCard}>
         <Text style={styles.cardKicker}>RECOVERY SNAPSHOT</Text>
         <Text style={recoveryDebt.status === 'red' ? styles.recoveryTitleWarn : styles.goalTitle}>
-          {recoveryDebt.label} {recoveryDebt.status === 'no-data' ? '' : `· ${recoveryDebt.score}%`}
+          {recoveryDebt.label} {recoveryDebt.status === 'no-data' ? '' : `- ${recoveryDebt.score}%`}
         </Text>
         <Text style={styles.goalAction}>{recoveryDebt.action}</Text>
       </View>
@@ -299,7 +308,7 @@ export default function WeeklyReportScreen() {
       <View style={injuryWatch.status === 'high' ? styles.recoveryCardWarn : styles.performanceCard}>
         <Text style={styles.cardKicker}>INJURY WATCH</Text>
         <Text style={injuryWatch.status === 'high' ? styles.recoveryTitleWarn : styles.goalTitle}>
-          {injuryWatch.label} {injuryWatch.status === 'no-data' ? '' : `· ${injuryWatch.score}%`}
+          {injuryWatch.label} {injuryWatch.status === 'no-data' ? '' : `- ${injuryWatch.score}%`}
         </Text>
         <Text style={styles.goalAction}>{injuryWatch.action}</Text>
       </View>
@@ -307,7 +316,7 @@ export default function WeeklyReportScreen() {
       <View style={trainingBalance.status === 'overload' ? styles.recoveryCardWarn : styles.performanceCard}>
         <Text style={styles.cardKicker}>TRAINING BALANCE</Text>
         <Text style={trainingBalance.status === 'overload' ? styles.recoveryTitleWarn : styles.goalTitle}>
-          {trainingBalance.label} {trainingBalance.status === 'no-data' ? '' : `· ${trainingBalance.score}%`}
+          {trainingBalance.label} {trainingBalance.status === 'no-data' ? '' : `- ${trainingBalance.score}%`}
         </Text>
         <Text style={styles.goalAction}>{trainingBalance.nextFocus}</Text>
       </View>
