@@ -29,6 +29,7 @@ const profile: UserProfile = {
   gender: 'M',
   testDate: '2026-06-01',
   age: '29',
+  heightCm: '178',
   role: 'Selection prep',
   trainingLevel: 'Intermediate',
   equipment: 'Ruck, gym',

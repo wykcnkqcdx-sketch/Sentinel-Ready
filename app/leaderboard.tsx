@@ -75,7 +75,7 @@ function PodiumCard({ members }: { members: RankedMember[] }) {
 
 export default function LeaderboardScreen() {
   const { logs } = useTraining();
-  const { profile } = useUser();
+  const profile = useUser();
   const router = useRouter();
   const [metric, setMetric] = useState<LeaderboardMetric>('ruck_km');
 

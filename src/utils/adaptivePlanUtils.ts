@@ -62,9 +62,9 @@ function buildDeloadWeek(weekNum: number, goalType: PlanGoalType): AdaptiveWeek 
     rest(2),
     day(3, [s('Strength', 20, 'Bodyweight only — push, pull, hinge pattern each.', 'low')]),
     rest(4),
-    day(5, goalType === 'ruck_event'
+    day(5, [goalType === 'ruck_event'
       ? s('Ruck', 30, 'Easy 4 km ruck at 50% usual pack weight.', 'low')
-      : s('Recovery', 30, 'Long walk or easy swim. Heart rate zone 1 only.', 'low')),
+      : s('Recovery', 30, 'Long walk or easy swim. Heart rate zone 1 only.', 'low')]),
     rest(6),
   ].map((d, i) => Array.isArray(d) ? d : (typeof d === 'function' ? rest(i) : d));
 

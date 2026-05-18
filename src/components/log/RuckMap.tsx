@@ -5,7 +5,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapboxGL from '@maplibre/maplibre-react-native';
+import * as MapboxGLModule from '@maplibre/maplibre-react-native';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MapboxGL = MapboxGLModule as any;
 import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
 
 function interpolateColor(color1: string, color2: string, factor: number) {
@@ -32,7 +34,8 @@ const FALLBACK_ROUTE_COLOR = '#3B82F6';
 
 export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
-  const cameraRef = useRef<MapboxGL.Camera>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cameraRef = useRef<any>(null);
   const routeColor = theme.mapRoute || FALLBACK_ROUTE_COLOR;
 
   // Decode the polyline string into an array of { latitude, longitude } for react-native-maps

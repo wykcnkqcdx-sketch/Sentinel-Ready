@@ -73,7 +73,7 @@ function WeekView({ week }: { week: AdaptiveWeek }) {
 
 export default function AdaptivePlanScreen() {
   const { logs } = useTraining();
-  const { profile } = useUser();
+  const profile = useUser();
   const router = useRouter();
 
   const [goalType, setGoalType] = useState<PlanGoalType>('general_fitness');

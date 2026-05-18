@@ -1,4 +1,6 @@
-import MapboxGL from '@maplibre/maplibre-react-native';
+import * as MapboxGLModule from '@maplibre/maplibre-react-native';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MapboxGL = MapboxGLModule as any;
 import { PMTiles } from 'pmtiles';
 import * as FileSystem from 'expo-file-system/legacy';
 
@@ -10,7 +12,7 @@ export function initPMTilesProtocol() {
   pmtilesInstance = new PMTiles('file://' + PMTILES_PATH);
 
   // Register the protocol with MapLibre's native HTTP client
-  MapboxGL.addCustomLoadHttpClient(async (request) => {
+  MapboxGL.addCustomLoadHttpClient(async (request: { url: string }) => {
     if (request.url.startsWith('pmtiles://')) {
       const match = request.url.match(/pmtiles:\/\/(.+)\/(\d+)\/(\d+)\/(\d+)/);
       if (match && pmtilesInstance) {
