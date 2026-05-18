@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   label: {
-    color: '#3a6b46',
+    color: '#5a8c5c',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 2,

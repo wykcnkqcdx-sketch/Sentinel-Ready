@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RuckTrackingState } from '@/src/hooks/useRuckTracking';
@@ -20,7 +21,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
           accessibilityRole="button"
           accessibilityLabel="Start ruck"
         >
-          <Text style={styles.primaryLabel}>▶  START RUCK</Text>
+          <View style={styles.btnContent}>
+            <MaterialCommunityIcons name="play" size={16} color="#050e09" />
+            <Text style={styles.primaryLabel}>START RUCK</Text>
+          </View>
         </TouchableOpacity>
       )}
 
@@ -32,7 +36,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityRole="button"
             accessibilityLabel="Pause ruck"
           >
-            <Text style={styles.ghostLabel}>⏸  PAUSE</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="pause" size={16} color="#7aad82" />
+              <Text style={styles.ghostLabel}>PAUSE</Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dangerBtn}
@@ -40,7 +47,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityRole="button"
             accessibilityLabel="Stop ruck"
           >
-            <Text style={styles.dangerLabel}>⬛  STOP</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="stop" size={16} color="#e05050" />
+              <Text style={styles.dangerLabel}>STOP</Text>
+            </View>
           </TouchableOpacity>
         </>
       )}
@@ -53,7 +63,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityRole="button"
             accessibilityLabel="Resume ruck"
           >
-            <Text style={styles.primaryLabel}>▶  RESUME</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="play" size={16} color="#050e09" />
+              <Text style={styles.primaryLabel}>RESUME</Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dangerBtn}
@@ -61,7 +74,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityRole="button"
             accessibilityLabel="Stop ruck"
           >
-            <Text style={styles.dangerLabel}>⬛  STOP</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="stop" size={16} color="#e05050" />
+              <Text style={styles.dangerLabel}>STOP</Text>
+            </View>
           </TouchableOpacity>
         </>
       )}
@@ -74,7 +90,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityRole="button"
             accessibilityLabel="Discard ruck"
           >
-            <Text style={styles.ghostLabel}>✕  DISCARD</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="close" size={16} color="#7aad82" />
+              <Text style={styles.ghostLabel}>DISCARD</Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.primaryBtn}
@@ -82,7 +101,10 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityRole="button"
             accessibilityLabel="Save ruck"
           >
-            <Text style={styles.primaryLabel}>✓  SAVE RUCK</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="check" size={16} color="#050e09" />
+              <Text style={styles.primaryLabel}>SAVE RUCK</Text>
+            </View>
           </TouchableOpacity>
         </>
       )}
@@ -94,6 +116,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: 10,
+  },
+  btnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   primaryBtn: {
     flex: 1,

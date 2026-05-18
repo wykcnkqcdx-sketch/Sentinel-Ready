@@ -148,6 +148,30 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
                 {tracking.distanceKm.toFixed(2)}
               </Text>
               <Text style={styles.simpleDistanceUnit}>KM</Text>
+              <View style={styles.simpleSecondary}>
+                <Text style={styles.simpleSecondaryText}>
+                  {(() => {
+                    const s = tracking.elapsedSeconds;
+                    const h = Math.floor(s / 3600);
+                    const m = Math.floor((s % 3600) / 60);
+                    const sec = s % 60;
+                    return h > 0
+                      ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+                      : `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+                  })()}
+                </Text>
+                <View style={styles.simpleSep} />
+                <Text style={styles.simpleSecondaryText}>
+                  {tracking.distanceKm > 0.01
+                    ? (() => {
+                        const paceMs = tracking.elapsedSeconds / tracking.distanceKm;
+                        const pm = Math.floor(paceMs / 60);
+                        const ps = Math.round(paceMs % 60);
+                        return `${pm}:${String(ps).padStart(2, '0')} /km`;
+                      })()
+                    : '--:-- /km'}
+                </Text>
+              </View>
             </View>
           )}
 
@@ -270,11 +294,29 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   simpleDistanceUnit: {
-    color: '#3a6b46',
+    color: '#5a9465',
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 6,
     textAlign: 'center',
+  },
+  simpleSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 10,
+  },
+  simpleSep: {
+    width: 1,
+    height: 14,
+    backgroundColor: '#1e3826',
+  },
+  simpleSecondaryText: {
+    color: '#8fbf8f',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    fontVariant: ['tabular-nums'],
   },
   panelPad: {
     padding: 14,

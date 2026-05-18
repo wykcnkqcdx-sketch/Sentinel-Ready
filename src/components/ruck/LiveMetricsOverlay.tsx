@@ -26,6 +26,7 @@ function formatPaceMins(minutesPerKm: number): string {
 }
 
 const GPS_DOTS = 5;
+const DOT_HEIGHTS = [4, 6, 8, 10, 12];
 
 export function LiveMetricsOverlay({
   distanceKm,
@@ -82,7 +83,11 @@ export function LiveMetricsOverlay({
           {Array.from({ length: GPS_DOTS }).map((_, i) => (
             <View
               key={i}
-              style={[styles.dot, i < gpsSignal ? styles.dotActive : styles.dotInactive]}
+              style={[
+                styles.dot,
+                { height: i < gpsSignal ? DOT_HEIGHTS[i] : Math.round(DOT_HEIGHTS[i] * 0.4) },
+                i < gpsSignal ? styles.dotActive : styles.dotInactive,
+              ]}
             />
           ))}
         </View>
@@ -123,14 +128,14 @@ const styles = StyleSheet.create({
   },
   value: {
     color: '#edf5ea',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.5,
     fontVariant: ['tabular-nums'],
   },
   unit: {
-    color: '#3a6b46',
-    fontSize: 8,
+    color: '#5a9465',
+    fontSize: 9,
     fontWeight: '900',
     letterSpacing: 2,
   },
@@ -155,11 +160,9 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     backgroundColor: '#91e6a3',
-    height: 12,
   },
   dotInactive: {
     backgroundColor: '#172c20',
-    height: 6,
   },
   stateChip: {
     borderRadius: 3,

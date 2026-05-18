@@ -72,5 +72,5 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   labelActive: { color: '#91e6a3' },
-  labelInactive: { color: '#3a6b46' },
+  labelInactive: { color: '#5a8c5c' },
 });

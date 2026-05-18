@@ -108,7 +108,7 @@ export const MissionSetupPanel = memo(function MissionSetupPanel({
           />
         </View>
         <View style={styles.missionField}>
-          <Text style={styles.missionLabel}>CHK</Text>
+          <Text style={styles.missionLabel}>CPT</Text>
           <TextInput
             style={styles.missionInput}
             value={draft.checkpointIntervalKm}
@@ -119,6 +119,21 @@ export const MissionSetupPanel = memo(function MissionSetupPanel({
           />
         </View>
       </View>
+      {(() => {
+        const d = parseFloat(draft.targetDistanceKm);
+        const m = parseFloat(draft.targetMinutes);
+        if (d > 0 && m > 0) {
+          const ppm = m / d;
+          const mins = Math.floor(ppm);
+          const secs = Math.round((ppm - mins) * 60);
+          return (
+            <Text style={styles.impliedPace}>
+              Target pace: {mins}:{String(secs).padStart(2, '0')} /km
+            </Text>
+          );
+        }
+        return null;
+      })()}
     </View>
   );
 });
@@ -155,6 +170,7 @@ const styles = StyleSheet.create({
   missionGrid: { flexDirection: 'row', gap: 8 },
   missionField: { flex: 1, gap: 4 },
   missionLabel: { color: '#8fbf8f', fontSize: 9, fontWeight: '900' },
+  impliedPace: { color: '#5a9465', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   missionInput: {
     backgroundColor: '#07110c',
     borderRadius: 8,
