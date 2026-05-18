@@ -25,7 +25,7 @@ import {
 } from '@/src/utils/trainingLogUtils';
 import { tokens as T } from '@/src/theme/tokens';
 import { useRouter } from 'expo-router';
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Alert, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
@@ -33,7 +33,7 @@ function formatWeekRange(start: string, end: string) {
   const s = new Date(start + 'T00:00:00');
   const e = new Date(end + 'T00:00:00');
   const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-  return `${s.toLocaleDateString('en-GB', opts)} – ${e.toLocaleDateString('en-GB', opts)}`;
+  return `${s.toLocaleDateString('en-GB', opts)} - ${e.toLocaleDateString('en-GB', opts)}`;
 }
 
 const CategoryPill = memo(function CategoryPill({ label, count, warn }: { label: string; count: number; warn?: boolean }) {
@@ -111,29 +111,43 @@ export default function WeeklyReportScreen() {
   const { gender, injuryNotes } = useUser();
   const router = useRouter();
 
-  const thisWeek = buildWeekSummary(logs, 0);
-  const lastWeek = buildWeekSummary(logs, 1);
-  const twoWeeksAgo = buildWeekSummary(logs, 2);
-  const healthScore = calculateTrainingLogHealthScore(logs);
-  const healthLabel = getTrainingLogHealthLabel(healthScore);
-  const nextWeekAdvice = buildNextWeekRecommendation(thisWeek, lastWeek);
-  const goalSummary = buildGoalSummary(goals);
-  const goalAction = buildGoalAction(goals, logs);
-  const performance = buildPerformanceSnapshot(logs);
-  const dfiftStandards = dfiftJson as DfiftStandards;
-  const dfiftSnapshot = buildDfiftSnapshot(logs, dfiftStandards, gender);
-  const goalSuggestions = buildGoalSuggestions(logs, goals, { standards: dfiftStandards, gender });
-  const recoveryDebt = buildRecoveryDebt(logs, injuryNotes);
-  const trainingBalance = buildTrainingBalance(logs);
-  const missionBrief = buildMissionBrief(logs, goals, { injuryNotes });
-  const forecast = buildReadinessForecast(logs, goals, { injuryNotes });
-  const insights = buildTrainingInsights(logs);
-  const milestones = buildMilestones(logs, goals, { standards: dfiftStandards, gender });
-  const earnedMilestones = getEarnedMilestones(milestones);
-  const nextMilestone = getNextMilestone(milestones);
-  const adherence = buildPlanAdherence(logs, goals, { injuryNotes });
-  const injuryWatch = buildInjuryWatch(logs, injuryNotes);
-  const report = buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes });
+  const {
+    thisWeek, lastWeek, twoWeeksAgo, healthScore, healthLabel, nextWeekAdvice,
+    goalSummary, goalAction, performance, dfiftSnapshot, goalSuggestions,
+    recoveryDebt, trainingBalance, missionBrief, forecast, insights,
+    milestones, earnedMilestones, nextMilestone, adherence, injuryWatch, report,
+  } = useMemo(() => {
+    const dfiftStandards = dfiftJson as DfiftStandards;
+    const tw = buildWeekSummary(logs, 0);
+    const lw = buildWeekSummary(logs, 1);
+    const twa = buildWeekSummary(logs, 2);
+    const hs = calculateTrainingLogHealthScore(logs);
+    const ms = buildMilestones(logs, goals, { standards: dfiftStandards, gender });
+    return {
+      thisWeek: tw,
+      lastWeek: lw,
+      twoWeeksAgo: twa,
+      healthScore: hs,
+      healthLabel: getTrainingLogHealthLabel(hs),
+      nextWeekAdvice: buildNextWeekRecommendation(tw, lw),
+      goalSummary: buildGoalSummary(goals),
+      goalAction: buildGoalAction(goals, logs),
+      performance: buildPerformanceSnapshot(logs),
+      dfiftSnapshot: buildDfiftSnapshot(logs, dfiftStandards, gender),
+      goalSuggestions: buildGoalSuggestions(logs, goals, { standards: dfiftStandards, gender }),
+      recoveryDebt: buildRecoveryDebt(logs, injuryNotes),
+      trainingBalance: buildTrainingBalance(logs),
+      missionBrief: buildMissionBrief(logs, goals, { injuryNotes }),
+      forecast: buildReadinessForecast(logs, goals, { injuryNotes }),
+      insights: buildTrainingInsights(logs),
+      milestones: ms,
+      earnedMilestones: getEarnedMilestones(ms),
+      nextMilestone: getNextMilestone(ms),
+      adherence: buildPlanAdherence(logs, goals, { injuryNotes }),
+      injuryWatch: buildInjuryWatch(logs, injuryNotes),
+      report: buildWeeklyReport(logs, new Date(), goals, { standards: dfiftStandards, gender }, { injuryNotes }),
+    };
+  }, [logs, goals, gender, injuryNotes]);
 
   const healthIsWarn = healthScore < 60;
   const nextWeekIsWarn = nextWeekAdvice.toLowerCase().includes('prioritise') || nextWeekAdvice.toLowerCase().includes('hold');
@@ -157,7 +171,7 @@ export default function WeeklyReportScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => { if (router.canGoBack()) router.back(); else router.replace('/log'); }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >

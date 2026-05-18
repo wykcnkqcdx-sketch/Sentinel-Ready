@@ -8,7 +8,7 @@ import {
   getReadinessNumber,
   isFatigueWatch,
 } from '@/src/utils/trainingLogUtils';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function daysSince(dateStr: string): number {
@@ -92,7 +92,7 @@ function getProtocol(score: number) {
 export default function RecoveryScreen() {
   const { logs, isLoading } = useTraining();
   const { injuryNotes } = useUser();
-  const [sleepIdx, setSleepIdx] = React.useState(3);
+  const [sleepIdx, setSleepIdx] = useState(3);
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => {
@@ -434,4 +434,21 @@ const styles = StyleSheet.create({
   targetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#1a2c20' },
   targetLabel: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
   targetValue: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+
+  deloadBanner: { flexDirection: 'row', backgroundColor: '#1a1a0d', borderRadius: 16, borderWidth: 1, borderColor: '#4b4523', overflow: 'hidden' },
+  deloadBannerAccent: { width: 4, backgroundColor: '#f3d36b' },
+  deloadBannerInner: { flex: 1, padding: 14, gap: 4 },
+  deloadBannerKicker: { color: '#f3d36b', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  deloadBannerTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  deloadBannerReason: { color: '#c8a070', fontSize: 13, lineHeight: 19 },
+
+  sleepCard: { backgroundColor: '#0d1812', borderRadius: 18, borderWidth: 1, borderColor: '#203529', overflow: 'hidden', flexDirection: 'row' },
+  sleepAccent: { width: 4 },
+  sleepInner: { flex: 1, padding: 16, gap: 10 },
+  sleepHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sleepVal: { fontSize: 26, fontWeight: '900' },
+  sleepChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  sleepChip: { borderRadius: 999, borderWidth: 1, borderColor: '#2f4a38', paddingHorizontal: 12, paddingVertical: 6 },
+  sleepChipText: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
+  sleepTip: { color: '#8fbf8f', fontSize: 12, lineHeight: 18, fontWeight: '800' },
 });
