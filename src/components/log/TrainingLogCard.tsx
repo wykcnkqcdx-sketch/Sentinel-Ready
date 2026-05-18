@@ -1,6 +1,7 @@
 import RuckMap from '@/src/components/log/RuckMap';
 import { TrainingLog } from '@/src/screens/TrainingContext';
 import { getReadinessLabel, getWeakLogReasons, isFatigueWatch } from '@/src/utils/trainingLogUtils';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -70,11 +71,17 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
             accessibilityRole="button"
             accessibilityLabel="Edit log"
           >
-            <Text style={styles.editButtonText}>Edit</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="pencil-outline" size={13} color="#91e6a3" />
+              <Text style={styles.editButtonText}>Edit</Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.editButton} onPress={() => onDuplicate(log.id)}>
-            <Text style={styles.editButtonText}>Duplicate</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="content-copy" size={13} color="#91e6a3" />
+              <Text style={styles.editButtonText}>Duplicate</Text>
+            </View>
           </TouchableOpacity>
 
           {weakLog ? (
@@ -84,7 +91,10 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
               accessibilityRole="button"
               accessibilityLabel="Improve log"
             >
-              <Text style={styles.improveButtonText}>Improve</Text>
+              <View style={styles.btnContent}>
+                <MaterialCommunityIcons name="arrow-up-circle-outline" size={13} color="#07110c" />
+                <Text style={styles.improveButtonText}>Improve</Text>
+              </View>
             </TouchableOpacity>
           ) : null}
 
@@ -94,7 +104,10 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
             accessibilityRole="button"
             accessibilityLabel="Delete log"
           >
-            <Text style={styles.deleteButtonText}>Delete</Text>
+            <View style={styles.btnContent}>
+              <MaterialCommunityIcons name="trash-can-outline" size={13} color="#ffb86b" />
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -128,6 +141,7 @@ const styles = StyleSheet.create({
   status: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
   statusWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
   actionRow: { flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
+  btnContent: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   editButton: { borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
   editButtonText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
   improveButton: { backgroundColor: '#ffb86b', borderWidth: 1, borderColor: '#ffb86b', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },

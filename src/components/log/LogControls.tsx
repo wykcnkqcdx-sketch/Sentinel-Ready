@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { TrainingFilter, SortMode, filters, sortModes } from '@/src/utils/trainingLogUtils';
@@ -44,13 +45,16 @@ const LogControls = memo(function LogControls({
         ) : null}
       </View>
 
-      <TextInput
-        style={styles.searchInput}
-        value={searchQuery}
-        onChangeText={onSearchChange}
-        placeholder="Search date, ruck, run, notes, load..."
-        placeholderTextColor="#6f7d70"
-      />
+      <View style={styles.searchRow}>
+        <MaterialCommunityIcons name="magnify" size={18} color="#5a9465" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={onSearchChange}
+          placeholder="Search date, ruck, run, notes, load..."
+          placeholderTextColor="#6f7d70"
+        />
+      </View>
 
       <Text style={styles.controlLabel}>Filter</Text>
       <View style={styles.chipRow}>
@@ -98,7 +102,9 @@ const styles = StyleSheet.create({
   controlsTitle: { color: '#ffffff', fontSize: 17, fontWeight: '900', marginTop: 3 },
   clearButton: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   clearButtonText: { color: '#c8f7d0', fontSize: 12, fontWeight: '900' },
-  searchInput: { backgroundColor: '#07110c', borderWidth: 1, borderColor: '#35523e', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 11, color: '#ffffff', fontSize: 14 },
+  searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#07110c', borderWidth: 1, borderColor: '#35523e', borderRadius: 14, paddingHorizontal: 12 },
+  searchIcon: { marginRight: 4 },
+  searchInput: { flex: 1, paddingVertical: 11, color: '#ffffff', fontSize: 14 },
   controlLabel: { color: '#dfe8da', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },

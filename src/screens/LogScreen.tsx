@@ -21,6 +21,7 @@ import {
   getTrainingLogHealthMessage,
   getWeakLogReasons,
 } from '@/src/utils/trainingLogUtils';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -153,7 +154,10 @@ export default function LogScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Add training log"
               >
-                <Text style={styles.primaryButtonText}>Add Training Log</Text>
+                <View style={styles.btnContent}>
+                  <MaterialCommunityIcons name="notebook-plus" size={15} color="#07110c" />
+                  <Text style={styles.primaryButtonText}>Add Log</Text>
+                </View>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -162,19 +166,31 @@ export default function LogScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="View weekly report"
               >
-                <Text style={styles.secondaryButtonText}>Weekly Report</Text>
+                <View style={styles.btnContent}>
+                  <MaterialCommunityIcons name="chart-bar" size={14} color="#91e6a3" />
+                  <Text style={styles.secondaryButtonText}>Weekly Report</Text>
+                </View>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/goals')}>
-                <Text style={styles.secondaryButtonText}>Goals ({goals.filter((goal) => goal.status === 'active').length})</Text>
+                <View style={styles.btnContent}>
+                  <MaterialCommunityIcons name="bullseye-arrow" size={14} color="#91e6a3" />
+                  <Text style={styles.secondaryButtonText}>Goals ({goals.filter((goal) => goal.status === 'active').length})</Text>
+                </View>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryButton} onPress={shareCsvExport}>
-                <Text style={styles.secondaryButtonText}>Export CSV</Text>
+                <View style={styles.btnContent}>
+                  <MaterialCommunityIcons name="export-variant" size={14} color="#91e6a3" />
+                  <Text style={styles.secondaryButtonText}>Export CSV</Text>
+                </View>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/import-logs')}>
-                <Text style={styles.secondaryButtonText}>Import CSV</Text>
+                <View style={styles.btnContent}>
+                  <MaterialCommunityIcons name="import" size={14} color="#91e6a3" />
+                  <Text style={styles.secondaryButtonText}>Import CSV</Text>
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -203,17 +219,46 @@ export default function LogScreen() {
               <Text style={styles.infoCardTitle}>Training Insights</Text>
               {insights.slice(0, 3).map((insight) => (
                 <View key={insight.title} style={insight.severity === 'warning' ? styles.insightRowWarn : styles.insightRow}>
-                  <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
-                  <Text style={styles.insightText}>{insight.message}</Text>
+                  <View style={[styles.insightAccent, { backgroundColor: insight.severity === 'warning' ? '#ffb86b' : '#91e6a3' }]} />
+                  <View style={styles.insightInner}>
+                    <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
+                    <Text style={styles.insightText}>{insight.message}</Text>
+                  </View>
                 </View>
               ))}
             </View>
 
-            <View style={[styles.infoCard, { gap: 4 }]}>
+            <View style={styles.infoCard}>
               <Text style={styles.infoCardTitle}>Training Split</Text>
-              <Text style={styles.infoCardText}>
-                Ruck {summary.ruck} · Strength {summary.strength} · Run {summary.run} · Recovery {summary.recovery} · Weak {summary.weakLogs}
-              </Text>
+              <View style={styles.splitRow}>
+                <View style={styles.splitPill}>
+                  <View style={[styles.splitDot, { backgroundColor: '#91e6a3' }]} />
+                  <Text style={[styles.splitCount, { color: '#91e6a3' }]}>{summary.ruck}</Text>
+                  <Text style={styles.splitPillLabel}>Ruck</Text>
+                </View>
+                <View style={styles.splitPill}>
+                  <View style={[styles.splitDot, { backgroundColor: '#3fc8e4' }]} />
+                  <Text style={[styles.splitCount, { color: '#3fc8e4' }]}>{summary.strength}</Text>
+                  <Text style={styles.splitPillLabel}>Strength</Text>
+                </View>
+                <View style={styles.splitPill}>
+                  <View style={[styles.splitDot, { backgroundColor: '#91e6a3' }]} />
+                  <Text style={[styles.splitCount, { color: '#91e6a3' }]}>{summary.run}</Text>
+                  <Text style={styles.splitPillLabel}>Run</Text>
+                </View>
+                <View style={styles.splitPill}>
+                  <View style={[styles.splitDot, { backgroundColor: '#8fbf8f' }]} />
+                  <Text style={[styles.splitCount, { color: '#8fbf8f' }]}>{summary.recovery}</Text>
+                  <Text style={styles.splitPillLabel}>Recovery</Text>
+                </View>
+                {summary.weakLogs > 0 && (
+                  <View style={styles.splitPill}>
+                    <View style={[styles.splitDot, { backgroundColor: '#ffb86b' }]} />
+                    <Text style={[styles.splitCount, { color: '#ffb86b' }]}>{summary.weakLogs}</Text>
+                    <Text style={styles.splitPillLabel}>Weak</Text>
+                  </View>
+                )}
+              </View>
             </View>
 
             <LogControls
@@ -270,7 +315,7 @@ export default function LogScreen() {
         accessibilityRole="button"
         accessibilityLabel="Add training log"
       >
-        <Text style={styles.fabIcon}>+</Text>
+        <MaterialCommunityIcons name="plus" size={32} color="#07110c" />
       </TouchableOpacity>
     </View>
   );
@@ -290,11 +335,14 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
   secondaryButton: { borderWidth: 1, borderColor: '#91e6a3', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 16 },
   secondaryButtonText: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
+  btnContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   infoCard: { backgroundColor: '#0d1812', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
   infoCardTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   infoCardText: { color: '#aeb8aa', fontSize: 13 },
-  insightRow: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 10, gap: 3 },
-  insightRowWarn: { backgroundColor: '#21140b', borderRadius: 12, borderWidth: 1, borderColor: '#7a4a1f', padding: 10, gap: 3 },
+  insightRow: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', overflow: 'hidden', flexDirection: 'row' },
+  insightRowWarn: { backgroundColor: '#21140b', borderRadius: 12, borderWidth: 1, borderColor: '#7a4a1f', overflow: 'hidden', flexDirection: 'row' },
+  insightAccent: { width: 3, flexShrink: 0 },
+  insightInner: { flex: 1, padding: 10, gap: 3 },
   insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
   insightTitleWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
   insightText: { color: '#aeb8aa', fontSize: 12, lineHeight: 18 },
@@ -305,5 +353,9 @@ const styles = StyleSheet.create({
   emptyButton: { backgroundColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
   emptyButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
   fab: { position: 'absolute', bottom: 24, right: 24, backgroundColor: '#91e6a3', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
-  fabIcon: { color: '#07110c', fontSize: 32, fontWeight: '400' },
+  splitRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  splitPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#07110c', borderRadius: 999, borderWidth: 1, borderColor: '#203529', paddingHorizontal: 10, paddingVertical: 6 },
+  splitDot: { width: 7, height: 7, borderRadius: 4 },
+  splitCount: { fontSize: 14, fontWeight: '900' },
+  splitPillLabel: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
 });
