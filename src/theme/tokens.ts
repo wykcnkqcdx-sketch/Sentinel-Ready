@@ -1,48 +1,73 @@
 import { colours } from './colours';
 
 export const tokens = {
-  // Base surfaces — darker, crisper
-  bgScreen: '#050e09',
-  bgPanel: '#0a1610',
-  bgPanelAlt: '#0e2018',
-  bgPanelDim: '#080f0b',
-  bgPanelWarn: '#1c0f08',
+  // Backgrounds
+  bgScreen:    '#07110c',
+  bgPanel:     '#0d1812',
+  bgPanelDark: '#0a1510',
+  bgField:     '#101a14',
+  bgDeep:      '#102d1a',
+  bgBadge:     '#1e3a27',
+  bgWarn:      '#21140b',
+  bgWarnBadge: '#2a1a0d',
 
-  // Borders — tighter, more tactical
-  borderDefault: '#172c20',
-  borderAlt: '#235c32',
-  borderWarn: '#6b3c16',
+  // Borders
+  borderSubtle: '#203529',
+  borderField:  '#26382c',
+  borderTag:    '#274b32',
+  borderAccent: '#2f6b3c',
+  borderWarn:   '#7a4a1f',
+  borderBack:   '#35523e',
   borderBright: 'rgba(145,230,163,0.28)',
-  borderChip: '#1e3d28',
-  borderDim: '#1a2e22',
-  divider: '#101e15',
 
   // Text
-  textPrimary: '#edf5ea',
-  textPrimaryBright: '#ffffff',
-  textMuted: '#96b09a',
-  textMuted2: '#b8cbb8',
-  textMuted3: '#91e6a3',
-  textOk: '#91e6a3',
-  textWarn: '#ffaa44',
-  textNeutral: '#7aad82',
+  textPrimary:     '#f2f5ef',
+  textWhite:       '#ffffff',
+  textBody:        '#c4cec0',
+  textMuted:       '#aeb8aa',
+  textMutedAccent: '#8fbf8f',
+  textAccent:      '#91e6a3',
+  textHint:        '#4a9e6a',
+  textWarn:        '#ffb86b',
+  textBright:      '#c8f7d0',
+  textDim:         '#6f7d70',
+  textBodyAlt:     '#dfe8da',
+  textWarnMuted:   '#c8a070',
+  textCategory:    '#c8d8c5',
 
-  // Accents / semantic
+  // Semantic aliases
+  textOk:     '#91e6a3',
   accentGood: '#91e6a3',
-  accentWarn: '#ffaa44',
-  accentElectric: '#3fc8e4',
-  accentNeutral: '#7aad82',
-  accentDanger: '#e05050',
-
-  // Card radius — angular/tactical
-  radiusCard: 6,
-  radiusChip: 4,
-  radiusFab: 8,
+  accentWarn: '#ffb86b',
 
   // Inputs
-  inputBg: '#050e09',
-  inputBorder: '#172c20',
-  placeholder: '#4a6050',
+  inputBg:     '#07110c',
+  inputBorder: '#203529',
+  placeholder: '#4a9e6a',
+
+  // Dashboard-variant (darker tactical theme)
+  bgDark:           '#050e09',
+  bgPanelAlt:       '#0a1610',
+  bgPanelDeep:      '#080f0b',
+  bgBadgeDark:      '#0e2018',
+  bgInsightWarn:    '#110c06',
+  bgWarnDeep:       '#1c0e08',
+  borderDim:        '#172c20',
+  borderGreen:      '#235c32',
+  borderWarnMedium: '#6b3c16',
+  borderWarnFaint:  '#3a2210',
+  textPrimaryDark:  '#edf5ea',
+  textMutedDark:    '#5a7a62',
+  textSubtle:       '#7a9480',
+  textAction:       '#cddec8',
+  textHintDark:     '#3a6b46',
+  accentWarnBright: '#ffaa44',
+  dotRed:           '#e05050',
+
+  // Radius
+  radiusCard: 18,
+  radiusChip: 999,
+  radiusFab:  8,
 
   raw: colours,
 } as const;

@@ -1,3 +1,4 @@
+import { tokens as T } from '@/src/theme/tokens';
 import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
@@ -18,7 +19,7 @@ import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { DimensionValue, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
 
@@ -210,7 +211,7 @@ export default function DashboardScreen() {
               const offset = CIRC * (1 - (readinessPercentage > 0 ? readinessPercentage : 0) / 100);
               return (
                 <Svg width={120} height={120} style={styles.readinessRingSvg}>
-                  <Circle cx={60} cy={60} r={R} fill="none" stroke="#172c20" strokeWidth={10} />
+                  <Circle cx={60} cy={60} r={R} fill="none" stroke={T.borderDim} strokeWidth={10} />
                   <Circle cx={60} cy={60} r={R} fill="none" stroke={readinessStatus.prog}
                     strokeWidth={10} strokeLinecap="round"
                     strokeDasharray={CIRC} strokeDashoffset={offset} />
@@ -505,12 +506,12 @@ export default function DashboardScreen() {
             styles.loadFill,
             {
               width: `${weekProgress * 100}%`,
-              backgroundColor: weekLoadStatus.isWarn ? '#ffb86b' : thisWeek.total >= WEEKLY_TARGET ? '#62d982' : '#4a9e6a',
+              backgroundColor: weekLoadStatus.isWarn ? T.textWarn : thisWeek.total >= WEEKLY_TARGET ? '#62d982' : T.textHint,
             },
           ]} />
         </View>
 
-        <SparkLine data={weeklyLoadData} width={240} height={28} color="#91e6a3" />
+        <SparkLine data={weeklyLoadData} width={240} height={28} color={T.textAccent} />
 
         {thisWeek.total > 0 ? (
           <View style={styles.pillRow}>
@@ -537,80 +538,42 @@ export default function DashboardScreen() {
       </View>
 
       <View style={styles.connectSection}>
-        <Text style={styles.connectKicker}>CONNECT</Text>
+        <Text style={styles.connectKicker}>QUICK ACCESS</Text>
         <View style={styles.connectRow}>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToStrava}
-            accessibilityRole="button"
-            accessibilityLabel="Open Strava integration"
-          >
-            <View style={styles.connectPillDot} />
-            <Text style={styles.connectPillText}>Strava</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToAtak}
-            accessibilityRole="button"
-            accessibilityLabel="Open ATAK integration"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotAtak]} />
-            <Text style={styles.connectPillText}>ATAK</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToGpx}
-            accessibilityRole="button"
-            accessibilityLabel="Open GPX Files"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotGpx]} />
-            <Text style={styles.connectPillText}>GPX Files</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={() => router.push('/check-in')}
-            accessibilityRole="button"
-            accessibilityLabel="Log today's check-in"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotCheckin]} />
-            <Text style={styles.connectPillText}>Check-in</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToOfflineMap}
-            accessibilityRole="button"
-            accessibilityLabel="Open offline map tile cache"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotOffline]} />
-            <Text style={styles.connectPillText}>Offline Maps</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToNotifications}
-            accessibilityRole="button"
-            accessibilityLabel="Open notification settings"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotAlerts]} />
-            <Text style={styles.connectPillText}>Alerts</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={() => router.push('/progress')}
-            accessibilityRole="button"
-            accessibilityLabel="View progress charts"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotProgress]} />
-            <Text style={styles.connectPillText}>Progress</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={() => router.push('/body-comp')}
-            accessibilityRole="button"
-            accessibilityLabel="Open body composition tracker"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotBodyComp]} />
-            <Text style={styles.connectPillText}>Body Comp</Text>
-          </TouchableOpacity>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToStrava} accessibilityRole="button" accessibilityLabel="Open Strava integration">
+            <View style={[styles.connectDot, { backgroundColor: '#FC4C02' }]} />
+            <Text style={styles.connectCellText}>Strava</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToAtak} accessibilityRole="button" accessibilityLabel="Open ATAK integration">
+            <View style={[styles.connectDot, { backgroundColor: '#3a7bd5' }]} />
+            <Text style={styles.connectCellText}>ATAK</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToGpx} accessibilityRole="button" accessibilityLabel="Open GPX Files">
+            <View style={[styles.connectDot, { backgroundColor: T.borderGreen }]} />
+            <Text style={styles.connectCellText}>GPX</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/check-in')} accessibilityRole="button" accessibilityLabel="Log today's check-in">
+            <View style={[styles.connectDot, { backgroundColor: T.textAccent }]} />
+            <Text style={styles.connectCellText}>Check-in</Text>
+          </Pressable>
+        </View>
+        <View style={styles.connectRow}>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToOfflineMap} accessibilityRole="button" accessibilityLabel="Open offline map tile cache">
+            <View style={[styles.connectDot, { backgroundColor: '#3fc8e4' }]} />
+            <Text style={styles.connectCellText}>Offline Maps</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToNotifications} accessibilityRole="button" accessibilityLabel="Open notification settings">
+            <View style={[styles.connectDot, { backgroundColor: T.accentWarnBright }]} />
+            <Text style={styles.connectCellText}>Alerts</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/progress')} accessibilityRole="button" accessibilityLabel="View progress charts">
+            <View style={[styles.connectDot, { backgroundColor: '#4a9eff' }]} />
+            <Text style={styles.connectCellText}>Progress</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/body-comp')} accessibilityRole="button" accessibilityLabel="Open body composition tracker">
+            <View style={[styles.connectDot, { backgroundColor: '#a78bfa' }]} />
+            <Text style={styles.connectCellText}>Body Comp</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -676,31 +639,31 @@ export default function DashboardScreen() {
         accessibilityRole="button"
         accessibilityLabel="Log a training session"
       >
-        <Text style={styles.fabText}>＋  LOG SESSION</Text>
+        <Text style={styles.fabText}>+ LOG SESSION</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#050e09', position: 'relative' },
+  screen: { flex: 1, backgroundColor: T.bgDark, position: 'relative' },
   fab: {
     position: 'absolute',
     bottom: 20,
     left: 16,
     right: 16,
-    backgroundColor: '#91e6a3',
+    backgroundColor: T.textAccent,
     borderRadius: 6,
     paddingVertical: 15,
     alignItems: 'center',
-    shadowColor: '#91e6a3',
+    shadowColor: T.textAccent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   fabText: {
-    color: '#050e09',
+    color: T.bgDark,
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 3,
@@ -710,10 +673,10 @@ const styles = StyleSheet.create({
   // Header
   header: { gap: 0, marginBottom: 4 },
   headerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  kicker: { color: '#3a6b46', fontSize: 10, fontWeight: '900', letterSpacing: 3.5 },
-  title: { color: '#edf5ea', fontSize: 28, fontWeight: '900', letterSpacing: -0.5, marginTop: 4 },
-  subtitle: { color: '#5a7a62', fontSize: 14, lineHeight: 20, marginTop: 4 },
-  headerDivider: { height: 1, backgroundColor: '#172c20', marginTop: 14 },
+  kicker: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 3.5 },
+  title: { color: T.textPrimaryDark, fontSize: 28, fontWeight: '900', letterSpacing: -0.5, marginTop: 4 },
+  subtitle: { color: T.textMutedDark, fontSize: 14, lineHeight: 20, marginTop: 4 },
+  headerDivider: { height: 1, backgroundColor: T.borderDim, marginTop: 14 },
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -737,210 +700,203 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   metric: { fontSize: 36, fontWeight: '900', letterSpacing: -1 },
-  metricUnit: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2.5, marginTop: -2 },
+  metricUnit: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5, marginTop: -2 },
   readinessSidePanel: { flex: 1, gap: 10 },
-  cardText: { color: '#7a9480', fontSize: 13, lineHeight: 19 },
+  cardText: { color: T.textSubtle, fontSize: 13, lineHeight: 19 },
   readinessDetails: { gap: 6 },
   detailChip: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  detailChipDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#91e6a3', opacity: 0.6 },
-  detailText: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 0.5, fontVariant: ['tabular-nums'] },
+  detailChipDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: T.textAccent, opacity: 0.6 },
+  detailText: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 0.5, fontVariant: ['tabular-nums'] },
 
   // Legacy badge kept for statusBadge refs
-  statusBadge: { backgroundColor: '#0e2018', borderColor: '#235c32', borderWidth: 1, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4 },
+  statusBadge: { backgroundColor: T.bgBadgeDark, borderColor: T.borderGreen, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4 },
   statusBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 
-  progressTrack: { height: 4, backgroundColor: '#0d1a12', borderRadius: 2, marginTop: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
+  progressTrack: { height: 4, backgroundColor: '#0d1a12', borderRadius: 2, marginTop: 14, overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim },
   progressFill: { height: '100%', borderRadius: 2 },
 
   // Mission brief
   briefHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   briefTitleBlock: { flex: 1 },
-  briefTitle: { color: '#edf5ea', fontSize: 20, fontWeight: '900' },
-  briefTitleWarn: { color: '#ffaa44', fontSize: 20, fontWeight: '900' },
-  briefBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
-  briefBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
-  briefBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  briefBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  briefActionBox: { backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4, marginTop: 10 },
-  briefActionLabel: { color: '#91e6a3', fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
-  briefActionText: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700' },
-  briefSecondary: { color: '#7a9480', fontSize: 12, lineHeight: 18, fontWeight: '600', marginTop: 6 },
+  briefTitle: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900' },
+  briefTitleWarn: { color: T.accentWarnBright, fontSize: 20, fontWeight: '900' },
+  briefBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
+  briefBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
+  briefBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  briefBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  briefActionBox: { backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4, marginTop: 10 },
+  briefActionLabel: { color: T.textAccent, fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  briefActionText: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700' },
+  briefSecondary: { color: T.textSubtle, fontSize: 12, lineHeight: 18, fontWeight: '600', marginTop: 6 },
 
   // Performance
   performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  performanceItem: { width: '47%', backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 3 },
-  performanceValue: { color: '#edf5ea', fontSize: 20, fontWeight: '900' },
-  performanceLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  performanceItem: { width: '47%', backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 3 },
+  performanceValue: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900' },
+  performanceLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
 
   // Recovery debt
   recoveryDebtRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  recoveryDebtScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
-  recoveryDebtScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  recoveryDebtBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
-  recoveryDebtBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
-  recoveryDebtBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  recoveryDebtBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  recoveryDebtAction: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+  recoveryDebtScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
+  recoveryDebtScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
+  recoveryDebtBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
+  recoveryDebtBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
+  recoveryDebtBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  recoveryDebtBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  recoveryDebtAction: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
 
   // Injury
   injuryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  injuryScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
-  injuryScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  injuryBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
-  injuryBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
-  injuryBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  injuryBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  injuryAction: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+  injuryScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
+  injuryScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
+  injuryBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
+  injuryBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
+  injuryBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  injuryBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  injuryAction: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
 
   // Balance
   balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  balanceScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
-  balanceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  balanceBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
-  balanceBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
-  balanceBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  balanceBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  balanceFocus: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+  balanceScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
+  balanceScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
+  balanceBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
+  balanceBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
+  balanceBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  balanceBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  balanceFocus: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
 
   // Forecast
   forecastHeader: { gap: 3 },
-  forecastTitle: { color: '#edf5ea', fontSize: 20, fontWeight: '900' },
-  forecastTitleWarn: { color: '#ffaa44', fontSize: 20, fontWeight: '900' },
+  forecastTitle: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900' },
+  forecastTitleWarn: { color: T.accentWarnBright, fontSize: 20, fontWeight: '900' },
   forecastRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, marginTop: 8 },
   forecastDay: { alignItems: 'center', gap: 6, flex: 1 },
-  forecastDayLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  forecastDotGreen: { width: 12, height: 12, borderRadius: 2, backgroundColor: '#91e6a3' },
-  forecastDotAmber: { width: 12, height: 12, borderRadius: 2, backgroundColor: '#ffaa44' },
-  forecastDotRed: { width: 12, height: 12, borderRadius: 2, backgroundColor: '#e05050' },
+  forecastDayLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  forecastDotGreen: { width: 12, height: 12, borderRadius: 2, backgroundColor: T.textAccent },
+  forecastDotAmber: { width: 12, height: 12, borderRadius: 2, backgroundColor: T.accentWarnBright },
+  forecastDotRed: { width: 12, height: 12, borderRadius: 2, backgroundColor: T.dotRed },
 
   // Adherence
   adherenceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  adherenceScore: { color: '#edf5ea', fontSize: 34, fontWeight: '900' },
-  adherenceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  adherenceBadge: { backgroundColor: '#0e2018', borderRadius: 4, borderWidth: 1, borderColor: '#235c32', paddingHorizontal: 10, paddingVertical: 6 },
-  adherenceBadgeWarn: { backgroundColor: '#1c0e08', borderRadius: 4, borderWidth: 1, borderColor: '#6b3c16', paddingHorizontal: 10, paddingVertical: 6 },
-  adherenceBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  adherenceBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  adherenceAction: { color: '#cddec8', fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
-  adherenceMissing: { color: '#3a6b46', fontSize: 11, lineHeight: 18, fontWeight: '800', letterSpacing: 0.5 },
+  adherenceScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
+  adherenceScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
+  adherenceBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
+  adherenceBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
+  adherenceBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  adherenceBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  adherenceAction: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
+  adherenceMissing: { color: T.textHintDark, fontSize: 11, lineHeight: 18, fontWeight: '800', letterSpacing: 0.5 },
 
   // Insights
-  insightItem: { backgroundColor: '#050e09', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#172c20', borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4 },
-  insightItemGood: { backgroundColor: '#080f0c', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#91e6a3', borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4 },
-  insightItemWarn: { backgroundColor: '#110c06', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#ffaa44', borderWidth: 1, borderColor: '#3a2210', padding: 12, gap: 4 },
-  insightTitle: { color: '#edf5ea', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
-  insightTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
-  insightText: { color: '#7a9480', fontSize: 12, lineHeight: 18, fontWeight: '600' },
+  insightItem: { backgroundColor: T.bgDark, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.borderDim, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4 },
+  insightItemGood: { backgroundColor: T.bgPanelDeep, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.textAccent, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4 },
+  insightItemWarn: { backgroundColor: T.bgInsightWarn, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.accentWarnBright, borderWidth: 1, borderColor: T.borderWarnFaint, padding: 12, gap: 4 },
+  insightTitle: { color: T.textPrimaryDark, fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
+  insightTitleWarn: { color: T.accentWarnBright, fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
+  insightText: { color: T.textSubtle, fontSize: 12, lineHeight: 18, fontWeight: '600' },
 
   // Milestones
   milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
-  milestoneCount: { color: '#edf5ea', fontSize: 28, fontWeight: '900' },
-  milestoneNext: { backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 10, maxWidth: '48%' },
-  milestoneNextLabel: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  milestoneNextTitle: { color: '#cddec8', fontSize: 12, fontWeight: '800', marginTop: 3 },
+  milestoneCount: { color: T.textPrimaryDark, fontSize: 28, fontWeight: '900' },
+  milestoneNext: { backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 10, maxWidth: '48%' },
+  milestoneNextLabel: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  milestoneNextTitle: { color: T.textAction, fontSize: 12, fontWeight: '800', marginTop: 3 },
   milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   milestonePill: { borderWidth: 1, borderColor: '#1e3d28', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
-  milestonePillEarned: { backgroundColor: '#0e2018', borderWidth: 1, borderColor: '#235c32', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
-  milestonePillText: { color: '#3a6b46', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-  milestonePillTextEarned: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  milestonePillEarned: { backgroundColor: T.bgBadgeDark, borderWidth: 1, borderColor: T.borderGreen, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
+  milestonePillText: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  milestonePillTextEarned: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
 
   // Goals
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
-  goalNumber: { color: '#edf5ea', fontSize: 26, fontWeight: '900' },
-  goalNumberComplete: { color: '#91e6a3', fontSize: 26, fontWeight: '900' },
-  goalLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '900', marginTop: 2, letterSpacing: 2 },
-  goalButton: { backgroundColor: '#91e6a3', borderRadius: 4, paddingHorizontal: 14, paddingVertical: 9 },
-  goalButtonText: { color: '#050e09', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  goalTrack: { height: 4, backgroundColor: '#050e09', borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: '#172c20', marginTop: 12 },
-  goalFill: { height: '100%', backgroundColor: '#91e6a3', borderRadius: 2 },
-  goalAction: { backgroundColor: '#050e09', borderRadius: 4, borderWidth: 1, borderColor: '#172c20', padding: 12, gap: 4, marginTop: 12 },
-  goalActionWarn: { backgroundColor: '#110c06', borderRadius: 4, borderLeftWidth: 2, borderLeftColor: '#ffaa44', borderWidth: 1, borderColor: '#3a2210', padding: 12, gap: 4, marginTop: 12 },
-  goalActionTitle: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  goalActionTitleWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  goalActionText: { color: '#7a9480', fontSize: 12, lineHeight: 18, fontWeight: '600' },
+  goalNumber: { color: T.textPrimaryDark, fontSize: 26, fontWeight: '900' },
+  goalNumberComplete: { color: T.textAccent, fontSize: 26, fontWeight: '900' },
+  goalLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '900', marginTop: 2, letterSpacing: 2 },
+  goalButton: { backgroundColor: T.textAccent, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 9 },
+  goalButtonText: { color: T.bgDark, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  goalTrack: { height: 4, backgroundColor: T.bgDark, borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim, marginTop: 12 },
+  goalFill: { height: '100%', backgroundColor: T.textAccent, borderRadius: 2 },
+  goalAction: { backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4, marginTop: 12 },
+  goalActionWarn: { backgroundColor: T.bgInsightWarn, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.accentWarnBright, borderWidth: 1, borderColor: T.borderWarnFaint, padding: 12, gap: 4, marginTop: 12 },
+  goalActionTitle: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  goalActionTitleWarn: { color: T.accentWarnBright, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  goalActionText: { color: T.textSubtle, fontSize: 12, lineHeight: 18, fontWeight: '600' },
 
   // Grid & sections
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   section: { marginTop: 4, gap: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { color: '#edf5ea', fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
-  sectionTag: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2, borderWidth: 1, borderColor: '#172c20', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3 },
+  sectionTitle: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
+  sectionTag: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2, borderWidth: 1, borderColor: T.borderDim, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3 },
 
   // Readiness trend chart
   chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 130, marginTop: 4 },
   barColumn: { alignItems: 'center', width: 36 },
-  barScore: { color: '#5a7a62', fontSize: 10, fontWeight: '800', marginBottom: 6 },
-  barBackground: { width: 20, height: 90, backgroundColor: '#0a1410', borderRadius: 3, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
+  barScore: { color: T.textMutedDark, fontSize: 10, fontWeight: '800', marginBottom: 6 },
+  barBackground: { width: 20, height: 90, backgroundColor: T.bgPanelAlt, borderRadius: 3, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim },
   barFill: { width: '100%', borderRadius: 2 },
-  barLabel: { color: '#3a6b46', fontSize: 9, fontWeight: '800', marginTop: 6, letterSpacing: 0.5 },
+  barLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '800', marginTop: 6, letterSpacing: 0.5 },
 
   reportToggle: {
     alignItems: 'center',
     paddingVertical: 11,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#172c20',
-    backgroundColor: '#080f0b',
+    borderColor: T.borderDim,
+    backgroundColor: T.bgPanelDeep,
   },
   reportToggleText: {
-    color: '#91e6a3',
+    color: T.textAccent,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 2.5,
   },
 
   // Weekly load
-  loadCard: { backgroundColor: '#0a1610', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: '#91e6a3', borderColor: '#172c20', gap: 12 },
-  loadCardWarn: { backgroundColor: '#100c08', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: '#ffaa44', borderColor: '#3a2210', gap: 12 },
+  loadCard: { backgroundColor: T.bgPanelAlt, borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: T.textAccent, borderColor: T.borderDim, gap: 12 },
+  loadCardWarn: { backgroundColor: '#100c08', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: T.accentWarnBright, borderColor: T.borderWarnFaint, gap: 12 },
   loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  loadKicker: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
-  loadCount: { color: '#edf5ea', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  loadCountWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  loadBadge: { backgroundColor: '#0e2018', borderWidth: 1, borderColor: '#235c32', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  loadBadgeWarn: { backgroundColor: '#1c0e08', borderWidth: 1, borderColor: '#6b3c16', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  loadBadgeText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  loadBadgeTextWarn: { color: '#ffaa44', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  loadTrack: { height: 4, backgroundColor: '#050e09', borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
+  loadKicker: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
+  loadCount: { color: T.textPrimaryDark, fontSize: 22, fontWeight: '900', marginTop: 4 },
+  loadCountWarn: { color: T.accentWarnBright, fontSize: 22, fontWeight: '900', marginTop: 4 },
+  loadBadge: { backgroundColor: T.bgBadgeDark, borderWidth: 1, borderColor: T.borderGreen, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
+  loadBadgeWarn: { backgroundColor: T.bgWarnDeep, borderWidth: 1, borderColor: T.borderWarnMedium, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
+  loadBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  loadBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  loadTrack: { height: 4, backgroundColor: T.bgDark, borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim },
   loadFill: { height: '100%', borderRadius: 2 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  pill: { backgroundColor: '#0e2018', borderWidth: 1, borderColor: '#235c32', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  pillText: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
+  pill: { backgroundColor: T.bgBadgeDark, borderWidth: 1, borderColor: T.borderGreen, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
+  pillText: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
   loadNoData: { color: '#3a5040', fontSize: 13, fontWeight: '700' },
-  loadSubText: { color: '#3a6b46', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
-  loadWarnText: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
+  loadSubText: { color: T.textHintDark, fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  loadWarnText: { color: T.accentWarnBright, fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
 
   // Connect section
   connectSection: {
-    backgroundColor: '#0a1610',
+    backgroundColor: T.bgPanelAlt,
     borderRadius: 6,
     borderWidth: 1,
-    borderLeftWidth: 3,
-    borderLeftColor: '#3fc8e4',
-    borderColor: '#172c20',
-    padding: 16,
-    gap: 12,
+    borderColor: T.borderDim,
+    padding: 14,
+    gap: 10,
   },
-  connectKicker: { color: '#3a6b46', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
-  connectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  connectPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    backgroundColor: '#050e09',
-    borderRadius: 4,
+  connectKicker: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
+  connectRow: { flexDirection: 'row', gap: 8 },
+  connectCell: {
+    flex: 1,
+    backgroundColor: T.bgDark,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#172c20',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+    borderColor: T.borderDim,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 64,
   },
-  connectPillDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FC4C02' },
-  connectPillDotAtak: { backgroundColor: '#3a7bd5' },
-  connectPillDotGpx: { backgroundColor: '#235c32' },
-  connectPillDotCheckin: { backgroundColor: '#91e6a3' },
-  connectPillDotOffline: { backgroundColor: '#3fc8e4' },
-  connectPillDotAlerts: { backgroundColor: '#ffaa44' },
-  connectPillDotProgress: { backgroundColor: '#4a9eff' },
-  connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
-  connectPillText: { color: '#b8cbb8', fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
+  connectCellPressed: { opacity: 0.7 },
+  connectDot: { width: 8, height: 8, borderRadius: 4 },
+  connectCellText: { color: '#b8cbb8', fontSize: 10, fontWeight: '800', letterSpacing: 0.3, textAlign: 'center' },
 });
