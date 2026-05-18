@@ -1,56 +1,56 @@
 {
   "running": true,
-  "startedAt": "2026-05-15T13:23:41.760Z",
+  "startedAt": "2026-05-18T20:16:38.478Z",
   "workers": {
     "map": {
-      "runCount": 15,
-      "successCount": 15,
+      "runCount": 16,
+      "successCount": 16,
       "failureCount": 0,
-      "averageDurationMs": 7.066666666666666,
-      "isRunning": false,
-      "nextRun": "2026-05-15T21:34:31.201Z",
-      "lastStartedAt": "2026-05-15T21:19:31.146Z",
-      "lastRun": "2026-05-15T21:19:31.153Z"
+      "averageDurationMs": 7.0625,
+      "lastRun": "2026-05-18T20:16:38.501Z",
+      "lastStartedAt": "2026-05-18T20:16:38.494Z",
+      "nextRun": "2026-05-18T20:31:38.504Z",
+      "isRunning": false
     },
     "audit": {
-      "runCount": 21,
-      "successCount": 21,
+      "runCount": 22,
+      "successCount": 22,
       "failureCount": 0,
-      "averageDurationMs": 23667.666666666668,
-      "isRunning": false,
-      "nextRun": "2026-05-15T21:29:32.428Z",
-      "lastStartedAt": "2026-05-15T21:20:28.716Z",
-      "lastRun": "2026-05-15T21:21:06.180Z"
+      "averageDurationMs": 22967.045454545456,
+      "lastRun": "2026-05-18T20:18:46.736Z",
+      "lastStartedAt": "2026-05-18T20:18:38.482Z",
+      "nextRun": "2026-05-18T20:28:46.739Z",
+      "isRunning": false
     },
     "optimize": {
-      "runCount": 15,
-      "successCount": 15,
+      "runCount": 16,
+      "successCount": 16,
       "failureCount": 0,
-      "averageDurationMs": 29420,
-      "isRunning": false,
-      "nextRun": "2026-05-15T21:35:28.716Z",
-      "lastStartedAt": "2026-05-15T21:19:31.201Z",
-      "lastRun": "2026-05-15T21:20:28.712Z"
+      "averageDurationMs": 28029.4375,
+      "lastRun": "2026-05-18T20:20:45.647Z",
+      "lastStartedAt": "2026-05-18T20:20:38.476Z",
+      "nextRun": "2026-05-18T20:35:45.652Z",
+      "isRunning": false
     },
     "consolidate": {
-      "runCount": 9,
-      "successCount": 9,
+      "runCount": 10,
+      "successCount": 10,
       "failureCount": 0,
-      "averageDurationMs": 5.333333333333333,
-      "isRunning": false,
-      "nextRun": "2026-05-15T21:49:32.429Z",
-      "lastStartedAt": "2026-05-15T21:21:06.184Z",
-      "lastRun": "2026-05-15T21:21:06.187Z"
+      "averageDurationMs": 5.6,
+      "lastRun": "2026-05-18T20:22:38.477Z",
+      "lastStartedAt": "2026-05-18T20:22:38.469Z",
+      "nextRun": "2026-05-18T20:52:38.483Z",
+      "isRunning": false
     },
     "testgaps": {
-      "runCount": 11,
-      "successCount": 11,
+      "runCount": 12,
+      "successCount": 12,
       "failureCount": 0,
-      "averageDurationMs": 44572.09090909091,
-      "isRunning": false,
-      "nextRun": "2026-05-15T17:17:13.880Z",
-      "lastStartedAt": "2026-05-15T21:19:30.204Z",
-      "lastRun": "2026-05-15T21:21:17.678Z"
+      "averageDurationMs": 41375.583333333336,
+      "lastRun": "2026-05-18T20:24:44.675Z",
+      "lastStartedAt": "2026-05-18T20:24:38.461Z",
+      "nextRun": "2026-05-18T20:24:38.485Z",
+      "isRunning": false
     },
     "predict": {
       "runCount": 0,
@@ -69,8 +69,8 @@
   },
   "config": {
     "autoStart": false,
-    "logDir": "C:\\Users\\mcwemyss\\Documents\\Codex\\Sentinel-Ready\\.claude-flow\\logs",
-    "stateFile": "C:\\Users\\mcwemyss\\Documents\\Codex\\Sentinel-Ready\\.claude-flow\\daemon-state.json",
+    "logDir": "C:\\Users\\mcwemyss\\Documents\\Sentinel-Ready-main\\.claude-flow\\logs",
+    "stateFile": "C:\\Users\\mcwemyss\\Documents\\Sentinel-Ready-main\\.claude-flow\\daemon-state.json",
     "maxConcurrent": 2,
     "workerTimeoutMs": 960000,
     "resourceThresholds": {
@@ -136,5 +136,5 @@
       }
     ]
   },
-  "savedAt": "2026-05-15T21:21:17.679Z"
+  "savedAt": "2026-05-18T20:24:44.676Z"
 }

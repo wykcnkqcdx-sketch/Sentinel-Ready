@@ -1,3 +1,4 @@
+import { tokens as T } from '@/src/theme/tokens';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -10,9 +11,9 @@ interface AlertCardProps {
 }
 
 const CONFIG = {
-  alert: { bg: '#140a06', border: '#6b2c14', bar: '#e05050', tag: 'ALERT', tagColor: '#e05050' },
-  warning: { bg: '#12100600', border: '#5a3a10', bar: '#ffaa44', tag: 'WARN', tagColor: '#ffaa44' },
-  info: { bg: '#070e0a', border: '#1c3828', bar: '#91e6a3', tag: 'INFO', tagColor: '#91e6a3' },
+  alert: { bg: '#140a06', border: '#6b2c14', bar: T.dotRed, tag: 'ALERT', tagColor: T.dotRed },
+  warning: { bg: '#12100600', border: '#5a3a10', bar: T.accentWarnBright, tag: 'WARN', tagColor: T.accentWarnBright },
+  info: { bg: '#070e0a', border: '#1c3828', bar: T.textAccent, tag: 'INFO', tagColor: T.textAccent },
 };
 
 export default function AlertCard({ type = 'info', title, description }: AlertCardProps) {
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   description: {
-    color: '#7a9480',
+    color: T.textSubtle,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '600',

@@ -1,3 +1,4 @@
+import { tokens as T } from '@/src/theme/tokens';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -8,8 +9,8 @@ type SentinelCardProps = {
 };
 
 const ACCENT: Record<string, string> = {
-  default: '#91e6a3',
-  warning: '#ffaa44',
+  default: T.textAccent,
+  warning: T.accentWarnBright,
   success: '#3fc8e4',
 };
 
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    color: '#edf5ea',
+    color: T.textPrimaryDark,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 2,
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
 });
 
 const cardVariant = StyleSheet.create({
-  default: { backgroundColor: '#0a1610', borderColor: '#172c20' },
-  warning: { backgroundColor: '#160e08', borderColor: '#6b3c16' },
+  default: { backgroundColor: T.bgPanelAlt, borderColor: T.borderDim },
+  warning: { backgroundColor: '#160e08', borderColor: T.borderWarnMedium },
   success: { backgroundColor: '#08141a', borderColor: '#1a3d50' },
 });

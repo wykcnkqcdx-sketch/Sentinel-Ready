@@ -1,3 +1,4 @@
+import { tokens as T } from '@/src/theme/tokens';
 import { StyleSheet, Text, View } from 'react-native';
 
 type MissionStatProps = {
@@ -7,7 +8,7 @@ type MissionStatProps = {
   accent?: string;
 };
 
-export default function MissionStat({ label, value, status, accent = '#91e6a3' }: MissionStatProps) {
+export default function MissionStat({ label, value, status, accent = T.textAccent }: MissionStatProps) {
   return (
     <View style={styles.card}>
       <View style={[styles.topBar, { backgroundColor: accent }]} />
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     width: '47%',
     borderWidth: 1,
-    borderColor: '#172c20',
+    borderColor: T.borderDim,
     overflow: 'hidden',
     position: 'relative',
   },

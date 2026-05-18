@@ -1,56 +1,15 @@
 {
-  "timestamp": "2026-05-15T21:21:06.178Z",
+  "timestamp": "2026-05-18T20:18:46.733Z",
   "mode": "headless",
   "workerType": "audit",
   "model": "haiku",
-  "durationMs": 37459,
-  "executionId": "audit_1778880028719_1t7upz",
-  "success": true,
+  "durationMs": 8241,
+  "executionId": "audit_1779135518492_z0gela",
+  "success": false,
   "findings": {
-    "vulnerabilities": [
-      {
-        "severity": "medium",
-        "file": ".claude/helpers/memory.js",
-        "line": 7,
-        "description": "Sensitive data stored in plain text. Memory is persisted as unencrypted JSON without access controls. If used to store API tokens, credentials, or configuration secrets, this is a credential exposure risk."
-      },
-      {
-        "severity": "medium",
-        "file": ".claude/helpers/session.js",
-        "line": 9,
-        "description": "Session context data stored unencrypted in JSON files without access controls. Arbitrary key-value data can be stored in session.context with no validation, potentially exposing sensitive information if misused."
-      },
-      {
-        "severity": "low",
-        "file": ".claude/helpers/memory.js",
-        "line": 1,
-        "description": "No input validation on key names or values. Malformed or specially-crafted keys could be written to memory.json without sanitization."
-      },
-      {
-        "severity": "low",
-        "file": ".claude/helpers/github-safe.js",
-        "line": 90,
-        "description": "Temp file cleanup errors are silently ignored. If unlinkSync fails, orphaned temp files could accumulate on disk, though execFileSync protection prevents injection."
-      },
-      {
-        "severity": "low",
-        "file": "scripts/reset-project.js",
-        "line": 48,
-        "description": "User input validation only checks for 'y' or 'n', but no protection against path traversal or directory name manipulation. However, actual directories manipulated are hardcoded, so risk is minimal."
-      }
-    ],
-    "riskScore": 28,
-    "recommendations": [
-      "Encrypt sensitive data stored in memory.js using a library like crypto/libsodium before persisting to disk",
-      "Add strict validation to memory.js: whitelist allowed key names, reject suspicious input patterns",
-      "Implement access control (file permissions, ownership checks) for .claude-flow/data and .claude-flow/sessions directories",
-      "For session.js and memory.js: add schema validation or type checking to prevent arbitrary data structures",
-      "Consider using environment-specific storage (e.g., OS keychain for credentials, separate encrypted cache for session state)",
-      "Add explicit warnings in documentation: these helpers should NOT store secrets, tokens, or PII",
-      "The github-safe.js command whitelisting is good — maintain it and audit new commands before adding to ALLOWED_COMMANDS",
-      "Audit dependencies for known vulnerabilities: run `npm audit` and update dependencies regularly"
-    ]
+    "parseError": true,
+    "rawOutput": "Invalid API key · Fix external API key\n"
   },
-  "rawOutputPreview": "```json\n{\n  \"vulnerabilities\": [\n    {\n      \"severity\": \"medium\",\n      \"file\": \".claude/helpers/memory.js\",\n      \"line\": 7,\n      \"description\": \"Sensitive data stored in plain text. Memory is persisted as unencrypted JSON without access controls. If used to store API tokens, credentials, or configuration secrets, this is a credential exposure risk.\"\n    },\n    {\n      \"severity\": \"medium\",\n      \"file\": \".claude/helpers/session.js\",\n      \"line\": 9,\n      \"description\": \"Session context data stored unencrypted in JSON files without access controls. Arbitrary key-value data can be stored in session.context with no validation, potentially exposing sensitive information if misused.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \".claude/helpers/memory.js\",\n      \"line\": 1,\n      \"description\": \"No input validation on key names or values. Malformed or specially-crafted keys could be written to memory.json without sanitization.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \".claude/helpers/github-safe.js\",\n      \"line\": 90,\n      \"description\": \"Temp file cleanup errors are silently ignored. If unlinkSync fails, orphaned temp files could accumulate on disk, though execFileSync protection prevents injection.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"file\": \"scripts/reset-project.js\",\n      \"line\": 48,\n      \"description\": \"User input validation only checks for 'y' or 'n', but no protection against path traversal or directory name manipulation. However, actual directories manipulated are hardcoded, so risk is minimal.\"\n    }\n  ],\n  \"riskScore\": 28,\n  \"recommendations\": [\n    \"Encrypt sensitive data stored in memory.js using a library like crypto/libsodium before persisting to disk\",\n    \"Add strict validation to memory.js: whitelist allowed key names, reject suspicious input patterns\",\n    \"Implement access control (file permissions, ownership checks) for .claude-flow/data and .claude-flow/sessions directories\",\n    \"For session.js and memory.js: add s",
-  "rawOutputLength": 3341
+  "rawOutputPreview": "Invalid API key · Fix external API key\n",
+  "rawOutputLength": 39
 }

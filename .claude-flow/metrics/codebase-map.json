@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-05-15T21:19:31.149Z",
-  "projectRoot": "C:\\Users\\mcwemyss\\Documents\\Codex\\Sentinel-Ready",
+  "timestamp": "2026-05-18T20:16:38.499Z",
+  "projectRoot": "C:\\Users\\mcwemyss\\Documents\\Sentinel-Ready-main",
   "structure": {
     "hasPackageJson": true,
     "hasTsConfig": true,
     "hasClaudeConfig": true,
     "hasClaudeFlow": true
   },
-  "scannedAt": 1778879971152
+  "scannedAt": 1779135398500
 }

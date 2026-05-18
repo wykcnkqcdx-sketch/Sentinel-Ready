@@ -1,81 +1,15 @@
 {
-  "timestamp": "2026-05-15T21:20:28.709Z",
+  "timestamp": "2026-05-18T20:20:45.645Z",
   "mode": "headless",
   "workerType": "optimize",
   "model": "sonnet",
-  "durationMs": 57429,
-  "executionId": "optimize_1778879971280_m9dilt",
-  "success": true,
+  "durationMs": 7164,
+  "executionId": "optimize_1779135638481_zi8lyv",
+  "success": false,
   "findings": {
-    "sections": [
-      {
-        "title": "Performance Analysis",
-        "content": "\n",
-        "level": 2
-      },
-      {
-        "title": "1. Redundant Computations in `TrainingLogCard`",
-        "content": "\n**File:** `src/components/log/TrainingLogCard.tsx`\n\nBoth `logNeedsImprovement` and `getWeakLogReasons` are called per card render, but `logNeedsImprovement` just calls `getWeakLogReasons` internally — so `getWeakLogReasons` runs twice per log:\n\n```tsx\n// Current — double computation\nconst weakLog = logNeedsImprovement(log);   // calls getWeakLogReasons internally\nconst weakReasons = getWeakLogReasons(log); // called again\n\n// Fix — compute once\nconst weakReasons = getWeakLogReasons(log);\nconst weakLog = weakReasons.length > 0;\n```\n\n---\n\n",
-        "level": 3
-      },
-      {
-        "title": "2. Redundant `logs.filter` passes in `buildWeeklyReport`",
-        "content": "\n**File:** `src/utils/reportBuilder.ts`\n\n`buildWeeklyReport` iterates `logs` at least 4 separate times (sort+slice, two filters, plus all the utility calls that also iterate internally). The two explicit filters can be combined:\n\n```ts\n// Current\nconst weakLogs = logs.filter((log) => getWeakLogReasons(log).length > 0);\nconst fatigueWatchLogs = logs.filter((log) => isFatigueWatch(log.readiness));\n\n// Fix — single pass\nlet weakCount = 0;\nlet fatigueCount = 0;\nfor (const log of logs) {\n  if (getWeakLogReasons(log).length > 0) weakCount++;\n  if (isFatigueWatch(log.readiness)) fatigueCount++;\n}\n```\n\nThis matters since `getWeakLogReasons` is non-trivial (regex, multiple checks) and runs on every log.\n\n---\n\n",
-        "level": 3
-      },
-      {
-        "title": "3. Unnecessary Re-renders — Missing `useCallback` in `LogScreen`",
-        "content": "\n**File:** `src/screens/LogScreen.tsx`\n\n`handleRecommendationAction`, `clearSearchAndFilters`, and `confirmDeleteLog` are recreated on every render. They're passed as props to child components, causing unnecessary child re-renders:\n\n```tsx\n// Fix\nconst handleRecommendationAction = useCallback((actionType: RecommendationActionType) => {\n  if (actionType === 'weak-logs') setShowWeakLogsOnly(true);\n  else router.push('/add-log');\n}, [router]);\n\nconst clearSearchAndFilters = useCallback(() => {\n  setActiveFilter('All');\n  setSortMode('Newest');\n  setSearchQuery('');\n  setShowWeakLogsOnly(false);\n}, []);\n\nconst confirmDeleteLog = useCallback((log: TrainingLog) => {\n  // ...\n}, [deleteLog]);\n```\n\n---\n\n",
-        "level": 3
-      },
-      {
-        "title": "4. Caching Opportunity — `getWeakLogReasons` Called Per List Item",
-        "content": "\n**File:** `src/screens/LogScreen.tsx` + `src/components/log/TrainingLogCard.tsx`\n\n`getWeakLogReasons` runs per `TrainingLogCard` render. Since `logs` is the stable input, compute weak reasons once in `LogScreen` and pass them down:\n\n```tsx\n// In LogScreen\nconst weakReasonsMap = useMemo(() => {\n  const map = new Map<number, string[]>();\n  for (const log of logs) {\n    const reasons = getWeakLogReasons(log);\n    if (reasons.length > 0) map.set(log.id, reasons);\n  }\n  return map;\n}, [logs]);\n\n// Pass to TrainingLogCard\n<TrainingLogCard\n  log={item}\n  weakReasons={weakReasonsMap.get(item.id) ?? []}\n  onEdit={...}\n  onDelete={...}\n/>\n```\n\nThis avoids re-running validation logic on every render of every visible card.\n\n---\n\n",
-        "level": 3
-      },
-      {
-        "title": "5. Potential Memory Leak — `getQuickTemplates` Creates `new Date()` on Every Call",
-        "content": "\n**File:** `src/components/log/TrainingLogForm.tsx`\n\n`getQuickTemplates()` is called inside the component and creates `new Date()` on every render:\n\n```tsx\n// Current — called inline, re-runs on every render\nconst quickTemplates = getQuickTemplates();\n\n// Fix — memoize or move to module-level with stable date handling\n// Since date is \"today\", useMemo with no deps (or a daily key) is sufficient\nconst quickTemplates = useMemo(() => getQuickTemplates(), []);\n```\n\n---\n\n",
-        "level": 3
-      },
-      {
-        "title": "6. N+1-style Pattern — `DashboardScreen` Filter Passes",
-        "content": "\n**File:** `src/screens/DashboardScreen.tsx`\n\n`getStrengthStatus`, `getEnduranceStatus`, and `getRecoveryStatus` each filter `logs` independently, plus `logs.find` is called 4 more times — that's 7 separate iterations over the same array:\n\n```tsx\n// Fix — single pass to derive all derived data\nconst derived = useMemo(() => {\n  const strengthLogs: TrainingLog[] = [];\n  const enduranceLogs: TrainingLog[] = [];\n  let latestRuck: TrainingLog | undefined;\n  let latestStrength: TrainingLog | undefined;\n  let latestRun: TrainingLog | undefined;\n  let latestRecovery: TrainingLog | undefined;\n  let recentFatigue = 0;\n\n  for (let i = 0; i < logs.length; i++) {\n    const l = logs[i];\n    if (l.category === 'Strength') strengthLogs.push(l);\n    if (l.category === 'Ruck' || l.category === 'Run') enduranceLogs.push(l);\n    if (!latestRuck && l.category === 'Ruck') latestRuck = l;\n    if (!latestStrength && l.category === 'Strength') latestStrength = l;\n    if (!latestRun && l.category === 'Run') latestRun = l;\n    if (!latestRecovery && l.category === 'Recovery') latestRecovery = l;\n    if (i < 5 && getReadinessNumber(l.readiness) <= 5) recentFatigue++;\n  }\n  return { strengthLogs, enduranceLogs, latestRuck, latestStrength, latestRun, latestRecovery, recentFatigue };\n}, [logs]);\n```\n\n---\n\n",
-        "level": 3
-      },
-      {
-        "title": "Summary Table",
-        "content": "| Issue | File | Severity | Fix Type |\n|---|---|---|---|\n| Double `getWeakLogReasons` call | `TrainingLogCard.tsx` | Medium | Remove `logNeedsImprovement` call |\n| Redundant filter passes | `reportBuilder.ts` | Low | Combine into single loop |\n| Inline function refs causing re-renders | `LogScreen.tsx` | Medium | `useCallback` |\n| `getWeakLogReasons` per-card render | `LogScreen.tsx` + `TrainingLogCard.tsx` | Medium | `useMemo` map in parent |\n| `getQuickTemplates` creates `Date` per render | `TrainingLogForm.tsx` | Low | `useMemo` |\n| 7 separate `logs` iterations on Dashboard | `DashboardScreen.tsx` | Medium | Single-pass `useMemo` |",
-        "level": 3
-      }
-    ],
-    "codeBlocks": [
-      {
-        "language": "tsx",
-        "code": "// Current — double computation\nconst weakLog = logNeedsImprovement(log);   // calls getWeakLogReasons internally\nconst weakReasons = getWeakLogReasons(log); // called again\n\n// Fix — compute once\nconst weakReasons = getWeakLogReasons(log);\nconst weakLog = weakReasons.length > 0;"
-      },
-      {
-        "language": "ts",
-        "code": "// Current\nconst weakLogs = logs.filter((log) => getWeakLogReasons(log).length > 0);\nconst fatigueWatchLogs = logs.filter((log) => isFatigueWatch(log.readiness));\n\n// Fix — single pass\nlet weakCount = 0;\nlet fatigueCount = 0;\nfor (const log of logs) {\n  if (getWeakLogReasons(log).length > 0) weakCount++;\n  if (isFatigueWatch(log.readiness)) fatigueCount++;\n}"
-      },
-      {
-        "language": "tsx",
-        "code": "// Fix\nconst handleRecommendationAction = useCallback((actionType: RecommendationActionType) => {\n  if (actionType === 'weak-logs') setShowWeakLogsOnly(true);\n  else router.push('/add-log');\n}, [router]);\n\nconst clearSearchAndFilters = useCallback(() => {\n  setActiveFilter('All');\n  setSortMode('Newest');\n  setSearchQuery('');\n  setShowWeakLogsOnly(false);\n}, []);\n\nconst confirmDeleteLog = useCallback((log: TrainingLog) => {\n  // ...\n}, [deleteLog]);"
-      },
-      {
-        "language": "tsx",
-        "code": "// In LogScreen\nconst weakReasonsMap = useMemo(() => {\n  const map = new Map<number, string[]>();\n  for (const log of logs) {\n    const reasons = getWeakLogReasons(log);\n    if (reasons.length > 0) map.set(log.id, reasons);\n  }\n  return map;\n}, [logs]);\n\n// Pass to TrainingLogCard\n<TrainingLogCard\n  log={item}\n  weakReasons={weakReasonsMap.get(item.id) ?? []}\n  onEdit={...}\n  onDelete={...}\n/>"
-      },
-      {
-        "language": "tsx",
-        "code": "// Current — called inline, re-runs on every render\nconst quickTemplates = getQuickTemplates();\n\n// Fix — memoize or move to module-level with stable date handling\n// Since date is \"today\", useMemo with no deps (or a daily key) is sufficient\nconst quickTemplates = useMemo(() => getQuickTemplates(), []);"
-      },
-      {
-        "language": "tsx",
-        "code": "// Fix — single pass to derive all derived data\nconst derived = useMemo(() => {\n  const strengthLogs: TrainingLog[] = [];\n  const enduranceLogs: TrainingLog[] = [];\n  let latestRuck: TrainingLog | undefined;\n  let latestStrength: TrainingLog | undefined;\n  let latestRun: TrainingLog | undefined;\n  let latestRecovery: TrainingLog | undefined;\n  let recentFatigue = 0;\n\n  for (let i = 0; i < logs.length; i++) {\n    const l = logs[i];\n    if (l.category === 'Strength') strengthLogs.push(l);\n    if (l.category === 'Ruck' || l.category === 'Run') enduranceLogs.push(l);\n    if (!latestRuck && l.category === 'Ruck') latestRuck = l;\n    if (!latestStrength && l.category === 'Strength') latestStrength = l;\n    if (!latestRun && l.category === 'Run') latestRun = l;\n    if (!latestRecovery && l.category === 'Recovery') latestRecovery = l;\n    if (i < 5 && getReadinessNumber(l.readiness) <= 5) recentFatigue++;\n  }\n  return { strengthLogs, enduranceLogs, latestRuck, latestStrength, latestRun, latestRecovery, recentFatigue };\n}, [logs]);"
-      }
-    ]
+    "sections": [],
+    "codeBlocks": []
   },
-  "rawOutputPreview": "## Performance Analysis\n\n### 1. Redundant Computations in `TrainingLogCard`\n\n**File:** `src/components/log/TrainingLogCard.tsx`\n\nBoth `logNeedsImprovement` and `getWeakLogReasons` are called per card render, but `logNeedsImprovement` just calls `getWeakLogReasons` internally — so `getWeakLogReasons` runs twice per log:\n\n```tsx\n// Current — double computation\nconst weakLog = logNeedsImprovement(log);   // calls getWeakLogReasons internally\nconst weakReasons = getWeakLogReasons(log); // called again\n\n// Fix — compute once\nconst weakReasons = getWeakLogReasons(log);\nconst weakLog = weakReasons.length > 0;\n```\n\n---\n\n### 2. Redundant `logs.filter` passes in `buildWeeklyReport`\n\n**File:** `src/utils/reportBuilder.ts`\n\n`buildWeeklyReport` iterates `logs` at least 4 separate times (sort+slice, two filters, plus all the utility calls that also iterate internally). The two explicit filters can be combined:\n\n```ts\n// Current\nconst weakLogs = logs.filter((log) => getWeakLogReasons(log).length > 0);\nconst fatigueWatchLogs = logs.filter((log) => isFatigueWatch(log.readiness));\n\n// Fix — single pass\nlet weakCount = 0;\nlet fatigueCount = 0;\nfor (const log of logs) {\n  if (getWeakLogReasons(log).length > 0) weakCount++;\n  if (isFatigueWatch(log.readiness)) fatigueCount++;\n}\n```\n\nThis matters since `getWeakLogReasons` is non-trivial (regex, multiple checks) and runs on every log.\n\n---\n\n### 3. Unnecessary Re-renders — Missing `useCallback` in `LogScreen`\n\n**File:** `src/screens/LogScreen.tsx`\n\n`handleRecommendationAction`, `clearSearchAndFilters`, and `confirmDeleteLog` are recreated on every render. They're passed as props to child components, causing unnecessary child re-renders:\n\n```tsx\n// Fix\nconst handleRecommendationAction = useCallback((actionType: RecommendationActionType) => {\n  if (actionType === 'weak-logs') setShowWeakLogsOnly(true);\n  else router.push('/add-log');\n}, [router]);\n\nconst clearSearchAndFilters = useCallback(() => {\n  setActiveFilter('All');\n  setSortMode('New",
-  "rawOutputLength": 5537
+  "rawOutputPreview": "Invalid API key · Fix external API key\n",
+  "rawOutputLength": 39
 }
