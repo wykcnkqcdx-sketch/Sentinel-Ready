@@ -17,9 +17,11 @@ import {
   RuckSavePanel,
   type RuckSaveDraft,
 } from '@/src/components/ruck/RuckSavePanel';
+import { RuckSafetyAlerts } from '@/src/components/ruck/RuckSafetyAlerts';
 import { getNumberInput } from '@/src/components/ruck/ruckPanelUtils';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
+import { formatElapsed, formatPace } from '@/src/utils/ruckSafetyUtils';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -61,10 +63,11 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   onSaveSession,
   onDiscardDraft,
 }: RuckTrackPanelProps) {
-  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('map');
+  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('simple');
 
   const targetDistance = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
   const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));
+  const packWeightKg = Math.max(0, getNumberInput(missionDraft.packWeightKg, 0));
   const targetPaceMinutesPerKm =
     targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : undefined;
 
@@ -141,37 +144,32 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         {/* Middle content area */}
         <View style={styles.middle} pointerEvents="box-none">
 
-          {/* SIMPLE: big outdoor numbers */}
+          {/* SIMPLE: big outdoor numbers + safety alerts */}
           {showSimpleData && (
-            <View style={styles.simplePanel} pointerEvents="none">
-              <Text style={styles.simpleDistance}>
-                {tracking.distanceKm.toFixed(2)}
-              </Text>
-              <Text style={styles.simpleDistanceUnit}>KM</Text>
-              <View style={styles.simpleSecondary}>
-                <Text style={styles.simpleSecondaryText}>
-                  {(() => {
-                    const s = tracking.elapsedSeconds;
-                    const h = Math.floor(s / 3600);
-                    const m = Math.floor((s % 3600) / 60);
-                    const sec = s % 60;
-                    return h > 0
-                      ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
-                      : `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-                  })()}
+            <View style={styles.simpleWrapper}>
+              <View style={styles.simplePanel} pointerEvents="none">
+                <Text style={styles.simpleDistance}>
+                  {tracking.distanceKm.toFixed(2)}
                 </Text>
-                <View style={styles.simpleSep} />
-                <Text style={styles.simpleSecondaryText}>
-                  {tracking.distanceKm > 0.01
-                    ? (() => {
-                        const paceMs = tracking.elapsedSeconds / tracking.distanceKm;
-                        const pm = Math.floor(paceMs / 60);
-                        const ps = Math.round(paceMs % 60);
-                        return `${pm}:${String(ps).padStart(2, '0')} /km`;
-                      })()
-                    : '--:-- /km'}
-                </Text>
+                <Text style={styles.simpleDistanceUnit}>KM</Text>
+                <View style={styles.simpleSecondary}>
+                  <Text style={styles.simpleSecondaryText}>
+                    {formatElapsed(tracking.elapsedSeconds)}
+                  </Text>
+                  <View style={styles.simpleSep} />
+                  <Text style={styles.simpleSecondaryText}>
+                    {formatPace(tracking.distanceKm, tracking.elapsedSeconds)}
+                  </Text>
+                </View>
               </View>
+              <RuckSafetyAlerts
+                gpsQualityWarning={tracking.gpsQualityWarning}
+                loadKg={packWeightKg > 0 ? packWeightKg : undefined}
+                distanceKm={tracking.distanceKm}
+                elapsedSeconds={tracking.elapsedSeconds}
+                targetDistanceKm={targetDistance}
+                targetMinutes={targetMinutes}
+              />
             </View>
           )}
 
@@ -278,6 +276,10 @@ const styles = StyleSheet.create({
   },
   middle: {
     flex: 1,
+  },
+  simpleWrapper: {
+    flex: 1,
+    flexDirection: 'column',
   },
   simplePanel: {
     flex: 1,
