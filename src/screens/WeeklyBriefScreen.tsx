@@ -2,8 +2,8 @@ import { tokens as T } from '@/src/theme/tokens';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { buildWeeklyBrief, type BriefLine, type BriefTone } from '@/src/utils/weeklyBriefUtils';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const TONE_COLORS: Record<BriefTone, string> = {
   good:    '#91e6a3',
@@ -39,6 +39,29 @@ export default function WeeklyBriefScreen() {
 
   const brief = useMemo(() => buildWeeklyBrief(logs), [logs]);
 
+  const handleShare = useCallback(async () => {
+    const lines = [
+      '// SENTINEL READY — WEEKLY BRIEF //',
+      `${brief.weekRef}  ·  ${brief.weekRange}`,
+      `MISSION STATUS: ${brief.missionStatus}`,
+      '',
+      '--- OPERATIONAL SUMMARY ---',
+      ...brief.summary.map((l) => `${l.label}: ${l.value}`),
+      ...(brief.loadAnalysis.length > 0 ? ['', '--- LOAD ANALYSIS ---', ...brief.loadAnalysis.map((l) => `${l.label}: ${l.value}`)] : []),
+      ...(brief.readinessTrend.length > 0 ? ['', '--- READINESS TREND ---', ...brief.readinessTrend.map((l) => `${l.label}: ${l.value}`)] : []),
+      '',
+      '--- SUSTAIN ---',
+      ...brief.sustain.map((s) => `✓ ${s}`),
+      '',
+      '--- IMPROVE ---',
+      ...brief.improve.map((s) => `⚑ ${s}`),
+      '',
+      '--- DIRECTIVE ---',
+      brief.directive,
+    ];
+    try { await Share.share({ message: lines.join('\n') }); } catch {}
+  }, [brief]);
+
   const statusColor = TONE_COLORS[brief.statusTone];
 
   if (isLoading) return <View style={styles.screen} />;
@@ -48,9 +71,14 @@ export default function WeeklyBriefScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
-            <Text style={styles.backBtnText}>← BACK</Text>
-          </TouchableOpacity>
+          <View style={styles.headerBtns}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+              <Text style={styles.backBtnText}>← BACK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareBtn} onPress={handleShare} accessibilityRole="button" accessibilityLabel="Share weekly brief">
+              <Text style={styles.shareBtnText}>SHARE</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>WEEKLY BRIEF</Text>
@@ -140,7 +168,10 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 60 },
 
   header: { paddingHorizontal: 16, paddingTop: 16, gap: 4, marginBottom: 8 },
-  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7, marginBottom: 6 },
+  headerBtns: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  shareBtn: { borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  shareBtnText: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   backBtnText: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   kicker: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },

@@ -24,7 +24,7 @@ function daysSince(dateStr: string): number {
   return Math.floor((today.getTime() - then) / 86400000);
 }
 
-export function buildThreatAssessment(logs: TrainingLog[]): ThreatAssessment {
+export function buildThreatAssessment(logs: TrainingLog[], testDate?: string | null): ThreatAssessment {
   if (logs.length === 0) {
     return { threats: [], overallLevel: 'CLEAR', actionableCount: 0 };
   }
@@ -156,6 +156,41 @@ export function buildThreatAssessment(logs: TrainingLog[]): ThreatAssessment {
       message: 'Load volume stable for 3 weeks with readiness holding above 7.',
       action: 'Consider adding one session or a 5–10% load increase next week.',
     });
+  }
+
+  // Test proximity threats
+  if (testDate) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const target = new Date(testDate + 'T00:00:00');
+    const daysUntil = Math.round((target.getTime() - now.getTime()) / 86400000);
+    if (daysUntil >= 0 && daysUntil <= 45) {
+      if (daysUntil <= 7) {
+        threats.push({
+          id: 'test_imminent',
+          level: 'RED',
+          label: 'TEST IMMINENT',
+          message: `Physical test is ${daysUntil === 0 ? 'TODAY' : `in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`}. Taper complete — protect your sharpness.`,
+          action: 'No high-intensity sessions. Rest, hydrate, and ensure 8h sleep tonight.',
+        });
+      } else if (daysUntil <= 21) {
+        threats.push({
+          id: 'test_approaching',
+          level: 'AMBER',
+          label: 'TEST APPROACHING',
+          message: `Physical test in ${daysUntil} days. Final prep window is active.`,
+          action: 'Maintain sharpness with short quality sessions. Avoid new heavy loads.',
+        });
+      } else {
+        threats.push({
+          id: 'test_prep_window',
+          level: 'GREEN',
+          label: 'TEST PREP WINDOW',
+          message: `Physical test in ${daysUntil} days. Build phase is on.`,
+          action: 'Focus on test-specific exercises. Schedule a practice run this week.',
+        });
+      }
+    }
   }
 
   const hasRed = threats.some((t) => t.level === 'RED');

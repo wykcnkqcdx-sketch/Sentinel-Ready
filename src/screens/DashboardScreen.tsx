@@ -61,7 +61,7 @@ function getRecoveryStatus(recentLogs: ReturnType<typeof useTraining>['logs']) {
 
 export default function DashboardScreen() {
   const { logs, goals, isLoading } = useTraining();
-  const { injuryNotes } = useUser();
+  const { injuryNotes, testDate } = useUser();
   const router = useRouter();
 
   const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
@@ -83,7 +83,17 @@ export default function DashboardScreen() {
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
   const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
   const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
-  const threatAssessment = useMemo(() => buildThreatAssessment(logs), [logs]);
+  const threatAssessment = useMemo(() => buildThreatAssessment(logs, testDate), [logs, testDate]);
+  const testCountdown = useMemo<{ days: number; color: string } | null>(() => {
+    if (!testDate) return null;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const target = new Date(testDate + 'T00:00:00');
+    const days = Math.round((target.getTime() - now.getTime()) / 86400000);
+    if (days < 0 || days > 90) return null;
+    const color = days <= 13 ? T.dotRed : days <= 30 ? T.accentWarnBright : T.textAccent;
+    return { days, color };
+  }, [testDate]);
 
   const weeklyLoadData = useMemo(() => weeklyLoadSeries(logs, 8), [logs]);
   const [showFullReport, setShowFullReport] = useState(false);
@@ -209,6 +219,16 @@ export default function DashboardScreen() {
         </View>
         <View style={styles.headerDivider} />
       </View>
+
+      {testCountdown !== null && (
+        <View style={[styles.testCountdownBanner, { borderColor: testCountdown.color + '55', backgroundColor: testCountdown.color + '0c' }]}>
+          <View style={[styles.testCountdownDot, { backgroundColor: testCountdown.color }]} />
+          <Text style={[styles.testCountdownLabel, { color: testCountdown.color }]}>
+            {testCountdown.days === 0 ? 'TEST DAY' : `T-${testCountdown.days} DAYS`}
+          </Text>
+          <Text style={styles.testCountdownSub}>TO PHYSICAL TEST</Text>
+        </View>
+      )}
 
       <View style={styles.statusBoard}>
         <View style={[styles.statusBoardCell, { borderLeftColor: readinessStatus.prog }]}>
@@ -743,6 +763,12 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
   },
   content: { padding: 16, gap: 14, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
+
+  // Test countdown
+  testCountdownBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
+  testCountdownDot: { width: 8, height: 8, borderRadius: 4 },
+  testCountdownLabel: { fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  testCountdownSub: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2, flex: 1, textAlign: 'right' },
 
   // Header
   header: { gap: 0, marginBottom: 4 },

@@ -8,7 +8,7 @@ import { buildSavedRuckSafetyAlerts } from '@/src/utils/ruckSafety';
 import { buildAAR, type AARLine } from '@/src/utils/aarUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function logToSession(log: ReturnType<typeof useTraining>['logs'][0]): TrainingSession {
   return {
@@ -111,6 +111,23 @@ export default function RuckReviewScreen() {
     }
   }, [canExportGpx, log, routePoints]);
 
+  const handleShareAAR = useCallback(async () => {
+    if (!aar) return;
+    const lines = [
+      '// AFTER ACTION REVIEW //',
+      aar.title,
+      `${aar.date}  ·  ${aar.operationRef}`,
+      `OUTCOME: ${aar.outcome}`,
+      '',
+      ...aar.sections.flatMap((s) => [
+        `--- ${s.heading} ---`,
+        ...s.lines.map((l) => `${l.label}: ${l.value}`),
+        '',
+      ]),
+    ];
+    try { await Share.share({ message: lines.join('\n') }); } catch {}
+  }, [aar]);
+
   if (isLoading) return <View style={styles.screen} />;
 
   if (!log || !log.ruck || !aar) {
@@ -166,6 +183,14 @@ export default function RuckReviewScreen() {
           accessibilityLabel="Export this ruck to ATAK as CoT"
         >
           <Text style={styles.secondaryExportButtonText}>{exportingCot ? 'SENDING...' : 'SEND CoT'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.secondaryExportButton}
+          onPress={handleShareAAR}
+          accessibilityRole="button"
+          accessibilityLabel="Share AAR as text"
+        >
+          <Text style={styles.secondaryExportButtonText}>SHARE AAR</Text>
         </TouchableOpacity>
       </View>
 

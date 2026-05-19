@@ -4,8 +4,8 @@ import { useUser } from '@/src/screens/UserContext';
 import { CATEGORY_COLORS } from '@/src/utils/adaptivePlanUtils';
 import { buildOperatorProfile } from '@/src/utils/operatorProfileUtils';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function StatRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
   return (
@@ -36,6 +36,40 @@ export default function OperatorProfileScreen() {
     [logs, goals, role, trainingLevel, testDate],
   );
 
+  const handleShare = useCallback(async () => {
+    const lines = [
+      '// SENTINEL READY — PERSONNEL FILE //',
+      `SERVICE NO: ${profile.serviceNumber}`,
+      `STATUS: ACTIVE DUTY  |  LEVEL: ${profile.trainingLevel.toUpperCase()}  |  ROLE: ${profile.role}`,
+      '',
+      '--- CAREER RECORD ---',
+      `TOTAL SESSIONS: ${profile.totalSessions}`,
+      `ACTIVE DAYS: ${profile.activeDays}`,
+      `CURRENT STREAK: ${profile.currentStreak > 0 ? `${profile.currentStreak} WEEK${profile.currentStreak !== 1 ? 'S' : ''}` : 'NIL'}`,
+      `LONGEST STREAK: ${profile.longestStreak > 0 ? `${profile.longestStreak} WEEK${profile.longestStreak !== 1 ? 'S' : ''}` : 'NIL'}`,
+      `FIRST MISSION: ${profile.firstMission}`,
+      `LAST MISSION: ${profile.lastMission}`,
+      ...(profile.totalRuckSessions > 0 ? [
+        '',
+        '--- LOAD CARRIAGE ---',
+        `RUCK SESSIONS: ${profile.totalRuckSessions}`,
+        `TOTAL DISTANCE: ${profile.totalRuckDistanceKm.toFixed(1)} km`,
+        `BEST PACE: ${profile.fastestPace}`,
+      ] : []),
+      ...(profile.categoryBreakdown.length > 0 ? [
+        '',
+        '--- CATEGORY RECORD ---',
+        ...profile.categoryBreakdown.map((c) => `${c.category.toUpperCase()}: ${c.pct}% (${c.count})`),
+      ] : []),
+      '',
+      '--- READINESS SUMMARY ---',
+      `ALL-TIME AVG READINESS: ${profile.avgReadiness > 0 ? `${profile.avgReadiness.toFixed(1)} / 10` : 'NO DATA'}`,
+      `GOALS ACTIVE: ${profile.goalsActive}`,
+      `GOALS COMPLETE: ${profile.goalsComplete}`,
+    ];
+    try { await Share.share({ message: lines.join('\n') }); } catch {}
+  }, [profile]);
+
   if (isLoading) return <View style={styles.screen} />;
 
   const streakColor = profile.currentStreak >= 4 ? '#91e6a3' : profile.currentStreak >= 2 ? '#ffaa44' : T.textSubtle;
@@ -46,9 +80,14 @@ export default function OperatorProfileScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
-            <Text style={styles.backBtnText}>← BACK</Text>
-          </TouchableOpacity>
+          <View style={styles.headerBtns}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+              <Text style={styles.backBtnText}>← BACK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareBtn} onPress={handleShare} accessibilityRole="button" accessibilityLabel="Share personnel file">
+              <Text style={styles.shareBtnText}>SHARE</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
           <Text style={styles.title}>PERSONNEL FILE</Text>
           <View style={styles.divider} />
@@ -177,7 +216,10 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 60 },
 
   header: { paddingHorizontal: 16, paddingTop: 16, gap: 4, marginBottom: 8 },
-  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7, marginBottom: 6 },
+  headerBtns: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  shareBtn: { borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  shareBtnText: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   backBtnText: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   kicker: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   title: { color: T.textPrimaryDark, fontSize: 26, fontWeight: '900', letterSpacing: -0.5, marginTop: 2 },
