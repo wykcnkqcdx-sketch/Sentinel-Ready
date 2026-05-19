@@ -77,6 +77,10 @@ type CotXmlParams = {
   type?: string;
 };
 
+function escapeXml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
 export function buildCotXml(params: CotXmlParams): string {
   const {
     uid,
@@ -107,12 +111,12 @@ export function buildCotXml(params: CotXmlParams): string {
     ` how="m-g">` +
     `<point lat="${lat}" lon="${lon}" hae="${hae}" ce="10.0" le="10.0"/>` +
     `<detail>` +
-    `<contact callsign="${callsign}" endpoint="*:-1:stcp"/>` +
-    `<uid Droid="${callsign}"/>` +
-    `<__group name="${team}" role="Team Member"/>` +
+    `<contact callsign="${escapeXml(callsign)}" endpoint="*:-1:stcp"/>` +
+    `<uid Droid="${escapeXml(callsign)}"/>` +
+    `<__group name="${escapeXml(team)}" role="Team Member"/>` +
     `<track speed="${speed}" course="${course}"/>` +
     `<status battery="100"/>` +
-    `<remarks>${notes}</remarks>` +
+    `<remarks>${escapeXml(notes)}</remarks>` +
     `</detail>` +
     `</event>`
   );

@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const DOW_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const DOW_LABELS = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
 const MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const MAX_LOAD = 7;
 

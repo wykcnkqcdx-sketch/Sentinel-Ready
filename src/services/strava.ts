@@ -55,7 +55,16 @@ export async function loadStravaTokens(): Promise<StravaTokens | null> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as StravaTokens;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed.accessToken === 'string' &&
+      typeof parsed.refreshToken === 'string' &&
+      typeof parsed.expiresAt === 'number'
+    ) {
+      return parsed as StravaTokens;
+    }
+    return null;
   } catch {
     return null;
   }

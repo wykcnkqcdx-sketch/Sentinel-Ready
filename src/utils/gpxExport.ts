@@ -4,7 +4,7 @@ import type { TrainingSession } from '../types/map';
 
 export function buildGpxXml(session: TrainingSession): string {
   const points = session.routePoints ?? [];
-  const name = (session.title ?? 'Sentinel Route').replace(/[<>&"']/g, '');
+  const name = (session.title ?? 'Sentinel Route').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const date = session.completedAt ?? new Date().toISOString();
 
   const trkpts = points
@@ -36,7 +36,8 @@ export async function exportSessionGpx(session: TrainingSession): Promise<void> 
 
   const xml = buildGpxXml(session);
   const slug = (session.title ?? 'route').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  const fileUri = `${cacheDirectory ?? ''}${slug}_${session.id}.gpx`;
+  if (!cacheDirectory) throw new Error('File system cache directory unavailable.');
+  const fileUri = `${cacheDirectory}${slug}_${session.id}.gpx`;
 
   await writeAsStringAsync(fileUri, xml, { encoding: 'utf8' });
   await Sharing.shareAsync(fileUri, {

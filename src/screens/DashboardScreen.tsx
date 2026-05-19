@@ -183,7 +183,7 @@ export default function DashboardScreen() {
       strengthLogs: strengthLogsList,
       enduranceLogs: enduranceLogsList,
       recentLogs: recentLogsList,
-      ruckVal: ruck ? ruck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
+      ruckVal: ruck ? ruck.distanceLoad?.split('-')[0]?.trim() || 'Logged' : 'N/A',
       strengthVal: strength ? `Score: ${strength.readiness}` : 'N/A',
       cardioVal: run ? run.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
       recoveryVal: recovery ? `Score: ${recovery.readiness}` : 'N/A',
@@ -261,13 +261,16 @@ export default function DashboardScreen() {
               : threatAssessment.overallLevel === 'GREEN' ? T.textAccent + '55'
               : T.borderDim }
         ]}>
-          <View style={[
-            styles.threatLevelDot,
-            { backgroundColor: threatAssessment.overallLevel === 'RED' ? T.dotRed
-                : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright
-                : threatAssessment.overallLevel === 'GREEN' ? T.textAccent
-                : '#2e5038' }
-          ]} />
+          <View
+            accessible={false}
+            style={[
+              styles.threatLevelDot,
+              { backgroundColor: threatAssessment.overallLevel === 'RED' ? T.dotRed
+                  : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright
+                  : threatAssessment.overallLevel === 'GREEN' ? T.textAccent
+                  : '#2e5038' },
+            ]}
+          />
           <Text style={[
             styles.threatLevelText,
             { color: threatAssessment.overallLevel === 'RED' ? T.dotRed
@@ -539,7 +542,7 @@ export default function DashboardScreen() {
             <Text style={styles.goalNumber}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}%` : '--'}</Text>
             <Text style={styles.goalLabel}>Measured</Text>
           </View>
-          <TouchableOpacity style={styles.goalButton} onPress={navigateToGoals}>
+          <TouchableOpacity style={styles.goalButton} onPress={navigateToGoals} accessibilityRole="button" accessibilityLabel="Manage goals">
             <Text style={styles.goalButtonText}>Manage</Text>
           </TouchableOpacity>
         </View>

@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
 
   statRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: T.borderDim },
   statBubble: { flex: 1, alignItems: 'center', paddingVertical: 10, gap: 3, borderRightWidth: 1, borderRightColor: T.borderDim },
-  statBubbleLabel: { color: T.textHintDark, fontSize: 7, fontWeight: '900', letterSpacing: 1.5 },
+  statBubbleLabel: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   statBubbleValue: { color: T.textSubtle, fontSize: 12, fontWeight: '900' },
 
   catMixRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 9, borderTopWidth: 1, borderTopColor: T.borderDim },

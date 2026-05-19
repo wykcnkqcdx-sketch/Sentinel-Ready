@@ -147,6 +147,7 @@ export default function ProfileScreen() {
           onChangeText={(value) => updateProfile({ role: value })}
           placeholder="General readiness, selection prep, return to fitness"
           placeholderTextColor="#4a5e4a"
+          maxLength={80}
         />
 
         <Text style={styles.inputLabel}>Training level</Text>
@@ -169,6 +170,7 @@ export default function ProfileScreen() {
           onChangeText={(value) => updateProfile({ equipment: value })}
           placeholder="Ruck, gym, pull-up bar, running route"
           placeholderTextColor="#4a5e4a"
+          maxLength={120}
         />
 
         <Text style={styles.inputLabel}>Injury notes</Text>
@@ -179,6 +181,7 @@ export default function ProfileScreen() {
           placeholder="Anything the plan should respect"
           placeholderTextColor="#4a5e4a"
           multiline
+          maxLength={500}
         />
       </View>
 

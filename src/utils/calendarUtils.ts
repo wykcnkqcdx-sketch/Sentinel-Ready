@@ -37,8 +37,12 @@ export function buildCalendarMonth(logs: TrainingLog[], year: number, month: num
 
   const logMap = new Map<string, TrainingLog[]>();
   for (const log of logs) {
-    if (!logMap.has(log.date)) logMap.set(log.date, []);
-    logMap.get(log.date)!.push(log);
+    const existing = logMap.get(log.date);
+    if (existing) {
+      existing.push(log);
+    } else {
+      logMap.set(log.date, [log]);
+    }
   }
 
   const firstDow = (new Date(year, month - 1, 1).getDay() + 6) % 7; // Mon-based
