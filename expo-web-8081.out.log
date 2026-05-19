@@ -1,75 +1,8 @@
 
 > sentinel-ready@1.0.0 web
-> expo start --web --port 8081
+> expo start --web --port 8081 --clear
 
 Starting project at C:\Users\mcwemyss\Documents\Sentinel-Ready-main
 React Compiler enabled
 Starting Metro Bundler
-Waiting on http://localhost:8081
-Logs for your project will appear below.
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.0% (12/29)
-λ node_modules\expo-router\node\render.js ▓░░░░░░░░░░░░░░░  9.9% ( 84/267)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.0% (104/288)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 50.3% (427/602)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.0% (234/427)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 57.7% (644/848)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.5% (412/611)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 73.1% (817/968)
-| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:359:24):
-|   357 | 	}
-|   358 | .leaflet-control-layers-toggle {
-| > 359 | 	background-image: url(images/layers.png);
-|       | 	                      ^
-|   360 | 	width: 36px;
-|   361 | 	height: 36px;
-|   362 | 	}
-| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:364:24):
-|   362 | 	}
-|   363 | .leaflet-retina .leaflet-control-layers-toggle {
-| > 364 | 	background-image: url(images/layers-2x.png);
-|       | 	                      ^
-|   365 | 	background-size: 26px 26px;
-|   366 | 	}
-|   367 | .leaflet-touch .leaflet-control-layers-toggle {
-| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:407:24):
-|   405 | /* Default icon URLs */
-|   406 | .leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
-| > 407 | 	background-image: url(images/marker-icon.png);
-|       | 	                      ^
-|   408 | 	}
-|   409 |
-|   410 |
-| (node:19336) DeprecationWarning: Passing lineNumber and colNumber is deprecated to @babel/code-frame. Please use `codeFrameColumns`.
-| (Use `node --trace-deprecation ...` to show where the warning was created)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 53.1% (571/821)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.0% ( 977/1110)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 77.7% (846/960)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.1% (1157/1226)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.5% (1147/1241)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.2% (1375/1410)
-| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:359:24):
-|   357 | 	}
-|   358 | .leaflet-control-layers-toggle {
-| > 359 | 	background-image: url(images/layers.png);
-|       | 	                      ^
-|   360 | 	width: 36px;
-|   361 | 	height: 36px;
-|   362 | 	}
-| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:364:24):
-|   362 | 	}
-|   363 | .leaflet-retina .leaflet-control-layers-toggle {
-| > 364 | 	background-image: url(images/layers-2x.png);
-|       | 	                      ^
-|   365 | 	background-size: 26px 26px;
-|   366 | 	}
-|   367 | .leaflet-touch .leaflet-control-layers-toggle {
-| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:407:24):
-|   405 | /* Default icon URLs */
-|   406 | .leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
-| > 407 | 	background-image: url(images/marker-icon.png);
-|       | 	                      ^
-|   408 | 	}
-|   409 |
-|   410 |
-λ Bundled 26732ms node_modules\expo-router\node\render.js (1443 modules)
+warning: Bundler cache is empty, rebuilding (this may take a minute)
