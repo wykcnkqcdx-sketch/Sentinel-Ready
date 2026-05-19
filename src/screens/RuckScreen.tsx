@@ -423,14 +423,14 @@ export default function RuckScreen() {
 
   return (
     <View style={styles.screen}>
-      {/* Header row */}
-      <View style={styles.headerBlock}>
-        <Text style={styles.kicker}>LOAD CARRIAGE</Text>
-        <Text style={styles.title}>Ruck Performance</Text>
-      </View>
+      {activeTab === 'stats' ? (
+        <View style={styles.headerBlock}>
+          <Text style={styles.kicker}>LOAD CARRIAGE</Text>
+          <Text style={styles.title}>Ruck Performance</Text>
+        </View>
+      ) : null}
 
-      {/* Tab pills */}
-      <View style={styles.tabRow}>
+      <View style={activeTab === 'track' ? styles.trackTabRow : styles.tabRow}>
         <TouchableOpacity
           style={[styles.tabPill, activeTab === 'stats' && styles.tabPillActive]}
           onPress={() => setActiveTab('stats')}
@@ -712,6 +712,14 @@ const styles = StyleSheet.create({
 
   headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10, gap: 4 },
   tabRow: { flexDirection: 'row', backgroundColor: T.bgPanel, borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: T.borderSubtle },
+  trackTabRow: {
+    flexDirection: 'row',
+    backgroundColor: '#050e09',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: T.borderDim,
+  },
   tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
   tabPillActive: { backgroundColor: T.borderAccent },
   tabPillText: { color: T.textMutedAccent, fontSize: 13, fontWeight: '900' },

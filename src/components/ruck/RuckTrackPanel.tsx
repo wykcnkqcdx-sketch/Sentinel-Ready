@@ -63,7 +63,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   onSaveSession,
   onDiscardDraft,
 }: RuckTrackPanelProps) {
-  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('simple');
+  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('map');
 
   const targetDistance = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
   const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));
@@ -123,16 +123,35 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
       {/* ── HUD Column — flex layout, never overlaps tab bar ─────── */}
       <View style={styles.hud} pointerEvents="box-none">
 
-        {/* Top metrics bar */}
-        <View pointerEvents="none">
-          <LiveMetricsOverlay
-            distanceKm={tracking.distanceKm}
-            elapsedSeconds={tracking.elapsedSeconds}
-            gpsQualityWarning={tracking.gpsQualityWarning}
-            trackingState={tracking.trackingState}
-            targetPaceMinutesPerKm={targetPaceMinutesPerKm}
-          />
-        </View>
+        {displayMode === 'simple' ? (
+          <View style={styles.recorderHeader} pointerEvents="none">
+            <Text style={styles.recorderKicker}>SENTINEL RUCK</Text>
+            <View style={styles.recorderStatus}>
+              <MaterialCommunityIcons
+                name={tracking.trackingState === 'recording' ? 'record-circle' : 'map-marker-radius'}
+                size={13}
+                color={tracking.trackingState === 'recording' ? '#91e6a3' : '#7aad82'}
+              />
+              <Text style={styles.recorderStatusText}>
+                {tracking.trackingState === 'recording'
+                  ? 'RECORDING'
+                  : tracking.trackingState === 'paused'
+                    ? 'PAUSED'
+                    : 'READY'}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View pointerEvents="none">
+            <LiveMetricsOverlay
+              distanceKm={tracking.distanceKm}
+              elapsedSeconds={tracking.elapsedSeconds}
+              gpsQualityWarning={tracking.gpsQualityWarning}
+              trackingState={tracking.trackingState}
+              targetPaceMinutesPerKm={targetPaceMinutesPerKm}
+            />
+          </View>
+        )}
 
         {/* Mode toggle */}
         {!isFinished && (
@@ -148,18 +167,29 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
           {showSimpleData && (
             <View style={styles.simpleWrapper}>
               <View style={styles.simplePanel} pointerEvents="none">
-                <Text style={styles.simpleDistance}>
-                  {tracking.distanceKm.toFixed(2)}
-                </Text>
-                <Text style={styles.simpleDistanceUnit}>KM</Text>
-                <View style={styles.simpleSecondary}>
-                  <Text style={styles.simpleSecondaryText}>
-                    {formatElapsed(tracking.elapsedSeconds)}
+                <View style={styles.liveMetricBlock}>
+                  <Text style={styles.liveMetricLabel}>TIME</Text>
+                  <Text style={styles.liveTime}>{formatElapsed(tracking.elapsedSeconds)}</Text>
+                </View>
+
+                <View style={styles.liveDivider} />
+
+                <View style={styles.liveMetricBlock}>
+                  <Text style={styles.liveMetricLabel}>PACE</Text>
+                  <Text style={styles.livePace}>
+                    {formatPace(tracking.distanceKm, tracking.elapsedSeconds).replace('/km', '')}
                   </Text>
-                  <View style={styles.simpleSep} />
-                  <Text style={styles.simpleSecondaryText}>
-                    {formatPace(tracking.distanceKm, tracking.elapsedSeconds)}
-                  </Text>
+                  <Text style={styles.liveMetricUnit}>/ KM</Text>
+                </View>
+
+                <View style={styles.liveDivider} />
+
+                <View style={styles.liveMetricBlock}>
+                  <Text style={styles.liveMetricLabel}>DISTANCE</Text>
+                  <View style={styles.liveDistanceRow}>
+                    <Text style={styles.liveDistance}>{tracking.distanceKm.toFixed(2)}</Text>
+                    <Text style={styles.liveDistanceUnit}>KM</Text>
+                  </View>
                 </View>
               </View>
               <RuckSafetyAlerts
@@ -268,7 +298,7 @@ const styles = StyleSheet.create({
   },
   darkMask: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(5, 14, 9, 0.94)',
+    backgroundColor: 'rgba(5, 14, 9, 0.88)',
   },
   hud: {
     flex: 1,
@@ -276,6 +306,41 @@ const styles = StyleSheet.create({
   },
   middle: {
     flex: 1,
+  },
+  recorderHeader: {
+    minHeight: 64,
+    paddingHorizontal: 22,
+    paddingTop: 14,
+    paddingBottom: 10,
+    backgroundColor: 'rgba(10, 14, 12, 0.96)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#18231c',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  recorderKicker: {
+    color: '#edf5ea',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 1.8,
+  },
+  recorderStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#203529',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(5,14,9,0.85)',
+  },
+  recorderStatusText: {
+    color: '#91e6a3',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.4,
   },
   simpleWrapper: {
     flex: 1,
@@ -285,40 +350,66 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 22,
+    paddingHorizontal: 20,
   },
-  simpleDistance: {
-    color: '#edf5ea',
-    fontSize: 88,
-    fontWeight: '900',
-    letterSpacing: -4,
-    lineHeight: 88,
-    fontVariant: ['tabular-nums'],
-  },
-  simpleDistanceUnit: {
-    color: '#5a9465',
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 6,
-    textAlign: 'center',
-  },
-  simpleSecondary: {
-    flexDirection: 'row',
+  liveMetricBlock: {
     alignItems: 'center',
-    gap: 12,
-    marginTop: 10,
+    gap: 4,
+    width: '100%',
   },
-  simpleSep: {
-    width: 1,
-    height: 14,
-    backgroundColor: '#1e3826',
-  },
-  simpleSecondaryText: {
+  liveMetricLabel: {
     color: '#8fbf8f',
-    fontSize: 16,
+    fontSize: 10,
     fontWeight: '900',
-    letterSpacing: 0.5,
+    letterSpacing: 2,
+  },
+  liveMetricUnit: {
+    color: '#6f8a70',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  liveTime: {
+    color: '#f5f7f2',
+    fontSize: 64,
+    fontWeight: '300',
+    letterSpacing: 0,
+    lineHeight: 72,
     fontVariant: ['tabular-nums'],
+  },
+  livePace: {
+    color: '#ffffff',
+    fontSize: 116,
+    fontWeight: '900',
+    letterSpacing: 0,
+    lineHeight: 120,
+    fontVariant: ['tabular-nums'],
+  },
+  liveDistanceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+  },
+  liveDistance: {
+    color: '#f5f7f2',
+    fontSize: 62,
+    fontWeight: '900',
+    lineHeight: 68,
+    fontVariant: ['tabular-nums'],
+  },
+  liveDistanceUnit: {
+    color: '#8fbf8f',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2,
+    paddingBottom: 9,
+  },
+  liveDivider: {
+    width: '100%',
+    maxWidth: 300,
+    height: 1,
+    backgroundColor: '#1a251d',
   },
   panelPad: {
     padding: 14,

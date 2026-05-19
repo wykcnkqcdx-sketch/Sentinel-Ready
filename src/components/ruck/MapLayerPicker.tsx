@@ -27,7 +27,7 @@ export function MapLayerPicker({ activeLayer, onSelect }: MapLayerPickerProps) {
             accessibilityLabel={`${label} map layer`}
             accessibilityState={{ selected: isActive }}
           >
-            {isActive && <Text style={styles.activeTag}>●  </Text>}
+            {isActive && <Text style={styles.activeTag}>• </Text>}
             <Text style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}>
               {label.toUpperCase()}
             </Text>

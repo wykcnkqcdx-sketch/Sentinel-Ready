@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     color: '#edf5ea',
     fontSize: 20,
     fontWeight: '900',
-    letterSpacing: -0.5,
+    letterSpacing: 0,
     fontVariant: ['tabular-nums'],
   },
   unit: {
