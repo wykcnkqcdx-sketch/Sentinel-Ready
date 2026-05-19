@@ -177,7 +177,7 @@ export async function sendPositionCoT(
     course,
   });
 
-  await fetch(`${baseUrl(config)}/ManageGeoObject/postGeoObject`, {
+  const res = await fetch(`${baseUrl(config)}/ManageGeoObject/postGeoObject`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
@@ -185,6 +185,7 @@ export async function sendPositionCoT(
     },
     body: xml,
   });
+  if (!res.ok) throw new Error(`FTS error ${res.status}`);
 }
 
 /**
