@@ -1,15 +1,12 @@
 {
-  "timestamp": "2026-05-19T17:26:54.011Z",
+  "timestamp": "2026-05-19T18:58:01.472Z",
   "mode": "headless",
   "workerType": "audit",
   "model": "haiku",
-  "durationMs": 6332,
-  "executionId": "audit_1779211607679_kc5awz",
+  "durationMs": 4531419,
+  "executionId": "audit_1779212550053_fcdwpx",
   "success": false,
-  "findings": {
-    "parseError": true,
-    "rawOutput": "Invalid API key · Fix external API key\n"
-  },
-  "rawOutputPreview": "Invalid API key · Fix external API key\n",
-  "rawOutputLength": 39
+  "findings": null,
+  "rawOutputPreview": "",
+  "rawOutputLength": 0
 }

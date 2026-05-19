@@ -1,15 +1,12 @@
 {
-  "timestamp": "2026-05-19T17:16:47.790Z",
+  "timestamp": "2026-05-19T18:58:02.802Z",
   "mode": "headless",
   "workerType": "optimize",
   "model": "sonnet",
-  "durationMs": 14591,
-  "executionId": "optimize_1779210993199_ij0whv",
+  "durationMs": 4534224,
+  "executionId": "optimize_1779212548578_l2ir51",
   "success": false,
-  "findings": {
-    "sections": [],
-    "codeBlocks": []
-  },
-  "rawOutputPreview": "Invalid API key · Fix external API key\n",
-  "rawOutputLength": 39
+  "findings": null,
+  "rawOutputPreview": "",
+  "rawOutputLength": 0
 }
