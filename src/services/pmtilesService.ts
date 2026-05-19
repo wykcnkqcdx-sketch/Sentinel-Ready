@@ -1,7 +1,7 @@
 import * as MapboxGLModule from '@maplibre/maplibre-react-native';
-const MapboxGL = MapboxGLModule as any;
 import { PMTiles } from 'pmtiles';
 import * as FileSystem from 'expo-file-system/legacy';
+const MapboxGL = MapboxGLModule as any;
 
 export const PMTILES_PATH = FileSystem.documentDirectory + 'offline_region.pmtiles';
 let pmtilesInstance: PMTiles | null = null;

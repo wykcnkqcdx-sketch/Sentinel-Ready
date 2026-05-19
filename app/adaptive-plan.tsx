@@ -85,8 +85,6 @@ export default function AdaptivePlanScreen() {
     setPlan(generated);
   }
 
-  const selectedGoal = GOAL_OPTIONS.find((g) => g.value === goalType)!;
-
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* Header */}

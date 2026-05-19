@@ -47,15 +47,12 @@ function MemberRow({ member, index }: { member: RankedMember; index: number }) {
 function PodiumCard({ members }: { members: RankedMember[] }) {
   const top3 = members.slice(0, 3);
   const ordered = [top3[1], top3[0], top3[2]].filter(Boolean);
-  const heights = [80, 100, 60];
   const topHeights = [80, 100, 60];
-  const positions = [1, 0, 2];
 
   return (
     <View style={styles.podium}>
       {ordered.map((m, i) => {
         if (!m) return null;
-        const realPos = positions[i];
         const barH = topHeights[i];
         const color = MEDAL_COLORS[m.position - 1];
         return (

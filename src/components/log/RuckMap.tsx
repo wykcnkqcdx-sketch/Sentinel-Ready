@@ -6,19 +6,8 @@ import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as MapboxGLModule from '@maplibre/maplibre-react-native';
-const MapboxGL = MapboxGLModule as any;
 import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
-
-function interpolateColor(color1: string, color2: string, factor: number) {
-  const hex1 = parseInt(color1.substring(1), 16);
-  const hex2 = parseInt(color2.substring(1), 16);
-  const r1 = (hex1 >> 16) & 255, g1 = (hex1 >> 8) & 255, b1 = hex1 & 255;
-  const r2 = (hex2 >> 16) & 255, g2 = (hex2 >> 8) & 255, b2 = hex2 & 255;
-  const r = Math.round(r1 + factor * (r2 - r1));
-  const g = Math.round(g1 + factor * (g2 - g1));
-  const b = Math.round(b1 + factor * (b2 - b1));
-  return `#${(1 << 24 | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-}
+const MapboxGL = MapboxGLModule as any;
 
 interface RuckMapProps {
   route: RouteData;
@@ -79,15 +68,6 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
       }
     }
     return markers;
-  }, [coordinates]);
-
-  // Pre-calculate a gorgeous color gradient from Start (Emerald) to End (Red)
-  const routeColors = useMemo(() => {
-    const total = coordinates.length;
-    if (total === 0) return [];
-    return coordinates.map((_, index) =>
-      interpolateColor('#10B981', '#EF4444', index / Math.max(1, total - 1))
-    );
   }, [coordinates]);
 
   // Extract and map elevation data for the profile graph
@@ -158,8 +138,6 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
 
   const visibleCoordinates = useMemo(() => coordinates.slice(0, drawIndex), [coordinates, drawIndex]);
   const visibleDistanceMarkers = useMemo(() => distanceMarkers.filter(m => m.index < drawIndex), [distanceMarkers, drawIndex]);
-  const visibleColors = useMemo(() => routeColors.slice(0, drawIndex), [routeColors, drawIndex]);
-
   // Convert the current drawing index into a percentage (0 to 100) for the SVG clip path
   const drawPercentage = coordinates.length > 0 ? (drawIndex / coordinates.length) * 100 : 100;
 
@@ -202,11 +180,6 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
       </View>
     );
   }
-
-  // Using CARTO tiles to match the web implementation's aesthetic exactly
-  const tileUrl = colorScheme === 'dark'
-    ? 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-    : 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
 
   return (
     <View style={styles.container}>
