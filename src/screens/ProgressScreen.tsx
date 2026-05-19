@@ -31,7 +31,7 @@ export default function ProgressScreen() {
   const [readinessLogs, setReadinessLogs] = useState<ReadinessLog[]>([]);
 
   useEffect(() => {
-    loadReadinessLogs().then(setReadinessLogs).catch(() => {});
+    loadReadinessLogs().then(setReadinessLogs).catch((e) => console.warn('Failed to load readiness logs', e));
   }, []);
 
   const loadSeries = useMemo(() => weeklyLoadSeries(logs, WEEKS), [logs]);

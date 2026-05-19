@@ -55,8 +55,8 @@ export default function RuckReviewScreen() {
   );
 
   const aar = useMemo(() => log ? buildAAR(log) : null, [log]);
-  const routePoints = log?.routePoints ?? [];
-  const splits = log?.ruck?.splits ?? [];
+  const routePoints = useMemo(() => log?.routePoints ?? [], [log]);
+  const splits = useMemo(() => log?.ruck?.splits ?? [], [log]);
   const canExportGpx = routePoints.length >= 2;
   const mission = log?.ruck?.mission;
 

@@ -77,7 +77,7 @@ const GpsLogCard = memo(function GpsLogCard({
         </Text>
         <Text style={styles.logPoints}>
           {'📍 '}
-          {log.routePoints!.length} GPS points
+          {log.routePoints?.length ?? 0} GPS points
         </Text>
       </View>
       <TouchableOpacity

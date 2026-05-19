@@ -76,7 +76,7 @@ export default function ProgressionScreen() {
       .filter((l) => l.category === 'Ruck' && l.ruck && l.ruck.paceSecondsPerKm > 0)
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(-12);
-    const paces = rucks.map((l) => l.ruck!.paceSecondsPerKm);
+    const paces = rucks.map((l) => l.ruck?.paceSecondsPerKm ?? 0);
     const best = paces.length > 0 ? Math.min(...paces) : 0;
     const latest = paces.length > 0 ? paces[paces.length - 1] : 0;
     const improving = paces.length >= 2 && paces[paces.length - 1] < paces[0];

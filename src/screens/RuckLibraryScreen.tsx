@@ -116,8 +116,12 @@ export default function RuckLibraryScreen() {
         readiness: getReadinessNumber(log.readiness),
         rpe: r.rpe,
       };
-      if (!map.has(log.type)) map.set(log.type, []);
-      map.get(log.type)!.push(entry);
+      const bucket = map.get(log.type);
+      if (bucket) {
+        bucket.push(entry);
+      } else {
+        map.set(log.type, [entry]);
+      }
     }
 
     return Array.from(map.entries())
