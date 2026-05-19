@@ -6,7 +6,6 @@ import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as MapboxGLModule from '@maplibre/maplibre-react-native';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MapboxGL = MapboxGLModule as any;
 import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
 
@@ -34,7 +33,6 @@ const FALLBACK_ROUTE_COLOR = '#3B82F6';
 
 export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cameraRef = useRef<any>(null);
   const routeColor = theme.mapRoute || FALLBACK_ROUTE_COLOR;
 

@@ -3,8 +3,8 @@ import type { TrackPoint } from '../types/map';
 import { distanceBetween } from './mapUtils';
 
 export type OverlayPoint = { id: string; label: string; latitude: number; longitude: number };
-export type OverlayLine = { id: string; label: string; points: Array<{ lat: number; lon: number }> };
-export type OverlayPolygon = { id: string; label: string; rings: Array<Array<{ lat: number; lon: number }>> };
+export type OverlayLine = { id: string; label: string; points: { lat: number; lon: number }[] };
+export type OverlayPolygon = { id: string; label: string; rings: { lat: number; lon: number }[][] };
 export type MeasurementMode = 'range' | 'route' | 'area';
 export type MeasurementPoint = { latitude: number; longitude: number };
 

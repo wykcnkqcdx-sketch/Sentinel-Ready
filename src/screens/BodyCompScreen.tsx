@@ -95,13 +95,6 @@ export default function BodyCompScreen() {
   const currentBmiStatus =
     latestEntry?.bmi != null ? getBmiStatus(latestEntry.bmi) : null;
 
-  const bmiColors: Record<string, string> = {
-    underweight: '#4a9eff',
-    optimal: '#91e6a3',
-    overweight: '#FFB86B',
-    obese: '#ff6b6b',
-  };
-
   if (isLoading) return <View style={styles.screen} />;
 
   return (

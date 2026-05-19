@@ -7,14 +7,14 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 
 type MentalState = 'SHARP' | 'NOMINAL' | 'DEGRADED' | 'CRITICAL';
 type Hydration = 'FULL' | 'PARTIAL' | 'DEPLETED';
 
-const MENTAL_OPTIONS: Array<{ value: MentalState; color: string }> = [
+const MENTAL_OPTIONS: { value: MentalState; color: string }[] = [
   { value: 'SHARP',    color: '#91e6a3' },
   { value: 'NOMINAL',  color: '#3fc8e4' },
   { value: 'DEGRADED', color: '#ffaa44' },
   { value: 'CRITICAL', color: '#e05050' },
 ];
 
-const HYDRATION_OPTIONS: Array<{ value: Hydration; color: string }> = [
+const HYDRATION_OPTIONS: { value: Hydration; color: string }[] = [
   { value: 'FULL',     color: '#91e6a3' },
   { value: 'PARTIAL',  color: '#ffaa44' },
   { value: 'DEPLETED', color: '#e05050' },

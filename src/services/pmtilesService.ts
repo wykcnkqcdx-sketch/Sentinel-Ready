@@ -1,5 +1,4 @@
 import * as MapboxGLModule from '@maplibre/maplibre-react-native';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MapboxGL = MapboxGLModule as any;
 import { PMTiles } from 'pmtiles';
 import * as FileSystem from 'expo-file-system/legacy';

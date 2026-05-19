@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const FILTER_OPTIONS: Array<{ label: string; value: TrainingCategory | 'ALL' }> = [
+const FILTER_OPTIONS: { label: string; value: TrainingCategory | 'ALL' }[] = [
   { label: 'ALL', value: 'ALL' },
   { label: 'RUCK', value: 'Ruck' },
   { label: 'STRENGTH', value: 'Strength' },
