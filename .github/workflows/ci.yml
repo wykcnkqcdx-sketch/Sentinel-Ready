@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Type · Lint · Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+  # Native builds (iOS / Android) require Expo Application Services (EAS).
+  # To enable:
+  #   1. Create an Expo account at expo.dev
+  #   2. Run `npx eas-cli build:configure` locally to generate eas.json
+  #   3. Add EXPO_TOKEN to GitHub → Settings → Secrets
+  #   4. Uncomment the job below
+  #
+  # build-preview:
+  #   name: EAS Preview Build
+  #   runs-on: ubuntu-latest
+  #   needs: check
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '22'
+  #         cache: 'npm'
+  #     - run: npm ci
+  #     - uses: expo/expo-github-action@v8
+  #       with:
+  #         expo-version: latest
+  #         eas-version: latest
+  #         token: ${{ secrets.EXPO_TOKEN }}
+  #     - run: eas build --platform all --profile preview --non-interactive
