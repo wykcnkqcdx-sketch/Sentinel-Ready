@@ -61,7 +61,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   onSaveSession,
   onDiscardDraft,
 }: RuckTrackPanelProps) {
-  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('simple');
+  const [displayMode, setDisplayMode] = useState<RuckDisplayMode>('map');
 
   const targetDistance = Math.max(0, getNumberInput(missionDraft.targetDistanceKm, 0));
   const targetMinutes = Math.max(0, getNumberInput(missionDraft.targetMinutes, 0));

@@ -99,10 +99,18 @@ export function RuckMapView({
   const [isFollowing, setIsFollowing] = useState(true);
   const panStartRef = useRef<{ x: number; y: number; center: TrackPoint } | null>(null);
   const panFrameRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
+  const pinchStartDistRef = useRef<number | null>(null);
+  const pinchStartZoomRef = useRef<number>(zoom);
+  const mapZoomRef = useRef(mapZoom);
+  mapZoomRef.current = mapZoom;
 
   const liveCenter: TrackPoint =
     currentPosition ?? (routePoints.length > 0 ? routePoints[routePoints.length - 1] : DUBLIN);
   const center = mapCenter ?? liveCenter;
+
+  // Stable refs so PanResponder closure never goes stale — avoids recreation mid-gesture
+  const centerRef = useRef(center);
+  centerRef.current = center;
 
   useEffect(() => {
     setMapZoom(clampZoom(zoom));
@@ -124,34 +132,53 @@ export function RuckMapView({
 
   const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => false,
-    onMoveShouldSetPanResponder: (_, gesture) =>
-      interactive && (Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8),
-    onPanResponderGrant: () => {
-      panStartRef.current = { x: 0, y: 0, center };
+    onMoveShouldSetPanResponder: (evt, gesture) => {
+      if (!interactive) return false;
+      if (evt.nativeEvent.touches.length === 2) return true;
+      return Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8;
     },
-    onPanResponderMove: (_, gesture) => {
-      const start = panStartRef.current;
-      if (!start || viewport.width <= 0 || viewport.height <= 0) return;
-
-      const pixel = latLonToWorldPixel(start.center.latitude, start.center.longitude, mapZoom);
-      const next = worldPixelToLatLon(pixel.x - gesture.dx, pixel.y - gesture.dy, mapZoom);
-
-      if (panFrameRef.current != null) {
-        cancelAnimationFrame(panFrameRef.current);
+    onPanResponderGrant: (evt) => {
+      const touches = evt.nativeEvent.touches;
+      if (touches.length === 2) {
+        const dx = touches[0].pageX - touches[1].pageX;
+        const dy = touches[0].pageY - touches[1].pageY;
+        pinchStartDistRef.current = Math.sqrt(dx * dx + dy * dy);
+        pinchStartZoomRef.current = mapZoomRef.current;
+      } else {
+        panStartRef.current = { x: 0, y: 0, center: centerRef.current };
       }
-      panFrameRef.current = requestAnimationFrame(() => {
+    },
+    onPanResponderMove: (evt, gesture) => {
+      const touches = evt.nativeEvent.touches;
+      if (touches.length === 2 && pinchStartDistRef.current !== null) {
+        const dx = touches[0].pageX - touches[1].pageX;
+        const dy = touches[0].pageY - touches[1].pageY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const scale = dist / pinchStartDistRef.current;
         setIsFollowing(false);
-        setMapCenter(toTrackPoint(next.latitude, next.longitude));
-        panFrameRef.current = null;
-      });
+        setMapZoom(clampZoom(pinchStartZoomRef.current + Math.log2(scale)));
+      } else {
+        const start = panStartRef.current;
+        if (!start || viewport.width <= 0 || viewport.height <= 0) return;
+        const pixel = latLonToWorldPixel(start.center.latitude, start.center.longitude, mapZoomRef.current);
+        const next = worldPixelToLatLon(pixel.x - gesture.dx, pixel.y - gesture.dy, mapZoomRef.current);
+        if (panFrameRef.current != null) cancelAnimationFrame(panFrameRef.current);
+        panFrameRef.current = requestAnimationFrame(() => {
+          setIsFollowing(false);
+          setMapCenter(toTrackPoint(next.latitude, next.longitude));
+          panFrameRef.current = null;
+        });
+      }
     },
     onPanResponderRelease: () => {
       panStartRef.current = null;
+      pinchStartDistRef.current = null;
     },
     onPanResponderTerminate: () => {
       panStartRef.current = null;
+      pinchStartDistRef.current = null;
     },
-  }), [center, interactive, mapZoom, viewport.height, viewport.width]);
+  }), [interactive, viewport.height, viewport.width]);
 
   const tiles = useMemo(
     () => buildVisibleTiles(center, viewport, layer, mapZoom),

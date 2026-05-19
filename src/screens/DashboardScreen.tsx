@@ -16,6 +16,7 @@ import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/ut
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
+import { buildThreatAssessment } from '@/src/utils/threatUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -82,6 +83,7 @@ export default function DashboardScreen() {
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
   const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
   const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
+  const threatAssessment = useMemo(() => buildThreatAssessment(logs), [logs]);
 
   const weeklyLoadData = useMemo(() => weeklyLoadSeries(logs, 8), [logs]);
   const [showFullReport, setShowFullReport] = useState(false);
@@ -89,6 +91,11 @@ export default function DashboardScreen() {
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
   const weekProgress = Math.min(thisWeek.total / WEEKLY_TARGET, 1);
+  const alertCount = useMemo(() => [
+    readinessPercentage > 0 && readinessPercentage < 60,
+    trend.status === 'warning',
+    thisWeek.fatigueWatch >= 2,
+  ].filter(Boolean).length, [readinessPercentage, trend.status, thisWeek.fatigueWatch]);
 
   const readinessStatus = useMemo(() => {
     if (readinessPercentage === 0) {
@@ -192,8 +199,8 @@ export default function DashboardScreen() {
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
           <View>
-            <Text style={styles.kicker}>// SENTINEL·READY //</Text>
-            <Text style={styles.title}>Operational Dashboard</Text>
+            <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+            <Text style={styles.title}>COMMAND & STATUS</Text>
           </View>
           <View style={[styles.statusPill, { borderColor: readinessStatus.prog + '55', backgroundColor: readinessStatus.bg }]}>
             <View style={[styles.statusDot, { backgroundColor: readinessStatus.prog }]} />
@@ -203,7 +210,71 @@ export default function DashboardScreen() {
         <View style={styles.headerDivider} />
       </View>
 
-      <SentinelCard title="Readiness Index" variant="success">
+      <View style={styles.statusBoard}>
+        <View style={[styles.statusBoardCell, { borderLeftColor: readinessStatus.prog }]}>
+          <Text style={styles.statusBoardKicker}>READINESS</Text>
+          <Text style={[styles.statusBoardValue, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
+        </View>
+        <View style={[styles.statusBoardCell, { borderLeftColor: weekLoadStatus.isWarn ? T.accentWarnBright : T.textAccent }]}>
+          <Text style={styles.statusBoardKicker}>LOAD STATUS</Text>
+          <Text style={[styles.statusBoardValue, { color: weekLoadStatus.isWarn ? T.accentWarnBright : T.textAccent }]}>{weekLoadStatus.label.toUpperCase()}</Text>
+        </View>
+        <View style={[styles.statusBoardCell, { borderLeftColor: alertCount > 0 ? T.dotRed : T.textAccent }]}>
+          <Text style={styles.statusBoardKicker}>ACTIVE ALERTS</Text>
+          <Text style={[styles.statusBoardValue, { color: alertCount > 0 ? T.dotRed : T.textAccent }]}>{alertCount}</Text>
+        </View>
+        <View style={[styles.statusBoardCell, { borderLeftColor: missionBrief.status === 'red' ? T.dotRed : missionBrief.status === 'green' ? T.textAccent : T.accentWarnBright }]}>
+          <Text style={styles.statusBoardKicker}>SITREP</Text>
+          <Text style={[styles.statusBoardValue, { color: missionBrief.status === 'red' ? T.dotRed : missionBrief.status === 'green' ? T.textAccent : T.accentWarnBright }]}>{missionBrief.status.toUpperCase()}</Text>
+        </View>
+      </View>
+
+      <SentinelCard
+        title="THREAT ASSESSMENT"
+        variant={threatAssessment.overallLevel === 'RED' ? 'warning' : 'default'}
+      >
+        {/* Overall level banner */}
+        <View style={[
+          styles.threatBanner,
+          { borderColor: threatAssessment.overallLevel === 'RED' ? T.dotRed + '55'
+              : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright + '55'
+              : threatAssessment.overallLevel === 'GREEN' ? T.textAccent + '55'
+              : T.borderDim }
+        ]}>
+          <View style={[
+            styles.threatLevelDot,
+            { backgroundColor: threatAssessment.overallLevel === 'RED' ? T.dotRed
+                : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright
+                : threatAssessment.overallLevel === 'GREEN' ? T.textAccent
+                : '#2e5038' }
+          ]} />
+          <Text style={[
+            styles.threatLevelText,
+            { color: threatAssessment.overallLevel === 'RED' ? T.dotRed
+                : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright
+                : threatAssessment.overallLevel === 'GREEN' ? T.textAccent
+                : '#3a6b46' }
+          ]}>
+            {threatAssessment.overallLevel === 'CLEAR' ? 'SYSTEM NOMINAL — NO THREATS DETECTED' : `THREAT LEVEL ${threatAssessment.overallLevel}`}
+          </Text>
+          {threatAssessment.actionableCount > 0 && (
+            <View style={styles.threatCountBadge}>
+              <Text style={styles.threatCountText}>{threatAssessment.actionableCount}</Text>
+            </View>
+          )}
+        </View>
+
+        {threatAssessment.threats.map((threat) => (
+          <AlertCard
+            key={threat.id}
+            type={threat.level === 'RED' ? 'alert' : threat.level === 'AMBER' ? 'warning' : 'info'}
+            title={threat.label}
+            description={`${threat.message}\n→ ${threat.action}`}
+          />
+        ))}
+      </SentinelCard>
+
+      <SentinelCard title="READINESS ASSESSMENT" variant="success">
         <View style={styles.readinessRow}>
           <View style={styles.readinessRingWrap}>
             {(() => {
@@ -248,7 +319,7 @@ export default function DashboardScreen() {
         </View>
       </SentinelCard>
 
-      <SentinelCard title="Mission Brief" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
+      <SentinelCard title="SITREP" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
         <View style={styles.briefHeader}>
           <View style={styles.briefTitleBlock}>
             <Text style={missionBrief.status === 'red' ? styles.briefTitleWarn : styles.briefTitle}>{missionBrief.title}</Text>
@@ -261,7 +332,7 @@ export default function DashboardScreen() {
           </View>
         </View>
         <View style={styles.briefActionBox}>
-          <Text style={styles.briefActionLabel}>Primary action</Text>
+          <Text style={styles.briefActionLabel}>DIRECTIVE</Text>
           <Text style={styles.briefActionText}>{missionBrief.primaryAction}</Text>
         </View>
         <Text style={styles.briefSecondary}>{missionBrief.secondaryAction}</Text>
@@ -276,7 +347,7 @@ export default function DashboardScreen() {
         accessibilityLabel={showFullReport ? 'Collapse full report' : 'View full report'}
       >
         <Text style={styles.reportToggleText}>
-          {showFullReport ? '▲  COLLAPSE REPORT' : '▼  VIEW FULL REPORT'}
+          {showFullReport ? '▲  COLLAPSE ASSESSMENT' : '▼  VIEW FULL ASSESSMENT'}
         </Text>
       </TouchableOpacity>
 
@@ -372,13 +443,16 @@ export default function DashboardScreen() {
         ) : null}
       </SentinelCard>
 
-      <SentinelCard title="Training Insights">
+      <SentinelCard title="INTELLIGENCE ANALYSIS">
         {topInsights.map((insight) => (
           <View key={insight.title} style={
             insight.severity === 'warning' ? styles.insightItemWarn
             : insight.severity === 'good' ? styles.insightItemGood
             : styles.insightItem
           }>
+            <Text style={styles.insightTag}>
+              {insight.severity === 'warning' ? 'ALERT' : insight.severity === 'good' ? 'POSITIVE' : 'OBSERVED'}
+            </Text>
             <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
             <Text style={styles.insightText}>{insight.message}</Text>
           </View>
@@ -480,16 +554,16 @@ export default function DashboardScreen() {
       </>}
 
       <View style={styles.grid}>
-        <MissionStat label="Ruck" value={ruckVal} status={ruckVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
-        <MissionStat label="Strength" value={strengthVal} status={strengthVal !== 'N/A' ? 'Force output' : 'Awaiting data'} />
-        <MissionStat label="Cardio" value={cardioVal} status={cardioVal !== 'N/A' ? 'Aerobic base' : 'Awaiting data'} />
-        <MissionStat label="Recovery" value={recoveryVal} status={recoveryVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
+        <MissionStat label="LOAD CARRIAGE" value={ruckVal} status={ruckVal !== 'N/A' ? 'LAST OP' : 'AWAITING DATA'} />
+        <MissionStat label="FORCE OUTPUT" value={strengthVal} status={strengthVal !== 'N/A' ? 'LAST OUTPUT' : 'AWAITING DATA'} />
+        <MissionStat label="AEROBIC BASE" value={cardioVal} status={cardioVal !== 'N/A' ? 'LAST LOG' : 'AWAITING DATA'} />
+        <MissionStat label="RECOVERY STATE" value={recoveryVal} status={recoveryVal !== 'N/A' ? 'LAST LOG' : 'AWAITING DATA'} />
       </View>
 
       <View style={weekLoadStatus.isWarn ? styles.loadCardWarn : styles.loadCard}>
         <View style={styles.loadHeader}>
           <View>
-            <Text style={styles.loadKicker}>{"THIS WEEK'S LOAD"}</Text>
+            <Text style={styles.loadKicker}>WEEKLY OP LOAD</Text>
             <Text style={weekLoadStatus.isWarn ? styles.loadCountWarn : styles.loadCount}>
               {thisWeek.total} / {WEEKLY_TARGET} sessions
             </Text>
@@ -538,49 +612,49 @@ export default function DashboardScreen() {
       </View>
 
       <View style={styles.connectSection}>
-        <Text style={styles.connectKicker}>QUICK ACCESS</Text>
+        <Text style={styles.connectKicker}>SYSTEM ACCESS</Text>
         <View style={styles.connectRow}>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToStrava} accessibilityRole="button" accessibilityLabel="Open Strava integration">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/progression')} accessibilityRole="button" accessibilityLabel="View performance progression charts">
             <View style={[styles.connectDot, { backgroundColor: '#FC4C02' }]} />
-            <Text style={styles.connectCellText}>Strava</Text>
+            <Text style={styles.connectCellText}>PROGRESSION</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToAtak} accessibilityRole="button" accessibilityLabel="Open ATAK integration">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/operator-profile')} accessibilityRole="button" accessibilityLabel="View operator personnel file">
             <View style={[styles.connectDot, { backgroundColor: '#3a7bd5' }]} />
-            <Text style={styles.connectCellText}>ATAK</Text>
+            <Text style={styles.connectCellText}>PERSONNEL</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToGpx} accessibilityRole="button" accessibilityLabel="Open GPX Files">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/ruck-library')} accessibilityRole="button" accessibilityLabel="Open ruck library">
             <View style={[styles.connectDot, { backgroundColor: T.borderGreen }]} />
-            <Text style={styles.connectCellText}>GPX</Text>
+            <Text style={styles.connectCellText}>RUCK LOG</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/check-in')} accessibilityRole="button" accessibilityLabel="Log today's check-in">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/daily-check')} accessibilityRole="button" accessibilityLabel="Log today's check-in">
             <View style={[styles.connectDot, { backgroundColor: T.textAccent }]} />
-            <Text style={styles.connectCellText}>Check-in</Text>
+            <Text style={styles.connectCellText}>DAILY CHECK</Text>
           </Pressable>
         </View>
         <View style={styles.connectRow}>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToOfflineMap} accessibilityRole="button" accessibilityLabel="Open offline map tile cache">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/calendar')} accessibilityRole="button" accessibilityLabel="Open operations calendar">
             <View style={[styles.connectDot, { backgroundColor: '#3fc8e4' }]} />
-            <Text style={styles.connectCellText}>Offline Maps</Text>
+            <Text style={styles.connectCellText}>OPS CALENDAR</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={navigateToNotifications} accessibilityRole="button" accessibilityLabel="Open notification settings">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/weekly-brief')} accessibilityRole="button" accessibilityLabel="View weekly mission brief">
             <View style={[styles.connectDot, { backgroundColor: T.accentWarnBright }]} />
-            <Text style={styles.connectCellText}>Alerts</Text>
+            <Text style={styles.connectCellText}>WEEKLY BRIEF</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/progress')} accessibilityRole="button" accessibilityLabel="View progress charts">
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/timeline')} accessibilityRole="button" accessibilityLabel="View incident timeline">
             <View style={[styles.connectDot, { backgroundColor: '#4a9eff' }]} />
-            <Text style={styles.connectCellText}>Progress</Text>
+            <Text style={styles.connectCellText}>TIMELINE</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/body-comp')} accessibilityRole="button" accessibilityLabel="Open body composition tracker">
-            <View style={[styles.connectDot, { backgroundColor: '#a78bfa' }]} />
-            <Text style={styles.connectCellText}>Body Comp</Text>
+          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/vault')} accessibilityRole="button" accessibilityLabel="Open intelligence vault">
+            <View style={[styles.connectDot, { backgroundColor: '#c097f7' }]} />
+            <Text style={styles.connectCellText}>INTEL VAULT</Text>
           </Pressable>
         </View>
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Mission Alerts</Text>
-          <Text style={styles.sectionTag}>WATCH</Text>
+          <Text style={styles.sectionTitle}>ACTIVE ALERTS</Text>
+          <Text style={styles.sectionTag}>ACTIVE</Text>
         </View>
 
         {readinessPercentage > 0 && readinessPercentage < 60 ? (
@@ -639,7 +713,7 @@ export default function DashboardScreen() {
         accessibilityRole="button"
         accessibilityLabel="Log a training session"
       >
-        <Text style={styles.fabText}>+ LOG SESSION</Text>
+        <Text style={styles.fabText}>+ LOG ACTIVITY</Text>
       </TouchableOpacity>
     </View>
   );
@@ -872,6 +946,32 @@ const styles = StyleSheet.create({
   loadNoData: { color: '#3a5040', fontSize: 13, fontWeight: '700' },
   loadSubText: { color: T.textHintDark, fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
   loadWarnText: { color: T.accentWarnBright, fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
+
+  // Status board
+  statusBoard: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  statusBoardCell: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: T.bgPanelAlt,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: T.borderDim,
+    borderLeftWidth: 3,
+    padding: 12,
+    gap: 4,
+  },
+  statusBoardKicker: { color: T.textHintDark, fontSize: 8, fontWeight: '900', letterSpacing: 2.5 },
+  statusBoardValue: { fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+
+  // Threat assessment
+  threatBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 4, paddingHorizontal: 12, paddingVertical: 8 },
+  threatLevelDot: { width: 7, height: 7, borderRadius: 3.5 },
+  threatLevelText: { flex: 1, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  threatCountBadge: { backgroundColor: T.dotRed + '22', borderRadius: 3, borderWidth: 1, borderColor: T.dotRed + '55', paddingHorizontal: 7, paddingVertical: 2 },
+  threatCountText: { color: T.dotRed, fontSize: 10, fontWeight: '900' },
+
+  // Insight tag
+  insightTag: { color: T.textHintDark, fontSize: 8, fontWeight: '900', letterSpacing: 2.5 },
 
   // Connect section
   connectSection: {
