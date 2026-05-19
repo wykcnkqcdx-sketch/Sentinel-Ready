@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
 
   sessionList: { borderTopWidth: 1, borderTopColor: T.borderDim },
   sessionListHeader: { flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 6, backgroundColor: '#080f0b', gap: 8 },
-  sessionHeaderCell: { flex: 1, color: '#2e5038', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  sessionHeaderCell: { flex: 1, color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   sessionRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 9, borderTopWidth: 1, borderTopColor: T.borderDim, gap: 8 },
   sessionDate: { flex: 1.2, color: T.textHintDark, fontSize: 10, fontWeight: '700' },
   sessionDist: { flex: 1, color: T.textSubtle, fontSize: 11, fontWeight: '900' },

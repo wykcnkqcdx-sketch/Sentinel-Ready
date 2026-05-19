@@ -213,13 +213,13 @@ const styles = StyleSheet.create({
   panel: { marginHorizontal: 16, marginTop: 14, backgroundColor: T.bgPanelAlt, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, overflow: 'hidden' },
   panelHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 10 },
   panelTitle: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
-  panelSubtitle: { color: '#1e3826', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
+  panelSubtitle: { color: T.textHintDark, fontSize: 8, fontWeight: '700', letterSpacing: 1 },
   panelRule: { flex: 1, height: 1, backgroundColor: '#172c20' },
 
   chartWrap: { paddingHorizontal: 16, paddingBottom: 8, position: 'relative' },
   axisLabels: { position: 'absolute', right: 16, top: 0, height: 56, justifyContent: 'space-between' },
-  axisLabel: { color: '#1e3826', fontSize: 8, fontWeight: '700' },
-  chartNote: { color: '#1e3826', fontSize: 8, fontWeight: '700', marginTop: 2 },
+  axisLabel: { color: T.textHintDark, fontSize: 8, fontWeight: '700' },
+  chartNote: { color: T.textHintDark, fontSize: 8, fontWeight: '700', marginTop: 2 },
 
   statRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: T.borderDim },
   statBubble: { flex: 1, alignItems: 'center', paddingVertical: 10, gap: 3, borderRightWidth: 1, borderRightColor: T.borderDim },

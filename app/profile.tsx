@@ -52,11 +52,11 @@ export default function ProfileScreen() {
         accessibilityRole="button"
         accessibilityLabel="Go back"
       >
-        <Text style={styles.backText}>← Back</Text>
+        <Text style={styles.backText}>← BACK</Text>
       </TouchableOpacity>
 
       <Text style={styles.kicker}>SENTINEL READY</Text>
-      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.title}>PROFILE</Text>
       <Text style={styles.subtitle}>
         Set your gender and target test date to personalise DFIFT standards and planning.
       </Text>
@@ -251,42 +251,42 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#07110c' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
-  back: { paddingVertical: 4 },
-  backText: { color: '#91e6a3', fontSize: 14, fontWeight: '900' },
-  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#f4f7f1', fontSize: 30, fontWeight: '900' },
+  back: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#1e3826', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7, marginBottom: 6 },
+  backText: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  kicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#f4f7f1', fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
   subtitle: { color: '#c6d0c2', fontSize: 15, lineHeight: 22 },
 
-  card: { backgroundColor: '#0e1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#26382c', gap: 10 },
-  cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  card: { backgroundColor: '#0e1812', borderRadius: 4, padding: 16, borderWidth: 1, borderColor: '#26382c', gap: 10 },
+  cardKicker: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
   cardLabel: { color: '#8fbf8f', fontSize: 13, lineHeight: 19 },
   inputLabel: { color: '#dfe8da', fontSize: 12, fontWeight: '900', marginTop: 4 },
 
   toggleRow: { flexDirection: 'row', gap: 10 },
-  toggleBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#26382c', alignItems: 'center', backgroundColor: '#0a1410' },
-  toggleBtnActive: { flex: 1, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#2f6b3c', alignItems: 'center', backgroundColor: '#102d1a' },
+  toggleBtn: { flex: 1, paddingVertical: 14, borderRadius: 4, borderWidth: 1, borderColor: '#26382c', alignItems: 'center', backgroundColor: '#0a1410' },
+  toggleBtnActive: { flex: 1, paddingVertical: 14, borderRadius: 4, borderWidth: 1, borderColor: '#2f6b3c', alignItems: 'center', backgroundColor: '#102d1a' },
   toggleText: { color: '#4a5e4a', fontSize: 15, fontWeight: '900' },
   toggleTextActive: { color: '#91e6a3', fontSize: 15, fontWeight: '900' },
 
   inputRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
-  input: { flex: 1, backgroundColor: '#07110c', borderRadius: 10, borderWidth: 1, borderColor: '#26382c', color: '#ffffff', fontSize: 16, fontWeight: '800', paddingHorizontal: 14, paddingVertical: 12 },
+  input: { flex: 1, backgroundColor: '#07110c', borderRadius: 4, borderWidth: 1, borderColor: '#26382c', color: '#ffffff', fontSize: 16, fontWeight: '800', paddingHorizontal: 14, paddingVertical: 12 },
   notesInput: { minHeight: 80, textAlignVertical: 'top' },
   inputError: { borderColor: '#7a3a1f' },
-  saveBtn: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12 },
+  saveBtn: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 4, paddingHorizontal: 16, paddingVertical: 12 },
   saveBtnText: { color: '#91e6a3', fontSize: 14, fontWeight: '900' },
   errorText: { color: '#ffb86b', fontSize: 12, fontWeight: '800' },
   savedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   savedText: { color: '#8fbf8f', fontSize: 13, fontWeight: '800' },
   clearText: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
   levelRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  levelBtn: { flexGrow: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#26382c', alignItems: 'center', backgroundColor: '#0a1410' },
-  levelBtnActive: { flexGrow: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#2f6b3c', alignItems: 'center', backgroundColor: '#102d1a' },
+  levelBtn: { flexGrow: 1, paddingVertical: 12, borderRadius: 4, borderWidth: 1, borderColor: '#26382c', alignItems: 'center', backgroundColor: '#0a1410' },
+  levelBtnActive: { flexGrow: 1, paddingVertical: 12, borderRadius: 4, borderWidth: 1, borderColor: '#2f6b3c', alignItems: 'center', backgroundColor: '#102d1a' },
   levelText: { color: '#4a5e4a', fontSize: 13, fontWeight: '900' },
   levelTextActive: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
-  dataButton: { backgroundColor: '#91e6a3', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  dataButton: { backgroundColor: '#91e6a3', borderRadius: 4, paddingVertical: 13, alignItems: 'center' },
   dataButtonText: { color: '#07110c', fontSize: 14, fontWeight: '900' },
 
-  infoCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 8 },
+  infoCard: { backgroundColor: '#111a10', borderRadius: 4, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 8 },
   infoTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900', marginBottom: 4 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: '#1a2c1e' },
   infoLabel: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
@@ -294,8 +294,8 @@ const styles = StyleSheet.create({
   infoFootnote: { color: '#4a5e4a', fontSize: 11, lineHeight: 16, marginTop: 4 },
   milestoneScore: { color: '#ffffff', fontSize: 26, fontWeight: '900' },
   milestoneGrid: { gap: 8 },
-  milestoneItem: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
-  milestoneItemEarned: { backgroundColor: '#102d1a', borderRadius: 12, borderWidth: 1, borderColor: '#2f6b3c', padding: 12, gap: 3 },
+  milestoneItem: { backgroundColor: '#07110c', borderRadius: 4, borderWidth: 1, borderColor: '#26382c', padding: 12, gap: 3 },
+  milestoneItemEarned: { backgroundColor: '#102d1a', borderRadius: 4, borderWidth: 1, borderColor: '#2f6b3c', padding: 12, gap: 3 },
   milestoneTitle: { color: '#dfe8da', fontSize: 13, fontWeight: '900' },
   milestoneTitleEarned: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
   milestoneDescription: { color: '#8fbf8f', fontSize: 12, lineHeight: 17 },
