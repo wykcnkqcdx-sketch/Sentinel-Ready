@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-05-18T21:36:20.846Z",
+  "timestamp": "2026-05-19T09:37:31.842Z",
   "mode": "headless",
   "workerType": "optimize",
   "model": "sonnet",
-  "durationMs": 8625,
-  "executionId": "optimize_1779140172221_u65092",
+  "durationMs": 255963,
+  "executionId": "optimize_1779183195879_15o8ox",
   "success": false,
   "findings": {
     "sections": [],
     "codeBlocks": []
   },
-  "rawOutputPreview": "Invalid API key · Fix external API key\n",
-  "rawOutputLength": 39
+  "rawOutputPreview": "API Error: Unable to connect to API (FailedToOpenSocket)\n",
+  "rawOutputLength": 57
 }
