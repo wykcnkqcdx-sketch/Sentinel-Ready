@@ -4,6 +4,7 @@ import * as FileSystem from 'expo-file-system';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Network from 'expo-network';
 import * as Notifications from 'expo-notifications';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
@@ -55,6 +56,7 @@ function estimateTileCount(center: Position, radiusKm: number): number {
 }
 
 export default function OfflineMapScreen() {
+  const router = useRouter();
   const [radius, setRadius] = useState<Radius>(10);
   const [layer, setLayer] = useState<MapLayerKey>('street');
   const [downloading, setDownloading] = useState(false);
@@ -347,6 +349,15 @@ export default function OfflineMapScreen() {
     );
   }, []);
 
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/ruck');
+  }, [router]);
+
   const statsMB = (stats.totalBytes / (1024 * 1024)).toFixed(1);
   const progressPct = progress.total > 0 ? progress.downloaded / progress.total : 0;
 
@@ -359,6 +370,14 @@ export default function OfflineMapScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleBack}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
         <Text style={styles.kicker}>OFFLINE MAPS</Text>
         <Text style={styles.title}>Cache Tiles</Text>
         <Text style={styles.subtitle}>Download map tiles for use without signal</Text>
@@ -493,6 +512,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#07110c' },
   content: { padding: 20, gap: 16, paddingBottom: 50, maxWidth: 800, width: '100%', alignSelf: 'center' },
   header: { gap: 8 },
+  backButton: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#35523e',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  backButtonText: { color: '#c8f7d0', fontSize: 13, fontWeight: '900' },
   kicker: { color: '#8fbf8f', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#aeb8aa', fontSize: 14, lineHeight: 20 },
