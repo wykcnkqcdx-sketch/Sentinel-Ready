@@ -125,7 +125,8 @@ export function buildCotXml(params: CotXmlParams): string {
 // ── Auth helper ───────────────────────────────────────────────────────────────
 
 function basicAuth(config: FTSConfig): string {
-  return `Basic ${btoa(`${config.username}:${config.password}`)}`;
+  const safe = (s: string): string => s.replace(/[^\x00-\xFF]/g, '');
+  return `Basic ${btoa(`${safe(config.username)}:${safe(config.password)}`)}`;
 }
 
 function baseUrl(config: FTSConfig): string {

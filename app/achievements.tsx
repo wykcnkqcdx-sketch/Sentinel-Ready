@@ -103,7 +103,7 @@ export default function AchievementsScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <Pressable onPress={handleBack} style={styles.backBtn}>
+        <Pressable onPress={handleBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>← BACK</Text>
         </Pressable>
         <Text style={styles.screenKicker}>ACHIEVEMENTS</Text>
@@ -137,7 +137,7 @@ export default function AchievementsScreen() {
       {/* Filter tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterRow}>
         {FILTERS.map((f) => (
-          <Pressable key={f} style={[styles.filterChip, filter === f && styles.filterChipActive]} onPress={() => setFilter(f)}>
+          <Pressable key={f} style={[styles.filterChip, filter === f && styles.filterChipActive]} onPress={() => setFilter(f)} accessibilityRole="button" accessibilityLabel={`Filter by ${f}`}>
             <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
           </Pressable>
         ))}

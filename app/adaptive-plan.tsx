@@ -89,7 +89,7 @@ export default function AdaptivePlanScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>← BACK</Text>
         </TouchableOpacity>
         <Text style={styles.screenKicker}>{'// ADAPTIVE PLANNER //'}</Text>
@@ -113,6 +113,8 @@ export default function AdaptivePlanScreen() {
                 key={opt.value}
                 style={[styles.goalChip, goalType === opt.value && styles.goalChipActive]}
                 onPress={() => setGoalType(opt.value)}
+                accessibilityRole="button"
+                accessibilityLabel={opt.label}
               >
                 <Text style={[styles.goalChipLabel, goalType === opt.value && styles.goalChipLabelActive]}>
                   {opt.label}
@@ -130,13 +132,15 @@ export default function AdaptivePlanScreen() {
                 key={w}
                 style={[styles.weekChip, weeks === w && styles.weekChipActive]}
                 onPress={() => setWeeks(w)}
+                accessibilityRole="button"
+                accessibilityLabel={`${w} weeks`}
               >
                 <Text style={[styles.weekChipText, weeks === w && styles.weekChipTextActive]}>{w}W</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <TouchableOpacity style={styles.generateBtn} onPress={generate} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.generateBtn} onPress={generate} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel="Generate plan">
             <Text style={styles.generateBtnText}>◈  GENERATE PLAN</Text>
           </TouchableOpacity>
         </View>

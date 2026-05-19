@@ -5,11 +5,12 @@ import type { TrainingSession } from '../types/map';
 export function buildGpxXml(session: TrainingSession): string {
   const points = session.routePoints ?? [];
   const name = (session.title ?? 'Sentinel Route').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const date = session.completedAt ?? new Date().toISOString();
+  const rawDate = session.completedAt ? new Date(session.completedAt) : null;
+  const date = rawDate && !isNaN(rawDate.getTime()) ? rawDate.toISOString() : new Date().toISOString();
 
   const trkpts = points
     .map((p) => {
-      const ele = p.altitude != null ? `\n        <ele>${p.altitude.toFixed(1)}</ele>` : '';
+      const ele = p.altitude != null && !isNaN(p.altitude) ? `\n        <ele>${p.altitude.toFixed(1)}</ele>` : '';
       const time = `\n        <time>${new Date(p.timestamp).toISOString()}</time>`;
       return `      <trkpt lat="${p.latitude.toFixed(7)}" lon="${p.longitude.toFixed(7)}">${ele}${time}\n      </trkpt>`;
     })
