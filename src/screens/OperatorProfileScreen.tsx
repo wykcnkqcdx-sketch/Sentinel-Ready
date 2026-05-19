@@ -88,14 +88,14 @@ export default function OperatorProfileScreen() {
               <Text style={styles.shareBtnText}>SHARE</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
           <Text style={styles.title}>PERSONNEL FILE</Text>
           <View style={styles.divider} />
         </View>
 
         {/* Classification bar */}
         <View style={styles.classBar}>
-          <Text style={styles.classText}>// UNCLASSIFIED — OPERATOR RECORD //</Text>
+          <Text style={styles.classText}>{'// UNCLASSIFIED — OPERATOR RECORD //'}</Text>
         </View>
 
         {/* Identity block */}

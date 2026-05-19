@@ -1,6 +1,5 @@
 import type { TrainingLog } from '@/src/screens/TrainingContext';
-import { buildWeekSummary, buildNextWeekRecommendation, buildWeeklyLoadRisk } from '@/src/utils/trainingLogUtils';
-import { getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { buildWeekSummary, buildNextWeekRecommendation, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 
 export type BriefTone = 'good' | 'warn' | 'bad' | 'neutral';
 

@@ -1,5 +1,4 @@
 import type { TrainingLog } from '@/src/screens/TrainingContext';
-import { getDateValue } from './trainingLogCore';
 import { buildSummary } from './logQualityUtils';
 import { buildReadinessTrend, isFatigueWatch } from './readinessUtils';
 

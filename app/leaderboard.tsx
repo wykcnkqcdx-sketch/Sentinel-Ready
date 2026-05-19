@@ -93,7 +93,7 @@ export default function LeaderboardScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>← BACK</Text>
         </TouchableOpacity>
-        <Text style={styles.screenKicker}>// UNIT LEADERBOARD //</Text>
+        <Text style={styles.screenKicker}>{'// UNIT LEADERBOARD //'}</Text>
       </View>
 
       {/* Position summary */}
@@ -137,7 +137,7 @@ export default function LeaderboardScreen() {
       <View style={styles.podiumCard}>
         <View style={styles.cardAccentBar} />
         <View style={styles.podiumCardInner}>
-          <Text style={styles.sectionKicker}>// TOP PERFORMERS</Text>
+          <Text style={styles.sectionKicker}>{'// TOP PERFORMERS'}</Text>
           <PodiumCard members={ranked} />
         </View>
       </View>
@@ -146,7 +146,7 @@ export default function LeaderboardScreen() {
       <View style={styles.listCard}>
         <View style={[styles.cardAccentBar, { backgroundColor: '#3fc8e4' }]} />
         <View style={styles.listCardInner}>
-          <Text style={styles.sectionKicker}>// FULL SQUAD RANKING</Text>
+          <Text style={styles.sectionKicker}>{'// FULL SQUAD RANKING'}</Text>
           <View style={styles.listHeader}>
             <Text style={styles.listHeaderPos}>POS</Text>
             <Text style={styles.listHeaderName}>OPERATOR</Text>

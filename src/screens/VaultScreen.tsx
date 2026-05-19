@@ -14,7 +14,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -163,7 +162,7 @@ export default function VaultScreen() {
             <Text style={styles.backBtnText}>← BACK</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.kicker}>// KNOWLEDGE VAULT //</Text>
+        <Text style={styles.kicker}>{'// KNOWLEDGE VAULT //'}</Text>
         <Text style={styles.title}>INTEL STORE</Text>
         <View style={styles.headerDivider} />
       </View>

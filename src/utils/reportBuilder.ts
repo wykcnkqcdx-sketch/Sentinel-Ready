@@ -6,13 +6,9 @@ import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { buildDfiftSnapshot } from '@/src/utils/dfiftUtils';
 import { buildGoalSuggestions } from '@/src/utils/goalSuggestionUtils';
 import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
-import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
-import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
-import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import {
   buildGoalAction,
-  buildGoalSummary,
   buildPerformanceSnapshot,
   buildReadinessTrend,
   buildSessionRecommendation,
@@ -66,20 +62,14 @@ export function buildWeeklyReport(
   const readinessTrend = buildReadinessTrend(logs);
   const weeklyLoadRisk = buildWeeklyLoadRisk(logs, now);
   const recommendation = buildSessionRecommendation(logs);
-  const goalSummary = buildGoalSummary(goals);
   const goalAction = buildGoalAction(goals, logs);
   const performance = buildPerformanceSnapshot(logs);
   const dfiftSnapshot = dfift ? buildDfiftSnapshot(logs, dfift.standards, dfift.gender) : null;
   const goalSuggestions = buildGoalSuggestions(logs, goals, dfift);
   const recoveryDebt = buildRecoveryDebt(logs, profile?.injuryNotes ?? '', now);
   const trainingBalance = buildTrainingBalance(logs);
-  const missionBrief = buildMissionBrief(logs, goals, { injuryNotes: profile?.injuryNotes });
-  const forecast = buildReadinessForecast(logs, goals, profile);
   const adherence = buildPlanAdherence(logs, goals, profile);
   const injuryWatch = buildInjuryWatch(logs, profile?.injuryNotes ?? '');
-  const milestones = buildMilestones(logs, goals, dfift);
-  const earnedMilestones = getEarnedMilestones(milestones);
-  const nextMilestone = getNextMilestone(milestones);
 
   const title = 'Sentinel Ready Weekly Report';
   

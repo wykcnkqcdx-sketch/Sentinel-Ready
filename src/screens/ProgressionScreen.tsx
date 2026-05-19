@@ -6,8 +6,7 @@ import { weeklyLoadSeries } from '@/src/utils/chartDataUtils';
 import { getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 const WEEKS = 12;
 
@@ -107,7 +106,7 @@ export default function ProgressionScreen() {
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
             <Text style={styles.backBtnText}>← BACK</Text>
           </TouchableOpacity>
-          <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
           <Text style={styles.title}>PROGRESSION</Text>
           <View style={styles.divider} />
         </View>

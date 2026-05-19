@@ -138,7 +138,7 @@ export default function TimelineScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backBtnText}>← BACK</Text>
         </TouchableOpacity>
-        <Text style={styles.kicker}>// OPERATIONS LOG //</Text>
+        <Text style={styles.kicker}>{'// OPERATIONS LOG //'}</Text>
         <View style={styles.titleRow}>
           <Text style={styles.title}>INCIDENT TIMELINE</Text>
           <View style={styles.countBadge}>

@@ -1,5 +1,4 @@
-import type { TrainingLog } from '@/src/screens/TrainingContext';
-import type { TrainingGoal } from '@/src/screens/TrainingContext';
+import type { TrainingLog, TrainingGoal } from '@/src/screens/TrainingContext';
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum';
 

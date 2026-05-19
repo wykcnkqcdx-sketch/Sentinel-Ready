@@ -1,5 +1,5 @@
 import type { TrainingLog } from '@/src/screens/TrainingContext';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildThreatAssessment } from './threatUtils';
 
 function makeLog(overrides?: Partial<TrainingLog>): TrainingLog {

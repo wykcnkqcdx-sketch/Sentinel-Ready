@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { tokens as T } from '@/src/theme/tokens';
 import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT, RuckMissionDraft, DEFAULT_RUCK_MISSION_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';

@@ -1,6 +1,5 @@
 import type { UserProfile } from '@/src/screens/UserContext';
 import type { TrainingLog } from '@/src/screens/TrainingContext';
-import { buildWeekSummary } from '@/src/utils/trainingLogUtils';
 
 export type PlanGoalType = 'dfift_prep' | 'ruck_event' | 'general_fitness' | 'strength_base' | 'recovery_focus';
 

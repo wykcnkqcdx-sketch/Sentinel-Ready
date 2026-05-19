@@ -111,7 +111,7 @@ export default function DailyCheckScreen() {
             <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
               <Text style={styles.backBtnText}>← BACK</Text>
             </TouchableOpacity>
-            <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+            <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
             <Text style={styles.title}>DAILY SITREP</Text>
             <View style={styles.divider} />
           </View>
@@ -145,7 +145,7 @@ export default function DailyCheckScreen() {
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
             <Text style={styles.backBtnText}>← BACK</Text>
           </TouchableOpacity>
-          <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>DAILY SITREP</Text>
             <View style={styles.dateBadge}>

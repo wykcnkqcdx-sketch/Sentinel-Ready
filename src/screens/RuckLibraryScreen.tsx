@@ -40,12 +40,6 @@ function fmtDate(d: string): string {
   return `${String(dt.getDate()).padStart(2, '0')} ${MONTHS[dt.getMonth()]} ${dt.getFullYear().toString().slice(2)}`;
 }
 
-function fmtDuration(s: number): string {
-  if (!s) return '—';
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
 
 function SessionRow({ entry }: { entry: RuckEntry }) {
   const paceColor = entry.paceSecondsPerKm > 0 ? '#3fc8e4' : T.textHintDark;
@@ -156,7 +150,7 @@ export default function RuckLibraryScreen() {
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
             <Text style={styles.backBtnText}>← BACK</Text>
           </TouchableOpacity>
-          <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>RUCK LIBRARY</Text>
             <View style={styles.countBadge}>

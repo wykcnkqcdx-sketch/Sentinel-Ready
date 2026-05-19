@@ -195,11 +195,6 @@ export default function DashboardScreen() {
   const recoveryStatus = useMemo(() => getRecoveryStatus(recentLogs), [recentLogs]);
 
   const navigateToGoals = useCallback(() => router.push('/goals'), [router]);
-  const navigateToStrava = useCallback(() => router.push('/strava'), [router]);
-  const navigateToAtak = useCallback(() => router.push('/atak'), [router]);
-  const navigateToGpx = useCallback(() => router.push('/gpx'), [router]);
-  const navigateToOfflineMap = useCallback(() => router.push('/offline-map'), [router]);
-  const navigateToNotifications = useCallback(() => router.push('/notifications'), [router]);
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -209,7 +204,7 @@ export default function DashboardScreen() {
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
           <View>
-            <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+            <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
             <Text style={styles.title}>COMMAND & STATUS</Text>
           </View>
           <View style={[styles.statusPill, { borderColor: readinessStatus.prog + '55', backgroundColor: readinessStatus.bg }]}>

@@ -79,7 +79,7 @@ export default function WeeklyBriefScreen() {
               <Text style={styles.shareBtnText}>SHARE</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.kicker}>// OPERATIONS CENTRE //</Text>
+          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>WEEKLY BRIEF</Text>
             <View style={styles.weekRefBadge}>
@@ -92,7 +92,7 @@ export default function WeeklyBriefScreen() {
 
         {/* Classification bar */}
         <View style={styles.classBar}>
-          <Text style={styles.classText}>// UNCLASSIFIED — OPERATOR USE ONLY //</Text>
+          <Text style={styles.classText}>{'// UNCLASSIFIED — OPERATOR USE ONLY //'}</Text>
         </View>
 
         {/* Mission status banner */}
@@ -154,7 +154,7 @@ export default function WeeklyBriefScreen() {
         {/* Next week directive */}
         <SectionBlock title="NEXT WEEK DIRECTIVE">
           <View style={styles.directiveBox}>
-            <Text style={styles.directiveLabel}>COMMANDING OFFICER'S INTENT</Text>
+            <Text style={styles.directiveLabel}>{"COMMANDING OFFICER'S INTENT"}</Text>
             <Text style={styles.directiveText}>{brief.directive}</Text>
           </View>
         </SectionBlock>

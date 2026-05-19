@@ -4,9 +4,10 @@ import { useUser } from '@/src/screens/UserContext';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+const dfiftStandards = dfift as DfiftStandards;
 
 function formatSeconds(s: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -18,7 +19,6 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [dateInput, setDateInput] = useState(testDate ?? '');
   const [dateError, setDateError] = useState(false);
-  const dfiftStandards = dfift as DfiftStandards;
   const milestones = useMemo(() => buildMilestones(logs, goals, { standards: dfiftStandards, gender }), [logs, goals, gender]);
   const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);

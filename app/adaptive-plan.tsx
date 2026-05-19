@@ -94,7 +94,7 @@ export default function AdaptivePlanScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>← BACK</Text>
         </TouchableOpacity>
-        <Text style={styles.screenKicker}>// ADAPTIVE PLANNER //</Text>
+        <Text style={styles.screenKicker}>{'// ADAPTIVE PLANNER //'}</Text>
       </View>
 
       {/* Config card */}
@@ -150,7 +150,7 @@ export default function AdaptivePlanScreen() {
           <View style={styles.planHeader}>
             <View style={styles.planHeaderAccent} />
             <View style={styles.planHeaderInner}>
-              <Text style={styles.planKicker}>// GENERATED PLAN</Text>
+              <Text style={styles.planKicker}>{'// GENERATED PLAN'}</Text>
               <Text style={styles.planTitle}>{plan.title}</Text>
               <Text style={styles.planSummary}>{plan.summary}</Text>
               <View style={styles.planStats}>
