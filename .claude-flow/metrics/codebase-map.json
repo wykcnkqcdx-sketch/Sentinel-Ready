@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-19T19:28:02.945Z",
+  "timestamp": "2026-05-19T19:58:02.991Z",
   "projectRoot": "C:\\Users\\mcwemyss\\Documents\\Sentinel-Ready-main",
   "structure": {
     "hasPackageJson": true,
@@ -7,5 +7,5 @@
     "hasClaudeConfig": true,
     "hasClaudeFlow": true
   },
-  "scannedAt": 1779218882948
+  "scannedAt": 1779220682994
 }
