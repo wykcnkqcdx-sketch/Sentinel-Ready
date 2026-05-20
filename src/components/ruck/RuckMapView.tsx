@@ -240,34 +240,49 @@ export function RuckMapView({
       ))}
 
       <View style={styles.tacticalTint} pointerEvents="none" />
-      <View style={styles.gridOverlay} pointerEvents="none">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <View key={`v-${index}`} style={[styles.gridLineVertical, { left: `${(index + 1) * 16.66}%` }]} />
-        ))}
-        {Array.from({ length: 3 }).map((_, index) => (
-          <View key={`h-${index}`} style={[styles.gridLineHorizontal, { top: `${(index + 1) * 25}%` }]} />
-        ))}
-      </View>
 
       {Svg && (Polyline || Circle) && (
         <Svg width={viewport.width} height={viewport.height} style={StyleSheet.absoluteFill}>
           {Polyline && projectedPoints.length >= 2 && (
-            <Polyline
-              points={polylinePoints}
-              fill="none"
-              stroke="#3B82F6"
+            <>
+              <Polyline
+                points={polylinePoints}
+                fill="none"
+                stroke="#06100b"
+                strokeWidth={8}
+                strokeOpacity={0.92}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              <Polyline
+                points={polylinePoints}
+                fill="none"
+                stroke="#91e6a3"
+                strokeWidth={5}
+                strokeOpacity={1}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            </>
+          )}
+          {Circle && projectedPoints.length >= 1 && (
+            <Circle
+              cx={projectedPoints[0].x}
+              cy={projectedPoints[0].y}
+              r={6}
+              fill="#07110c"
+              stroke="#91e6a3"
               strokeWidth={3}
-              strokeOpacity={0.9}
             />
           )}
           {Circle && projectedCurrent && (
             <Circle
               cx={projectedCurrent.x}
               cy={projectedCurrent.y}
-              r={8}
-              fill="#3B82F6"
-              stroke="white"
-              strokeWidth={2}
+              r={9}
+              fill="#91e6a3"
+              stroke="#07110c"
+              strokeWidth={3}
             />
           )}
 
@@ -336,22 +351,11 @@ export function RuckMapView({
         </Svg>
       )}
 
-      <View style={styles.crosshair} pointerEvents="none">
-        <View style={styles.crosshairHorizontal} />
-        <View style={styles.crosshairVertical} />
-        <View style={styles.crosshairBox} />
-      </View>
-
       <View style={styles.topHud} pointerEvents="none">
-        <Text style={styles.hudTitle}>RUCK MAP</Text>
+        <Text style={styles.hudTitle}>SENTINEL MAP</Text>
         <Text style={styles.hudText}>
-          {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}  Z{Math.round(mapZoom)}
+          {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}
         </Text>
-      </View>
-
-      <View style={styles.scaleWrap} pointerEvents="none">
-        <View style={styles.scaleBar} />
-        <Text style={styles.scaleText}>FIELD GRID</Text>
       </View>
 
       {interactive ? (
@@ -378,20 +382,9 @@ export function RuckMapView({
             </TouchableOpacity>
           </View>
 
-          <View style={styles.panPad}>
-            <TouchableOpacity style={[styles.panButton, styles.panNorth]} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
-              <Text style={styles.panText}>N</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.panButton, styles.panWest]} onPress={() => nudgeMap(-128, 0)} accessibilityRole="button" accessibilityLabel="Pan map west">
-              <Text style={styles.panText}>W</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.panButton, styles.panEast]} onPress={() => nudgeMap(128, 0)} accessibilityRole="button" accessibilityLabel="Pan map east">
-              <Text style={styles.panText}>E</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.panButton, styles.panSouth]} onPress={() => nudgeMap(0, 128)} accessibilityRole="button" accessibilityLabel="Pan map south">
-              <Text style={styles.panText}>S</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={styles.compassButton} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
+            <Text style={styles.compassText}>N</Text>
+          </TouchableOpacity>
         </>
       ) : null}
 
@@ -409,7 +402,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: MAP_HEIGHT,
     overflow: 'hidden',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#07110c',
   },
   fullHeight: {
     flex: 1,
@@ -431,118 +424,46 @@ const styles = StyleSheet.create({
   },
   tacticalTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(7,17,12,0.14)',
-  },
-  gridOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  gridLineVertical: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 1,
-    backgroundColor: 'rgba(145,230,163,0.16)',
-  },
-  gridLineHorizontal: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(145,230,163,0.16)',
-  },
-  crosshair: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    width: 46,
-    height: 46,
-    marginLeft: -23,
-    marginTop: -23,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  crosshairHorizontal: {
-    position: 'absolute',
-    width: 46,
-    height: 1,
-    backgroundColor: 'rgba(145,230,163,0.75)',
-  },
-  crosshairVertical: {
-    position: 'absolute',
-    width: 1,
-    height: 46,
-    backgroundColor: 'rgba(145,230,163,0.75)',
-  },
-  crosshairBox: {
-    width: 14,
-    height: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.9)',
+    backgroundColor: 'rgba(7,17,12,0.18)',
   },
   topHud: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    right: 12,
-    backgroundColor: 'rgba(3,10,7,0.72)',
-    borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.34)',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    top: 14,
+    left: 14,
+    backgroundColor: 'rgba(5,14,9,0.86)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   hudTitle: {
     color: '#91e6a3',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.4,
-  },
-  hudText: {
-    color: '#dfe8da',
-    fontSize: 11,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  scaleWrap: {
-    position: 'absolute',
-    left: 14,
-    bottom: 14,
-    gap: 3,
-  },
-  scaleBar: {
-    width: 72,
-    height: 5,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    borderBottomWidth: 2,
-    borderColor: '#dfe8da',
-  },
-  scaleText: {
-    color: '#dfe8da',
     fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 1.6,
+  },
+  hudText: {
+    color: '#b9c9b7',
+    fontSize: 9,
+    fontWeight: '800',
+    marginTop: 1,
   },
   zoomControls: {
     position: 'absolute',
-    top: 72,
-    right: 18,
+    top: 74,
+    right: 14,
     gap: 8,
-    padding: 6,
-    borderRadius: 10,
-    backgroundColor: 'rgba(3,10,7,0.58)',
-    borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.24)',
   },
   mapButton: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: 'rgba(3,10,7,0.82)',
-    borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.45)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(5,14,9,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 3,
   },
   mapButtonText: {
     color: '#dfe8da',
@@ -552,11 +473,9 @@ const styles = StyleSheet.create({
   },
   followButton: {
     width: 40,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: 'rgba(3,10,7,0.82)',
-    borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.45)',
+    height: 40,
+    borderRadius: 999,
+    backgroundColor: 'rgba(5,14,9,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
@@ -565,50 +484,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#91e6a3',
     borderColor: '#91e6a3',
   },
-  followButtonText: {
-    color: '#dfe8da',
-    fontSize: 10,
-    fontWeight: '900',
-  },
-  followButtonTextActive: {
-    color: '#07110c',
-  },
-  panPad: {
+  compassButton: {
     position: 'absolute',
     right: 12,
     bottom: 16,
-    width: 104,
-    height: 104,
-  },
-  panButton: {
-    position: 'absolute',
-    width: 34,
-    height: 34,
-    borderRadius: 6,
-    backgroundColor: 'rgba(3,10,7,0.82)',
-    borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.45)',
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    backgroundColor: 'rgba(5,14,9,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  panNorth: {
-    top: 0,
-    left: 35,
-  },
-  panWest: {
-    top: 35,
-    left: 0,
-  },
-  panEast: {
-    top: 35,
-    right: 0,
-  },
-  panSouth: {
-    bottom: 0,
-    left: 35,
-  },
-  panText: {
-    color: '#dfe8da',
+  compassText: {
+    color: '#91e6a3',
     fontSize: 12,
     fontWeight: '900',
   },

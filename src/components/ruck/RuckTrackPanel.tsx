@@ -73,6 +73,11 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
 
   const isFinished = tracking.trackingState === 'finished';
   const isIdle = tracking.trackingState === 'idle';
+  const mapStatus =
+    tracking.trackingState === 'recording' ? 'Recording'
+    : tracking.trackingState === 'paused' ? 'Paused'
+    : tracking.trackingState === 'finished' ? 'Complete'
+    : 'Ready';
 
   const showMissionSetup = !isFinished && isIdle && displayMode === 'mission';
   const showMissionProgress = !isFinished && !isIdle && displayMode === 'mission';
@@ -220,44 +225,79 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
             </View>
           )}
 
-          {/* MAP: overlay tools */}
+          {/* MAP: Strava-style activity card and map tools */}
           {showMapTools && (
             <View style={styles.mapToolsWrapper} pointerEvents="auto">
-              <View style={styles.overlayRow}>
-                <TouchableOpacity
-                  style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
-                  onPress={onImportOverlay}
-                  disabled={loadingOverlay}
-                  accessibilityRole="button"
-                  accessibilityLabel="Import map overlay"
-                >
-                  <MaterialCommunityIcons
-                    name={loadingOverlay ? 'progress-download' : 'map-plus'}
-                    size={15}
-                    color={loadingOverlay ? '#47614f' : '#91e6a3'}
-                  />
-                  <Text style={styles.overlayImportText}>
-                    {loadingOverlay ? 'LOADING MAP' : 'IMPORT MAP'}
-                  </Text>
-                </TouchableOpacity>
+              <View style={styles.activityCard}>
+                <View style={styles.activityGrabber} />
+                <View style={styles.activityHeader}>
+                  <View style={styles.activityIcon}>
+                    <MaterialCommunityIcons name="bag-personal" size={18} color="#07110c" />
+                  </View>
+                  <View style={styles.activityTitleBlock}>
+                    <Text style={styles.activityTitle}>Loaded Ruck</Text>
+                    <Text style={styles.activityMeta}>{mapStatus} from your location</Text>
+                  </View>
+                  <View style={styles.activityBadge}>
+                    <Text style={styles.activityBadgeText}>{tracking.activeLayer.toUpperCase()}</Text>
+                  </View>
+                </View>
 
-                {overlays.map((overlay) => (
-                  <Animated.View key={overlay.id} entering={FadeIn.duration(300)} exiting={FadeOut.duration(250)}>
-                    <TouchableOpacity
-                      style={[styles.overlayChip, !overlay.visible && styles.overlayChipHidden]}
-                      onPress={() => onToggleOverlay(overlay.id)}
-                      onLongPress={() => onRemoveOverlay(overlay.id)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${overlay.name}, ${overlay.visible ? 'visible' : 'hidden'}. Long press to remove.`}
-                    >
-                      <View style={[styles.overlayDot, { backgroundColor: overlay.color }]} />
-                      <Text style={styles.overlayChipText} numberOfLines={1}>{overlay.name}</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                ))}
+                <View style={styles.activityStats}>
+                  <View style={styles.activityStat}>
+                    <Text style={styles.activityStatValue}>{tracking.distanceKm.toFixed(2)}</Text>
+                    <Text style={styles.activityStatLabel}>km</Text>
+                  </View>
+                  <View style={styles.activityStatDivider} />
+                  <View style={styles.activityStat}>
+                    <Text style={styles.activityStatValue}>{formatElapsed(tracking.elapsedSeconds)}</Text>
+                    <Text style={styles.activityStatLabel}>time</Text>
+                  </View>
+                  <View style={styles.activityStatDivider} />
+                  <View style={styles.activityStat}>
+                    <Text style={styles.activityStatValue}>
+                      {formatPace(tracking.distanceKm, tracking.elapsedSeconds).replace('/km', '')}
+                    </Text>
+                    <Text style={styles.activityStatLabel}>/km</Text>
+                  </View>
+                </View>
+
+                <View style={styles.overlayRow}>
+                  <TouchableOpacity
+                    style={[styles.overlayImportBtn, loadingOverlay && styles.overlayImportBtnDisabled]}
+                    onPress={onImportOverlay}
+                    disabled={loadingOverlay}
+                    accessibilityRole="button"
+                    accessibilityLabel="Import map overlay"
+                  >
+                    <MaterialCommunityIcons
+                      name={loadingOverlay ? 'progress-download' : 'map-plus'}
+                      size={15}
+                      color={loadingOverlay ? '#47614f' : '#91e6a3'}
+                    />
+                    <Text style={styles.overlayImportText}>
+                      {loadingOverlay ? 'LOADING' : 'OVERLAY'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {overlays.map((overlay) => (
+                    <Animated.View key={overlay.id} entering={FadeIn.duration(300)} exiting={FadeOut.duration(250)}>
+                      <TouchableOpacity
+                        style={[styles.overlayChip, !overlay.visible && styles.overlayChipHidden]}
+                        onPress={() => onToggleOverlay(overlay.id)}
+                        onLongPress={() => onRemoveOverlay(overlay.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${overlay.name}, ${overlay.visible ? 'visible' : 'hidden'}. Long press to remove.`}
+                      >
+                        <View style={[styles.overlayDot, { backgroundColor: overlay.color }]} />
+                        <Text style={styles.overlayChipText} numberOfLines={1}>{overlay.name}</Text>
+                      </TouchableOpacity>
+                    </Animated.View>
+                  ))}
+                </View>
+
+                <MapLayerPicker activeLayer={tracking.activeLayer} onSelect={tracking.setLayer} />
               </View>
-
-              <MapLayerPicker activeLayer={tracking.activeLayer} onSelect={tracking.setLayer} />
             </View>
           )}
 
@@ -421,7 +461,100 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingHorizontal: 14,
     paddingBottom: 12,
+  },
+  activityCard: {
+    borderRadius: 18,
+    backgroundColor: 'rgba(8,17,12,0.96)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.22)',
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    paddingBottom: 12,
     gap: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.24,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  activityGrabber: {
+    alignSelf: 'center',
+    width: 42,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(223,232,218,0.28)',
+    marginBottom: 2,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  activityIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    backgroundColor: '#91e6a3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activityTitleBlock: {
+    flex: 1,
+  },
+  activityTitle: {
+    color: '#edf5ea',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  activityMeta: {
+    color: '#91a694',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  activityBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#235c32',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(16,45,26,0.76)',
+  },
+  activityBadgeText: {
+    color: '#91e6a3',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+  },
+  activityStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#172c20',
+    paddingVertical: 10,
+  },
+  activityStat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  activityStatValue: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '900',
+    fontVariant: ['tabular-nums'],
+  },
+  activityStatLabel: {
+    color: '#8fbf8f',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+  },
+  activityStatDivider: {
+    width: 1,
+    height: 34,
+    backgroundColor: '#203529',
   },
   overlayRow: {
     flexDirection: 'row',
