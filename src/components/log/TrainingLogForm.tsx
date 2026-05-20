@@ -1,4 +1,3 @@
-import { tokens as T } from '@/src/theme/tokens';
 import { TrainingCategory, TrainingLog } from '@/src/screens/TrainingContext';
 import { getCompletionScore, getNoteStarter, getNotesQualityWarning } from '@/src/utils/trainingLogUtils';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
@@ -311,19 +310,19 @@ const TrainingLogForm = memo(function TrainingLogForm({
         </View>
 
         <Text style={styles.label}>Date</Text>
-        <TextInput style={styles.input} value={date} onChangeText={(text) => setValues((prev) => ({ ...prev, date: text }))} placeholder="YYYY-MM-DD" placeholderTextColor={T.textDim} maxLength={10} />
+        <TextInput style={styles.input} value={date} onChangeText={(text) => setValues((prev) => ({ ...prev, date: text }))} placeholder="YYYY-MM-DD" placeholderTextColor="#6f7d70" maxLength={10} />
 
         <Text style={styles.label}>Session Type</Text>
-        <TextInput style={styles.input} value={type} onChangeText={(text) => setValues((prev) => ({ ...prev, type: text }))} placeholder="Loaded Ruck, Steady Run, Strength Session" placeholderTextColor={T.textDim} maxLength={100} />
+        <TextInput style={styles.input} value={type} onChangeText={(text) => setValues((prev) => ({ ...prev, type: text }))} placeholder="Loaded Ruck, Steady Run, Strength Session" placeholderTextColor="#6f7d70" maxLength={100} />
 
         <Text style={styles.label}>Duration</Text>
-        <TextInput style={styles.input} value={duration} onChangeText={(text) => setValues((prev) => ({ ...prev, duration: text }))} placeholder="45 minutes" placeholderTextColor={T.textDim} maxLength={50} />
+        <TextInput style={styles.input} value={duration} onChangeText={(text) => setValues((prev) => ({ ...prev, duration: text }))} placeholder="45 minutes" placeholderTextColor="#6f7d70" maxLength={50} />
 
         <Text style={styles.label}>Distance / Load</Text>
-        <TextInput style={styles.input} value={distanceLoad} onChangeText={(text) => setValues((prev) => ({ ...prev, distanceLoad: text }))} placeholder="5 km, 20 kg, Squat - Press - Pull" placeholderTextColor={T.textDim} maxLength={100} />
+        <TextInput style={styles.input} value={distanceLoad} onChangeText={(text) => setValues((prev) => ({ ...prev, distanceLoad: text }))} placeholder="5 km, 20 kg, Squat - Press - Pull" placeholderTextColor="#6f7d70" maxLength={100} />
 
         <Text style={styles.label}>Readiness 1-10</Text>
-        <TextInput style={styles.input} value={readiness} onChangeText={(text) => setValues((prev) => ({ ...prev, readiness: text }))} keyboardType="numeric" placeholder="7" placeholderTextColor={T.textDim} maxLength={2} />
+        <TextInput style={styles.input} value={readiness} onChangeText={(text) => setValues((prev) => ({ ...prev, readiness: text }))} keyboardType="numeric" placeholder="7" placeholderTextColor="#6f7d70" maxLength={2} />
 
         <Text style={styles.label}>Notes</Text>
         <View style={styles.noteHelperBox}>
@@ -341,7 +340,7 @@ const TrainingLogForm = memo(function TrainingLogForm({
           onChangeText={(text) => setValues((prev) => ({ ...prev, notes: text }))}
           multiline
           placeholder="How did the session feel?"
-          placeholderTextColor={T.textDim}
+          placeholderTextColor="#6f7d70"
           maxLength={500}
         />
 
@@ -367,44 +366,44 @@ const TrainingLogForm = memo(function TrainingLogForm({
 export default TrainingLogForm;
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: T.bgScreen },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   content: { padding: 18, paddingBottom: 40, gap: 14 },
   header: { gap: 6 },
-  backButton: { borderWidth: 1, borderColor: T.borderBack, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 6 },
-  backButtonText: { color: T.textBright, fontSize: 13, fontWeight: '900' },
-  kicker: { color: T.textAccent, fontSize: 12, fontWeight: '900', letterSpacing: 1.8 },
-  title: { color: T.textWhite, fontSize: 32, fontWeight: '900' },
-  subtitle: { color: T.textMuted, fontSize: 14, lineHeight: 21 },
-  completionCard: { backgroundColor: T.bgDeep, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: T.borderAccent, flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
-  completionCardWarning: { backgroundColor: T.bgWarn, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: T.borderWarn, flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
-  completionKicker: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  completionScore: { color: T.textWhite, fontSize: 34, fontWeight: '900' },
-  completionScoreWarning: { color: T.textWarn, fontSize: 34, fontWeight: '900' },
-  completionText: { color: T.textAccent, fontSize: 13, fontWeight: '900', flex: 1, textAlign: 'right' },
-  completionTextWarning: { color: T.textWarn, fontSize: 13, fontWeight: '900', flex: 1, textAlign: 'right' },
-  card: { backgroundColor: T.bgPanel, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: T.borderSubtle, gap: 10 },
-  sectionTitle: { color: T.textWhite, fontSize: 17, fontWeight: '900' },
+  backButton: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 6 },
+  backButtonText: { color: '#c8f7d0', fontSize: 13, fontWeight: '900' },
+  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 1.8 },
+  title: { color: '#ffffff', fontSize: 32, fontWeight: '900' },
+  subtitle: { color: '#A7ADB8', fontSize: 14, lineHeight: 21 },
+  completionCard: { backgroundColor: '#252B35', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
+  completionCardWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
+  completionKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  completionScore: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
+  completionScoreWarning: { color: '#F5A623', fontSize: 34, fontWeight: '900' },
+  completionText: { color: '#FC4C02', fontSize: 13, fontWeight: '900', flex: 1, textAlign: 'right' },
+  completionTextWarning: { color: '#F5A623', fontSize: 13, fontWeight: '900', flex: 1, textAlign: 'right' },
+  card: { backgroundColor: '#1E2229', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 10 },
+  sectionTitle: { color: '#ffffff', fontSize: 17, fontWeight: '900' },
   templateRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  templateButton: { backgroundColor: T.bgDeep, borderWidth: 1, borderColor: T.borderAccent, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  templateText: { color: T.textAccent, fontSize: 12, fontWeight: '900' },
+  templateButton: { backgroundColor: '#252B35', borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  templateText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  categoryButton: { borderWidth: 1, borderColor: T.borderBack, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  categoryButtonActive: { backgroundColor: T.textAccent, borderWidth: 1, borderColor: T.textAccent, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  categoryText: { color: T.textCategory, fontSize: 12, fontWeight: '900' },
-  categoryTextActive: { color: T.bgScreen, fontSize: 12, fontWeight: '900' },
-  label: { color: T.textBodyAlt, fontSize: 13, fontWeight: '900', marginTop: 4 },
-  input: { backgroundColor: T.bgScreen, borderWidth: 1, borderColor: T.borderBack, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 11, color: T.textWhite, fontSize: 14 },
+  categoryButton: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  categoryButtonActive: { backgroundColor: '#FC4C02', borderWidth: 1, borderColor: '#FC4C02', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  categoryText: { color: '#c8d8c5', fontSize: 12, fontWeight: '900' },
+  categoryTextActive: { color: '#0F1115', fontSize: 12, fontWeight: '900' },
+  label: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', marginTop: 4 },
+  input: { backgroundColor: '#0F1115', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 11, color: '#ffffff', fontSize: 14 },
   notes: { minHeight: 110, textAlignVertical: 'top' },
-  noteHelperBox: { backgroundColor: T.bgScreen, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: T.borderField, gap: 5 },
-  noteHelperTitle: { color: T.textAccent, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  noteHelperText: { color: T.textMuted, fontSize: 13, lineHeight: 19 },
-  noteStarterButton: { backgroundColor: T.textAccent, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9, alignSelf: 'flex-start', marginTop: 5 },
-  noteStarterButtonText: { color: T.bgScreen, fontSize: 12, fontWeight: '900' },
-  warningBox: { backgroundColor: T.bgWarn, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: T.borderWarn },
-  warningTitle: { color: T.textWarn, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  warningText: { color: T.textWarn, fontSize: 13, lineHeight: 18, fontWeight: '800', marginTop: 4 },
-  readyBox: { backgroundColor: T.bgDeep, borderRadius: 14, padding: 10, borderWidth: 1, borderColor: T.borderAccent },
-  readyText: { color: T.textAccent, fontSize: 12, fontWeight: '900' },
-  saveButton: { backgroundColor: T.textAccent, borderRadius: 16, paddingVertical: 15, alignItems: 'center' },
-  saveButtonText: { color: T.bgScreen, fontSize: 15, fontWeight: '900' },
+  noteHelperBox: { backgroundColor: '#0F1115', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 5 },
+  noteHelperTitle: { color: '#FC4C02', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  noteHelperText: { color: '#A7ADB8', fontSize: 13, lineHeight: 19 },
+  noteStarterButton: { backgroundColor: '#FC4C02', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9, alignSelf: 'flex-start', marginTop: 5 },
+  noteStarterButtonText: { color: '#0F1115', fontSize: 12, fontWeight: '900' },
+  warningBox: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)' },
+  warningTitle: { color: '#F5A623', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  warningText: { color: '#F5A623', fontSize: 13, lineHeight: 18, fontWeight: '800', marginTop: 4 },
+  readyBox: { backgroundColor: '#252B35', borderRadius: 14, padding: 10, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)' },
+  readyText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  saveButton: { backgroundColor: '#FC4C02', borderRadius: 16, paddingVertical: 15, alignItems: 'center' },
+  saveButtonText: { color: '#0F1115', fontSize: 15, fontWeight: '900' },
 });

@@ -1,7 +1,6 @@
 import RuckMap from '@/src/components/log/RuckMap';
 import { TrainingLog } from '@/src/screens/TrainingContext';
 import { getReadinessLabel, getWeakLogReasons, isFatigueWatch } from '@/src/utils/trainingLogUtils';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -71,17 +70,11 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
             accessibilityRole="button"
             accessibilityLabel="Edit log"
           >
-            <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="pencil-outline" size={13} color="#91e6a3" />
-              <Text style={styles.editButtonText}>Edit</Text>
-            </View>
+            <Text style={styles.editButtonText}>Edit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.editButton} onPress={() => onDuplicate(log.id)}>
-            <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="content-copy" size={13} color="#91e6a3" />
-              <Text style={styles.editButtonText}>Duplicate</Text>
-            </View>
+            <Text style={styles.editButtonText}>Duplicate</Text>
           </TouchableOpacity>
 
           {weakLog ? (
@@ -91,10 +84,7 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
               accessibilityRole="button"
               accessibilityLabel="Improve log"
             >
-              <View style={styles.btnContent}>
-                <MaterialCommunityIcons name="arrow-up-circle-outline" size={13} color="#07110c" />
-                <Text style={styles.improveButtonText}>Improve</Text>
-              </View>
+              <Text style={styles.improveButtonText}>Improve</Text>
             </TouchableOpacity>
           ) : null}
 
@@ -104,10 +94,7 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
             accessibilityRole="button"
             accessibilityLabel="Delete log"
           >
-            <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="trash-can-outline" size={13} color="#ffb86b" />
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </View>
+            <Text style={styles.deleteButtonText}>Delete</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -118,35 +105,34 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
 export default TrainingLogCard;
 
 const styles = StyleSheet.create({
-  logCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 10 },
-  logCardWarning: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 10 },
+  logCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 10 },
+  logCardWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 10 },
   logHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   logHeaderText: { flex: 1 },
-  logCategory: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textTransform: 'uppercase' },
+  logCategory: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textTransform: 'uppercase' },
   logTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900', marginTop: 4 },
-  readinessBadge: { backgroundColor: '#102d1a', borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 11, alignSelf: 'flex-start' },
-  readinessBadgeWarning: { backgroundColor: '#2a1a0d', borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 11, alignSelf: 'flex-start' },
-  readinessText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
-  readinessTextWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  readinessBadge: { backgroundColor: '#252B35', borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 11, alignSelf: 'flex-start' },
+  readinessBadgeWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 11, alignSelf: 'flex-start' },
+  readinessText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  readinessTextWarning: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
   logMetaRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
-  logMeta: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
-  detailBox: { backgroundColor: '#07110c', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: '#26382c' },
-  detailLabel: { color: '#8fbf8f', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  detailText: { color: '#dfe8da', fontSize: 13, fontWeight: '800', marginTop: 4 },
+  logMeta: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  detailBox: { backgroundColor: '#0F1115', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  detailLabel: { color: '#A7ADB8', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  detailText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', marginTop: 4 },
   logNotes: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
-  weakLogBox: { backgroundColor: '#2a1a0d', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: '#7a4a1f' },
-  weakLogTitle: { color: '#ffb86b', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  weakLogText: { color: '#ffb86b', fontSize: 13, lineHeight: 18, fontWeight: '800', marginTop: 4 },
+  weakLogBox: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)' },
+  weakLogTitle: { color: '#F5A623', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  weakLogText: { color: '#F5A623', fontSize: 13, lineHeight: 18, fontWeight: '800', marginTop: 4 },
   statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
-  status: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
-  statusWarning: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  status: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  statusWarning: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
   actionRow: { flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
-  btnContent: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  editButton: { borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
-  editButtonText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
-  improveButton: { backgroundColor: '#ffb86b', borderWidth: 1, borderColor: '#ffb86b', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
-  improveButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
-  deleteButton: { borderWidth: 1, borderColor: '#7a4a1f', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
-  deleteButtonText: { color: '#ffb86b', fontSize: 12, fontWeight: '900' },
+  editButton: { borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
+  editButtonText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  improveButton: { backgroundColor: '#F5A623', borderWidth: 1, borderColor: '#F5A623', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
+  improveButtonText: { color: '#0F1115', fontSize: 12, fontWeight: '900' },
+  deleteButton: { borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
+  deleteButtonText: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
   mapContainer: { marginTop: 8, marginBottom: 4, borderRadius: 12, overflow: 'hidden' },
 });

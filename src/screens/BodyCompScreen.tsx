@@ -95,6 +95,7 @@ export default function BodyCompScreen() {
   const currentBmiStatus =
     latestEntry?.bmi != null ? getBmiStatus(latestEntry.bmi) : null;
 
+
   if (isLoading) return <View style={styles.screen} />;
 
   return (
@@ -116,7 +117,7 @@ export default function BodyCompScreen() {
               onChangeText={setHeightInput}
               keyboardType="numeric"
               placeholder="175"
-              placeholderTextColor="#aeb8aa"
+              placeholderTextColor="#A7ADB8"
             />
             <Text style={styles.unitLabel}>cm</Text>
             <TouchableOpacity style={styles.saveHeightBtn} onPress={handleSaveHeight}>
@@ -157,7 +158,7 @@ export default function BodyCompScreen() {
           )}
           {sparkData.length >= 2 && (
             <View style={styles.sparkRow}>
-              <SparkLine data={sparkData} width={180} height={32} color="#91e6a3" strokeWidth={2} />
+              <SparkLine data={sparkData} width={180} height={32} color="#FC4C02" strokeWidth={2} />
             </View>
           )}
           <Text style={styles.lastLogged}>Last logged: {latestEntry.date}</Text>
@@ -190,7 +191,7 @@ export default function BodyCompScreen() {
           <Switch
             value={includeSkinfold}
             onValueChange={setIncludeSkinfold}
-            trackColor={{ true: '#91e6a3', false: '#1a2e1f' }}
+            trackColor={{ true: '#FC4C02', false: '#1a2e1f' }}
             thumbColor="#f2f5ef"
           />
         </View>
@@ -221,7 +222,7 @@ export default function BodyCompScreen() {
           value={notes}
           onChangeText={setNotes}
           placeholder="Optional notes"
-          placeholderTextColor="#aeb8aa"
+          placeholderTextColor="#A7ADB8"
           multiline
         />
 
@@ -239,7 +240,7 @@ export default function BodyCompScreen() {
         <Text style={styles.sectionLabel}>DFITT BMI BANDS</Text>
         {[
           { color: '#4a9eff', label: 'Underweight', range: '< 18.5', status: 'underweight' },
-          { color: '#91e6a3', label: 'Optimal (Military)', range: '18.5 – 27.5', status: 'optimal' },
+          { color: '#FC4C02', label: 'Optimal (Military)', range: '18.5 – 27.5', status: 'optimal' },
           { color: '#FFB86B', label: 'Overweight', range: '27.5 – 30.0', status: 'overweight' },
           { color: '#ff6b6b', label: 'Obese', range: '≥ 30.0', status: 'obese' },
         ].map((band) => {
@@ -291,11 +292,11 @@ export default function BodyCompScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   content: { padding: 20, gap: 14, paddingBottom: 60 },
   header: { gap: 6 },
-  kicker: { color: '#8fbf8f', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  title: { color: '#f2f5ef', fontSize: 28, fontWeight: '900' },
+  kicker: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
   card: {
     backgroundColor: '#0e1f15',
     borderRadius: 18,
@@ -304,34 +305,34 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  cardTitle: { color: '#f2f5ef', fontSize: 15, fontWeight: '800' },
+  cardTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   heightRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   heightInput: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderWidth: 1,
     borderColor: '#1a2e1f',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
     width: 80,
   },
-  unitLabel: { color: '#aeb8aa', fontSize: 14, fontWeight: '700' },
+  unitLabel: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
   saveHeightBtn: {
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  saveHeightBtnText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
-  sectionLabel: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  saveHeightBtnText: { color: '#0F1115', fontSize: 13, fontWeight: '900' },
+  sectionLabel: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  bigWeight: { color: '#f2f5ef', fontSize: 52, fontWeight: '900', lineHeight: 56 },
-  unitSub: { color: '#aeb8aa', fontSize: 14, fontWeight: '700' },
+  bigWeight: { color: '#FFFFFF', fontSize: 52, fontWeight: '900', lineHeight: 56 },
+  unitSub: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
   bmiBlock: { alignItems: 'flex-end', gap: 6 },
-  bmiValue: { color: '#f2f5ef', fontSize: 28, fontWeight: '900' },
+  bmiValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
   bmiStatusBadge: {
     borderWidth: 1,
     borderRadius: 999,
@@ -339,51 +340,51 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   bmiStatusText: { fontSize: 11, fontWeight: '900' },
-  skinfoldLine: { color: '#aeb8aa', fontSize: 13, fontWeight: '700' },
+  skinfoldLine: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
   sparkRow: { paddingTop: 4 },
-  lastLogged: { color: '#aeb8aa', fontSize: 12, fontWeight: '700' },
-  fieldLabel: { color: '#aeb8aa', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  lastLogged: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
+  fieldLabel: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   stepperBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderWidth: 1,
     borderColor: '#1a2e1f',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepperBtnText: { color: '#f2f5ef', fontSize: 20, fontWeight: '700' },
-  stepperValue: { color: '#f2f5ef', fontSize: 18, fontWeight: '900', minWidth: 80, textAlign: 'center' },
+  stepperBtnText: { color: '#FFFFFF', fontSize: 20, fontWeight: '700' },
+  stepperValue: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', minWidth: 80, textAlign: 'center' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  switchLabel: { color: '#aeb8aa', fontSize: 13, fontWeight: '700' },
+  switchLabel: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
   notesInput: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderWidth: 1,
     borderColor: '#1a2e1f',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
     minHeight: 60,
   },
   logBtn: {
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
-  logBtnText: { color: '#07110c', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
-  successMsg: { color: '#91e6a3', fontSize: 13, fontWeight: '900', textAlign: 'center' },
+  logBtnText: { color: '#0F1115', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  successMsg: { color: '#FC4C02', fontSize: 13, fontWeight: '900', textAlign: 'center' },
   bandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bandDot: { width: 12, height: 12, borderRadius: 6 },
-  bandLabel: { color: '#f2f5ef', fontSize: 13, fontWeight: '800', flex: 1 },
-  bandRange: { color: '#aeb8aa', fontSize: 12, fontWeight: '700' },
-  hereTag: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  emptyText: { color: '#aeb8aa', fontSize: 13, fontWeight: '700' },
+  bandLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', flex: 1 },
+  bandRange: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
+  hereTag: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  emptyText: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -393,10 +394,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1a2e1f',
   },
   historyInfo: { flexDirection: 'row', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 },
-  historyDate: { color: '#aeb8aa', fontSize: 12, fontWeight: '700', minWidth: 90 },
-  historyWeight: { color: '#f2f5ef', fontSize: 14, fontWeight: '900' },
+  historyDate: { color: '#A7ADB8', fontSize: 12, fontWeight: '700', minWidth: 90 },
+  historyWeight: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
   historyBmi: { fontSize: 12, fontWeight: '800' },
-  historySkinfold: { color: '#aeb8aa', fontSize: 12, fontWeight: '700' },
+  historySkinfold: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
   deleteBtn: {
     width: 36,
     height: 36,

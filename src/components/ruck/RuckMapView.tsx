@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image, LayoutChangeEvent, PanResponder, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { buildVisibleTiles, getMercatorRoutePoints, latLonToWorldPixel, worldPixelToLatLon } from '../../utils/mapTiles';
 import type { MapLayerKey, MapTile, MapViewport } from '../../utils/mapTiles';
@@ -98,19 +97,10 @@ export function RuckMapView({
   const [mapCenter, setMapCenter] = useState<TrackPoint | null>(null);
   const [isFollowing, setIsFollowing] = useState(true);
   const panStartRef = useRef<{ x: number; y: number; center: TrackPoint } | null>(null);
-  const panFrameRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
-  const pinchStartDistRef = useRef<number | null>(null);
-  const pinchStartZoomRef = useRef<number>(zoom);
-  const mapZoomRef = useRef(mapZoom);
-  mapZoomRef.current = mapZoom;
 
   const liveCenter: TrackPoint =
     currentPosition ?? (routePoints.length > 0 ? routePoints[routePoints.length - 1] : DUBLIN);
   const center = mapCenter ?? liveCenter;
-
-  // Stable refs so PanResponder closure never goes stale — avoids recreation mid-gesture
-  const centerRef = useRef(center);
-  centerRef.current = center;
 
   useEffect(() => {
     setMapZoom(clampZoom(zoom));
@@ -122,92 +112,46 @@ export function RuckMapView({
     }
   }, [isFollowing, liveCenter]);
 
-  useEffect(() => {
-    return () => {
-      if (panFrameRef.current != null) {
-        cancelAnimationFrame(panFrameRef.current);
-      }
-    };
-  }, []);
-
   const panResponder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: () => false,
-    onMoveShouldSetPanResponder: (evt, gesture) => {
-      if (!interactive) return false;
-      if (evt.nativeEvent.touches.length === 2) return true;
-      return Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8;
+    onStartShouldSetPanResponder: () => interactive,
+    onMoveShouldSetPanResponder: (_, gesture) =>
+      interactive && (Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3),
+    onPanResponderGrant: () => {
+      panStartRef.current = { x: 0, y: 0, center };
     },
-    onPanResponderGrant: (evt) => {
-      const touches = evt.nativeEvent.touches;
-      if (touches.length === 2) {
-        const dx = touches[0].pageX - touches[1].pageX;
-        const dy = touches[0].pageY - touches[1].pageY;
-        pinchStartDistRef.current = Math.sqrt(dx * dx + dy * dy);
-        pinchStartZoomRef.current = mapZoomRef.current;
-      } else {
-        panStartRef.current = { x: 0, y: 0, center: centerRef.current };
-      }
-    },
-    onPanResponderMove: (evt, gesture) => {
-      const touches = evt.nativeEvent.touches;
-      if (touches.length === 2 && pinchStartDistRef.current !== null) {
-        const dx = touches[0].pageX - touches[1].pageX;
-        const dy = touches[0].pageY - touches[1].pageY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const scale = dist / pinchStartDistRef.current;
-        setIsFollowing(false);
-        setMapZoom(clampZoom(pinchStartZoomRef.current + Math.log2(scale)));
-      } else {
-        const start = panStartRef.current;
-        if (!start || viewport.width <= 0 || viewport.height <= 0) return;
-        const pixel = latLonToWorldPixel(start.center.latitude, start.center.longitude, mapZoomRef.current);
-        const next = worldPixelToLatLon(pixel.x - gesture.dx, pixel.y - gesture.dy, mapZoomRef.current);
-        if (panFrameRef.current != null) cancelAnimationFrame(panFrameRef.current);
-        panFrameRef.current = requestAnimationFrame(() => {
-          setIsFollowing(false);
-          setMapCenter(toTrackPoint(next.latitude, next.longitude));
-          panFrameRef.current = null;
-        });
-      }
+    onPanResponderMove: (_, gesture) => {
+      const start = panStartRef.current;
+      if (!start || viewport.width <= 0 || viewport.height <= 0) return;
+
+      const pixel = latLonToWorldPixel(start.center.latitude, start.center.longitude, mapZoom);
+      const next = worldPixelToLatLon(pixel.x - gesture.dx, pixel.y - gesture.dy, mapZoom);
+      setIsFollowing(false);
+      setMapCenter(toTrackPoint(next.latitude, next.longitude));
     },
     onPanResponderRelease: () => {
       panStartRef.current = null;
-      pinchStartDistRef.current = null;
     },
     onPanResponderTerminate: () => {
       panStartRef.current = null;
-      pinchStartDistRef.current = null;
     },
-  }), [interactive, viewport.height, viewport.width]);
+  }), [center, interactive, mapZoom, viewport.height, viewport.width]);
 
-  const tiles = useMemo(
-    () => buildVisibleTiles(center, viewport, layer, mapZoom),
-    [center, layer, mapZoom, viewport],
-  );
+  const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
   const uriMap = useResolvedTileUris(tiles);
 
-  const projectedPoints = useMemo(
-    () => Svg && Polyline && routePoints.length >= 2
-      ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
-      : [],
-    [center, mapZoom, routePoints, viewport],
-  );
+  const projectedPoints = Svg && Polyline && routePoints.length >= 2
+    ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
+    : [];
 
-  const projectedCurrent = useMemo(
-    () => Svg && Circle && currentPosition
-      ? getMercatorRoutePoints([currentPosition], center, viewport, mapZoom)[0]
-      : null,
-    [center, currentPosition, mapZoom, viewport],
-  );
+  const projectedCurrent = Svg && Circle && currentPosition
+    ? getMercatorRoutePoints([currentPosition], center, viewport, mapZoom)[0]
+    : null;
 
-  const polylinePoints = useMemo(
-    () => projectedPoints.map((p) => `${p.x},${p.y}`).join(' '),
-    [projectedPoints],
-  );
+  const polylinePoints = projectedPoints.map((p) => `${p.x},${p.y}`).join(' ');
 
   function handleLayout(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
-    if (width > 0 && height > 0 && (width !== viewport.width || height !== viewport.height)) {
+    if (width > 0 && height > 0) {
       setViewport({ width, height });
     }
   }
@@ -233,13 +177,21 @@ export function RuckMapView({
     <View
       style={[styles.container, fullHeight && styles.fullHeight]}
       onLayout={handleLayout}
-      {...(interactive ? panResponder.panHandlers : {})}
+      {...panResponder.panHandlers}
     >
       {tiles.map((tile) => (
         <Image key={tile.id} source={{ uri: uriMap.get(tile.id) ?? tile.url }} style={tile.style} />
       ))}
 
       <View style={styles.tacticalTint} pointerEvents="none" />
+      <View style={styles.gridOverlay} pointerEvents="none">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <View key={`v-${index}`} style={[styles.gridLineVertical, { left: `${(index + 1) * 16.66}%` }]} />
+        ))}
+        {Array.from({ length: 3 }).map((_, index) => (
+          <View key={`h-${index}`} style={[styles.gridLineHorizontal, { top: `${(index + 1) * 25}%` }]} />
+        ))}
+      </View>
 
       {Svg && (Polyline || Circle) && (
         <Svg width={viewport.width} height={viewport.height} style={StyleSheet.absoluteFill}>
@@ -248,11 +200,11 @@ export function RuckMapView({
               <Polyline
                 points={polylinePoints}
                 fill="none"
-                stroke="#06100b"
+                stroke="#0F1115"
                 strokeWidth={8}
-                strokeOpacity={0.92}
-                strokeLinejoin="round"
+                strokeOpacity={0.9}
                 strokeLinecap="round"
+                strokeLinejoin="round"
               />
               <Polyline
                 points={polylinePoints}
@@ -260,8 +212,8 @@ export function RuckMapView({
                 stroke="#FC4C02"
                 strokeWidth={5}
                 strokeOpacity={1}
-                strokeLinejoin="round"
                 strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </>
           )}
@@ -351,21 +303,32 @@ export function RuckMapView({
         </Svg>
       )}
 
+      <View style={styles.crosshair} pointerEvents="none">
+        <View style={styles.crosshairHorizontal} />
+        <View style={styles.crosshairVertical} />
+        <View style={styles.crosshairBox} />
+      </View>
+
       <View style={styles.topHud} pointerEvents="none">
-        <Text style={styles.hudTitle}>SENTINEL MAP</Text>
+        <Text style={styles.hudTitle}>RUCK MAP</Text>
         <Text style={styles.hudText}>
-          {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}
+          {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}  Z{Math.round(mapZoom)}
         </Text>
+      </View>
+
+      <View style={styles.scaleWrap} pointerEvents="none">
+        <View style={styles.scaleBar} />
+        <Text style={styles.scaleText}>FIELD GRID</Text>
       </View>
 
       {interactive ? (
         <>
           <View style={styles.zoomControls}>
             <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(1)} accessibilityRole="button" accessibilityLabel="Zoom in">
-              <MaterialCommunityIcons name="magnify-plus-outline" size={22} color="#dfe8da" />
+              <Text style={styles.mapButtonText}>+</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mapButton} onPress={() => adjustZoom(-1)} accessibilityRole="button" accessibilityLabel="Zoom out">
-              <MaterialCommunityIcons name="magnify-minus-outline" size={22} color="#dfe8da" />
+              <Text style={styles.mapButtonText}>-</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.followButton, isFollowing && styles.followButtonActive]}
@@ -374,17 +337,24 @@ export function RuckMapView({
               accessibilityLabel="Recenter map on current position"
               accessibilityState={{ selected: isFollowing }}
             >
-              <MaterialCommunityIcons
-                name="crosshairs-gps"
-                size={18}
-                color={isFollowing ? '#0F1115' : '#FFFFFF'}
-              />
+              <Text style={[styles.followButtonText, isFollowing && styles.followButtonTextActive]}>CTR</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.compassButton} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
-            <Text style={styles.compassText}>N</Text>
-          </TouchableOpacity>
+          <View style={styles.panPad}>
+            <TouchableOpacity style={[styles.panButton, styles.panNorth]} onPress={() => nudgeMap(0, -128)} accessibilityRole="button" accessibilityLabel="Pan map north">
+              <Text style={styles.panText}>N</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.panButton, styles.panWest]} onPress={() => nudgeMap(-128, 0)} accessibilityRole="button" accessibilityLabel="Pan map west">
+              <Text style={styles.panText}>W</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.panButton, styles.panEast]} onPress={() => nudgeMap(128, 0)} accessibilityRole="button" accessibilityLabel="Pan map east">
+              <Text style={styles.panText}>E</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.panButton, styles.panSouth]} onPress={() => nudgeMap(0, 128)} accessibilityRole="button" accessibilityLabel="Pan map south">
+              <Text style={styles.panText}>S</Text>
+            </TouchableOpacity>
+          </View>
         </>
       ) : null}
 
@@ -402,7 +372,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: MAP_HEIGHT,
     overflow: 'hidden',
-    backgroundColor: '#0F1115',
+    backgroundColor: '#1a1a2e',
   },
   fullHeight: {
     flex: 1,
@@ -424,58 +394,127 @@ const styles = StyleSheet.create({
   },
   tacticalTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,17,21,0.18)',
+    backgroundColor: 'rgba(7,17,12,0.14)',
+  },
+  gridOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  gridLineVertical: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: 'rgba(145,230,163,0.16)',
+  },
+  gridLineHorizontal: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(145,230,163,0.16)',
+  },
+  crosshair: {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    width: 46,
+    height: 46,
+    marginLeft: -23,
+    marginTop: -23,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crosshairHorizontal: {
+    position: 'absolute',
+    width: 46,
+    height: 1,
+    backgroundColor: 'rgba(145,230,163,0.75)',
+  },
+  crosshairVertical: {
+    position: 'absolute',
+    width: 1,
+    height: 46,
+    backgroundColor: 'rgba(145,230,163,0.75)',
+  },
+  crosshairBox: {
+    width: 14,
+    height: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.9)',
   },
   topHud: {
     position: 'absolute',
-    top: 14,
-    left: 14,
-    backgroundColor: 'rgba(15,17,21,0.88)',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    top: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: 'rgba(3,10,7,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.34)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   hudTitle: {
     color: '#FC4C02',
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
-    letterSpacing: 1.6,
+    letterSpacing: 1.4,
   },
   hudText: {
-    color: '#A7ADB8',
-    fontSize: 9,
+    color: '#FFFFFF',
+    fontSize: 11,
     fontWeight: '800',
-    marginTop: 1,
+    marginTop: 2,
+  },
+  scaleWrap: {
+    position: 'absolute',
+    left: 14,
+    bottom: 14,
+    gap: 3,
+  },
+  scaleBar: {
+    width: 72,
+    height: 5,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  scaleText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   zoomControls: {
     position: 'absolute',
-    top: 74,
-    right: 14,
-    gap: 8,
+    top: 72,
+    right: 12,
+    gap: 6,
   },
   mapButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 999,
-    backgroundColor: 'rgba(15,17,21,0.9)',
+    width: 38,
+    height: 38,
+    borderRadius: 6,
+    backgroundColor: 'rgba(3,10,7,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 3,
   },
   mapButtonText: {
-    color: '#dfe8da',
+    color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '900',
     lineHeight: 24,
   },
   followButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 999,
-    backgroundColor: 'rgba(15,17,21,0.9)',
+    minWidth: 38,
+    height: 30,
+    borderRadius: 6,
+    backgroundColor: 'rgba(3,10,7,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
@@ -484,19 +523,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#FC4C02',
     borderColor: '#FC4C02',
   },
-  compassButton: {
+  followButtonText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  followButtonTextActive: {
+    color: '#0F1115',
+  },
+  panPad: {
     position: 'absolute',
     right: 12,
     bottom: 16,
-    width: 42,
-    height: 42,
-    borderRadius: 999,
-    backgroundColor: 'rgba(15,17,21,0.9)',
+    width: 104,
+    height: 104,
+  },
+  panButton: {
+    position: 'absolute',
+    width: 34,
+    height: 34,
+    borderRadius: 6,
+    backgroundColor: 'rgba(3,10,7,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(145,230,163,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  compassText: {
-    color: '#FC4C02',
+  panNorth: {
+    top: 0,
+    left: 35,
+  },
+  panWest: {
+    top: 35,
+    left: 0,
+  },
+  panEast: {
+    top: 35,
+    right: 0,
+  },
+  panSouth: {
+    bottom: 0,
+    left: 35,
+  },
+  panText: {
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '900',
   },

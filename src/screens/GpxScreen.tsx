@@ -328,62 +328,62 @@ export default function GpxScreen() {
 // ─── styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8, gap: 4 },
-  kicker: { color: '#8fbf8f', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  title: { color: '#f2f5ef', fontSize: 32, fontWeight: '900' },
-  subtitle: { color: '#aeb8aa', fontSize: 15, lineHeight: 22 },
+  kicker: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
+  subtitle: { color: '#A7ADB8', fontSize: 15, lineHeight: 22 },
 
   // Tabs
   tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 4 },
   tabPill: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 18,
     paddingVertical: 9,
   },
-  tabPillActive: { backgroundColor: '#2f6b3c', borderColor: '#2f6b3c' },
-  tabPillText: { color: '#8fbf8f', fontSize: 13, fontWeight: '800' },
-  tabPillTextActive: { color: '#f2f5ef', fontWeight: '900' },
+  tabPillActive: { backgroundColor: 'rgba(252,76,2,0.3)', borderColor: 'rgba(252,76,2,0.3)' },
+  tabPillText: { color: '#A7ADB8', fontSize: 13, fontWeight: '800' },
+  tabPillTextActive: { color: '#FFFFFF', fontWeight: '900' },
 
   // Scroll content
   content: { padding: 20, paddingBottom: 100, gap: 14 },
 
   // Log card (export tab)
   logCard: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
   logInfo: { flex: 1, gap: 3 },
-  logDate: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
-  logType: { color: '#f2f5ef', fontSize: 14, fontWeight: '900' },
-  logPoints: { color: '#aeb8aa', fontSize: 12 },
+  logDate: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  logType: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
+  logPoints: { color: '#A7ADB8', fontSize: 12 },
   exportBtn: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
-  exportBtnText: { color: '#f2f5ef', fontSize: 12, fontWeight: '900' },
-  exportBtnDisabled: { backgroundColor: '#1a2e22' },
+  exportBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
+  exportBtnDisabled: { backgroundColor: 'rgba(255,255,255,0.08)' },
 
   // Pick button (import tab)
   pickBtn: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
   },
   pickBtnText: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 1,
@@ -391,15 +391,15 @@ const styles = StyleSheet.create({
 
   // Preview card
   previewCard: {
-    backgroundColor: '#102d1a',
+    backgroundColor: '#252B35',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     gap: 10,
   },
   previewKicker: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -409,49 +409,49 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  previewLabel: { color: '#aeb8aa', fontSize: 13 },
-  previewValue: { color: '#f2f5ef', fontSize: 13, fontWeight: '800' },
+  previewLabel: { color: '#A7ADB8', fontSize: 13 },
+  previewValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
   importBtn: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
   },
   importBtnText: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  clearLink: { color: '#4a7a5a', fontSize: 12, textAlign: 'center', marginTop: 4 },
+  clearLink: { color: '#A7ADB8', fontSize: 12, textAlign: 'center', marginTop: 4 },
 
   // Info card
   infoCard: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     gap: 6,
   },
   infoTitle: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  infoText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
+  infoText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
 
   // Empty card
   emptyCard: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     gap: 8,
   },
   emptyTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  emptyText: { color: '#aeb8aa', fontSize: 13, lineHeight: 20 },
+  emptyText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
 });

@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { tokens as T } from '@/src/theme/tokens';
 import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT, RuckMissionDraft, DEFAULT_RUCK_MISSION_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
 import { RuckRouteExplorer } from '@/src/components/ruck/RuckRouteExplorer';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
@@ -222,7 +221,7 @@ const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb, 
 
 export default function RuckScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'stats' | 'track' | 'routes'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'track' | 'routes'>('track');
   const [saveDraft, setSaveDraft] = useState<RuckSaveDraft>(DEFAULT_RUCK_SAVE_DRAFT);
   const [missionDraft, setMissionDraft] = useState<RuckMissionDraft>(DEFAULT_RUCK_MISSION_DRAFT);
   const tracking = useRuckTracking();
@@ -424,14 +423,14 @@ export default function RuckScreen() {
 
   return (
     <View style={styles.screen}>
-      {activeTab === 'stats' ? (
-        <View style={styles.headerBlock}>
-          <Text style={styles.kicker}>LOAD CARRIAGE</Text>
-          <Text style={styles.title}>Ruck Performance</Text>
-        </View>
-      ) : null}
+      {/* Header row */}
+      <View style={styles.headerBlock}>
+        <Text style={styles.kicker}>LOAD CARRIAGE</Text>
+        <Text style={styles.title}>Ruck Performance</Text>
+      </View>
 
-      <View style={activeTab !== 'stats' ? styles.trackTabRow : styles.tabRow}>
+      {/* Tab pills */}
+      <View style={styles.tabRow}>
         <TouchableOpacity
           style={[styles.tabPill, activeTab === 'stats' && styles.tabPillActive]}
           onPress={() => setActiveTab('stats')}
@@ -717,96 +716,88 @@ export default function RuckScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: T.bgScreen },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
-  kicker: { color: T.textAccent, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: T.textPrimary, fontSize: 30, fontWeight: '900' },
-  subtitle: { color: T.textMuted, fontSize: 15, lineHeight: 22 },
+  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#A7ADB8', fontSize: 15, lineHeight: 22 },
 
   headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10, gap: 4 },
-  tabRow: { flexDirection: 'row', backgroundColor: T.bgPanel, borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: T.borderSubtle },
-  trackTabRow: {
-    flexDirection: 'row',
-    backgroundColor: '#050e09',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: T.borderDim,
-  },
+  tabRow: { flexDirection: 'row', backgroundColor: '#1E2229', borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
   tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
-  tabPillActive: { backgroundColor: T.borderAccent },
-  tabPillText: { color: T.textMutedAccent, fontSize: 13, fontWeight: '900' },
-  tabPillTextActive: { color: T.textWhite },
+  tabPillActive: { backgroundColor: 'rgba(252,76,2,0.3)' },
+  tabPillText: { color: '#A7ADB8', fontSize: 13, fontWeight: '900' },
+  tabPillTextActive: { color: '#ffffff' },
 
-  volumeCard: { backgroundColor: T.bgPanel, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: T.borderAccent, gap: 12 },
+  volumeCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },
   volumeStat: { flex: 1, alignItems: 'center', gap: 4 },
-  volumeNumber: { color: T.textWhite, fontSize: 24, fontWeight: '900' },
-  volumeLabel: { color: T.textMutedAccent, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', textAlign: 'center' },
-  volumeDivider: { width: 1, height: 40, backgroundColor: T.borderSubtle },
-  weekRow: { borderTopWidth: 1, borderTopColor: T.borderSubtle, paddingTop: 10 },
-  weekText: { color: T.textAccent, fontSize: 12, fontWeight: '900', textAlign: 'center' },
+  volumeNumber: { color: '#ffffff', fontSize: 24, fontWeight: '900' },
+  volumeLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '900', textTransform: 'uppercase', textAlign: 'center' },
+  volumeDivider: { width: 1, height: 40, backgroundColor: 'rgba(255,255,255,0.08)' },
+  weekRow: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', paddingTop: 10 },
+  weekText: { color: '#FC4C02', fontSize: 12, fontWeight: '900', textAlign: 'center' },
 
   pbRow: { flexDirection: 'row', gap: 10 },
-  pbCard: { flex: 1, backgroundColor: T.bgPanel, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.borderSubtle, gap: 4 },
-  pbKicker: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  pbValue: { color: T.textWhite, fontSize: 20, fontWeight: '900' },
-  pbValueGood: { color: T.textAccent, fontSize: 20, fontWeight: '900' },
-  pbValueWarn: { color: T.textWarn, fontSize: 20, fontWeight: '900' },
-  pbDeltaGood: { color: T.textAccent, fontSize: 11, fontWeight: '900' },
-  pbDeltaWarn: { color: T.textWarn, fontSize: 11, fontWeight: '900' },
-  pbDeltaNeutral: { color: T.textMutedAccent, fontSize: 11, fontWeight: '800' },
+  pbCard: { flex: 1, backgroundColor: '#1E2229', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 4 },
+  pbKicker: { color: '#FC4C02', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  pbValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  pbValueGood: { color: '#FC4C02', fontSize: 20, fontWeight: '900' },
+  pbValueWarn: { color: '#F5A623', fontSize: 20, fontWeight: '900' },
+  pbDeltaGood: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  pbDeltaWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  pbDeltaNeutral: { color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
 
-  latestCard: { backgroundColor: T.bgDeep, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: T.borderAccent, gap: 14 },
+  latestCard: { backgroundColor: '#252B35', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 14 },
   latestHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  latestKicker: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  latestKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   latestStats: { flexDirection: 'row', gap: 8 },
   latestStat: { flex: 1, gap: 3 },
-  latestStatNumber: { color: T.textWhite, fontSize: 16, fontWeight: '900' },
-  latestStatLabel: { color: T.textMutedAccent, fontSize: 10, fontWeight: '800' },
-  deltaGood: { color: T.textAccent, fontSize: 11, fontWeight: '900' },
-  deltaWarn: { color: T.textWarn, fontSize: 11, fontWeight: '900' },
-  reviewButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: T.textAccent, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  reviewButtonText: { color: T.textAccent, fontSize: 12, fontWeight: '900' },
+  latestStatNumber: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  latestStatLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '800' },
+  deltaGood: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  deltaWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  reviewButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#FC4C02', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  reviewButtonText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
 
-  readinessBadge: { backgroundColor: T.bgDeep, borderWidth: 1, borderColor: T.borderAccent, borderRadius: T.radiusChip, paddingHorizontal: 10, paddingVertical: 5 },
-  readinessBadgeWarn: { backgroundColor: T.bgWarnBadge, borderWidth: 1, borderColor: T.borderWarn, borderRadius: T.radiusChip, paddingHorizontal: 10, paddingVertical: 5 },
-  readinessText: { color: T.textAccent, fontSize: 12, fontWeight: '900' },
-  readinessTextWarn: { color: T.textWarn, fontSize: 12, fontWeight: '900' },
+  readinessBadge: { backgroundColor: '#252B35', borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  readinessBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  readinessText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  readinessTextWarn: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
 
-  nextCard: { backgroundColor: T.bgPanel, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.borderSubtle, gap: 6 },
-  nextCardWarn: { backgroundColor: T.bgWarn, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.borderWarn, gap: 6 },
-  nextKicker: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  nextText: { color: T.textBody, fontSize: 13, lineHeight: 20 },
+  nextCard: { backgroundColor: '#1E2229', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
+  nextCardWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 6 },
+  nextKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  nextText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
 
-  emptyCard: { backgroundColor: T.bgPanel, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: T.borderSubtle, gap: 8 },
-  emptyTitle: { color: T.textWhite, fontSize: 18, fontWeight: '900' },
-  emptyText: { color: T.textMuted, fontSize: 14, lineHeight: 21 },
-  emptyHint: { color: T.textHint, fontSize: 12, fontWeight: '900' },
+  emptyCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8 },
+  emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  emptyText: { color: '#A7ADB8', fontSize: 14, lineHeight: 21 },
+  emptyHint: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  sectionTitle: { color: T.textWhite, fontSize: 22, fontWeight: '900' },
-  sectionTag: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: T.borderTag, borderRadius: T.radiusChip, paddingHorizontal: 12, paddingVertical: 6 },
+  sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  sectionTag: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#274b32', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
 
-  sessionCard: { backgroundColor: T.bgPanel, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: T.borderSubtle, gap: 12 },
-  sessionCardWarn: { backgroundColor: T.bgWarn, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: T.borderWarn, gap: 12 },
+  sessionCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
+  sessionCardWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 12 },
   sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   sessionHeaderLeft: { gap: 3 },
-  sessionDate: { color: T.textMutedAccent, fontSize: 12, fontWeight: '800' },
-  sessionType: { color: T.textWhite, fontSize: 15, fontWeight: '900' },
+  sessionDate: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  sessionType: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   sessionStats: { flexDirection: 'row', alignItems: 'center' },
   sessionStat: { flex: 1, alignItems: 'center', gap: 3 },
-  sessionStatNumber: { color: T.textWhite, fontSize: 16, fontWeight: '900' },
-  sessionStatLabel: { color: T.textMutedAccent, fontSize: 10, fontWeight: '800' },
-  sessionStatDivider: { width: 1, height: 32, backgroundColor: T.borderSubtle },
-  sessionNotes: { color: T.textMuted, fontSize: 12, lineHeight: 18 },
+  sessionStatNumber: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  sessionStatLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '800' },
+  sessionStatDivider: { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.08)' },
+  sessionNotes: { color: '#A7ADB8', fontSize: 12, lineHeight: 18 },
 
-  builderCard: { backgroundColor: T.bgPanel, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: T.borderSubtle, gap: 6 },
-  builderTitle: { color: T.textWhite, fontSize: 16, fontWeight: '900' },
-  builderDetail: { color: T.textAccent, fontSize: 12, fontWeight: '900' },
-  builderText: { color: T.textMuted, fontSize: 13, lineHeight: 20 },
+  builderCard: { backgroundColor: '#1E2229', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
+  builderTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  builderDetail: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  builderText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
 
-  fieldCard: { backgroundColor: T.bgField, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: T.borderField, gap: 6 },
-  fieldLabel: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  fieldText: { color: T.textMuted, fontSize: 13, lineHeight: 20 },
+  fieldCard: { backgroundColor: '#1E2229', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
+  fieldLabel: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  fieldText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
 });

@@ -5,9 +5,20 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as MapboxGLModule from '@maplibre/maplibre-react-native';
+// eslint-disable-next-line import/no-unresolved
+import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
-const MapboxGL = MapboxGLModule as any;
+
+function interpolateColor(color1: string, color2: string, factor: number) {
+  const hex1 = parseInt(color1.substring(1), 16);
+  const hex2 = parseInt(color2.substring(1), 16);
+  const r1 = (hex1 >> 16) & 255, g1 = (hex1 >> 8) & 255, b1 = hex1 & 255;
+  const r2 = (hex2 >> 16) & 255, g2 = (hex2 >> 8) & 255, b2 = hex2 & 255;
+  const r = Math.round(r1 + factor * (r2 - r1));
+  const g = Math.round(g1 + factor * (g2 - g1));
+  const b = Math.round(b1 + factor * (b2 - b1));
+  return `#${(1 << 24 | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
 
 interface RuckMapProps {
   route: RouteData;
@@ -18,11 +29,11 @@ interface RuckMapProps {
 const ELEVATION_GRAPH_HEIGHT = 40;
 const ELEVATION_GRAPH_PADDING = 5;
 const ELEVATION_USABLE_HEIGHT = ELEVATION_GRAPH_HEIGHT - (ELEVATION_GRAPH_PADDING * 2);
-const FALLBACK_ROUTE_COLOR = '#3B82F6';
+const FALLBACK_ROUTE_COLOR = '#FC4C02';
 
 export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
-  const cameraRef = useRef<any>(null);
+  const mapRef = useRef<MapView>(null);
   const routeColor = theme.mapRoute || FALLBACK_ROUTE_COLOR;
 
   // Decode the polyline string into an array of { latitude, longitude } for react-native-maps
@@ -68,6 +79,15 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
       }
     }
     return markers;
+  }, [coordinates]);
+
+  // Pre-calculate a gorgeous color gradient from Start (Emerald) to End (Red)
+  const routeColors = useMemo(() => {
+    const total = coordinates.length;
+    if (total === 0) return [];
+    return coordinates.map((_, index) =>
+      interpolateColor('#35C759', '#FF453A', index / Math.max(1, total - 1))
+    );
   }, [coordinates]);
 
   // Extract and map elevation data for the profile graph
@@ -138,38 +158,26 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
 
   const visibleCoordinates = useMemo(() => coordinates.slice(0, drawIndex), [coordinates, drawIndex]);
   const visibleDistanceMarkers = useMemo(() => distanceMarkers.filter(m => m.index < drawIndex), [distanceMarkers, drawIndex]);
+  const visibleColors = useMemo(() => routeColors.slice(0, drawIndex), [routeColors, drawIndex]);
+
   // Convert the current drawing index into a percentage (0 to 100) for the SVG clip path
   const drawPercentage = coordinates.length > 0 ? (drawIndex / coordinates.length) * 100 : 100;
 
-  // Convert to Mapbox/GeoJSON [longitude, latitude] arrays
-  const mapboxCoordinates = useMemo(() => coordinates.map(c => [c.longitude, c.latitude]), [coordinates]);
-  const visibleMapboxCoords = useMemo(() => visibleCoordinates.map(c => [c.longitude, c.latitude]), [visibleCoordinates]);
-
-  const routeGeoJSON = useMemo<any>(() => ({
-    type: 'FeatureCollection',
-    features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: visibleMapboxCoords }, properties: {} }],
-  }), [visibleMapboxCoords]);
-
-  const handleMarkerPress = useCallback((coordinate: number[]) => {
-    cameraRef.current?.setCamera({
-      centerCoordinate: coordinate,
-      zoomLevel: 15,
-      animationDuration: 1000,
-    });
+  const handleMarkerPress = useCallback((coordinate: { latitude: number; longitude: number }) => {
+    mapRef.current?.animateToRegion({
+      latitude: coordinate.latitude,
+      longitude: coordinate.longitude,
+      latitudeDelta: 0.01, // Defines the zoom level (smaller is closer)
+      longitudeDelta: 0.01,
+    }, 1000); // 1000ms (1 second) animation duration
   }, []);
 
   const handleRecenter = useCallback(() => {
     if (coordinates.length > 1) {
-      const lats = coordinates.map(c => c.latitude);
-      const lngs = coordinates.map(c => c.longitude);
-      const camera = cameraRef.current;
-      if (!camera) return;
-      camera.fitBounds(
-        [Math.max(...lngs), Math.max(...lats)],
-        [Math.min(...lngs), Math.min(...lats)],
-        [40, 40, 40, 40],
-        1000
-      );
+      mapRef.current?.fitToCoordinates(coordinates, {
+        edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
+        animated: true,
+      });
     }
   }, [coordinates]);
 
@@ -181,64 +189,80 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
     );
   }
 
+  // Using CARTO tiles to match the web implementation's aesthetic exactly
+  const tileUrl = colorScheme === 'dark'
+    ? 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+    : 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+
   return (
     <View style={styles.container}>
       <View style={[styles.mapFrame, { backgroundColor: theme.mapBackground }]}>
-        <MapboxGL.MapView
+        <MapView
+          ref={mapRef}
           style={styles.map}
-          styleURL="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-          logoEnabled={false}
-          compassEnabled={false}
-          attributionEnabled={false}
-        >
-          <MapboxGL.Camera
-            ref={cameraRef}
-            zoomLevel={14}
-            centerCoordinate={mapboxCoordinates[0]}
-            animationDuration={1000}
-          />
+          mapType="none" // Disables the default Apple/Google basemaps
+          initialRegion={{
+          latitude: coordinates[0].latitude,
+          longitude: coordinates[0].longitude,
+          latitudeDelta: 0.012, // Start zoomed in for the "follow" effect
+          longitudeDelta: 0.012,
+        }}
+      >
+        <UrlTile urlTemplate={tileUrl} maximumZ={19} flipY={false} />
 
-          {/* Offline PMTiles Vector Source */}
-          <MapboxGL.VectorSource id="offline-pmtiles" tileUrlTemplates={['pmtiles://offline_region/{z}/{x}/{y}']}>
-            <MapboxGL.LineLayer id="roads" sourceLayer="roads" style={{ lineColor: '#444', lineWidth: 1.5 }} />
-          </MapboxGL.VectorSource>
+        <Polyline
+          coordinates={visibleCoordinates}
+          strokeColor={routeColor} // 👈 Fallback for Android
+          strokeColors={visibleColors}              // 👈 Gradient applied on iOS
+          strokeWidth={4}
+          lineCap="round"
+          lineJoin="round"
+        />
 
-          {/* Route Polyline rendered via GeoJSON */}
-          <MapboxGL.ShapeSource id="routeSource" shape={routeGeoJSON}>
-            <MapboxGL.LineLayer
-              id="routeLine"
-              style={{ lineColor: routeColor, lineWidth: 4, lineCap: 'round', lineJoin: 'round' }}
-            />
-          </MapboxGL.ShapeSource>
-
-          {/* 1km Distance Markers */}
-          {visibleDistanceMarkers.map((marker) => (
-            <MapboxGL.PointAnnotation
-              key={`km-${marker.km}`}
-              id={`km-${marker.km}`}
-              coordinate={[marker.coordinate.longitude, marker.coordinate.latitude]}
-              onSelected={() => handleMarkerPress([marker.coordinate.longitude, marker.coordinate.latitude])}
-            >
-              <View style={[styles.kmMarker, { borderColor: routeColor }]}>
-                <Text style={[styles.kmMarkerText, { color: routeColor }]}>{marker.km}</Text>
-              </View>
-            </MapboxGL.PointAnnotation>
-          ))}
-
-          <MapboxGL.PointAnnotation id="start" coordinate={mapboxCoordinates[0]} onSelected={() => handleMarkerPress(mapboxCoordinates[0])}>
-            <View style={[styles.customMarker, styles.startMarker]}>
-              <MaterialCommunityIcons name="play" size={18} color="white" />
+        {/* 1km Distance Markers */}
+        {visibleDistanceMarkers.map((marker) => (
+          <Marker
+            key={`km-${marker.km}`}
+            coordinate={marker.coordinate}
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
+            zIndex={1}
+            onPress={() => handleMarkerPress(marker.coordinate)}
+          >
+            <View style={[styles.kmMarker, { borderColor: routeColor }]}>
+              <Text style={[styles.kmMarkerText, { color: routeColor }]}>{marker.km}</Text>
             </View>
-          </MapboxGL.PointAnnotation>
-          
-          {drawIndex === coordinates.length && coordinates.length > 1 && (
-            <MapboxGL.PointAnnotation id="end" coordinate={mapboxCoordinates[mapboxCoordinates.length - 1]} onSelected={() => handleMarkerPress(mapboxCoordinates[mapboxCoordinates.length - 1])}>
-              <View style={[styles.customMarker, styles.endMarker]}>
-                <MaterialCommunityIcons name="flag-checkered" size={16} color="white" />
-              </View>
-            </MapboxGL.PointAnnotation>
-          )}
-        </MapboxGL.MapView>
+          </Marker>
+        ))}
+
+        <Marker
+          coordinate={coordinates[0]}
+          title="Start"
+          anchor={{ x: 0.5, y: 0.5 }}
+          tracksViewChanges={false}
+          zIndex={2}
+          onPress={() => handleMarkerPress(coordinates[0])}
+        >
+          <View style={[styles.customMarker, styles.startMarker]}>
+            <MaterialCommunityIcons name="play" size={18} color="white" />
+          </View>
+        </Marker>
+        
+        {drawIndex === coordinates.length && coordinates.length > 1 && (
+          <Marker
+            coordinate={coordinates[coordinates.length - 1]}
+            title="End"
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
+            zIndex={2}
+            onPress={() => handleMarkerPress(coordinates[coordinates.length - 1])}
+          >
+            <View style={[styles.customMarker, styles.endMarker]}>
+              <MaterialCommunityIcons name="flag-checkered" size={16} color="white" />
+            </View>
+          </Marker>
+        )}
+      </MapView>
 
       {coordinates.length > 1 && (
         <TouchableOpacity 
@@ -300,10 +324,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   startMarker: {
-    backgroundColor: '#10B981', // Emerald green
+    backgroundColor: '#35C759', // Emerald green
   },
   endMarker: {
-    backgroundColor: '#EF4444', // Red
+    backgroundColor: '#FF453A', // Red
   },
   kmMarker: {
     width: 22,

@@ -41,7 +41,7 @@ const TEAM_COLOURS: Record<string, string> = {
 };
 
 function teamColour(team: string): string {
-  return TEAM_COLOURS[team] ?? '#91e6a3';
+  return TEAM_COLOURS[team] ?? '#FC4C02';
 }
 
 // -- Stale check ---------------------------------------------------------------
@@ -58,8 +58,8 @@ function isStale(staleIso: string): boolean {
 // -- Status dot colour ---------------------------------------------------------
 
 function dotColour(status: FTSStatus): string {
-  if (status === 'connected') return '#91e6a3';
-  if (status === 'connecting') return '#ffb86b';
+  if (status === 'connected') return '#FC4C02';
+  if (status === 'connecting') return '#F5A623';
   if (status === 'error') return '#F44336';
   return '#4a5e4a';
 }
@@ -503,7 +503,7 @@ export default function ATAKScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
   },
   content: {
     padding: 20,
@@ -520,33 +520,33 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   backText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 14,
     fontWeight: '900',
   },
   kicker: {
-    color: '#8fbf8f',
+    color: '#A7ADB8',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 2.5,
   },
   title: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 30,
     fontWeight: '900',
   },
 
   // Card base
   card: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     gap: 10,
   },
   cardKicker: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -564,25 +564,25 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   statusText: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '800',
   },
 
   // Config display
   configLine: {
-    color: '#aeb8aa',
+    color: '#A7ADB8',
     fontSize: 13,
     fontWeight: '700',
   },
   configValue: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontWeight: '900',
   },
   editBtn: {
-    backgroundColor: '#102d1a',
+    backgroundColor: '#252B35',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   editBtnText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -600,15 +600,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   formLabel: {
-    color: '#dfe8da',
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '900',
   },
   input: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#26382c',
+    borderColor: 'rgba(255,255,255,0.08)',
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '800',
@@ -622,15 +622,15 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: '#102d1a',
+    backgroundColor: '#252B35',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
   saveBtnText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtnText: {
-    color: '#ffb86b',
+    color: '#F5A623',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -657,9 +657,9 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     width: '47%',
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     borderRadius: 14,
     padding: 16,
     alignItems: 'center',
@@ -671,19 +671,19 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   actionBtnTitle: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0.8,
     textAlign: 'center',
   },
   actionBtnSub: {
-    color: '#aeb8aa',
+    color: '#A7ADB8',
     fontSize: 11,
     fontWeight: '700',
   },
   pingOk: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 20,
     fontWeight: '900',
   },
@@ -700,25 +700,25 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   countBadge: {
-    backgroundColor: '#102d1a',
+    backgroundColor: '#252B35',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   countBadgeText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 12,
     fontWeight: '900',
   },
 
   // CoT row
   cotRow: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#213c2b',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 12,
     gap: 4,
   },
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   cotCallsign: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   staleChip: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#1E2229',
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 999,
@@ -757,28 +757,28 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   cotCoords: {
-    color: '#aeb8aa',
+    color: '#A7ADB8',
     fontSize: 12,
     fontWeight: '700',
   },
 
   // Info card
   infoCard: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#213c2b',
+    borderColor: 'rgba(255,255,255,0.08)',
     gap: 8,
   },
   infoTitle: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   infoText: {
-    color: '#aeb8aa',
+    color: '#A7ADB8',
     fontSize: 13,
     lineHeight: 20,
     fontWeight: '700',

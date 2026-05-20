@@ -13,7 +13,7 @@ export default function SparkLine({
   data,
   width = 80,
   height = 28,
-  color = '#91e6a3',
+  color = '#FC4C02',
   strokeWidth = 1.5,
 }: Props) {
   if (data.length < 2) return null;
