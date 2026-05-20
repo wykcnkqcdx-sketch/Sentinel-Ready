@@ -1,0 +1,87 @@
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+interface RuckRouteSearchBarProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  onSavedRoutes: () => void;
+}
+
+export function RuckRouteSearchBar({ value, onChangeText, onSavedRoutes }: RuckRouteSearchBarProps) {
+  return (
+    <View style={styles.container}>
+      <View style={styles.searchRow}>
+        <View style={styles.searchIcon}>
+          <Text style={styles.searchIconText}>◈</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="SEARCH ROUTES"
+          placeholderTextColor="#4a6b52"
+          value={value}
+          onChangeText={onChangeText}
+          autoCapitalize="none"
+          autoCorrect={false}
+          accessibilityLabel="Search routes"
+        />
+        <TouchableOpacity
+          style={styles.savedButton}
+          onPress={onSavedRoutes}
+          accessibilityRole="button"
+          accessibilityLabel="Saved routes"
+        >
+          <Text style={styles.savedButtonText}>SAVED</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(5,14,9,0.92)',
+    borderWidth: 1,
+    borderColor: '#235c32',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    height: 44,
+    gap: 8,
+  },
+  searchIcon: {
+    width: 20,
+    alignItems: 'center',
+  },
+  searchIconText: {
+    color: '#91e6a3',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  input: {
+    flex: 1,
+    color: '#f2f5ef',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    height: 44,
+    padding: 0,
+  },
+  savedButton: {
+    borderWidth: 1,
+    borderColor: '#235c32',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  savedButtonText: {
+    color: '#91e6a3',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+  },
+});

@@ -6,6 +6,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { tokens as T } from '@/src/theme/tokens';
 import { RuckTrackPanel, RuckSaveDraft, DEFAULT_RUCK_SAVE_DRAFT, RuckMissionDraft, DEFAULT_RUCK_MISSION_DRAFT } from '@/src/components/ruck/RuckTrackPanel';
+import { RuckRouteExplorer } from '@/src/components/ruck/RuckRouteExplorer';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
@@ -221,7 +222,7 @@ const RuckSessionCard = memo(function RuckSessionCard({ log, metrics, paceVsPb, 
 
 export default function RuckScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'stats' | 'track'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'track' | 'routes'>('stats');
   const [saveDraft, setSaveDraft] = useState<RuckSaveDraft>(DEFAULT_RUCK_SAVE_DRAFT);
   const [missionDraft, setMissionDraft] = useState<RuckMissionDraft>(DEFAULT_RUCK_MISSION_DRAFT);
   const tracking = useRuckTracking();
@@ -430,7 +431,7 @@ export default function RuckScreen() {
         </View>
       ) : null}
 
-      <View style={activeTab === 'track' ? styles.trackTabRow : styles.tabRow}>
+      <View style={activeTab !== 'stats' ? styles.trackTabRow : styles.tabRow}>
         <TouchableOpacity
           style={[styles.tabPill, activeTab === 'stats' && styles.tabPillActive]}
           onPress={() => setActiveTab('stats')}
@@ -451,10 +452,22 @@ export default function RuckScreen() {
             Track
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabPill, activeTab === 'routes' && styles.tabPillActive]}
+          onPress={() => setActiveTab('routes')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'routes' }}
+        >
+          <Text style={[styles.tabPillText, activeTab === 'routes' && styles.tabPillTextActive]}>
+            Routes
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Stats tab */}
-      {activeTab === 'stats' ? (
+      {/* Routes tab */}
+      {activeTab === 'routes' ? (
+        <RuckRouteExplorer />
+      ) : activeTab === 'stats' ? (
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
           <Text style={styles.subtitle}>
             Distance, load, pace and progression tracked from your logged ruck sessions.
