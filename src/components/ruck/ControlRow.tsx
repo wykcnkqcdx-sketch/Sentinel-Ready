@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: '#FC4C02',
+    backgroundColor: '#B5852C',
     borderRadius: 10,
     alignItems: 'center',
     paddingVertical: 14,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   primaryText: {
-    color: '#0F1115',
+    color: '#000D1A',
     fontSize: 13,
     fontWeight: '900',
   },

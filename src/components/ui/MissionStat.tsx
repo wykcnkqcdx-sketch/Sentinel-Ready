@@ -18,7 +18,7 @@ export default function MissionStat({ label, value, status }: MissionStatProps) 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 16,
     padding: 16,
     width: '47%',
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   label: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1.2,
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   status: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 12,
     marginTop: 6,
     lineHeight: 17,

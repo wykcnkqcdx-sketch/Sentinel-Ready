@@ -27,16 +27,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   default: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderColor: 'rgba(255,255,255,0.08)',
   },
   warning: {
-    backgroundColor: 'rgba(245,166,35,0.08)',
-    borderColor: 'rgba(245,166,35,0.25)',
+    backgroundColor: 'rgba(212,160,26,0.08)',
+    borderColor: 'rgba(212,160,26,0.25)',
   },
   success: {
-    backgroundColor: 'rgba(53,199,89,0.08)',
-    borderColor: 'rgba(53,199,89,0.25)',
+    backgroundColor: 'rgba(94,122,47,0.08)',
+    borderColor: 'rgba(94,122,47,0.25)',
   },
   title: {
     color: '#FFFFFF',

@@ -56,15 +56,15 @@ const styles = StyleSheet.create({
   },
   chipActive: {
     backgroundColor: '#163d22',
-    borderColor: '#FC4C02',
+    borderColor: '#B5852C',
   },
   chipText: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.2,
   },
   chipTextActive: {
-    color: '#FC4C02',
+    color: '#B5852C',
   },
 });

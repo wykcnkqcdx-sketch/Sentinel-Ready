@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchIconText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   savedButtonText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.4,

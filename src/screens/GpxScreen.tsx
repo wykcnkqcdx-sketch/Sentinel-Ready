@@ -328,11 +328,11 @@ export default function GpxScreen() {
 // ─── styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#0F1115' },
+  screen: { flex: 1, backgroundColor: '#000D1A' },
   headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8, gap: 4 },
-  kicker: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  kicker: { color: '#8FAEC8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
-  subtitle: { color: '#A7ADB8', fontSize: 15, lineHeight: 22 },
+  subtitle: { color: '#8FAEC8', fontSize: 15, lineHeight: 22 },
 
   // Tabs
   tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 4 },
@@ -343,8 +343,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 9,
   },
-  tabPillActive: { backgroundColor: 'rgba(252,76,2,0.3)', borderColor: 'rgba(252,76,2,0.3)' },
-  tabPillText: { color: '#A7ADB8', fontSize: 13, fontWeight: '800' },
+  tabPillActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
+  tabPillText: { color: '#8FAEC8', fontSize: 13, fontWeight: '800' },
   tabPillTextActive: { color: '#FFFFFF', fontWeight: '900' },
 
   // Scroll content
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
 
   // Log card (export tab)
   logCard: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
@@ -362,11 +362,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logInfo: { flex: 1, gap: 3 },
-  logDate: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  logDate: { color: '#8FAEC8', fontSize: 12, fontWeight: '800' },
   logType: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  logPoints: { color: '#A7ADB8', fontSize: 12 },
+  logPoints: { color: '#8FAEC8', fontSize: 12 },
   exportBtn: {
-    backgroundColor: 'rgba(252,76,2,0.3)',
+    backgroundColor: 'rgba(181,133,44,0.3)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 9,
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
 
   // Pick button (import tab)
   pickBtn: {
-    backgroundColor: 'rgba(252,76,2,0.3)',
+    backgroundColor: 'rgba(181,133,44,0.3)',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -391,15 +391,15 @@ const styles = StyleSheet.create({
 
   // Preview card
   previewCard: {
-    backgroundColor: '#252B35',
+    backgroundColor: '#003050',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     gap: 10,
   },
   previewKicker: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -409,10 +409,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  previewLabel: { color: '#A7ADB8', fontSize: 13 },
+  previewLabel: { color: '#8FAEC8', fontSize: 13 },
   previewValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
   importBtn: {
-    backgroundColor: 'rgba(252,76,2,0.3)',
+    backgroundColor: 'rgba(181,133,44,0.3)',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -424,11 +424,11 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1,
   },
-  clearLink: { color: '#A7ADB8', fontSize: 12, textAlign: 'center', marginTop: 4 },
+  clearLink: { color: '#8FAEC8', fontSize: 12, textAlign: 'center', marginTop: 4 },
 
   // Info card
   infoCard: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
@@ -436,16 +436,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   infoTitle: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  infoText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
+  infoText: { color: '#8FAEC8', fontSize: 13, lineHeight: 20 },
 
   // Empty card
   emptyCard: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
@@ -453,5 +453,5 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  emptyText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
+  emptyText: { color: '#8FAEC8', fontSize: 13, lineHeight: 20 },
 });

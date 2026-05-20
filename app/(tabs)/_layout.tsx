@@ -16,7 +16,7 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: DS.orange,
+        tabBarActiveTintColor: DS.gold,
         tabBarInactiveTintColor: DS.textMuted,
         tabBarLabelStyle: {
           fontSize: 10,

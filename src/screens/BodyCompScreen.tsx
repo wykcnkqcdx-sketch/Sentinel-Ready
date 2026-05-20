@@ -117,7 +117,7 @@ export default function BodyCompScreen() {
               onChangeText={setHeightInput}
               keyboardType="numeric"
               placeholder="175"
-              placeholderTextColor="#A7ADB8"
+              placeholderTextColor="#8FAEC8"
             />
             <Text style={styles.unitLabel}>cm</Text>
             <TouchableOpacity style={styles.saveHeightBtn} onPress={handleSaveHeight}>
@@ -158,7 +158,7 @@ export default function BodyCompScreen() {
           )}
           {sparkData.length >= 2 && (
             <View style={styles.sparkRow}>
-              <SparkLine data={sparkData} width={180} height={32} color="#FC4C02" strokeWidth={2} />
+              <SparkLine data={sparkData} width={180} height={32} color="#B5852C" strokeWidth={2} />
             </View>
           )}
           <Text style={styles.lastLogged}>Last logged: {latestEntry.date}</Text>
@@ -191,7 +191,7 @@ export default function BodyCompScreen() {
           <Switch
             value={includeSkinfold}
             onValueChange={setIncludeSkinfold}
-            trackColor={{ true: '#FC4C02', false: '#1a2e1f' }}
+            trackColor={{ true: '#B5852C', false: '#003050' }}
             thumbColor="#f2f5ef"
           />
         </View>
@@ -222,7 +222,7 @@ export default function BodyCompScreen() {
           value={notes}
           onChangeText={setNotes}
           placeholder="Optional notes"
-          placeholderTextColor="#A7ADB8"
+          placeholderTextColor="#8FAEC8"
           multiline
         />
 
@@ -240,7 +240,7 @@ export default function BodyCompScreen() {
         <Text style={styles.sectionLabel}>DFITT BMI BANDS</Text>
         {[
           { color: '#4a9eff', label: 'Underweight', range: '< 18.5', status: 'underweight' },
-          { color: '#FC4C02', label: 'Optimal (Military)', range: '18.5 – 27.5', status: 'optimal' },
+          { color: '#B5852C', label: 'Optimal (Military)', range: '18.5 – 27.5', status: 'optimal' },
           { color: '#FFB86B', label: 'Overweight', range: '27.5 – 30.0', status: 'overweight' },
           { color: '#ff6b6b', label: 'Obese', range: '≥ 30.0', status: 'obese' },
         ].map((band) => {
@@ -292,25 +292,25 @@ export default function BodyCompScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#0F1115' },
+  screen: { flex: 1, backgroundColor: '#000D1A' },
   content: { padding: 20, gap: 14, paddingBottom: 60 },
   header: { gap: 6 },
-  kicker: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  kicker: { color: '#8FAEC8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
   card: {
-    backgroundColor: '#0e1f15',
+    backgroundColor: '#001829',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#1a2e1f',
+    borderColor: '#003050',
     padding: 16,
     gap: 12,
   },
   cardTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   heightRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   heightInput: {
-    backgroundColor: '#0F1115',
+    backgroundColor: '#000D1A',
     borderWidth: 1,
-    borderColor: '#1a2e1f',
+    borderColor: '#003050',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -319,18 +319,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     width: 80,
   },
-  unitLabel: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
+  unitLabel: { color: '#8FAEC8', fontSize: 14, fontWeight: '700' },
   saveHeightBtn: {
-    backgroundColor: '#FC4C02',
+    backgroundColor: '#B5852C',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  saveHeightBtnText: { color: '#0F1115', fontSize: 13, fontWeight: '900' },
-  sectionLabel: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  saveHeightBtnText: { color: '#000D1A', fontSize: 13, fontWeight: '900' },
+  sectionLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   bigWeight: { color: '#FFFFFF', fontSize: 52, fontWeight: '900', lineHeight: 56 },
-  unitSub: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
+  unitSub: { color: '#8FAEC8', fontSize: 14, fontWeight: '700' },
   bmiBlock: { alignItems: 'flex-end', gap: 6 },
   bmiValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
   bmiStatusBadge: {
@@ -340,29 +340,29 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   bmiStatusText: { fontSize: 11, fontWeight: '900' },
-  skinfoldLine: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
+  skinfoldLine: { color: '#8FAEC8', fontSize: 13, fontWeight: '700' },
   sparkRow: { paddingTop: 4 },
-  lastLogged: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
-  fieldLabel: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  lastLogged: { color: '#8FAEC8', fontSize: 12, fontWeight: '700' },
+  fieldLabel: { color: '#8FAEC8', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   stepperBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderWidth: 1,
-    borderColor: '#1a2e1f',
+    borderColor: '#003050',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepperBtnText: { color: '#FFFFFF', fontSize: 20, fontWeight: '700' },
   stepperValue: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', minWidth: 80, textAlign: 'center' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  switchLabel: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
+  switchLabel: { color: '#8FAEC8', fontSize: 13, fontWeight: '700' },
   notesInput: {
-    backgroundColor: '#0F1115',
+    backgroundColor: '#000D1A',
     borderWidth: 1,
-    borderColor: '#1a2e1f',
+    borderColor: '#003050',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -372,32 +372,32 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   logBtn: {
-    backgroundColor: '#FC4C02',
+    backgroundColor: '#B5852C',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
-  logBtnText: { color: '#0F1115', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
-  successMsg: { color: '#FC4C02', fontSize: 13, fontWeight: '900', textAlign: 'center' },
+  logBtnText: { color: '#000D1A', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  successMsg: { color: '#B5852C', fontSize: 13, fontWeight: '900', textAlign: 'center' },
   bandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bandDot: { width: 12, height: 12, borderRadius: 6 },
   bandLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', flex: 1 },
-  bandRange: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
-  hereTag: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
-  emptyText: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
+  bandRange: { color: '#8FAEC8', fontSize: 12, fontWeight: '700' },
+  hereTag: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
+  emptyText: { color: '#8FAEC8', fontSize: 13, fontWeight: '700' },
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a2e1f',
+    borderBottomColor: '#003050',
   },
   historyInfo: { flexDirection: 'row', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 },
-  historyDate: { color: '#A7ADB8', fontSize: 12, fontWeight: '700', minWidth: 90 },
+  historyDate: { color: '#8FAEC8', fontSize: 12, fontWeight: '700', minWidth: 90 },
   historyWeight: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
   historyBmi: { fontSize: 12, fontWeight: '800' },
-  historySkinfold: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
+  historySkinfold: { color: '#8FAEC8', fontSize: 12, fontWeight: '700' },
   deleteBtn: {
     width: 36,
     height: 36,

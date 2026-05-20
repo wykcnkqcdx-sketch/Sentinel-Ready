@@ -2,16 +2,16 @@ import { colours } from './colours';
 
 export const tokens = {
   // Base surfaces
-  bgScreen: '#0F1115',
-  bgPanel: '#1E2229',
-  bgPanelAlt: '#252B35',
-  bgPanelDim: '#1E2229',
-  bgPanelWarn: 'rgba(245,166,35,0.1)',
+  bgScreen: '#000D1A',
+  bgPanel: '#00253D',
+  bgPanelAlt: '#003050',
+  bgPanelDim: '#00253D',
+  bgPanelWarn: 'rgba(212,160,26,0.1)',
 
   // Borders
   borderDefault: 'rgba(255,255,255,0.08)',
-  borderAlt: 'rgba(252,76,2,0.3)',
-  borderWarn: 'rgba(245,166,35,0.3)',
+  borderAlt: 'rgba(181,133,44,0.3)',
+  borderWarn: 'rgba(212,160,26,0.3)',
   borderChip: '#274b32',
   borderDim: 'rgba(255,255,255,0.08)',
   divider: '#162218',
@@ -19,20 +19,20 @@ export const tokens = {
   // Text
   textPrimary: '#FFFFFF',
   textPrimaryBright: '#ffffff',
-  textMuted: '#A7ADB8',
+  textMuted: '#8FAEC8',
   textMuted2: '#c4cec0',
-  textMuted3: '#FC4C02',
-  textOk: '#FC4C02',
-  textWarn: '#F5A623',
-  textNeutral: '#A7ADB8',
+  textMuted3: '#B5852C',
+  textOk: '#B5852C',
+  textWarn: '#D4A01A',
+  textNeutral: '#8FAEC8',
 
   // Accents / semantic
-  accentGood: '#FC4C02',
-  accentWarn: '#F5A623',
-  accentNeutral: '#A7ADB8',
+  accentGood: '#B5852C',
+  accentWarn: '#D4A01A',
+  accentNeutral: '#8FAEC8',
 
   // Inputs
-  inputBg: '#0F1115',
+  inputBg: '#000D1A',
   inputBorder: 'rgba(255,255,255,0.08)',
   placeholder: '#617061',
 

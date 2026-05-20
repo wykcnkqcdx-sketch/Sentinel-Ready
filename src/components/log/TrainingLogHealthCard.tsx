@@ -37,16 +37,16 @@ const TrainingLogHealthCard = memo(function TrainingLogHealthCard({ score, label
 export default TrainingLogHealthCard;
 
 const styles = StyleSheet.create({
-  healthCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 10 },
-  healthCardWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 10 },
+  healthCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
+  healthCardWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 10 },
   healthHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  healthKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  healthKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   healthScore: { color: '#ffffff', fontSize: 34, fontWeight: '900', marginTop: 4 },
-  healthScoreWarning: { color: '#F5A623', fontSize: 34, fontWeight: '900', marginTop: 4 },
-  healthPill: { backgroundColor: '#252B35', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  healthPillWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  healthPillText: { color: '#FC4C02', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  healthPillTextWarning: { color: '#F5A623', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  healthMessage: { color: '#A7ADB8', fontSize: 13, lineHeight: 19 },
-  healthMessageWarning: { color: '#F5A623', fontSize: 13, lineHeight: 19, fontWeight: '800' },
+  healthScoreWarning: { color: '#D4A01A', fontSize: 34, fontWeight: '900', marginTop: 4 },
+  healthPill: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  healthPillWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  healthPillText: { color: '#B5852C', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  healthPillTextWarning: { color: '#D4A01A', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  healthMessage: { color: '#8FAEC8', fontSize: 13, lineHeight: 19 },
+  healthMessageWarning: { color: '#D4A01A', fontSize: 13, lineHeight: 19, fontWeight: '800' },
 });

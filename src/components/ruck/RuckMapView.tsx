@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
   },
   hudTitle: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -497,8 +497,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   followButtonActive: {
-    backgroundColor: '#FC4C02',
-    borderColor: '#FC4C02',
+    backgroundColor: '#B5852C',
+    borderColor: '#B5852C',
   },
   followButtonText: {
     color: '#FFFFFF',
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   followButtonTextActive: {
-    color: '#0F1115',
+    color: '#000D1A',
   },
   panPad: {
     position: 'absolute',
