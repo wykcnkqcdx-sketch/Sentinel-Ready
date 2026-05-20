@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     right: 12,
     backgroundColor: 'rgba(7,17,12,0.96)',
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     borderRadius: 6,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   routeName: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '900',
     letterSpacing: 0.5,
@@ -130,14 +130,14 @@ const styles = StyleSheet.create({
   startButton: {
     backgroundColor: '#163d22',
     borderWidth: 1,
-    borderColor: '#91e6a3',
+    borderColor: '#FC4C02',
     borderRadius: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
     alignSelf: 'flex-start',
   },
   startButtonText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.5,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   statLabel: {
-    color: '#8fbf8f',
+    color: '#A7ADB8',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#172c20',
   },
   tagLabel: {
-    color: '#8fbf8f',
+    color: '#A7ADB8',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,

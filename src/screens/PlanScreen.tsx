@@ -18,10 +18,10 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
-  if (intensity === 'Rest' || intensity === 'Low') return '#8fbf8f';
-  if (planType === 'recovery') return '#8fbf8f';
-  if (intensity === 'High') return '#f3d36b';
-  return '#91e6a3';
+  if (intensity === 'Rest' || intensity === 'Low') return '#A7ADB8';
+  if (planType === 'recovery') return '#A7ADB8';
+  if (intensity === 'High') return '#F5A623';
+  return '#FC4C02';
 }
 
 const DayCard = memo(function DayCard({
@@ -94,8 +94,8 @@ export default function PlanScreen() {
     : 'Standard Week';
 
   const planTypeColor =
-    planType === 'recovery' ? '#ffb86b'
-    : planType === 'progressive' ? '#91e6a3'
+    planType === 'recovery' ? '#F5A623'
+    : planType === 'progressive' ? '#FC4C02'
     : '#ffffff';
 
   const commandCardStyle =
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginTop: 4,
   },
-  editPlanButtonText: { color: '#91e6a3', fontSize: 12, fontWeight: '700' },
+  editPlanButtonText: { color: '#FC4C02', fontSize: 12, fontWeight: '700' },
   planModePillRow: { flexDirection: 'row' },
   planModePill: {
     borderRadius: 999,
@@ -289,56 +289,56 @@ const styles = StyleSheet.create({
   planModePillMuted: { borderColor: '#2a3328', backgroundColor: '#0e1812' },
   planModePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   planModePillTextAmber: { color: '#FFB86B' },
-  planModePillTextMuted: { color: '#aeb8aa' },
-  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  planModePillTextMuted: { color: '#A7ADB8' },
+  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#f4f7f0', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#c4cec0', fontSize: 15, lineHeight: 22 },
 
-  thisWeekCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 12 },
-  cardKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  thisWeekCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
+  cardKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   thisWeekRow: { flexDirection: 'row', gap: 4 },
   thisWeekStat: { flex: 1, gap: 4 },
   thisWeekNumber: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  thisWeekNumberWarn: { color: '#ffb86b', fontSize: 18, fontWeight: '900' },
-  thisWeekNumberGood: { color: '#91e6a3', fontSize: 18, fontWeight: '900' },
-  thisWeekLabel: { color: '#8fbf8f', fontSize: 10, fontWeight: '800' },
+  thisWeekNumberWarn: { color: '#F5A623', fontSize: 18, fontWeight: '900' },
+  thisWeekNumberGood: { color: '#FC4C02', fontSize: 18, fontWeight: '900' },
+  thisWeekLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '800' },
 
   commandCard: { backgroundColor: '#102016', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2d6b3f', gap: 8 },
-  commandCardGood: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2f6b3c', gap: 8 },
-  commandCardWarning: { backgroundColor: '#1a160d', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 8 },
+  commandCardGood: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 8 },
+  commandCardWarning: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 8 },
   commandHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  commandKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  commandKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   planTypeLabel: { fontSize: 13, fontWeight: '900' },
   commandText: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
-  balanceCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 8 },
-  balanceCardWarn: { backgroundColor: '#21140b', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#7a4a1f', gap: 8 },
-  balanceLabel: { color: '#91e6a3', fontSize: 13, fontWeight: '900' },
-  balanceLabelWarn: { color: '#ffb86b', fontSize: 13, fontWeight: '900' },
-  balanceFocus: { color: '#dfe8da', fontSize: 13, lineHeight: 20, fontWeight: '900' },
-  forecastList: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', overflow: 'hidden' },
+  balanceCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8 },
+  balanceCardWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 8 },
+  balanceLabel: { color: '#FC4C02', fontSize: 13, fontWeight: '900' },
+  balanceLabelWarn: { color: '#F5A623', fontSize: 13, fontWeight: '900' },
+  balanceFocus: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '900' },
+  forecastList: { backgroundColor: '#0F1115', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
   forecastItem: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: '#162218' },
-  forecastDay: { color: '#91e6a3', fontSize: 12, fontWeight: '900', width: 34 },
-  forecastFocus: { color: '#dfe8da', fontSize: 12, fontWeight: '800', flex: 1 },
-  forecastStatusGreen: { color: '#91e6a3', fontSize: 10, fontWeight: '900' },
-  forecastStatusAmber: { color: '#f3d36b', fontSize: 10, fontWeight: '900' },
-  forecastStatusRed: { color: '#ffb86b', fontSize: 10, fontWeight: '900' },
+  forecastDay: { color: '#FC4C02', fontSize: 12, fontWeight: '900', width: 34 },
+  forecastFocus: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', flex: 1 },
+  forecastStatusGreen: { color: '#FC4C02', fontSize: 10, fontWeight: '900' },
+  forecastStatusAmber: { color: '#F5A623', fontSize: 10, fontWeight: '900' },
+  forecastStatusRed: { color: '#F5A623', fontSize: 10, fontWeight: '900' },
   adherencePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  adherencePill: { backgroundColor: '#07110c', borderRadius: 999, borderWidth: 1, borderColor: '#26382c', paddingHorizontal: 10, paddingVertical: 6 },
-  adherencePillText: { color: '#8fbf8f', fontSize: 11, fontWeight: '900' },
+  adherencePill: { backgroundColor: '#0F1115', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 10, paddingVertical: 6 },
+  adherencePillText: { color: '#A7ADB8', fontSize: 11, fontWeight: '900' },
 
-  dayCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#203529', gap: 6 },
+  dayCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
   dayCardRest: { backgroundColor: '#080f0a', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#161f18', gap: 6 },
   dayHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   day: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
   dayRest: { color: '#4a5e4a', fontSize: 18, fontWeight: '900' },
   intensity: { fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  focus: { color: '#91e6a3', fontSize: 14, fontWeight: '900' },
+  focus: { color: '#FC4C02', fontSize: 14, fontWeight: '900' },
   focusRest: { color: '#4a5e4a', fontSize: 14, fontWeight: '900' },
   session: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
-  detailGrid: { backgroundColor: '#07110c', borderRadius: 12, borderWidth: 1, borderColor: '#26382c', padding: 10, gap: 4, marginTop: 4 },
-  detailText: { color: '#aeb8aa', fontSize: 12, lineHeight: 17, fontWeight: '700' },
-  logButton: { backgroundColor: '#91e6a3', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6 },
-  logButtonRest: { backgroundColor: '#102016', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: '#203529' },
-  logButtonText: { color: '#07110c', fontSize: 12, fontWeight: '900' },
-  logButtonTextRest: { color: '#8fbf8f', fontSize: 12, fontWeight: '900' },
+  detailGrid: { backgroundColor: '#0F1115', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 10, gap: 4, marginTop: 4 },
+  detailText: { color: '#A7ADB8', fontSize: 12, lineHeight: 17, fontWeight: '700' },
+  logButton: { backgroundColor: '#FC4C02', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6 },
+  logButtonRest: { backgroundColor: '#102016', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  logButtonText: { color: '#0F1115', fontSize: 12, fontWeight: '900' },
+  logButtonTextRest: { color: '#A7ADB8', fontSize: 12, fontWeight: '900' },
 });

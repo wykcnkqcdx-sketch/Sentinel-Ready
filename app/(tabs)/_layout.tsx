@@ -1,67 +1,59 @@
+import { DS } from '@/constants/theme';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
   return (
     <Tabs
-      initialRouteName="log"
+      initialRouteName="dashboard"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#040a07',
-          borderTopColor: '#1a3022',
+          backgroundColor: DS.bgPrimary,
+          borderTopColor: DS.border,
           borderTopWidth: 1,
-          height: 62,
+          height: 64,
           paddingBottom: 8,
-          paddingTop: 6,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: '#91e6a3',
-        tabBarInactiveTintColor: '#2e5038',
+        tabBarActiveTintColor: DS.orange,
+        tabBarInactiveTintColor: DS.textMuted,
         tabBarLabelStyle: {
-          fontSize: 9,
-          fontWeight: '900',
-          letterSpacing: 1.5,
-          textTransform: 'uppercase',
+          fontSize: 10,
+          fontWeight: '700',
+          letterSpacing: 0.3,
         },
       }}
     >
       <Tabs.Screen
-        name="log"
-        options={{
-          title: 'Log',
-          tabBarIcon: ({ color, size }) => <Ionicons name="clipboard-outline" color={color} size={size} />,
-        }}
-      />
-
-      <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" color={color} size={size} />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="training"
-        options={{
-          title: 'Training',
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="dumbbell" color={color} size={size} />,
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} />,
         }}
       />
 
       <Tabs.Screen
         name="ruck"
         options={{
-          title: 'Ruck',
+          title: 'Maps',
           tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" color={color} size={size} />,
         }}
       />
 
       <Tabs.Screen
-        name="tests"
+        name="training"
         options={{
-          title: 'Tests',
-          tabBarIcon: ({ color, size }) => <Ionicons name="locate-outline" color={color} size={size} />,
+          title: 'Train',
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="dumbbell" color={color} size={size} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="log"
+        options={{
+          title: 'Log',
+          tabBarIcon: ({ color, size }) => <Ionicons name="add-circle-outline" color={color} size={size} />,
         }}
       />
 
@@ -74,10 +66,18 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="tests"
+        options={{
+          title: 'Tests',
+          tabBarIcon: ({ color, size }) => <Ionicons name="ribbon-outline" color={color} size={size} />,
+        }}
+      />
+
+      <Tabs.Screen
         name="recovery"
         options={{
           title: 'Recovery',
-          tabBarIcon: ({ color, size }) => <Ionicons name="battery-half-outline" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" color={color} size={size} />,
         }}
       />
 

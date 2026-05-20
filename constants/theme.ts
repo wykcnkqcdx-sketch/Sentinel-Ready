@@ -1,47 +1,71 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// ─── Mission-Ready Design Tokens ─────────────────────────────────────────────
+export const DS = {
+  // Backgrounds
+  bgPrimary:   '#0F1115',
+  bgCard:      '#1E2229',
+  bgCardAlt:   '#161B22',
+  bgSurface:   '#252B35',
 
+  // Accent
+  orange:      '#FC4C02',
+  orangeSoft:  '#FF6B35',
+  orangeMuted: 'rgba(252,76,2,0.15)',
+
+  // Text
+  textPrimary:   '#FFFFFF',
+  textSecondary: '#A7ADB8',
+  textMuted:     '#6B717E',
+
+  // Borders
+  border:        'rgba(255,255,255,0.08)',
+  borderActive:  'rgba(252,76,2,0.4)',
+
+  // Semantic
+  success:  '#35C759',
+  warning:  '#F5A623',
+  danger:   '#FF453A',
+  info:     '#4A9EFF',
+
+  // Map
+  mapRoute:      '#FC4C02',
+  mapMarkerStart:'#35C759',
+  mapMarkerEnd:  '#FF453A',
+  mapBackground: '#1A1F27',
+} as const;
+
+// ─── Legacy Colors (kept for components not yet migrated) ─────────────────────
 export const Colors = {
   light: {
     text: '#11181C',
     background: '#fff',
-    tint: tintColorLight,
+    tint: '#FC4C02',
     icon: '#687076',
     tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-    mapRoute: '#FF6B35',     // High-visibility orange for ruck routes
-    mapMarker: '#0a7ea4',    // Standard marker color
+    tabIconSelected: '#FC4C02',
+    mapRoute: '#FC4C02',
+    mapMarker: '#FC4C02',
     mapBackground: '#E5E5EA',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-    mapRoute: '#FF8A5B',     // Lighter orange for dark mode contrast
-    mapMarker: '#4A90E2',
-    mapBackground: '#2A2A2A',
+    text: DS.textPrimary,
+    background: DS.bgPrimary,
+    tint: DS.orange,
+    icon: DS.textSecondary,
+    tabIconDefault: DS.textMuted,
+    tabIconSelected: DS.orange,
+    mapRoute: DS.mapRoute,
+    mapMarker: DS.mapMarkerStart,
+    mapBackground: DS.mapBackground,
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {

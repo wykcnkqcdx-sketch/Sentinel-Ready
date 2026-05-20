@@ -64,13 +64,13 @@ const scaleStyles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a2e22',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  pipActive: { backgroundColor: '#2f6b3c', borderColor: '#2f6b3c' },
-  pipText: { color: '#8fbf8f', fontSize: 13, fontWeight: '900' },
-  pipTextActive: { color: '#f2f5ef' },
+  pipActive: { backgroundColor: 'rgba(252,76,2,0.3)', borderColor: 'rgba(252,76,2,0.3)' },
+  pipText: { color: '#A7ADB8', fontSize: 13, fontWeight: '900' },
+  pipTextActive: { color: '#FFFFFF' },
 });
 
 // ---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ function StarRating({
 const starStyles = StyleSheet.create({
   star: { flex: 1, alignItems: 'center' },
   starText: { fontSize: 26, color: '#2a4a33' },
-  starActive: { color: '#91e6a3' },
+  starActive: { color: '#FC4C02' },
   label: { color: '#7db88a', fontSize: 12 },
 });
 
@@ -303,8 +303,8 @@ export default function CheckInScreen() {
           <Switch
             value={hasPain}
             onValueChange={setHasPain}
-            trackColor={{ false: '#203529', true: '#2f6b3c' }}
-            thumbColor={hasPain ? '#91e6a3' : '#4a7a5a'}
+            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
+            thumbColor={hasPain ? '#FC4C02' : '#A7ADB8'}
           />
         </View>
 
@@ -333,8 +333,8 @@ export default function CheckInScreen() {
               <Switch
                 value={limitsTraining}
                 onValueChange={setLimitsTraining}
-                trackColor={{ false: '#203529', true: '#2f6b3c' }}
-                thumbColor={limitsTraining ? '#91e6a3' : '#4a7a5a'}
+                trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
+                thumbColor={limitsTraining ? '#FC4C02' : '#A7ADB8'}
               />
             </View>
           </>
@@ -362,38 +362,38 @@ export default function CheckInScreen() {
 // ---------------------------------------------------------------------------
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
-  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#aeb8aa', fontSize: 14 },
+  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#A7ADB8', fontSize: 14 },
 
   amberBanner: {
-    backgroundColor: '#2a1a0d',
+    backgroundColor: 'rgba(245,166,35,0.1)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#7a4a1f',
+    borderColor: 'rgba(245,166,35,0.3)',
     padding: 12,
   },
-  amberBannerText: { color: '#ffb86b', fontSize: 13, fontWeight: '800' },
+  amberBannerText: { color: '#F5A623', fontSize: 13, fontWeight: '800' },
 
   card: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 16,
     gap: 10,
   },
   sectionLabel: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
     marginBottom: 2,
   },
-  fieldLabel: { color: '#f2f5ef', fontSize: 14, fontWeight: '800' },
+  fieldLabel: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
 
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
@@ -402,35 +402,35 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#1a2e22',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnText: { color: '#91e6a3', fontSize: 18, fontWeight: '900', lineHeight: 22 },
-  stepValue: { color: '#f2f5ef', fontSize: 18, fontWeight: '900', minWidth: 36, textAlign: 'center' },
+  stepBtnText: { color: '#FC4C02', fontSize: 18, fontWeight: '900', lineHeight: 22 },
+  stepValue: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', minWidth: 36, textAlign: 'center' },
 
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    backgroundColor: '#1a2e22',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  pillActive: { backgroundColor: '#2f6b3c', borderColor: '#2f6b3c' },
-  pillText: { color: '#8fbf8f', fontSize: 12, fontWeight: '900' },
-  pillTextActive: { color: '#f2f5ef' },
+  pillActive: { backgroundColor: 'rgba(252,76,2,0.3)', borderColor: 'rgba(252,76,2,0.3)' },
+  pillText: { color: '#A7ADB8', fontSize: 12, fontWeight: '900' },
+  pillTextActive: { color: '#FFFFFF' },
 
   saveBtn: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 14,
     padding: 18,
     alignItems: 'center',
     marginTop: 6,
   },
   saveBtnDisabled: { backgroundColor: '#1a3a22', opacity: 0.6 },
-  saveBtnText: { color: '#f2f5ef', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  saveBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
 });

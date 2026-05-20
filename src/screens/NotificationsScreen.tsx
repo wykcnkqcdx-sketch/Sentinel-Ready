@@ -89,15 +89,15 @@ const ts = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#1a2e22',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnText: { color: '#91e6a3', fontSize: 18, fontWeight: '900', lineHeight: 22 },
-  value: { color: '#f2f5ef', fontSize: 22, fontWeight: '900', minWidth: 32, textAlign: 'center' },
-  colon: { color: '#aeb8aa', fontSize: 22, fontWeight: '900' },
+  btnText: { color: '#FC4C02', fontSize: 18, fontWeight: '900', lineHeight: 22 },
+  value: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', minWidth: 32, textAlign: 'center' },
+  colon: { color: '#A7ADB8', fontSize: 22, fontWeight: '900' },
 });
 
 // ---------------------------------------------------------------------------
@@ -154,9 +154,9 @@ export default function NotificationsScreen() {
   }
 
   const permDotColor =
-    permStatus === 'granted' ? '#91e6a3'
+    permStatus === 'granted' ? '#FC4C02'
     : permStatus === 'denied' ? '#ff6b6b'
-    : '#ffb86b';
+    : '#F5A623';
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={s.content}>
@@ -192,8 +192,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.checkInEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, checkInEnabled: v })}
-            trackColor={{ false: '#203529', true: '#2f6b3c' }}
-            thumbColor={prefs.checkInEnabled ? '#91e6a3' : '#4a7a5a'}
+            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
+            thumbColor={prefs.checkInEnabled ? '#FC4C02' : '#A7ADB8'}
           />
         </View>
         {prefs.checkInEnabled && (
@@ -217,8 +217,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.preSessionEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, preSessionEnabled: v })}
-            trackColor={{ false: '#203529', true: '#2f6b3c' }}
-            thumbColor={prefs.preSessionEnabled ? '#91e6a3' : '#4a7a5a'}
+            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
+            thumbColor={prefs.preSessionEnabled ? '#FC4C02' : '#A7ADB8'}
           />
         </View>
         {prefs.preSessionEnabled && (
@@ -242,8 +242,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.restNudgeEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, restNudgeEnabled: v })}
-            trackColor={{ false: '#203529', true: '#2f6b3c' }}
-            thumbColor={prefs.restNudgeEnabled ? '#91e6a3' : '#4a7a5a'}
+            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
+            thumbColor={prefs.restNudgeEnabled ? '#FC4C02' : '#A7ADB8'}
           />
         </View>
         <Text style={s.detailText}>
@@ -281,55 +281,55 @@ export default function NotificationsScreen() {
 // ---------------------------------------------------------------------------
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
-  kicker: { color: '#91e6a3', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#f2f5ef', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#aeb8aa', fontSize: 14 },
+  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#A7ADB8', fontSize: 14 },
 
   card: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 16,
     gap: 10,
   },
   sectionLabel: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
     marginBottom: 2,
   },
-  fieldLabel: { color: '#f2f5ef', fontSize: 14, fontWeight: '800' },
-  detailText: { color: '#aeb8aa', fontSize: 13, lineHeight: 19 },
+  fieldLabel: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  detailText: { color: '#A7ADB8', fontSize: 13, lineHeight: 19 },
 
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
   permRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  permStatus: { color: '#aeb8aa', fontWeight: '700' },
+  permStatus: { color: '#A7ADB8', fontWeight: '700' },
 
   grantBtn: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 18,
     alignSelf: 'flex-start',
   },
-  grantBtnText: { color: '#f2f5ef', fontSize: 13, fontWeight: '900' },
+  grantBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
 
   testBtn: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 14,
     padding: 18,
     alignItems: 'center',
     marginTop: 6,
   },
   testBtnDisabled: { backgroundColor: '#1a3a22', opacity: 0.5 },
-  testBtnText: { color: '#f2f5ef', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
+  testBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
 
   cancelBtn: {
     borderRadius: 14,

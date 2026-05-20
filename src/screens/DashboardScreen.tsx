@@ -1,10 +1,8 @@
-import { tokens as T } from '@/src/theme/tokens';
 import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
 import SentinelCard from '@/src/components/ui/SentinelCard';
 import SparkLine from '@/src/components/charts/SparkLine';
-import Svg, { Circle } from 'react-native-svg';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
@@ -16,11 +14,10 @@ import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/ut
 import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
-import { buildThreatAssessment } from '@/src/utils/threatUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { DimensionValue, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const WEEKLY_TARGET = 4;
 
@@ -61,7 +58,7 @@ function getRecoveryStatus(recentLogs: ReturnType<typeof useTraining>['logs']) {
 
 export default function DashboardScreen() {
   const { logs, goals, isLoading } = useTraining();
-  const { injuryNotes, testDate } = useUser();
+  const { injuryNotes } = useUser();
   const router = useRouter();
 
   const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
@@ -83,17 +80,6 @@ export default function DashboardScreen() {
   const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
   const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
   const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
-  const threatAssessment = useMemo(() => buildThreatAssessment(logs, testDate), [logs, testDate]);
-  const testCountdown = useMemo<{ days: number; color: string } | null>(() => {
-    if (!testDate) return null;
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const target = new Date(testDate + 'T00:00:00');
-    const days = Math.round((target.getTime() - now.getTime()) / 86400000);
-    if (days < 0 || days > 90) return null;
-    const color = days <= 13 ? T.dotRed : days <= 30 ? T.accentWarnBright : T.textAccent;
-    return { days, color };
-  }, [testDate]);
 
   const weeklyLoadData = useMemo(() => weeklyLoadSeries(logs, 8), [logs]);
   const [showFullReport, setShowFullReport] = useState(false);
@@ -101,23 +87,18 @@ export default function DashboardScreen() {
   const weekAvgReadiness = Number(thisWeek.averageReadiness);
   const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
   const weekProgress = Math.min(thisWeek.total / WEEKLY_TARGET, 1);
-  const alertCount = useMemo(() => [
-    readinessPercentage > 0 && readinessPercentage < 60,
-    trend.status === 'warning',
-    thisWeek.fatigueWatch >= 2,
-  ].filter(Boolean).length, [readinessPercentage, trend.status, thisWeek.fatigueWatch]);
 
   const readinessStatus = useMemo(() => {
     if (readinessPercentage === 0) {
-      return { text: 'NO DATA', bg: '#1a1a1a', textCol: '#cccccc', prog: '#333333', msg: 'Log a session to calculate your readiness score.' };
+      return { text: 'NO DATA', bg: '#1E2229', textCol: '#A7ADB8', prog: 'rgba(255,255,255,0.2)', msg: 'Log a session to calculate your readiness score.' };
     }
     if (readinessPercentage < 60) {
-      return { text: 'RED', bg: '#3d1414', textCol: '#ffbfbf', prog: '#d96262', msg: 'High fatigue detected. Prioritise recovery and rest today.' };
+      return { text: 'RED', bg: 'rgba(255,69,58,0.15)', textCol: '#FFFFFF', prog: '#FF453A', msg: 'High fatigue detected. Prioritise recovery and rest today.' };
     }
     if (readinessPercentage < 75) {
-      return { text: 'AMBER', bg: '#3d3014', textCol: '#ffdfbf', prog: '#d9a662', msg: 'Moderate fatigue. Keep training volume controlled.' };
+      return { text: 'AMBER', bg: 'rgba(245,166,35,0.15)', textCol: '#FFFFFF', prog: '#F5A623', msg: 'Moderate fatigue. Keep training volume controlled.' };
     }
-    return { text: 'GREEN', bg: '#143d22', textCol: '#bfffcf', prog: '#62d982', msg: 'Fit for training. Monitor fatigue and recovery.' };
+    return { text: 'GREEN', bg: 'rgba(53,199,89,0.15)', textCol: '#FFFFFF', prog: '#35C759', msg: 'Fit for training. Monitor fatigue and recovery.' };
   }, [readinessPercentage]);
 
   const { 
@@ -169,9 +150,9 @@ export default function DashboardScreen() {
     const chartData = recentTrendLogs.reverse().map((log) => {
       const score = getReadinessNumber(log.readiness);
       const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
-      let barColor = '#62d982';
-      if (score < 6) barColor = '#d96262';
-      else if (score < 8) barColor = '#d9a662';
+      let barColor = '#35C759';
+      if (score < 6) barColor = '#FF453A';
+      else if (score < 8) barColor = '#F5A623';
 
       const dateLabel = log.date.substring(5, 10).replace('-', '/');
       return { id: log.id, score, heightPercentage, barColor, dateLabel };
@@ -183,7 +164,7 @@ export default function DashboardScreen() {
       strengthLogs: strengthLogsList,
       enduranceLogs: enduranceLogsList,
       recentLogs: recentLogsList,
-      ruckVal: ruck ? ruck.distanceLoad?.split('-')[0]?.trim() || 'Logged' : 'N/A',
+      ruckVal: ruck ? ruck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
       strengthVal: strength ? `Score: ${strength.readiness}` : 'N/A',
       cardioVal: run ? run.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
       recoveryVal: recovery ? `Score: ${recovery.readiness}` : 'N/A',
@@ -195,6 +176,12 @@ export default function DashboardScreen() {
   const recoveryStatus = useMemo(() => getRecoveryStatus(recentLogs), [recentLogs]);
 
   const navigateToGoals = useCallback(() => router.push('/goals'), [router]);
+  const navigateToStrava = useCallback(() => router.push('/strava'), [router]);
+  const navigateToAtak = useCallback(() => router.push('/atak'), [router]);
+  const navigateToGpx = useCallback(() => router.push('/gpx'), [router]);
+  const navigateToOfflineMap = useCallback(() => router.push('/offline-map'), [router]);
+  const navigateToNotifications = useCallback(() => router.push('/notifications'), [router]);
+  const navigateToRuck = useCallback(() => router.push('/(tabs)/ruck'), [router]);
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -202,142 +189,75 @@ export default function DashboardScreen() {
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View style={styles.headerTopRow}>
-          <View>
-            <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
-            <Text style={styles.title}>COMMAND & STATUS</Text>
-          </View>
-          <View style={[styles.statusPill, { borderColor: readinessStatus.prog + '55', backgroundColor: readinessStatus.bg }]}>
-            <View style={[styles.statusDot, { backgroundColor: readinessStatus.prog }]} />
-            <Text style={[styles.statusPillText, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
-          </View>
-        </View>
-        <View style={styles.headerDivider} />
+        <Text style={styles.kicker}>SENTINEL READY</Text>
+        <Text style={styles.title}>Operational Fitness Dashboard</Text>
+        <Text style={styles.subtitle}>
+          Readiness overview for strength, endurance, ruck performance and recovery.
+        </Text>
       </View>
 
-      {testCountdown !== null && (
-        <View style={[styles.testCountdownBanner, { borderColor: testCountdown.color + '55', backgroundColor: testCountdown.color + '0c' }]}>
-          <View style={[styles.testCountdownDot, { backgroundColor: testCountdown.color }]} />
-          <Text style={[styles.testCountdownLabel, { color: testCountdown.color }]}>
-            {testCountdown.days === 0 ? 'TEST DAY' : `T-${testCountdown.days} DAYS`}
-          </Text>
-          <Text style={styles.testCountdownSub}>TO PHYSICAL TEST</Text>
-        </View>
-      )}
-
-      <View style={styles.statusBoard}>
-        <View style={[styles.statusBoardCell, { borderLeftColor: readinessStatus.prog }]}>
-          <Text style={styles.statusBoardKicker}>READINESS</Text>
-          <Text style={[styles.statusBoardValue, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
-        </View>
-        <View style={[styles.statusBoardCell, { borderLeftColor: weekLoadStatus.isWarn ? T.accentWarnBright : T.textAccent }]}>
-          <Text style={styles.statusBoardKicker}>LOAD STATUS</Text>
-          <Text style={[styles.statusBoardValue, { color: weekLoadStatus.isWarn ? T.accentWarnBright : T.textAccent }]}>{weekLoadStatus.label.toUpperCase()}</Text>
-        </View>
-        <View style={[styles.statusBoardCell, { borderLeftColor: alertCount > 0 ? T.dotRed : T.textAccent }]}>
-          <Text style={styles.statusBoardKicker}>ACTIVE ALERTS</Text>
-          <Text style={[styles.statusBoardValue, { color: alertCount > 0 ? T.dotRed : T.textAccent }]}>{alertCount}</Text>
-        </View>
-        <View style={[styles.statusBoardCell, { borderLeftColor: missionBrief.status === 'red' ? T.dotRed : missionBrief.status === 'green' ? T.textAccent : T.accentWarnBright }]}>
-          <Text style={styles.statusBoardKicker}>SITREP</Text>
-          <Text style={[styles.statusBoardValue, { color: missionBrief.status === 'red' ? T.dotRed : missionBrief.status === 'green' ? T.textAccent : T.accentWarnBright }]}>{missionBrief.status.toUpperCase()}</Text>
-        </View>
-      </View>
-
-      <SentinelCard
-        title="THREAT ASSESSMENT"
-        variant={threatAssessment.overallLevel === 'RED' ? 'warning' : 'default'}
+      {/* MAPS HERO CARD */}
+      <TouchableOpacity
+        style={styles.mapsHero}
+        onPress={navigateToRuck}
+        accessibilityRole="button"
+        accessibilityLabel="Open Maps and Ruck tracking"
+        activeOpacity={0.85}
       >
-        {/* Overall level banner */}
-        <View style={[
-          styles.threatBanner,
-          { borderColor: threatAssessment.overallLevel === 'RED' ? T.dotRed + '55'
-              : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright + '55'
-              : threatAssessment.overallLevel === 'GREEN' ? T.textAccent + '55'
-              : T.borderDim }
-        ]}>
-          <View
-            accessible={false}
-            style={[
-              styles.threatLevelDot,
-              { backgroundColor: threatAssessment.overallLevel === 'RED' ? T.dotRed
-                  : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright
-                  : threatAssessment.overallLevel === 'GREEN' ? T.textAccent
-                  : '#2e5038' },
-            ]}
-          />
-          <Text style={[
-            styles.threatLevelText,
-            { color: threatAssessment.overallLevel === 'RED' ? T.dotRed
-                : threatAssessment.overallLevel === 'AMBER' ? T.accentWarnBright
-                : threatAssessment.overallLevel === 'GREEN' ? T.textAccent
-                : '#3a6b46' }
-          ]}>
-            {threatAssessment.overallLevel === 'CLEAR' ? 'SYSTEM NOMINAL — NO THREATS DETECTED' : `THREAT LEVEL ${threatAssessment.overallLevel}`}
-          </Text>
-          {threatAssessment.actionableCount > 0 && (
-            <View style={styles.threatCountBadge}>
-              <Text style={styles.threatCountText}>{threatAssessment.actionableCount}</Text>
-            </View>
-          )}
+        <View style={styles.mapsHeroTop}>
+          <View>
+            <Text style={styles.mapsHeroKicker}>MAPS & RUCK</Text>
+            <Text style={styles.mapsHeroTitle}>Live Ruck Tracking</Text>
+          </View>
+          <View style={styles.mapsHeroBadge}>
+            <Text style={styles.mapsHeroBadgeText}>GPS</Text>
+          </View>
         </View>
+        <View style={styles.mapsHeroStats}>
+          <View style={styles.mapsHeroStat}>
+            <Text style={styles.mapsHeroStatValue}>{latestRuck ? ruckVal : '--'}</Text>
+            <Text style={styles.mapsHeroStatLabel}>LAST RUCK</Text>
+          </View>
+          <View style={styles.mapsHeroStatDivider} />
+          <View style={styles.mapsHeroStat}>
+            <Text style={styles.mapsHeroStatValue}>{performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'}</Text>
+            <Text style={styles.mapsHeroStatLabel}>BEST DISTANCE</Text>
+          </View>
+          <View style={styles.mapsHeroStatDivider} />
+          <View style={styles.mapsHeroStat}>
+            <Text style={styles.mapsHeroStatValue}>{thisWeek.ruck > 0 ? `${thisWeek.ruck}` : '0'}</Text>
+            <Text style={styles.mapsHeroStatLabel}>THIS WEEK</Text>
+          </View>
+        </View>
+        <View style={styles.mapsHeroCta}>
+          <Text style={styles.mapsHeroCtaText}>▶  START RUCK  →</Text>
+        </View>
+      </TouchableOpacity>
 
-        {threatAssessment.threats.map((threat) => (
-          <AlertCard
-            key={threat.id}
-            type={threat.level === 'RED' ? 'alert' : threat.level === 'AMBER' ? 'warning' : 'info'}
-            title={threat.label}
-            description={`${threat.message}\n→ ${threat.action}`}
-          />
-        ))}
-      </SentinelCard>
-
-      <SentinelCard title="READINESS ASSESSMENT" variant="success">
+      <SentinelCard title="Readiness Status" variant="success">
         <View style={styles.readinessRow}>
-          <View style={styles.readinessRingWrap}>
-            {(() => {
-              const R = 52; const CIRC = 2 * Math.PI * R;
-              const offset = CIRC * (1 - (readinessPercentage > 0 ? readinessPercentage : 0) / 100);
-              return (
-                <Svg width={120} height={120} style={styles.readinessRingSvg}>
-                  <Circle cx={60} cy={60} r={R} fill="none" stroke={T.borderDim} strokeWidth={10} />
-                  <Circle cx={60} cy={60} r={R} fill="none" stroke={readinessStatus.prog}
-                    strokeWidth={10} strokeLinecap="round"
-                    strokeDasharray={CIRC} strokeDashoffset={offset} />
-                </Svg>
-              );
-            })()}
-            <View style={styles.readinessRingOverlay}>
-              <Text style={[styles.metric, { color: readinessStatus.prog }]}>
-                {readinessPercentage > 0 ? `${readinessPercentage}` : '--'}
-              </Text>
-              <Text style={styles.metricUnit}>PCT</Text>
-            </View>
-          </View>
-          <View style={styles.readinessSidePanel}>
+          <View>
+            <Text style={styles.metric}>{readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}</Text>
             <Text style={styles.cardText}>{readinessStatus.msg}</Text>
-            <View style={styles.readinessDetails}>
-              <View style={styles.detailChip}>
-                <View style={styles.detailChipDot} />
-                <Text style={styles.detailText}>STR  {strengthStatus}</Text>
-              </View>
-              <View style={styles.detailChip}>
-                <View style={styles.detailChipDot} />
-                <Text style={styles.detailText}>END  {enduranceStatus}</Text>
-              </View>
-              <View style={styles.detailChip}>
-                <View style={styles.detailChipDot} />
-                <Text style={styles.detailText}>REC  {recoveryStatus}</Text>
-              </View>
-            </View>
+          </View>
+
+          <View style={[styles.statusBadge, { backgroundColor: readinessStatus.bg }]}>
+            <Text style={[styles.statusBadgeText, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
           </View>
         </View>
+
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${readinessPercentage}%` as any, backgroundColor: readinessStatus.prog }]} />
+          <View style={[styles.progressFill, { width: `${readinessPercentage}%`, backgroundColor: readinessStatus.prog }]} />
+        </View>
+
+        <View style={styles.readinessDetails}>
+          <Text style={styles.detailText}>Strength: {strengthStatus}</Text>
+          <Text style={styles.detailText}>Endurance: {enduranceStatus}</Text>
+          <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
         </View>
       </SentinelCard>
 
-      <SentinelCard title="SITREP" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
+      <SentinelCard title="Mission Brief" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
         <View style={styles.briefHeader}>
           <View style={styles.briefTitleBlock}>
             <Text style={missionBrief.status === 'red' ? styles.briefTitleWarn : styles.briefTitle}>{missionBrief.title}</Text>
@@ -350,7 +270,7 @@ export default function DashboardScreen() {
           </View>
         </View>
         <View style={styles.briefActionBox}>
-          <Text style={styles.briefActionLabel}>DIRECTIVE</Text>
+          <Text style={styles.briefActionLabel}>Primary action</Text>
           <Text style={styles.briefActionText}>{missionBrief.primaryAction}</Text>
         </View>
         <Text style={styles.briefSecondary}>{missionBrief.secondaryAction}</Text>
@@ -365,7 +285,7 @@ export default function DashboardScreen() {
         accessibilityLabel={showFullReport ? 'Collapse full report' : 'View full report'}
       >
         <Text style={styles.reportToggleText}>
-          {showFullReport ? '▲  COLLAPSE ASSESSMENT' : '▼  VIEW FULL ASSESSMENT'}
+          {showFullReport ? '▲  COLLAPSE REPORT' : '▼  VIEW FULL REPORT'}
         </Text>
       </TouchableOpacity>
 
@@ -461,16 +381,13 @@ export default function DashboardScreen() {
         ) : null}
       </SentinelCard>
 
-      <SentinelCard title="INTELLIGENCE ANALYSIS">
+      <SentinelCard title="Training Insights">
         {topInsights.map((insight) => (
           <View key={insight.title} style={
             insight.severity === 'warning' ? styles.insightItemWarn
             : insight.severity === 'good' ? styles.insightItemGood
             : styles.insightItem
           }>
-            <Text style={styles.insightTag}>
-              {insight.severity === 'warning' ? 'ALERT' : insight.severity === 'good' ? 'POSITIVE' : 'OBSERVED'}
-            </Text>
             <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
             <Text style={styles.insightText}>{insight.message}</Text>
           </View>
@@ -537,7 +454,7 @@ export default function DashboardScreen() {
             <Text style={styles.goalNumber}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}%` : '--'}</Text>
             <Text style={styles.goalLabel}>Measured</Text>
           </View>
-          <TouchableOpacity style={styles.goalButton} onPress={navigateToGoals} accessibilityRole="button" accessibilityLabel="Manage goals">
+          <TouchableOpacity style={styles.goalButton} onPress={navigateToGoals}>
             <Text style={styles.goalButtonText}>Manage</Text>
           </TouchableOpacity>
         </View>
@@ -572,16 +489,16 @@ export default function DashboardScreen() {
       </>}
 
       <View style={styles.grid}>
-        <MissionStat label="LOAD CARRIAGE" value={ruckVal} status={ruckVal !== 'N/A' ? 'LAST OP' : 'AWAITING DATA'} />
-        <MissionStat label="FORCE OUTPUT" value={strengthVal} status={strengthVal !== 'N/A' ? 'LAST OUTPUT' : 'AWAITING DATA'} />
-        <MissionStat label="AEROBIC BASE" value={cardioVal} status={cardioVal !== 'N/A' ? 'LAST LOG' : 'AWAITING DATA'} />
-        <MissionStat label="RECOVERY STATE" value={recoveryVal} status={recoveryVal !== 'N/A' ? 'LAST LOG' : 'AWAITING DATA'} />
+        <MissionStat label="Ruck" value={ruckVal} status={ruckVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
+        <MissionStat label="Strength" value={strengthVal} status={strengthVal !== 'N/A' ? 'Force output' : 'Awaiting data'} />
+        <MissionStat label="Cardio" value={cardioVal} status={cardioVal !== 'N/A' ? 'Aerobic base' : 'Awaiting data'} />
+        <MissionStat label="Recovery" value={recoveryVal} status={recoveryVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
       </View>
 
       <View style={weekLoadStatus.isWarn ? styles.loadCardWarn : styles.loadCard}>
         <View style={styles.loadHeader}>
           <View>
-            <Text style={styles.loadKicker}>WEEKLY OP LOAD</Text>
+            <Text style={styles.loadKicker}>{"THIS WEEK'S LOAD"}</Text>
             <Text style={weekLoadStatus.isWarn ? styles.loadCountWarn : styles.loadCount}>
               {thisWeek.total} / {WEEKLY_TARGET} sessions
             </Text>
@@ -598,12 +515,12 @@ export default function DashboardScreen() {
             styles.loadFill,
             {
               width: `${weekProgress * 100}%`,
-              backgroundColor: weekLoadStatus.isWarn ? T.textWarn : thisWeek.total >= WEEKLY_TARGET ? '#62d982' : T.textHint,
+              backgroundColor: weekLoadStatus.isWarn ? '#F5A623' : thisWeek.total >= WEEKLY_TARGET ? '#35C759' : '#FC4C02',
             },
           ]} />
         </View>
 
-        <SparkLine data={weeklyLoadData} width={240} height={28} color={T.textAccent} />
+        <SparkLine data={weeklyLoadData} width={240} height={28} color="#FC4C02" />
 
         {thisWeek.total > 0 ? (
           <View style={styles.pillRow}>
@@ -630,49 +547,87 @@ export default function DashboardScreen() {
       </View>
 
       <View style={styles.connectSection}>
-        <Text style={styles.connectKicker}>SYSTEM ACCESS</Text>
+        <Text style={styles.connectKicker}>CONNECT</Text>
         <View style={styles.connectRow}>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/progression')} accessibilityRole="button" accessibilityLabel="View performance progression charts">
-            <View style={[styles.connectDot, { backgroundColor: '#FC4C02' }]} />
-            <Text style={styles.connectCellText}>PROGRESSION</Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/operator-profile')} accessibilityRole="button" accessibilityLabel="View operator personnel file">
-            <View style={[styles.connectDot, { backgroundColor: '#3a7bd5' }]} />
-            <Text style={styles.connectCellText}>PERSONNEL</Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/ruck-library')} accessibilityRole="button" accessibilityLabel="Open ruck library">
-            <View style={[styles.connectDot, { backgroundColor: T.borderGreen }]} />
-            <Text style={styles.connectCellText}>RUCK LOG</Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/daily-check')} accessibilityRole="button" accessibilityLabel="Log today's check-in">
-            <View style={[styles.connectDot, { backgroundColor: T.textAccent }]} />
-            <Text style={styles.connectCellText}>DAILY CHECK</Text>
-          </Pressable>
-        </View>
-        <View style={styles.connectRow}>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/calendar')} accessibilityRole="button" accessibilityLabel="Open operations calendar">
-            <View style={[styles.connectDot, { backgroundColor: '#3fc8e4' }]} />
-            <Text style={styles.connectCellText}>OPS CALENDAR</Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/weekly-brief')} accessibilityRole="button" accessibilityLabel="View weekly mission brief">
-            <View style={[styles.connectDot, { backgroundColor: T.accentWarnBright }]} />
-            <Text style={styles.connectCellText}>WEEKLY BRIEF</Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/timeline')} accessibilityRole="button" accessibilityLabel="View incident timeline">
-            <View style={[styles.connectDot, { backgroundColor: '#4a9eff' }]} />
-            <Text style={styles.connectCellText}>TIMELINE</Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.connectCell, pressed && styles.connectCellPressed]} onPress={() => router.push('/vault')} accessibilityRole="button" accessibilityLabel="Open intelligence vault">
-            <View style={[styles.connectDot, { backgroundColor: '#c097f7' }]} />
-            <Text style={styles.connectCellText}>INTEL VAULT</Text>
-          </Pressable>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToStrava}
+            accessibilityRole="button"
+            accessibilityLabel="Open Strava integration"
+          >
+            <View style={styles.connectPillDot} />
+            <Text style={styles.connectPillText}>Strava</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToAtak}
+            accessibilityRole="button"
+            accessibilityLabel="Open ATAK integration"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotAtak]} />
+            <Text style={styles.connectPillText}>ATAK</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToGpx}
+            accessibilityRole="button"
+            accessibilityLabel="Open GPX Files"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotGpx]} />
+            <Text style={styles.connectPillText}>GPX Files</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/check-in')}
+            accessibilityRole="button"
+            accessibilityLabel="Log today's check-in"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotCheckin]} />
+            <Text style={styles.connectPillText}>Check-in</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToOfflineMap}
+            accessibilityRole="button"
+            accessibilityLabel="Open offline map tile cache"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotOffline]} />
+            <Text style={styles.connectPillText}>Offline Maps</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={navigateToNotifications}
+            accessibilityRole="button"
+            accessibilityLabel="Open notification settings"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotAlerts]} />
+            <Text style={styles.connectPillText}>Alerts</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/progress')}
+            accessibilityRole="button"
+            accessibilityLabel="View progress charts"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotProgress]} />
+            <Text style={styles.connectPillText}>Progress</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.connectPill}
+            onPress={() => router.push('/body-comp')}
+            accessibilityRole="button"
+            accessibilityLabel="Open body composition tracker"
+          >
+            <View style={[styles.connectPillDot, styles.connectPillDotBodyComp]} />
+            <Text style={styles.connectPillText}>Body Comp</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>ACTIVE ALERTS</Text>
-          <Text style={styles.sectionTag}>ACTIVE</Text>
+          <Text style={styles.sectionTitle}>Mission Alerts</Text>
+          <Text style={styles.sectionTag}>WATCH</Text>
         </View>
 
         {readinessPercentage > 0 && readinessPercentage < 60 ? (
@@ -731,296 +686,246 @@ export default function DashboardScreen() {
         accessibilityRole="button"
         accessibilityLabel="Log a training session"
       >
-        <Text style={styles.fabText}>+ LOG ACTIVITY</Text>
+        <Text style={styles.fabText}>＋  LOG SESSION</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: T.bgDark, position: 'relative' },
+  screen: { flex: 1, backgroundColor: '#0F1115', position: 'relative' },
   fab: {
     position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
-    backgroundColor: T.textAccent,
-    borderRadius: 6,
-    paddingVertical: 15,
+    bottom: 24,
+    left: 20,
+    right: 20,
+    backgroundColor: '#FC4C02',
+    borderRadius: 16,
+    paddingVertical: 16,
     alignItems: 'center',
-    shadowColor: T.textAccent,
+    shadowColor: '#FC4C02',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 8,
   },
   fabText: {
-    color: T.bgDark,
-    fontSize: 12,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 1,
   },
-  content: { padding: 16, gap: 14, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
-
-  // Test countdown
-  testCountdownBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
-  testCountdownDot: { width: 8, height: 8, borderRadius: 4 },
-  testCountdownLabel: { fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-  testCountdownSub: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2, flex: 1, textAlign: 'right' },
-
-  // Header
-  header: { gap: 0, marginBottom: 4 },
-  headerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  kicker: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 3.5 },
-  title: { color: T.textPrimaryDark, fontSize: 28, fontWeight: '900', letterSpacing: -0.5, marginTop: 4 },
-  subtitle: { color: T.textMutedDark, fontSize: 14, lineHeight: 20, marginTop: 4 },
-  headerDivider: { height: 1, backgroundColor: T.borderDim, marginTop: 14 },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  statusDot: { width: 5, height: 5, borderRadius: 3 },
-  statusPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-
-  // Readiness ring
-  readinessRow: { flexDirection: 'row', gap: 16, alignItems: 'center' },
-  readinessRingWrap: { width: 120, height: 120, position: 'relative' },
-  readinessRingSvg: { transform: [{ rotate: '-90deg' }] },
-  readinessRingOverlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  metric: { fontSize: 36, fontWeight: '900', letterSpacing: -1 },
-  metricUnit: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5, marginTop: -2 },
-  readinessSidePanel: { flex: 1, gap: 10 },
-  cardText: { color: T.textSubtle, fontSize: 13, lineHeight: 19 },
-  readinessDetails: { gap: 6 },
-  detailChip: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  detailChipDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: T.textAccent, opacity: 0.6 },
-  detailText: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 0.5, fontVariant: ['tabular-nums'] },
-
-  // Legacy badge kept for statusBadge refs
-  statusBadge: { backgroundColor: T.bgBadgeDark, borderColor: T.borderGreen, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4 },
-  statusBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-
-  progressTrack: { height: 4, backgroundColor: '#0d1a12', borderRadius: 2, marginTop: 14, overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim },
-  progressFill: { height: '100%', borderRadius: 2 },
-
-  // Mission brief
+  content: { padding: 20, gap: 18, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
+  header: { gap: 10 },
+  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
+  subtitle: { color: '#A7ADB8', fontSize: 15, lineHeight: 22 },
+  readinessRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' },
+  metric: { color: '#FFFFFF', fontSize: 56, fontWeight: '900', marginTop: 8 },
+  cardText: { color: '#A7ADB8', marginTop: 4, lineHeight: 20 },
+  statusBadge: { backgroundColor: 'rgba(53,199,89,0.15)', borderColor: 'rgba(53,199,89,0.4)', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
+  statusBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  progressTrack: { height: 10, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, marginTop: 20, overflow: 'hidden' },
+  progressFill: { width: '82%', height: '100%', backgroundColor: '#35C759', borderRadius: 999 },
+  readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
+  detailText: { color: '#FFFFFF', backgroundColor: '#252B35', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
   briefHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   briefTitleBlock: { flex: 1 },
-  briefTitle: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900' },
-  briefTitleWarn: { color: T.accentWarnBright, fontSize: 20, fontWeight: '900' },
-  briefBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
-  briefBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
-  briefBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  briefBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  briefActionBox: { backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4, marginTop: 10 },
-  briefActionLabel: { color: T.textAccent, fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
-  briefActionText: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700' },
-  briefSecondary: { color: T.textSubtle, fontSize: 12, lineHeight: 18, fontWeight: '600', marginTop: 6 },
-
-  // Performance
+  briefTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  briefTitleWarn: { color: '#F5A623', fontSize: 22, fontWeight: '900' },
+  briefBadge: { backgroundColor: '#252B35', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
+  briefBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  briefBadgeText: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  briefBadgeTextWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  briefActionBox: { backgroundColor: '#0F1115', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 4, marginTop: 10 },
+  briefActionLabel: { color: '#FC4C02', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  briefActionText: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  briefSecondary: { color: '#A7ADB8', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  performanceItem: { width: '47%', backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 3 },
-  performanceValue: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900' },
-  performanceLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
-
-  // Recovery debt
+  performanceItem: { width: '47%', backgroundColor: '#0F1115', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 3 },
+  performanceValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
+  performanceLabel: { color: '#A7ADB8', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   recoveryDebtRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  recoveryDebtScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
-  recoveryDebtScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
-  recoveryDebtBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
-  recoveryDebtBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
-  recoveryDebtBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  recoveryDebtBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  recoveryDebtAction: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
-
-  // Injury
+  recoveryDebtScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
+  recoveryDebtScoreWarn: { color: '#F5A623', fontSize: 34, fontWeight: '900' },
+  recoveryDebtBadge: { backgroundColor: '#252B35', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
+  recoveryDebtBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  recoveryDebtBadgeText: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  recoveryDebtBadgeTextWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  recoveryDebtAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   injuryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  injuryScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
-  injuryScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
-  injuryBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
-  injuryBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
-  injuryBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  injuryBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  injuryAction: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
-
-  // Balance
+  injuryScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
+  injuryScoreWarn: { color: '#F5A623', fontSize: 34, fontWeight: '900' },
+  injuryBadge: { backgroundColor: '#252B35', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
+  injuryBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  injuryBadgeText: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  injuryBadgeTextWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  injuryAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  balanceScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
-  balanceScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
-  balanceBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
-  balanceBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
-  balanceBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  balanceBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  balanceFocus: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
-
-  // Forecast
+  balanceScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
+  balanceScoreWarn: { color: '#F5A623', fontSize: 34, fontWeight: '900' },
+  balanceBadge: { backgroundColor: '#252B35', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
+  balanceBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  balanceBadgeText: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  balanceBadgeTextWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  balanceFocus: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   forecastHeader: { gap: 3 },
-  forecastTitle: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900' },
-  forecastTitleWarn: { color: T.accentWarnBright, fontSize: 20, fontWeight: '900' },
+  forecastTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  forecastTitleWarn: { color: '#F5A623', fontSize: 22, fontWeight: '900' },
   forecastRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, marginTop: 8 },
   forecastDay: { alignItems: 'center', gap: 6, flex: 1 },
-  forecastDayLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  forecastDotGreen: { width: 12, height: 12, borderRadius: 2, backgroundColor: T.textAccent },
-  forecastDotAmber: { width: 12, height: 12, borderRadius: 2, backgroundColor: T.accentWarnBright },
-  forecastDotRed: { width: 12, height: 12, borderRadius: 2, backgroundColor: T.dotRed },
-
-  // Adherence
+  forecastDayLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '900' },
+  forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#35C759' },
+  forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#F5A623' },
+  forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#FF453A' },
   adherenceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  adherenceScore: { color: T.textPrimaryDark, fontSize: 34, fontWeight: '900' },
-  adherenceScoreWarn: { color: T.accentWarnBright, fontSize: 34, fontWeight: '900' },
-  adherenceBadge: { backgroundColor: T.bgBadgeDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderGreen, paddingHorizontal: 10, paddingVertical: 6 },
-  adherenceBadgeWarn: { backgroundColor: T.bgWarnDeep, borderRadius: 4, borderWidth: 1, borderColor: T.borderWarnMedium, paddingHorizontal: 10, paddingVertical: 6 },
-  adherenceBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  adherenceBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  adherenceAction: { color: T.textAction, fontSize: 13, lineHeight: 20, fontWeight: '700', marginTop: 8 },
-  adherenceMissing: { color: T.textHintDark, fontSize: 11, lineHeight: 18, fontWeight: '800', letterSpacing: 0.5 },
-
-  // Insights
-  insightItem: { backgroundColor: T.bgDark, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.borderDim, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4 },
-  insightItemGood: { backgroundColor: T.bgPanelDeep, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.textAccent, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4 },
-  insightItemWarn: { backgroundColor: T.bgInsightWarn, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.accentWarnBright, borderWidth: 1, borderColor: T.borderWarnFaint, padding: 12, gap: 4 },
-  insightTitle: { color: T.textPrimaryDark, fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
-  insightTitleWarn: { color: T.accentWarnBright, fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
-  insightText: { color: T.textSubtle, fontSize: 12, lineHeight: 18, fontWeight: '600' },
-
-  // Milestones
+  adherenceScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
+  adherenceScoreWarn: { color: '#F5A623', fontSize: 34, fontWeight: '900' },
+  adherenceBadge: { backgroundColor: '#252B35', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
+  adherenceBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  adherenceBadgeText: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  adherenceBadgeTextWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  adherenceAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
+  adherenceMissing: { color: '#A7ADB8', fontSize: 12, lineHeight: 18, fontWeight: '800' },
+  insightItem: { backgroundColor: '#0F1115', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 4 },
+  insightItemGood: { backgroundColor: 'rgba(53,199,89,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(53,199,89,0.25)', padding: 12, gap: 4 },
+  insightItemWarn: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(245,166,35,0.25)', padding: 12, gap: 4 },
+  insightTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
+  insightTitleWarn: { color: '#F5A623', fontSize: 13, fontWeight: '900' },
+  insightText: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
-  milestoneCount: { color: T.textPrimaryDark, fontSize: 28, fontWeight: '900' },
-  milestoneNext: { backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 10, maxWidth: '48%' },
-  milestoneNextLabel: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  milestoneNextTitle: { color: T.textAction, fontSize: 12, fontWeight: '800', marginTop: 3 },
-  milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  milestonePill: { borderWidth: 1, borderColor: '#1e3d28', borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
-  milestonePillEarned: { backgroundColor: T.bgBadgeDark, borderWidth: 1, borderColor: T.borderGreen, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 6 },
-  milestonePillText: { color: T.textHintDark, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-  milestonePillTextEarned: { color: T.textAccent, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-
-  // Goals
+  milestoneCount: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
+  milestoneNext: { backgroundColor: '#0F1115', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 10, maxWidth: '48%' },
+  milestoneNextLabel: { color: '#FC4C02', fontSize: 10, fontWeight: '900' },
+  milestoneNextTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', marginTop: 2 },
+  milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  milestonePill: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
+  milestonePillEarned: { backgroundColor: 'rgba(252,76,2,0.12)', borderWidth: 1, borderColor: 'rgba(252,76,2,0.35)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
+  milestonePillText: { color: '#A7ADB8', fontSize: 11, fontWeight: '900' },
+  milestonePillTextEarned: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
-  goalNumber: { color: T.textPrimaryDark, fontSize: 26, fontWeight: '900' },
-  goalNumberComplete: { color: T.textAccent, fontSize: 26, fontWeight: '900' },
-  goalLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '900', marginTop: 2, letterSpacing: 2 },
-  goalButton: { backgroundColor: T.textAccent, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 9 },
-  goalButtonText: { color: T.bgDark, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  goalTrack: { height: 4, backgroundColor: T.bgDark, borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim, marginTop: 12 },
-  goalFill: { height: '100%', backgroundColor: T.textAccent, borderRadius: 2 },
-  goalAction: { backgroundColor: T.bgDark, borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, padding: 12, gap: 4, marginTop: 12 },
-  goalActionWarn: { backgroundColor: T.bgInsightWarn, borderRadius: 4, borderLeftWidth: 2, borderLeftColor: T.accentWarnBright, borderWidth: 1, borderColor: T.borderWarnFaint, padding: 12, gap: 4, marginTop: 12 },
-  goalActionTitle: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  goalActionTitleWarn: { color: T.accentWarnBright, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  goalActionText: { color: T.textSubtle, fontSize: 12, lineHeight: 18, fontWeight: '600' },
-
-  // Grid & sections
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  section: { marginTop: 4, gap: 10 },
+  goalNumber: { color: '#FFFFFF', fontSize: 26, fontWeight: '900' },
+  goalNumberComplete: { color: '#35C759', fontSize: 26, fontWeight: '900' },
+  goalLabel: { color: '#A7ADB8', fontSize: 11, fontWeight: '800', marginTop: 2 },
+  goalButton: { backgroundColor: '#FC4C02', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
+  goalButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
+  goalTrack: { height: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginTop: 12 },
+  goalFill: { height: '100%', backgroundColor: '#FC4C02', borderRadius: 999 },
+  goalAction: { backgroundColor: '#0F1115', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 4, marginTop: 12 },
+  goalActionWarn: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(245,166,35,0.25)', padding: 12, gap: 4, marginTop: 12 },
+  goalActionTitle: { color: '#FC4C02', fontSize: 13, fontWeight: '900' },
+  goalActionTitleWarn: { color: '#F5A623', fontSize: 13, fontWeight: '900' },
+  goalActionText: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  section: { marginTop: 8, gap: 12 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { color: T.textPrimaryDark, fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
-  sectionTag: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2, borderWidth: 1, borderColor: T.borderDim, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3 },
-
-  // Readiness trend chart
-  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 130, marginTop: 4 },
-  barColumn: { alignItems: 'center', width: 36 },
-  barScore: { color: T.textMutedDark, fontSize: 10, fontWeight: '800', marginBottom: 6 },
-  barBackground: { width: 20, height: 90, backgroundColor: T.bgPanelAlt, borderRadius: 3, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim },
-  barFill: { width: '100%', borderRadius: 2 },
-  barLabel: { color: T.textHintDark, fontSize: 9, fontWeight: '800', marginTop: 6, letterSpacing: 0.5 },
+  sectionTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '900' },
+  sectionTag: { color: '#A7ADB8', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 140, marginTop: 4 },
+  barColumn: { alignItems: 'center', width: 40 },
+  barScore: { color: '#A7ADB8', fontSize: 11, fontWeight: '800', marginBottom: 6 },
+  barBackground: { width: 24, height: 100, backgroundColor: '#0F1115', borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  barFill: { width: '100%', borderRadius: 4 },
+  barLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '800', marginTop: 8 },
 
   reportToggle: {
     alignItems: 'center',
-    paddingVertical: 11,
-    borderRadius: 4,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: T.borderDim,
-    backgroundColor: T.bgPanelDeep,
+    borderColor: 'rgba(252,76,2,0.25)',
+    backgroundColor: 'rgba(252,76,2,0.07)',
   },
   reportToggleText: {
-    color: T.textAccent,
-    fontSize: 10,
+    color: '#FC4C02',
+    fontSize: 12,
     fontWeight: '900',
-    letterSpacing: 2.5,
+    letterSpacing: 1.5,
   },
-
-  // Weekly load
-  loadCard: { backgroundColor: T.bgPanelAlt, borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: T.textAccent, borderColor: T.borderDim, gap: 12 },
-  loadCardWarn: { backgroundColor: '#100c08', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderLeftColor: T.accentWarnBright, borderColor: T.borderWarnFaint, gap: 12 },
+  loadCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
+  loadCardWarn: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 12 },
   loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  loadKicker: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
-  loadCount: { color: T.textPrimaryDark, fontSize: 22, fontWeight: '900', marginTop: 4 },
-  loadCountWarn: { color: T.accentWarnBright, fontSize: 22, fontWeight: '900', marginTop: 4 },
-  loadBadge: { backgroundColor: T.bgBadgeDark, borderWidth: 1, borderColor: T.borderGreen, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  loadBadgeWarn: { backgroundColor: T.bgWarnDeep, borderWidth: 1, borderColor: T.borderWarnMedium, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  loadBadgeText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  loadBadgeTextWarn: { color: T.accentWarnBright, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  loadTrack: { height: 4, backgroundColor: T.bgDark, borderRadius: 2, overflow: 'hidden', borderWidth: 1, borderColor: T.borderDim },
-  loadFill: { height: '100%', borderRadius: 2 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  pill: { backgroundColor: T.bgBadgeDark, borderWidth: 1, borderColor: T.borderGreen, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  pillText: { color: T.textAccent, fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
-  loadNoData: { color: '#3a5040', fontSize: 13, fontWeight: '700' },
-  loadSubText: { color: T.textHintDark, fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
-  loadWarnText: { color: T.accentWarnBright, fontSize: 11, fontWeight: '900', letterSpacing: 0.3 },
+  loadKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  loadCount: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 4 },
+  loadCountWarn: { color: '#F5A623', fontSize: 24, fontWeight: '900', marginTop: 4 },
+  loadBadge: { backgroundColor: '#252B35', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  loadBadgeWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  loadBadgeText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  loadBadgeTextWarn: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
+  loadTrack: { height: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden' },
+  loadFill: { height: '100%', borderRadius: 999 },
+  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  pill: { backgroundColor: 'rgba(252,76,2,0.1)', borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6 },
+  pillText: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  loadNoData: { color: '#6B717E', fontSize: 13, fontWeight: '800' },
+  loadSubText: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  loadWarnText: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
 
-  // Status board
-  statusBoard: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  statusBoardCell: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: T.bgPanelAlt,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: T.borderDim,
-    borderLeftWidth: 3,
-    padding: 12,
-    gap: 4,
-  },
-  statusBoardKicker: { color: T.textHintDark, fontSize: 8, fontWeight: '900', letterSpacing: 2.5 },
-  statusBoardValue: { fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-
-  // Threat assessment
-  threatBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 4, paddingHorizontal: 12, paddingVertical: 8 },
-  threatLevelDot: { width: 7, height: 7, borderRadius: 3.5 },
-  threatLevelText: { flex: 1, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  threatCountBadge: { backgroundColor: T.dotRed + '22', borderRadius: 3, borderWidth: 1, borderColor: T.dotRed + '55', paddingHorizontal: 7, paddingVertical: 2 },
-  threatCountText: { color: T.dotRed, fontSize: 10, fontWeight: '900' },
-
-  // Insight tag
-  insightTag: { color: T.textHintDark, fontSize: 8, fontWeight: '900', letterSpacing: 2.5 },
-
-  // Connect section
+  // Connections section
   connectSection: {
-    backgroundColor: T.bgPanelAlt,
-    borderRadius: 6,
+    backgroundColor: '#1E2229',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: T.borderDim,
-    padding: 14,
-    gap: 10,
+    borderColor: 'rgba(255,255,255,0.08)',
+    padding: 16,
+    gap: 12,
   },
-  connectKicker: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
-  connectRow: { flexDirection: 'row', gap: 8 },
-  connectCell: {
-    flex: 1,
-    backgroundColor: T.bgDark,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: T.borderDim,
-    paddingVertical: 16,
-    paddingHorizontal: 4,
+  connectKicker: {
+    color: '#FC4C02',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  connectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  connectPill: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    minHeight: 64,
+    backgroundColor: '#252B35',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  connectCellPressed: { opacity: 0.7 },
-  connectDot: { width: 8, height: 8, borderRadius: 4 },
-  connectCellText: { color: '#b8cbb8', fontSize: 10, fontWeight: '800', letterSpacing: 0.3, textAlign: 'center' },
+  connectPillDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FC4C02',
+  },
+  connectPillDotAtak: { backgroundColor: '#4A9EFF' },
+  connectPillDotGpx: { backgroundColor: '#35C759' },
+  connectPillDotCheckin: { backgroundColor: '#FC4C02' },
+  connectPillDotOffline: { backgroundColor: '#4ECDC4' },
+  connectPillDotAlerts: { backgroundColor: '#F5A623' },
+  connectPillDotProgress: { backgroundColor: '#4A9EFF' },
+  connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
+  connectPillText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+
+  // Maps hero card
+  mapsHero: {
+    backgroundColor: '#FC4C02',
+    borderRadius: 20,
+    padding: 20,
+    gap: 16,
+    shadowColor: '#FC4C02',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  mapsHeroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  mapsHeroKicker: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  mapsHeroTitle: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', marginTop: 2 },
+  mapsHeroBadge: { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  mapsHeroBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  mapsHeroStats: { flexDirection: 'row', alignItems: 'center' },
+  mapsHeroStat: { flex: 1, alignItems: 'center', gap: 3 },
+  mapsHeroStatValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
+  mapsHeroStatLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  mapsHeroStatDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,255,255,0.25)' },
+  mapsHeroCta: { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  mapsHeroCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 });

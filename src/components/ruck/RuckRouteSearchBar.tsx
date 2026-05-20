@@ -58,13 +58,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchIconText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 14,
     fontWeight: '900',
   },
   input: {
     flex: 1,
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 1.5,
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   savedButtonText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.4,

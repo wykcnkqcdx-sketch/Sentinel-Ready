@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { TrainingFilter, SortMode, filters, sortModes } from '@/src/utils/trainingLogUtils';
@@ -45,16 +44,13 @@ const LogControls = memo(function LogControls({
         ) : null}
       </View>
 
-      <View style={styles.searchRow}>
-        <MaterialCommunityIcons name="magnify" size={18} color="#5a9465" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          value={searchQuery}
-          onChangeText={onSearchChange}
-          placeholder="Search date, ruck, run, notes, load..."
-          placeholderTextColor="#6f7d70"
-        />
-      </View>
+      <TextInput
+        style={styles.searchInput}
+        value={searchQuery}
+        onChangeText={onSearchChange}
+        placeholder="Search date, ruck, run, notes, load..."
+        placeholderTextColor="#6f7d70"
+      />
 
       <Text style={styles.controlLabel}>Filter</Text>
       <View style={styles.chipRow}>
@@ -96,24 +92,22 @@ const LogControls = memo(function LogControls({
 export default LogControls;
 
 const styles = StyleSheet.create({
-  controlsCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
+  controlsCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 10 },
   controlsHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
-  controlsKicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  controlsKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   controlsTitle: { color: '#ffffff', fontSize: 17, fontWeight: '900', marginTop: 3 },
-  clearButton: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  clearButton: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   clearButtonText: { color: '#c8f7d0', fontSize: 12, fontWeight: '900' },
-  searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#07110c', borderWidth: 1, borderColor: '#35523e', borderRadius: 14, paddingHorizontal: 12 },
-  searchIcon: { marginRight: 4 },
-  searchInput: { flex: 1, paddingVertical: 11, color: '#ffffff', fontSize: 14 },
-  controlLabel: { color: '#dfe8da', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  searchInput: { backgroundColor: '#0F1115', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 11, color: '#ffffff', fontSize: 14 },
+  controlLabel: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
-  chipActive: { backgroundColor: '#91e6a3', borderWidth: 1, borderColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
+  chip: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
+  chipActive: { backgroundColor: '#FC4C02', borderWidth: 1, borderColor: '#FC4C02', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
   chipText: { color: '#c8d8c5', fontSize: 12, fontWeight: '900' },
-  chipTextActive: { color: '#07110c', fontSize: 12, fontWeight: '900' },
-  sortChip: { borderWidth: 1, borderColor: '#35523e', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
-  sortChipActive: { backgroundColor: '#1e3a27', borderWidth: 1, borderColor: '#91e6a3', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
+  chipTextActive: { color: '#0F1115', fontSize: 12, fontWeight: '900' },
+  sortChip: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
+  sortChipActive: { backgroundColor: '#1e3a27', borderWidth: 1, borderColor: '#FC4C02', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
   sortChipText: { color: '#c8d8c5', fontSize: 12, fontWeight: '900' },
-  sortChipTextActive: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
-  resultCount: { color: '#8fbf8f', fontSize: 12, fontWeight: '800' },
+  sortChipTextActive: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  resultCount: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
 });

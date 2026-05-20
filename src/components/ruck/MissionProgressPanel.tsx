@@ -4,19 +4,6 @@ import { buildLiveRuckSafetyAlerts } from '@/src/utils/ruckSafety';
 import type { RuckMissionDraft } from './MissionSetupPanel';
 import { formatDuration, getNumberInput, progressPercent } from './ruckPanelUtils';
 
-function TacticalBar({ value, color = '#91e6a3' }: { value: number; color?: string }) {
-  return (
-    <View style={bar.track}>
-      <View style={[bar.fill, { width: `${Math.min(value, 100)}%` as any, backgroundColor: color }]} />
-    </View>
-  );
-}
-
-const bar = StyleSheet.create({
-  track: { flex: 1, height: 5, borderRadius: 2, backgroundColor: '#0d1a12', overflow: 'hidden', borderWidth: 1, borderColor: '#172c20' },
-  fill: { height: '100%', borderRadius: 2 },
-});
-
 export const MissionProgressPanel = memo(function MissionProgressPanel({
   draft,
   distanceKm,
@@ -31,137 +18,141 @@ export const MissionProgressPanel = memo(function MissionProgressPanel({
   const targetDistance = Math.max(0, getNumberInput(draft.targetDistanceKm, 0));
   const targetMinutes = Math.max(0, getNumberInput(draft.targetMinutes, 0));
   const checkpointInterval = Math.max(0, getNumberInput(draft.checkpointIntervalKm, 1));
-  const packWeight = Math.max(0, getNumberInput(draft.packWeightKg, 0));
-
   const elapsedMinutes = elapsedSeconds / 60;
-  const distPct = progressPercent(distanceKm, targetDistance);
-  const timePct = progressPercent(elapsedMinutes, targetMinutes);
-
+  const distanceProgress = progressPercent(distanceKm, targetDistance);
+  const timeProgress = progressPercent(elapsedMinutes, targetMinutes);
   const nextCheckpoint = checkpointInterval > 0
-    ? Math.ceil(Math.max(distanceKm, 0.01) / checkpointInterval) * checkpointInterval : 0;
+    ? Math.ceil(Math.max(distanceKm, 0.01) / checkpointInterval) * checkpointInterval
+    : 0;
   const remainingKm = Math.max(0, targetDistance - distanceKm);
-
   const targetPace = targetDistance > 0 && targetMinutes > 0 ? targetMinutes / targetDistance : 0;
   const currentPace = distanceKm > 0 ? elapsedMinutes / distanceKm : 0;
   const paceDelta = currentPace > 0 && targetPace > 0 ? currentPace - targetPace : 0;
-  const projectedFinish = currentPace > 0 && targetDistance > 0 ? currentPace * targetDistance : 0;
-  const projectedDelta = projectedFinish > 0 && targetMinutes > 0 ? projectedFinish - targetMinutes : 0;
-
+  const projectedFinishMinutes = currentPace > 0 && targetDistance > 0 ? currentPace * targetDistance : 0;
+  const projectedDelta = projectedFinishMinutes > 0 && targetMinutes > 0
+    ? projectedFinishMinutes - targetMinutes
+    : 0;
+  const packWeight = Math.max(0, getNumberInput(draft.packWeightKg, 0));
   const riskLevel =
     gpsQualityWarning || projectedDelta > 10 || packWeight >= 25 ? 'RED'
-    : projectedDelta > 5 || packWeight >= 18 ? 'AMBER' : 'GREEN';
-
-  const riskColor =
-    riskLevel === 'RED' ? '#e05050' : riskLevel === 'AMBER' ? '#ffaa44' : '#91e6a3';
-
-  const riskAdvice =
-    riskLevel === 'RED'
-      ? gpsQualityWarning ? '⚠ GPS WEAK — REDUCE SPEED' : '⚠ REDUCE PACE · HIGH LOAD'
-      : riskLevel === 'AMBER' ? '◆ MONITOR EFFORT · STAY HYDRATED'
-      : '✓ WITHIN PLAN · MAINTAIN PACE';
-
+    : projectedDelta > 5 || packWeight >= 18 ? 'AMBER'
+    : 'GREEN';
+  const riskStyle = riskLevel === 'RED'
+    ? styles.riskRed
+    : riskLevel === 'AMBER'
+      ? styles.riskAmber
+      : styles.riskGreen;
+  const riskTextStyle = riskLevel === 'GREEN' ? styles.riskTextDark : styles.riskTextLight;
   const alerts = buildLiveRuckSafetyAlerts({
-    distanceKm, elapsedSeconds,
-    targetDistanceKm: targetDistance, targetMinutes, packWeightKg: packWeight, gpsQualityWarning,
-  }).slice(0, 1);
+    distanceKm,
+    elapsedSeconds,
+    targetDistanceKm: targetDistance,
+    targetMinutes,
+    packWeightKg: packWeight,
+    gpsQualityWarning,
+  }).slice(0, 2);
 
   return (
-    <View style={styles.panel}>
-      <View style={[styles.accentBar, { backgroundColor: riskColor }]} />
-      <View style={styles.inner}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.kicker}>MISSION PROGRESS</Text>
-          <Text style={styles.meta}>{remainingKm.toFixed(1)} km left · {draft.packWeightKg || '0'} kg</Text>
-        </View>
-
-        {/* Progress bars */}
-        <View style={styles.barRow}>
-          <Text style={styles.barLabel}>DIST</Text>
-          <TacticalBar value={distPct} color="#91e6a3" />
-          <Text style={styles.barPct}>{Math.round(distPct)}%</Text>
-        </View>
-        <View style={styles.barDetail}>
-          <Text style={styles.barDetailText}>{distanceKm.toFixed(2)} / {targetDistance} km</Text>
-        </View>
-
-        <View style={styles.barRow}>
-          <Text style={styles.barLabel}>TIME</Text>
-          <TacticalBar value={timePct} color={timePct > distPct + 10 ? '#ffaa44' : '#3fc8e4'} />
-          <Text style={styles.barPct}>{Math.round(timePct)}%</Text>
-        </View>
-        <View style={styles.barDetail}>
-          <Text style={styles.barDetailText}>{formatDuration(Math.round(elapsedMinutes))} / {formatDuration(targetMinutes)}</Text>
-        </View>
-
-        {/* Stats row */}
-        <View style={styles.divider} />
-        <View style={styles.statsRow}>
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>PACE vs TGT</Text>
-            <Text style={[styles.statValue, paceDelta > 0.5 && { color: '#ffaa44' }]}>
-              {paceDelta !== 0 ? `${paceDelta > 0 ? '+' : ''}${paceDelta.toFixed(1)} min/km` : 'ON PACE'}
-            </Text>
-          </View>
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>PROJ FINISH</Text>
-            <Text style={[styles.statValue, projectedDelta > 5 && { color: '#ffaa44' }]}>
-              {projectedFinish > 0 ? formatDuration(Math.round(projectedFinish)) : '--'}
-              {projectedDelta !== 0 && projectedFinish > 0 ? ` (${projectedDelta > 0 ? '+' : ''}${Math.round(projectedDelta)}m)` : ''}
-            </Text>
-          </View>
-          {nextCheckpoint > 0 && (
-            <View style={styles.statBlock}>
-              <Text style={styles.statLabel}>CHECKPOINT</Text>
-              <Text style={styles.statValue}>{nextCheckpoint.toFixed(1)} km</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Risk */}
-        <View style={styles.divider} />
-        <View style={styles.riskRow}>
-          <View style={[styles.riskBadge, { borderColor: riskColor + '55', backgroundColor: riskColor + '18' }]}>
-            <Text style={[styles.riskText, { color: riskColor }]}>{riskLevel}</Text>
-          </View>
-          <Text style={[styles.riskAdvice, { color: riskColor }]}>{riskAdvice}</Text>
-        </View>
-
-        {alerts.map((a) => (
-          <View key={a.id} style={[styles.alert, a.level === 'danger' ? styles.alertDanger : styles.alertWarn]}>
-            <Text style={styles.alertTitle}>{a.title}</Text>
-            <Text style={styles.alertMsg} numberOfLines={2}>{a.message}</Text>
-          </View>
-        ))}
+    <View style={styles.progressPanel} pointerEvents="none">
+      <View style={styles.progressHeader}>
+        <Text style={styles.missionKicker}>MISSION PROGRESS</Text>
+        <Text style={styles.progressMeta}>
+          {remainingKm.toFixed(1)} km left · {draft.packWeightKg || '0'} kg
+        </Text>
       </View>
+      <View style={styles.progressRow}>
+        <Text style={styles.progressLabel}>DIST</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${distanceProgress}%` }]} />
+        </View>
+        <Text style={styles.progressValue}>{Math.round(distanceProgress)}%</Text>
+      </View>
+      <View style={styles.progressRow}>
+        <Text style={styles.progressLabel}>TIME</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFillWarn, { width: `${timeProgress}%` }]} />
+        </View>
+        <Text style={styles.progressValue}>{Math.round(timeProgress)}%</Text>
+      </View>
+      <Text style={styles.progressHint}>
+        Next checkpoint {nextCheckpoint > 0 ? `${nextCheckpoint.toFixed(1)} km` : '--'}
+        {paceDelta !== 0 ? ` · ${paceDelta > 0 ? '+' : ''}${Math.abs(paceDelta).toFixed(1)} min/km target` : ''}
+      </Text>
+      <Text style={projectedDelta > 0 ? styles.progressWarn : styles.progressGood}>
+        Projected finish {projectedFinishMinutes > 0 ? formatDuration(Math.round(projectedFinishMinutes)) : '--'}
+        {projectedDelta !== 0 ? ` · ${projectedDelta > 0 ? '+' : ''}${Math.round(projectedDelta)} min` : ''}
+      </Text>
+      <View style={styles.riskRow}>
+        <Text style={styles.progressLabel}>RISK</Text>
+        <View style={[styles.riskBadge, riskStyle]}>
+          <Text style={riskTextStyle}>{riskLevel}</Text>
+        </View>
+        <Text style={styles.riskReason} numberOfLines={1}>
+          {riskLevel === 'RED'
+            ? gpsQualityWarning ? 'GPS weak' : 'Adjust pace/load'
+            : riskLevel === 'AMBER'
+              ? 'Monitor effort'
+              : 'Within plan'}
+        </Text>
+      </View>
+      {alerts.length > 0 ? (
+        <View style={styles.alertStack}>
+          {alerts.map((alert) => (
+            <View
+              key={alert.id}
+              style={[
+                styles.alertRow,
+                alert.level === 'danger'
+                  ? styles.alertDanger
+                  : alert.level === 'warning'
+                    ? styles.alertWarning
+                    : styles.alertInfo,
+              ]}
+            >
+              <Text style={styles.alertTitle}>{alert.title}</Text>
+              <Text style={styles.alertText} numberOfLines={2}>{alert.message}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  panel: { flexDirection: 'row', overflow: 'hidden', borderRadius: 6, borderWidth: 1, borderColor: '#172c20', backgroundColor: 'rgba(5,14,9,0.96)' },
-  accentBar: { width: 3, flexShrink: 0 },
-  inner: { flex: 1, padding: 14, gap: 8 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  kicker: { color: '#5a9465', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
-  meta: { color: '#7a9480', fontSize: 10, fontWeight: '700' },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  barLabel: { width: 30, color: '#5a9465', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
-  barPct: { width: 28, color: '#edf5ea', fontSize: 10, fontWeight: '900', textAlign: 'right' },
-  barDetail: { marginTop: -6, paddingLeft: 38 },
-  barDetailText: { color: '#6a8e70', fontSize: 10, fontWeight: '700' },
-  divider: { height: 1, backgroundColor: '#172c20' },
-  statsRow: { flexDirection: 'row', gap: 12 },
-  statBlock: { flex: 1, gap: 2 },
-  statLabel: { color: '#5a9465', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
-  statValue: { color: '#edf5ea', fontSize: 12, fontWeight: '900' },
-  riskRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  riskBadge: { borderRadius: 3, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4 },
-  riskText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  riskAdvice: { flex: 1, fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
-  alert: { borderRadius: 4, borderWidth: 1, padding: 8, gap: 2, borderLeftWidth: 3 },
-  alertWarn: { backgroundColor: '#110c06', borderColor: '#3a2210', borderLeftColor: '#ffaa44' },
-  alertDanger: { backgroundColor: '#140808', borderColor: '#4a1a1a', borderLeftColor: '#e05050' },
-  alertTitle: { color: '#edf5ea', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-  alertMsg: { color: '#7a9480', fontSize: 11, lineHeight: 15 },
+  progressPanel: {
+    backgroundColor: 'rgba(7,17,12,0.92)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(252,76,2,0.3)',
+    padding: 12,
+    gap: 8,
+  },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+  missionKicker: { color: '#FC4C02', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  progressMeta: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  progressLabel: { width: 32, color: '#A7ADB8', fontSize: 9, fontWeight: '900' },
+  progressTrack: { flex: 1, height: 7, borderRadius: 999, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.08)' },
+  progressFill: { height: '100%', backgroundColor: '#FC4C02' },
+  progressFillWarn: { height: '100%', backgroundColor: '#F5A623' },
+  progressValue: { width: 34, color: '#ffffff', fontSize: 10, fontWeight: '900', textAlign: 'right' },
+  progressHint: { color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
+  progressGood: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  progressWarn: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  riskRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  riskBadge: { borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  riskGreen: { backgroundColor: '#FC4C02' },
+  riskAmber: { backgroundColor: '#F5A623' },
+  riskRed: { backgroundColor: '#d1493f' },
+  riskTextDark: { color: '#0F1115', fontSize: 10, fontWeight: '900' },
+  riskTextLight: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
+  riskReason: { flex: 1, color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
+  alertStack: { gap: 6, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', paddingTop: 8 },
+  alertRow: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 7, gap: 2 },
+  alertInfo: { backgroundColor: '#1E2229', borderColor: 'rgba(252,76,2,0.3)' },
+  alertWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderColor: 'rgba(245,166,35,0.3)' },
+  alertDanger: { backgroundColor: '#261010', borderColor: '#8a2f2a' },
+  alertTitle: { color: '#ffffff', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
+  alertText: { color: '#c4cec0', fontSize: 11, lineHeight: 15, fontWeight: '700' },
 });

@@ -27,13 +27,13 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Stat
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   message: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 16,
     textAlign: 'center',
   },

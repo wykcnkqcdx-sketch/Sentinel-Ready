@@ -253,7 +253,7 @@ function DayCard({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 12,
   },
-  headerTitle: { color: '#91e6a3', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  headerTitle: { color: '#FC4C02', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
   ghostButton: {
     borderWidth: 1,
     borderColor: '#1a2e1f',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  ghostButtonText: { color: '#aeb8aa', fontSize: 13, fontWeight: '700' },
+  ghostButtonText: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
   content: { padding: 20, paddingBottom: 120, gap: 12 },
 
   dayCard: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     borderColor: '#1a2e1f',
     gap: 10,
   },
-  dayLabel: { color: '#91e6a3', fontSize: 13, fontWeight: '700', letterSpacing: 1.5 },
+  dayLabel: { color: '#FC4C02', fontSize: 13, fontWeight: '700', letterSpacing: 1.5 },
 
   sessionRow: {
     flexDirection: 'row',
@@ -288,17 +288,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryChip: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#1a2e1f',
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  categoryChipText: { color: '#91e6a3', fontSize: 12, fontWeight: '700' },
-  sessionDuration: { color: '#aeb8aa', fontSize: 12, fontWeight: '700', flex: 1 },
+  categoryChipText: { color: '#FC4C02', fontSize: 12, fontWeight: '700' },
+  sessionDuration: { color: '#A7ADB8', fontSize: 12, fontWeight: '700', flex: 1 },
   deleteButton: { padding: 4 },
-  deleteButtonText: { color: '#aeb8aa', fontSize: 14, fontWeight: '700' },
+  deleteButtonText: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
 
   addSessionButton: {
     borderWidth: 1,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     alignItems: 'center',
   },
-  addSessionText: { color: '#91e6a3', fontSize: 13, fontWeight: '700' },
+  addSessionText: { color: '#FC4C02', fontSize: 13, fontWeight: '700' },
 
   inlineForm: { gap: 10 },
   categoryPills: { gap: 6, flexDirection: 'row' },
@@ -318,9 +318,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  categoryPillActive: { backgroundColor: '#91e6a3', borderColor: '#91e6a3' },
-  categoryPillText: { color: '#aeb8aa', fontSize: 12, fontWeight: '700' },
-  categoryPillTextActive: { color: '#07110c', fontSize: 12, fontWeight: '700' },
+  categoryPillActive: { backgroundColor: '#FC4C02', borderColor: '#FC4C02' },
+  categoryPillText: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
+  categoryPillTextActive: { color: '#0F1115', fontSize: 12, fontWeight: '700' },
 
   stepper: {
     flexDirection: 'row',
@@ -336,18 +336,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepperButtonText: { color: '#91e6a3', fontSize: 20, fontWeight: '700' },
+  stepperButtonText: { color: '#FC4C02', fontSize: 20, fontWeight: '700' },
   stepperValue: { color: '#f4f7f0', fontSize: 16, fontWeight: '700', minWidth: 70, textAlign: 'center' },
 
   formActions: { flexDirection: 'row', gap: 10 },
   addButton: {
     flex: 1,
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
-  addButtonText: { color: '#07110c', fontSize: 13, fontWeight: '900' },
+  addButtonText: { color: '#0F1115', fontSize: 13, fontWeight: '900' },
   cancelButton: {
     flex: 1,
     borderWidth: 1,
@@ -356,14 +356,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
   },
-  cancelButtonText: { color: '#aeb8aa', fontSize: 13, fontWeight: '700' },
+  cancelButtonText: { color: '#A7ADB8', fontSize: 13, fontWeight: '700' },
 
   saveButton: {
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
   },
-  saveButtonText: { color: '#07110c', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  saveButtonText: { color: '#0F1115', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
 });

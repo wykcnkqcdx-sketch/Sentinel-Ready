@@ -21,7 +21,7 @@ export function getBmiLabel(status: BmiStatus): string {
 
 export function getBmiColor(status: BmiStatus): string {
   const colors: Record<BmiStatus, string> = {
-    optimal: '#91e6a3',
+    optimal: '#FC4C02',
     underweight: '#4a9eff',
     overweight: '#FFB86B',
     obese: '#ff6b6b',
@@ -56,8 +56,8 @@ export function getSkinfoldLabel(status: SkinfoldStatus): string {
 
 export function getSkinfoldColor(status: SkinfoldStatus): string {
   const colors: Record<SkinfoldStatus, string> = {
-    excellent: '#91e6a3',
-    good: '#62d982',
+    excellent: '#FC4C02',
+    good: '#35C759',
     average: '#FFB86B',
     below: '#ff6b6b',
   };

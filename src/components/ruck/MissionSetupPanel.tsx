@@ -108,7 +108,7 @@ export const MissionSetupPanel = memo(function MissionSetupPanel({
           />
         </View>
         <View style={styles.missionField}>
-          <Text style={styles.missionLabel}>CPT</Text>
+          <Text style={styles.missionLabel}>CHK</Text>
           <TextInput
             style={styles.missionInput}
             value={draft.checkpointIntervalKm}
@@ -119,21 +119,6 @@ export const MissionSetupPanel = memo(function MissionSetupPanel({
           />
         </View>
       </View>
-      {(() => {
-        const d = parseFloat(draft.targetDistanceKm);
-        const m = parseFloat(draft.targetMinutes);
-        if (d > 0 && m > 0) {
-          const ppm = m / d;
-          const mins = Math.floor(ppm);
-          const secs = Math.round((ppm - mins) * 60);
-          return (
-            <Text style={styles.impliedPace}>
-              Target pace: {mins}:{String(secs).padStart(2, '0')} /km
-            </Text>
-          );
-        }
-        return null;
-      })()}
     </View>
   );
 });
@@ -143,39 +128,38 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(7,17,12,0.92)',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     padding: 12,
     gap: 10,
   },
   missionHeader: { gap: 2 },
-  missionKicker: { color: '#91e6a3', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  missionText: { color: '#aeb8aa', fontSize: 11, fontWeight: '800' },
+  missionKicker: { color: '#FC4C02', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  missionText: { color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
   presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   presetButton: {
     flex: 1,
     minWidth: 64,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     borderRadius: 8,
     paddingVertical: 7,
     alignItems: 'center',
-    backgroundColor: '#102d1a',
+    backgroundColor: '#252B35',
   },
   presetButtonActive: {
-    backgroundColor: '#91e6a3',
-    borderColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
+    borderColor: '#FC4C02',
   },
-  presetText: { color: '#91e6a3', fontSize: 11, fontWeight: '900' },
-  presetTextActive: { color: '#07110c' },
+  presetText: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  presetTextActive: { color: '#0F1115' },
   missionGrid: { flexDirection: 'row', gap: 8 },
   missionField: { flex: 1, gap: 4 },
-  missionLabel: { color: '#8fbf8f', fontSize: 9, fontWeight: '900' },
-  impliedPace: { color: '#5a9465', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  missionLabel: { color: '#A7ADB8', fontSize: 9, fontWeight: '900' },
   missionInput: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     color: '#ffffff',
     fontSize: 13,
     fontWeight: '900',

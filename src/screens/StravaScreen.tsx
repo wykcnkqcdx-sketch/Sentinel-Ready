@@ -291,33 +291,33 @@ export default function StravaScreen() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#07110c' },
+  screen: { flex: 1, backgroundColor: '#0F1115' },
   content: { padding: 20, gap: 18, paddingBottom: 60 },
 
   // Header
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
   backButton: { padding: 8 },
-  backChevron: { color: '#91e6a3', fontSize: 24, fontWeight: '900' },
+  backChevron: { color: '#FC4C02', fontSize: 24, fontWeight: '900' },
   headerText: { gap: 2 },
-  kicker: { color: '#91e6a3', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#f2f5ef', fontSize: 28, fontWeight: '900' },
+  kicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
 
   // Error
   errorBanner: {
-    backgroundColor: '#2a1a0d',
+    backgroundColor: 'rgba(245,166,35,0.1)',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#7a4a1f',
+    borderColor: 'rgba(245,166,35,0.3)',
     padding: 14,
   },
-  errorText: { color: '#ffb86b', fontSize: 13, fontWeight: '800', lineHeight: 20 },
+  errorText: { color: '#F5A623', fontSize: 13, fontWeight: '800', lineHeight: 20 },
 
   // Connect card
   connectCard: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 20,
     gap: 14,
   },
@@ -328,9 +328,9 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: '#FC4C02',
   },
-  connectHeading: { color: '#f2f5ef', fontSize: 22, fontWeight: '900' },
+  connectHeading: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
   connectSubtext: {
-    color: '#aeb8aa',
+    color: '#A7ADB8',
     fontSize: 14,
     lineHeight: 22,
     fontWeight: '600',
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   credentialNote: {
-    color: '#6f7d70',
+    color: '#6B717E',
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '700',
@@ -368,10 +368,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#102d1a',
+    backgroundColor: '#252B35',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#2f6b3c',
+    borderColor: 'rgba(252,76,2,0.3)',
     paddingHorizontal: 14,
     paddingVertical: 8,
     flexShrink: 1,
@@ -382,48 +382,48 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#FC4C02',
   },
-  athleteText: { color: '#91e6a3', fontSize: 13, fontWeight: '800' },
+  athleteText: { color: '#FC4C02', fontSize: 13, fontWeight: '800' },
   refreshButton: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  refreshText: { color: '#aeb8aa', fontSize: 13, fontWeight: '800' },
+  refreshText: { color: '#A7ADB8', fontSize: 13, fontWeight: '800' },
 
   // Loading
   loadingBox: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 20,
     alignItems: 'center',
   },
-  loadingText: { color: '#aeb8aa', fontSize: 14, fontWeight: '700' },
+  loadingText: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
 
   // Activity list
   activityList: { gap: 10 },
 
   // Empty
   emptyBox: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 20,
     alignItems: 'center',
   },
-  emptyText: { color: '#aeb8aa', fontSize: 14, fontWeight: '700' },
+  emptyText: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
 
   // Activity card
   activityCard: {
-    backgroundColor: '#0d1812',
+    backgroundColor: '#1E2229',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#203529',
+    borderColor: 'rgba(255,255,255,0.08)',
     padding: 14,
   },
   activityMain: {
@@ -433,33 +433,33 @@ const styles = StyleSheet.create({
   },
   activityInfo: { flex: 1, gap: 5 },
   activityName: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '900',
   },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activityDate: { color: '#aeb8aa', fontSize: 12, fontWeight: '700' },
+  activityDate: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
   typeChip: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#26382c',
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  typeChipText: { color: '#8fbf8f', fontSize: 11, fontWeight: '800' },
+  typeChipText: { color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
   activityStats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 4,
   },
-  statText: { color: '#aeb8aa', fontSize: 12, fontWeight: '700' },
+  statText: { color: '#A7ADB8', fontSize: 12, fontWeight: '700' },
   statDot: { color: '#3d5240', fontSize: 12 },
 
   // Import button
   importButton: {
-    backgroundColor: '#2f6b3c',
+    backgroundColor: 'rgba(252,76,2,0.3)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -467,16 +467,16 @@ const styles = StyleSheet.create({
     minWidth: 76,
   },
   importButtonText: {
-    color: '#f2f5ef',
+    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1,
   },
   importedBadge: {
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#26382c',
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 10,
     paddingVertical: 10,
     alignItems: 'center',
