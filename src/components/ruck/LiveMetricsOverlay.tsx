@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   dotActive: {
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
   },
   dotInactive: {
     backgroundColor: '#172c20',
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   stateChip: {
     borderRadius: 3,
     borderWidth: 1,
-    borderColor: '#235c32',
+    borderColor: 'rgba(252,76,2,0.32)',
     paddingHorizontal: 5,
     paddingVertical: 2,
   },
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     borderColor: '#6b3c16',
   },
   stateText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1.5,
@@ -189,9 +189,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 2,
   },
-  paceChipOk: { borderColor: '#235c32' },
+  paceChipOk: { borderColor: '#35C759' },
   paceChipWarn: { borderColor: '#6b3c16' },
   paceChipText: { fontSize: 8, fontWeight: '900', letterSpacing: 1 },
-  paceChipTextOk: { color: '#91e6a3' },
+  paceChipTextOk: { color: '#35C759' },
   paceChipTextWarn: { color: '#ffaa44' },
 });

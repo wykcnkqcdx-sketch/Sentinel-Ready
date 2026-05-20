@@ -8,15 +8,15 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#040a07',
-          borderTopColor: '#1a3022',
+          backgroundColor: '#0F1115',
+          borderTopColor: 'rgba(255,255,255,0.08)',
           borderTopWidth: 1,
-          height: 62,
-          paddingBottom: 8,
-          paddingTop: 6,
+          height: 68,
+          paddingBottom: 9,
+          paddingTop: 7,
         },
-        tabBarActiveTintColor: '#91e6a3',
-        tabBarInactiveTintColor: '#2e5038',
+        tabBarActiveTintColor: '#FC4C02',
+        tabBarInactiveTintColor: '#A7ADB8',
         tabBarLabelStyle: {
           fontSize: 9,
           fontWeight: '900',
@@ -28,7 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="log"
         options={{
-          title: 'Log',
+          title: 'Record',
           tabBarIcon: ({ color, size }) => <Ionicons name="clipboard-outline" color={color} size={size} />,
         }}
       />
@@ -36,7 +36,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
+          title: 'Home',
           tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" color={color} size={size} />,
         }}
       />
@@ -44,7 +44,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="training"
         options={{
-          title: 'Training',
+          title: 'Team',
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="dumbbell" color={color} size={size} />,
         }}
       />
@@ -52,7 +52,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ruck"
         options={{
-          title: 'Ruck',
+          title: 'Maps',
           tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" color={color} size={size} />,
         }}
       />
@@ -76,7 +76,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="recovery"
         options={{
-          title: 'Recovery',
+          title: 'You',
           tabBarIcon: ({ color, size }) => <Ionicons name="battery-half-outline" color={color} size={size} />,
         }}
       />

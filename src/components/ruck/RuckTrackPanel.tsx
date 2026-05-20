@@ -111,12 +111,12 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
           <Svg width="100%" height="100%">
             <Defs>
               <LinearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor="#050e09" stopOpacity="0.92" />
-                <Stop offset="0.22" stopColor="#050e09" stopOpacity="0" />
+                <Stop offset="0" stopColor="#0F1115" stopOpacity="0.92" />
+                <Stop offset="0.22" stopColor="#0F1115" stopOpacity="0" />
               </LinearGradient>
               <LinearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0.55" stopColor="#050e09" stopOpacity="0" />
-                <Stop offset="1" stopColor="#050e09" stopOpacity="0.98" />
+                <Stop offset="0.55" stopColor="#0F1115" stopOpacity="0" />
+                <Stop offset="1" stopColor="#0F1115" stopOpacity="0.98" />
               </LinearGradient>
             </Defs>
             <Rect width="100%" height="100%" fill="url(#tg)" />
@@ -135,7 +135,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
               <MaterialCommunityIcons
                 name={tracking.trackingState === 'recording' ? 'record-circle' : 'map-marker-radius'}
                 size={13}
-                color={tracking.trackingState === 'recording' ? '#91e6a3' : '#7aad82'}
+                color={tracking.trackingState === 'recording' ? '#FC4C02' : '#35C759'}
               />
               <Text style={styles.recorderStatusText}>
                 {tracking.trackingState === 'recording'
@@ -232,7 +232,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
                 <View style={styles.activityGrabber} />
                 <View style={styles.activityHeader}>
                   <View style={styles.activityIcon}>
-                    <MaterialCommunityIcons name="bag-personal" size={18} color="#07110c" />
+                    <MaterialCommunityIcons name="bag-personal" size={18} color="#0F1115" />
                   </View>
                   <View style={styles.activityTitleBlock}>
                     <Text style={styles.activityTitle}>Loaded Ruck</Text>
@@ -273,7 +273,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
                     <MaterialCommunityIcons
                       name={loadingOverlay ? 'progress-download' : 'map-plus'}
                       size={15}
-                      color={loadingOverlay ? '#47614f' : '#91e6a3'}
+                      color={loadingOverlay ? '#737A86' : '#FC4C02'}
                     />
                     <Text style={styles.overlayImportText}>
                       {loadingOverlay ? 'LOADING' : 'OVERLAY'}
@@ -334,7 +334,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#050e09',
+    backgroundColor: '#0F1115',
   },
   darkMask: {
     ...StyleSheet.absoluteFillObject,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(5,14,9,0.85)',
   },
   recorderStatusText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -464,9 +464,9 @@ const styles = StyleSheet.create({
   },
   activityCard: {
     borderRadius: 18,
-    backgroundColor: 'rgba(8,17,12,0.96)',
+    backgroundColor: 'rgba(30,34,41,0.96)',
     borderWidth: 1,
-    borderColor: 'rgba(145,230,163,0.22)',
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 14,
     paddingTop: 8,
     paddingBottom: 12,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 999,
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   activityMeta: {
-    color: '#91a694',
+    color: '#A7ADB8',
     fontSize: 12,
     fontWeight: '700',
     marginTop: 2,
@@ -514,13 +514,13 @@ const styles = StyleSheet.create({
   activityBadge: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#235c32',
+    borderColor: 'rgba(252,76,2,0.32)',
     paddingHorizontal: 9,
     paddingVertical: 5,
-    backgroundColor: 'rgba(16,45,26,0.76)',
+    backgroundColor: 'rgba(252,76,2,0.14)',
   },
   activityBadgeText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 1.1,
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#172c20',
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingVertical: 10,
   },
   activityStat: {
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   activityStatLabel: {
-    color: '#8fbf8f',
+    color: '#A7ADB8',
     fontSize: 10,
     fontWeight: '900',
     textTransform: 'uppercase',
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   activityStatDivider: {
     width: 1,
     height: 34,
-    backgroundColor: '#203529',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   overlayRow: {
     flexDirection: 'row',
@@ -570,10 +570,10 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     backgroundColor: 'rgba(5,14,9,0.85)',
     borderWidth: 1,
-    borderColor: '#235c32',
+    borderColor: 'rgba(252,76,2,0.32)',
   },
   overlayImportBtnDisabled: { borderColor: '#172c20' },
-  overlayImportText: { color: '#91e6a3', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  overlayImportText: { color: '#FC4C02', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   overlayChip: {
     flexDirection: 'row',
     alignItems: 'center',

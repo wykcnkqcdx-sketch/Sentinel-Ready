@@ -1,13 +1,15 @@
 export const colours = {
-  background: '#0B0F14',
-  surface: '#121821',
-  surfaceAlt: '#1B2430',
-  text: '#F5F7FA',
-  mutedText: '#9BA8B5',
-  amber: '#D6A23A',
-  olive: '#7C8A4A',
-  pass: '#2E7D32',
-  warning: '#D6A23A',
-  fail: '#B23B3B',
-  border: '#2A3441'
+  background: '#0F1115',
+  surface: '#171A1F',
+  surfaceAlt: '#1E2229',
+  text: '#FFFFFF',
+  mutedText: '#A7ADB8',
+  amber: '#F5A623',
+  olive: '#35C759',
+  pass: '#35C759',
+  warning: '#F5A623',
+  fail: '#FF453A',
+  border: 'rgba(255,255,255,0.08)',
+  orange: '#FC4C02',
+  orangeLight: '#FF7A3D'
 };

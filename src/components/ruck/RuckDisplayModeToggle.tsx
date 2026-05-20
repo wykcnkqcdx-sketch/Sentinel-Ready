@@ -41,7 +41,7 @@ export function RuckDisplayModeToggle({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(10,14,12,0.96)',
+    backgroundColor: 'rgba(15,17,21,0.96)',
     borderBottomWidth: 1,
     borderBottomColor: '#18231c',
     paddingHorizontal: 14,
@@ -59,13 +59,13 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   buttonActive: {
-    borderColor: '#2f6b3c',
-    backgroundColor: 'rgba(47,107,60,0.78)',
+    borderColor: '#FC4C02',
+    backgroundColor: 'rgba(252,76,2,0.18)',
   },
   activeBar: {
     display: 'none',
     height: 0,
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
   },
   label: {
     color: '#5a8c5c',
@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   labelActive: {
-    color: '#91e6a3',
+    color: '#FC4C02',
   },
 });

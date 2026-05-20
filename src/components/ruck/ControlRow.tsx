@@ -22,7 +22,7 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
           accessibilityLabel="Start ruck"
         >
           <View style={styles.btnContent}>
-            <MaterialCommunityIcons name="play" size={16} color="#050e09" />
+            <MaterialCommunityIcons name="play" size={16} color="#0F1115" />
             <Text style={styles.primaryLabel}>START RUCK</Text>
           </View>
         </TouchableOpacity>
@@ -37,7 +37,7 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityLabel="Pause ruck"
           >
             <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="pause" size={16} color="#7aad82" />
+              <MaterialCommunityIcons name="pause" size={16} color="#A7ADB8" />
               <Text style={styles.ghostLabel}>PAUSE</Text>
             </View>
           </TouchableOpacity>
@@ -64,7 +64,7 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityLabel="Resume ruck"
           >
             <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="play" size={16} color="#050e09" />
+              <MaterialCommunityIcons name="play" size={16} color="#0F1115" />
               <Text style={styles.primaryLabel}>RESUME</Text>
             </View>
           </TouchableOpacity>
@@ -91,7 +91,7 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityLabel="Discard ruck"
           >
             <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="close" size={16} color="#7aad82" />
+              <MaterialCommunityIcons name="close" size={16} color="#A7ADB8" />
               <Text style={styles.ghostLabel}>DISCARD</Text>
             </View>
           </TouchableOpacity>
@@ -102,7 +102,7 @@ export function ControlRow({ tracking, onSave, onDiscard }: ControlRowProps) {
             accessibilityLabel="Save ruck"
           >
             <View style={styles.btnContent}>
-              <MaterialCommunityIcons name="check" size={16} color="#050e09" />
+              <MaterialCommunityIcons name="check" size={16} color="#0F1115" />
               <Text style={styles.primaryLabel}>SAVE RUCK</Text>
             </View>
           </TouchableOpacity>
@@ -124,13 +124,13 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     flex: 1,
-    backgroundColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
     borderRadius: 6,
     alignItems: 'center',
     paddingVertical: 15,
   },
   primaryLabel: {
-    color: '#050e09',
+    color: '#0F1115',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 2,
@@ -139,13 +139,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#235c32',
+    borderColor: 'rgba(255,255,255,0.14)',
     borderRadius: 6,
     alignItems: 'center',
     paddingVertical: 15,
   },
   ghostLabel: {
-    color: '#7aad82',
+    color: '#A7ADB8',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 2,

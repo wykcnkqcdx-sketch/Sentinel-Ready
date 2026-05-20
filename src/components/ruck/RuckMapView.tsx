@@ -257,7 +257,7 @@ export function RuckMapView({
               <Polyline
                 points={polylinePoints}
                 fill="none"
-                stroke="#91e6a3"
+                stroke="#FC4C02"
                 strokeWidth={5}
                 strokeOpacity={1}
                 strokeLinejoin="round"
@@ -270,8 +270,8 @@ export function RuckMapView({
               cx={projectedPoints[0].x}
               cy={projectedPoints[0].y}
               r={6}
-              fill="#07110c"
-              stroke="#91e6a3"
+              fill="#0F1115"
+              stroke="#35C759"
               strokeWidth={3}
             />
           )}
@@ -280,8 +280,8 @@ export function RuckMapView({
               cx={projectedCurrent.x}
               cy={projectedCurrent.y}
               r={9}
-              fill="#91e6a3"
-              stroke="#07110c"
+              fill="#FC4C02"
+              stroke="#0F1115"
               strokeWidth={3}
             />
           )}
@@ -377,7 +377,7 @@ export function RuckMapView({
               <MaterialCommunityIcons
                 name="crosshairs-gps"
                 size={18}
-                color={isFollowing ? '#07110c' : '#dfe8da'}
+                color={isFollowing ? '#0F1115' : '#FFFFFF'}
               />
             </TouchableOpacity>
           </View>
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: MAP_HEIGHT,
     overflow: 'hidden',
-    backgroundColor: '#07110c',
+    backgroundColor: '#0F1115',
   },
   fullHeight: {
     flex: 1,
@@ -424,25 +424,25 @@ const styles = StyleSheet.create({
   },
   tacticalTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(7,17,12,0.18)',
+    backgroundColor: 'rgba(15,17,21,0.18)',
   },
   topHud: {
     position: 'absolute',
     top: 14,
     left: 14,
-    backgroundColor: 'rgba(5,14,9,0.86)',
+    backgroundColor: 'rgba(15,17,21,0.88)',
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   hudTitle: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 1.6,
   },
   hudText: {
-    color: '#b9c9b7',
+    color: '#A7ADB8',
     fontSize: 9,
     fontWeight: '800',
     marginTop: 1,
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 999,
-    backgroundColor: 'rgba(5,14,9,0.9)',
+    backgroundColor: 'rgba(15,17,21,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -475,14 +475,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 999,
-    backgroundColor: 'rgba(5,14,9,0.9)',
+    backgroundColor: 'rgba(15,17,21,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
   followButtonActive: {
-    backgroundColor: '#91e6a3',
-    borderColor: '#91e6a3',
+    backgroundColor: '#FC4C02',
+    borderColor: '#FC4C02',
   },
   compassButton: {
     position: 'absolute',
@@ -491,12 +491,12 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 999,
-    backgroundColor: 'rgba(5,14,9,0.9)',
+    backgroundColor: 'rgba(15,17,21,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   compassText: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 12,
     fontWeight: '900',
   },

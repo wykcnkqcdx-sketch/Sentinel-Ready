@@ -55,15 +55,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   chipActive: {
-    backgroundColor: 'rgba(0,80,40,0.5)',
-    borderColor: '#235c32',
+    backgroundColor: 'rgba(252,76,2,0.16)',
+    borderColor: '#FC4C02',
   },
   chipInactive: {
     backgroundColor: 'rgba(5,14,9,0.7)',
     borderColor: '#172c20',
   },
   activeTag: {
-    color: '#91e6a3',
+    color: '#FC4C02',
     fontSize: 8,
   },
   label: {
@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.5,
   },
-  labelActive: { color: '#91e6a3' },
+  labelActive: { color: '#FC4C02' },
   labelInactive: { color: '#5a8c5c' },
 });
