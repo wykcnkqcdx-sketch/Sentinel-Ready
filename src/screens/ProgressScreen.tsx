@@ -132,9 +132,9 @@ export default function ProgressScreen() {
             <Text style={styles.emptyText}>No check-in data yet</Text>
           ) : (
             <View style={styles.sparkRows}>
-              <SparkRow label="Mood" data={moodSeries} color="#FC4C02" />
+              <SparkRow label="Mood" data={moodSeries} color="#B5852C" />
               <SparkRow label="Sleep hrs" data={sleepSeries} color="#4a9eff" />
-              <SparkRow label="Stress" data={stressSeries} color="#F5A623" />
+              <SparkRow label="Stress" data={stressSeries} color="#D4A01A" />
             </View>
           )}
         </View>
@@ -149,7 +149,7 @@ type SparkRowProps = {
   color?: string;
 };
 
-function SparkRow({ label, data, color = '#FC4C02' }: SparkRowProps) {
+function SparkRow({ label, data, color = '#B5852C' }: SparkRowProps) {
   return (
     <View style={styles.sparkRow}>
       <Text style={styles.sparkLabel}>{label}</Text>
@@ -177,7 +177,7 @@ function TestCard({ label, series, latest, unit }: TestCardProps) {
             {latest !== undefined ? latest : '--'}
             <Text style={styles.testUnit}> {unit}</Text>
           </Text>
-          <SparkLine data={series} width={100} height={28} color="#FC4C02" />
+          <SparkLine data={series} width={100} height={28} color="#B5852C" />
         </>
       )}
     </View>
@@ -185,47 +185,47 @@ function TestCard({ label, series, latest, unit }: TestCardProps) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#0F1115' },
+  screen: { flex: 1, backgroundColor: '#000D1A' },
   content: { padding: 20, gap: 20, paddingBottom: 50 },
   pageHeader: { gap: 6 },
-  kicker: { color: '#A7ADB8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  kicker: { color: '#8FAEC8', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
   section: { gap: 10 },
   sectionHeader: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontWeight: '900',
     fontSize: 11,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   card: {
-    backgroundColor: '#0e1f15',
+    backgroundColor: '#001829',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#1a2e1f',
+    borderColor: '#003050',
     padding: 14,
     gap: 12,
   },
   sparkRows: { gap: 8 },
   sparkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  sparkLabel: { color: '#A7ADB8', fontSize: 11, fontWeight: '700', width: 64 },
+  sparkLabel: { color: '#8FAEC8', fontSize: 11, fontWeight: '700', width: 64 },
   testGrid: { gap: 10 },
   testCard: {
-    backgroundColor: '#0e1f15',
+    backgroundColor: '#001829',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#1a2e1f',
+    borderColor: '#003050',
     padding: 14,
     gap: 6,
   },
   testCardLabel: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontWeight: '900',
     fontSize: 11,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   testScore: { color: '#ffffff', fontSize: 32, fontWeight: '900' },
-  testUnit: { color: '#A7ADB8', fontSize: 14, fontWeight: '700' },
-  emptyText: { color: '#6B717E', fontSize: 13, fontWeight: '700' },
+  testUnit: { color: '#8FAEC8', fontSize: 14, fontWeight: '700' },
+  emptyText: { color: '#4A6070', fontSize: 13, fontWeight: '700' },
 });

@@ -34,13 +34,13 @@ export default function AlertCard({ type = 'info', title, description }: AlertCa
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: 'rgba(74,158,255,0.08)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(74,158,255,0.25)' },
-  warningCard: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.25)' },
-  alertCard: { backgroundColor: 'rgba(255,69,58,0.08)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,69,58,0.25)' },
+  card: { backgroundColor: 'rgba(26,116,212,0.08)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(26,116,212,0.25)' },
+  warningCard: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(212,160,26,0.25)' },
+  alertCard: { backgroundColor: 'rgba(204,42,42,0.08)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(204,42,42,0.25)' },
   title: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
-  warningTitle: { color: '#F5A623', fontSize: 15, fontWeight: '900' },
-  alertTitle: { color: '#FF453A', fontSize: 15, fontWeight: '900' },
-  text: { color: '#A7ADB8', fontSize: 13, lineHeight: 20, marginTop: 6 },
-  warningText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20, marginTop: 6 },
-  alertText: { color: '#A7ADB8', fontSize: 13, lineHeight: 20, marginTop: 6 },
+  warningTitle: { color: '#D4A01A', fontSize: 15, fontWeight: '900' },
+  alertTitle: { color: '#CC2A2A', fontSize: 15, fontWeight: '900' },
+  text: { color: '#8FAEC8', fontSize: 13, lineHeight: 20, marginTop: 6 },
+  warningText: { color: '#8FAEC8', fontSize: 13, lineHeight: 20, marginTop: 6 },
+  alertText: { color: '#8FAEC8', fontSize: 13, lineHeight: 20, marginTop: 6 },
 });

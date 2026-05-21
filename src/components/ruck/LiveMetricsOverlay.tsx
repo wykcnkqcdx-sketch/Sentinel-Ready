@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#FC4C02',
+    borderColor: '#B5852C',
     paddingHorizontal: 6,
     paddingVertical: 2,
     alignSelf: 'flex-start',
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   paceBadgeTextGood: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.5,

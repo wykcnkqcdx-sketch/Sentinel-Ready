@@ -54,8 +54,8 @@ export function DfiftSparkline({
           const passes = higherIsBetter ? pt.value >= threshold : pt.value <= threshold;
           const barH = Math.abs(yOf(pt.value) - chartH);
           const x = i * (barW + BAR_GAP);
-          const color = passes ? 'rgba(252,76,2,0.3)' : '#7a3a1f';
-          const topColor = passes ? '#FC4C02' : '#F5A623';
+          const color = passes ? 'rgba(181,133,44,0.3)' : '#7a3a1f';
+          const topColor = passes ? '#B5852C' : '#D4A01A';
           return (
             <G key={i}>
               <Rect
@@ -83,7 +83,7 @@ export function DfiftSparkline({
           y1={threshY}
           x2={chartW}
           y2={threshY}
-          stroke="#FC4C02"
+          stroke="#B5852C"
           strokeWidth={1}
           strokeDasharray="4,3"
         />
@@ -92,7 +92,7 @@ export function DfiftSparkline({
           x={chartW + 4}
           y={threshY + 4}
           fontSize={9}
-          fill="#FC4C02"
+          fill="#B5852C"
           fontWeight="bold"
         >
           {fmt(threshold)}
@@ -102,7 +102,7 @@ export function DfiftSparkline({
           x={0}
           y={height}
           fontSize={9}
-          fill="#A7ADB8"
+          fill="#8FAEC8"
           fontWeight="bold"
         >
           {label}

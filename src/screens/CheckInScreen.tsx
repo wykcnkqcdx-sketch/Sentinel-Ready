@@ -68,8 +68,8 @@ const scaleStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
-  pipActive: { backgroundColor: 'rgba(252,76,2,0.3)', borderColor: 'rgba(252,76,2,0.3)' },
-  pipText: { color: '#A7ADB8', fontSize: 13, fontWeight: '900' },
+  pipActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
+  pipText: { color: '#8FAEC8', fontSize: 13, fontWeight: '900' },
   pipTextActive: { color: '#FFFFFF' },
 });
 
@@ -113,7 +113,7 @@ function StarRating({
 const starStyles = StyleSheet.create({
   star: { flex: 1, alignItems: 'center' },
   starText: { fontSize: 26, color: '#2a4a33' },
-  starActive: { color: '#FC4C02' },
+  starActive: { color: '#B5852C' },
   label: { color: '#7db88a', fontSize: 12 },
 });
 
@@ -303,8 +303,8 @@ export default function CheckInScreen() {
           <Switch
             value={hasPain}
             onValueChange={setHasPain}
-            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
-            thumbColor={hasPain ? '#FC4C02' : '#A7ADB8'}
+            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
+            thumbColor={hasPain ? '#B5852C' : '#8FAEC8'}
           />
         </View>
 
@@ -333,8 +333,8 @@ export default function CheckInScreen() {
               <Switch
                 value={limitsTraining}
                 onValueChange={setLimitsTraining}
-                trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(252,76,2,0.3)' }}
-                thumbColor={limitsTraining ? '#FC4C02' : '#A7ADB8'}
+                trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
+                thumbColor={limitsTraining ? '#B5852C' : '#8FAEC8'}
               />
             </View>
           </>
@@ -362,24 +362,24 @@ export default function CheckInScreen() {
 // ---------------------------------------------------------------------------
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#0F1115' },
+  screen: { flex: 1, backgroundColor: '#000D1A' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
-  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#A7ADB8', fontSize: 14 },
+  subtitle: { color: '#8FAEC8', fontSize: 14 },
 
   amberBanner: {
-    backgroundColor: 'rgba(245,166,35,0.1)',
+    backgroundColor: 'rgba(212,160,26,0.1)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(245,166,35,0.3)',
+    borderColor: 'rgba(212,160,26,0.3)',
     padding: 12,
   },
-  amberBannerText: { color: '#F5A623', fontSize: 13, fontWeight: '800' },
+  amberBannerText: { color: '#D4A01A', fontSize: 13, fontWeight: '800' },
 
   card: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -387,7 +387,7 @@ const s = StyleSheet.create({
     gap: 10,
   },
   sectionLabel: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -404,11 +404,11 @@ const s = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnText: { color: '#FC4C02', fontSize: 18, fontWeight: '900', lineHeight: 22 },
+  stepBtnText: { color: '#B5852C', fontSize: 18, fontWeight: '900', lineHeight: 22 },
   stepValue: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', minWidth: 36, textAlign: 'center' },
 
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -420,12 +420,12 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
-  pillActive: { backgroundColor: 'rgba(252,76,2,0.3)', borderColor: 'rgba(252,76,2,0.3)' },
-  pillText: { color: '#A7ADB8', fontSize: 12, fontWeight: '900' },
+  pillActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
+  pillText: { color: '#8FAEC8', fontSize: 12, fontWeight: '900' },
   pillTextActive: { color: '#FFFFFF' },
 
   saveBtn: {
-    backgroundColor: 'rgba(252,76,2,0.3)',
+    backgroundColor: 'rgba(181,133,44,0.3)',
     borderRadius: 14,
     padding: 18,
     alignItems: 'center',

@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   editorCard: { backgroundColor: '#0d1812', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#203529', gap: 10 },
   editorHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   rowCount: { color: '#ffffff', fontSize: 18, fontWeight: '900', marginTop: 3 },
-  sampleButton: { borderWidth: 1, borderColor: '#2f6b3c', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  sampleButton: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.4)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   sampleButtonText: { color: '#91e6a3', fontSize: 12, fontWeight: '900' },
   csvInput: { minHeight: 260, backgroundColor: '#07110c', borderWidth: 1, borderColor: '#35523e', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 11, color: '#ffffff', fontSize: 12, lineHeight: 18, textAlignVertical: 'top', fontFamily: 'monospace' },
   importButton: { backgroundColor: '#91e6a3', borderRadius: 16, paddingVertical: 15, alignItems: 'center' },

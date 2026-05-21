@@ -53,14 +53,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   buttonActive: {
-    backgroundColor: '#FC4C02',
+    backgroundColor: '#B5852C',
   },
   label: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 11,
     fontWeight: '900',
   },
   labelActive: {
-    color: '#0F1115',
+    color: '#000D1A',
   },
 });

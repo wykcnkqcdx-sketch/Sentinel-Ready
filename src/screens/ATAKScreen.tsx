@@ -41,7 +41,7 @@ const TEAM_COLOURS: Record<string, string> = {
 };
 
 function teamColour(team: string): string {
-  return TEAM_COLOURS[team] ?? '#FC4C02';
+  return TEAM_COLOURS[team] ?? '#B5852C';
 }
 
 // -- Stale check ---------------------------------------------------------------
@@ -58,8 +58,8 @@ function isStale(staleIso: string): boolean {
 // -- Status dot colour ---------------------------------------------------------
 
 function dotColour(status: FTSStatus): string {
-  if (status === 'connected') return '#FC4C02';
-  if (status === 'connecting') return '#F5A623';
+  if (status === 'connected') return '#B5852C';
+  if (status === 'connecting') return '#D4A01A';
   if (status === 'error') return '#F44336';
   return '#4a5e4a';
 }
@@ -503,7 +503,7 @@ export default function ATAKScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0F1115',
+    backgroundColor: '#000D1A',
   },
   content: {
     padding: 20,
@@ -520,12 +520,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   backText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 14,
     fontWeight: '900',
   },
   kicker: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 2.5,
@@ -538,15 +538,15 @@ const styles = StyleSheet.create({
 
   // Card base
   card: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     gap: 10,
   },
   cardKicker: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
 
   // Config display
   configLine: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -580,9 +580,9 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   editBtn: {
-    backgroundColor: '#252B35',
+    backgroundColor: '#003050',
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   editBtnText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   input: {
-    backgroundColor: '#0F1115',
+    backgroundColor: '#000D1A',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -622,15 +622,15 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: '#252B35',
+    backgroundColor: '#003050',
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
   saveBtnText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtnText: {
-    color: '#F5A623',
+    color: '#D4A01A',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -657,9 +657,9 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     width: '47%',
-    backgroundColor: '#0F1115',
+    backgroundColor: '#000D1A',
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 14,
     padding: 16,
     alignItems: 'center',
@@ -671,19 +671,19 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   actionBtnTitle: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0.8,
     textAlign: 'center',
   },
   actionBtnSub: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 11,
     fontWeight: '700',
   },
   pingOk: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 20,
     fontWeight: '900',
   },
@@ -700,22 +700,22 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   countBadge: {
-    backgroundColor: '#252B35',
+    backgroundColor: '#003050',
     borderWidth: 1,
-    borderColor: 'rgba(252,76,2,0.3)',
+    borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   countBadgeText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 12,
     fontWeight: '900',
   },
 
   // CoT row
   cotRow: {
-    backgroundColor: '#0F1115',
+    backgroundColor: '#000D1A',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   staleChip: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 999,
@@ -757,14 +757,14 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   cotCoords: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 12,
     fontWeight: '700',
   },
 
   // Info card
   infoCard: {
-    backgroundColor: '#1E2229',
+    backgroundColor: '#00253D',
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
@@ -772,13 +772,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   infoTitle: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   infoText: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 13,
     lineHeight: 20,
     fontWeight: '700',

@@ -29,7 +29,7 @@ interface RuckMapProps {
 const ELEVATION_GRAPH_HEIGHT = 40;
 const ELEVATION_GRAPH_PADDING = 5;
 const ELEVATION_USABLE_HEIGHT = ELEVATION_GRAPH_HEIGHT - (ELEVATION_GRAPH_PADDING * 2);
-const FALLBACK_ROUTE_COLOR = '#FC4C02';
+const FALLBACK_ROUTE_COLOR = '#B5852C';
 
 export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProps) {
   const theme = Colors[colorScheme ?? 'light'];
@@ -86,7 +86,7 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
     const total = coordinates.length;
     if (total === 0) return [];
     return coordinates.map((_, index) =>
-      interpolateColor('#35C759', '#FF453A', index / Math.max(1, total - 1))
+      interpolateColor('#5E7A2F', '#CC2A2A', index / Math.max(1, total - 1))
     );
   }, [coordinates]);
 
@@ -324,10 +324,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   startMarker: {
-    backgroundColor: '#35C759', // Emerald green
+    backgroundColor: '#5E7A2F', // Emerald green
   },
   endMarker: {
-    backgroundColor: '#FF453A', // Red
+    backgroundColor: '#CC2A2A', // Red
   },
   kmMarker: {
     width: 22,

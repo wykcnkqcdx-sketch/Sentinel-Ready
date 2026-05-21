@@ -130,14 +130,14 @@ const styles = StyleSheet.create({
   startButton: {
     backgroundColor: '#163d22',
     borderWidth: 1,
-    borderColor: '#FC4C02',
+    borderColor: '#B5852C',
     borderRadius: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
     alignSelf: 'flex-start',
   },
   startButtonText: {
-    color: '#FC4C02',
+    color: '#B5852C',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.5,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   statLabel: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#172c20',
   },
   tagLabel: {
-    color: '#A7ADB8',
+    color: '#8FAEC8',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,

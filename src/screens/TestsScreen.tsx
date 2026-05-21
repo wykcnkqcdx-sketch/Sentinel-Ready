@@ -142,15 +142,15 @@ export default function TestsScreen() {
 
   const readinessStatus = useMemo(() => {
     if (readinessPercentage === 0) {
-      return { label: 'NO DATA', color: '#A7ADB8', message: 'Log sessions with readiness scores to determine your testing readiness.', cardStyle: styles.heroCard };
+      return { label: 'NO DATA', color: '#8FAEC8', message: 'Log sessions with readiness scores to determine your testing readiness.', cardStyle: styles.heroCard };
     }
     if (readinessPercentage < 60) {
-      return { label: 'RED', color: '#F5A623', message: 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.', cardStyle: styles.heroCardWarn };
+      return { label: 'RED', color: '#D4A01A', message: 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.', cardStyle: styles.heroCardWarn };
     }
     if (readinessPercentage < 80) {
-      return { label: 'AMBER', color: '#F5A623', message: 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.', cardStyle: styles.heroCardAmber };
+      return { label: 'AMBER', color: '#D4A01A', message: 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.', cardStyle: styles.heroCardAmber };
     }
-    return { label: 'GREEN', color: '#FC4C02', message: 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.', cardStyle: styles.heroCardGood };
+    return { label: 'GREEN', color: '#B5852C', message: 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.', cardStyle: styles.heroCardGood };
   }, [readinessPercentage]);
 
   const navigateToProfile = useCallback(() => router.push('/profile'), [router]);
@@ -389,41 +389,41 @@ export default function TestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#0F1115' },
+  screen: { flex: 1, backgroundColor: '#000D1A' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
-  kicker: { color: '#FC4C02', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#f4f7f1', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#c6d0c2', fontSize: 15, lineHeight: 22 },
 
-  heroCard: { backgroundColor: '#1E2229', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
-  heroCardGood: { backgroundColor: '#1E2229', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 10 },
-  heroCardAmber: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#5a4a20', gap: 10 },
-  heroCardWarn: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 10 },
+  heroCard: { backgroundColor: '#00253D', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
+  heroCardGood: { backgroundColor: '#00253D', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
+  heroCardAmber: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#5a4a20', gap: 10 },
+  heroCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 10 },
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 },
   heroLeft: { flex: 1, gap: 6 },
-  heroLabel: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  heroLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   heroScore: { fontSize: 36, fontWeight: '900' },
   heroMessage: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
   heroStats: { gap: 12, alignItems: 'flex-end' },
   heroStat: { alignItems: 'center' },
   heroStatNumber: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
-  heroStatLabel: { color: '#A7ADB8', fontSize: 10, fontWeight: '800' },
+  heroStatLabel: { color: '#8FAEC8', fontSize: 10, fontWeight: '800' },
   trendRow: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', paddingTop: 10 },
-  trendTextGood: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
-  trendTextWarn: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
+  trendTextGood: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
+  trendTextWarn: { color: '#D4A01A', fontSize: 12, fontWeight: '900' },
 
-  alertCard: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 6 },
-  alertTitle: { color: '#F5A623', fontSize: 14, fontWeight: '900' },
-  alertText: { color: '#A7ADB8', fontSize: 13, lineHeight: 19 },
-  dfiftSnapshotCard: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 10 },
+  alertCard: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 6 },
+  alertTitle: { color: '#D4A01A', fontSize: 14, fontWeight: '900' },
+  alertText: { color: '#8FAEC8', fontSize: 13, lineHeight: 19 },
+  dfiftSnapshotCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
   dfiftSnapshotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  dfiftSnapshotKicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  dfiftSnapshotKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   dfiftSnapshotScore: { color: '#ffffff', fontSize: 26, fontWeight: '900', marginTop: 3 },
-  dfiftSnapshotBadge: { backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  dfiftSnapshotBadgeGood: { backgroundColor: '#252B35', borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  dfiftSnapshotBadgeText: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
-  dfiftSnapshotBadgeTextGood: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
-  dfiftSnapshotWeak: { color: '#F5A623', fontSize: 13, fontWeight: '900', lineHeight: 19 },
+  dfiftSnapshotBadge: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  dfiftSnapshotBadgeGood: { backgroundColor: '#003050', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  dfiftSnapshotBadgeText: { color: '#D4A01A', fontSize: 12, fontWeight: '900' },
+  dfiftSnapshotBadgeTextGood: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
+  dfiftSnapshotWeak: { color: '#D4A01A', fontSize: 13, fontWeight: '900', lineHeight: 19 },
   dfiftSnapshotText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
@@ -432,55 +432,55 @@ const styles = StyleSheet.create({
 
   emptyCard: { backgroundColor: '#0e1812', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8 },
   emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  emptyText: { color: '#A7ADB8', fontSize: 14, lineHeight: 21 },
+  emptyText: { color: '#8FAEC8', fontSize: 14, lineHeight: 21 },
 
   testTypeCard: { backgroundColor: '#0e1812', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
   testTypeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   testTypeLeft: { flex: 1, gap: 3 },
   testTypeName: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  testTypeCount: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  testTypeCount: { color: '#8FAEC8', fontSize: 12, fontWeight: '800' },
   testTypeRight: { alignItems: 'flex-end', gap: 4 },
   testTypeReadiness: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
-  deltaGood: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
-  deltaWarn: { color: '#F5A623', fontSize: 12, fontWeight: '900' },
+  deltaGood: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
+  deltaWarn: { color: '#D4A01A', fontSize: 12, fontWeight: '900' },
 
   testResultRow: { flexDirection: 'row', gap: 10 },
-  testResultBox: { flex: 1, backgroundColor: '#0F1115', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#1e2e22', gap: 4 },
-  testResultLabel: { color: '#FC4C02', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  testResultBox: { flex: 1, backgroundColor: '#000D1A', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#1e2e22', gap: 4 },
+  testResultLabel: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
   testResultValue: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
-  testResultValueDim: { color: '#A7ADB8', fontSize: 15, fontWeight: '800' },
-  testResultDate: { color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
+  testResultValueDim: { color: '#8FAEC8', fontSize: 15, fontWeight: '800' },
+  testResultDate: { color: '#8FAEC8', fontSize: 11, fontWeight: '800' },
   testNote: { color: '#c4cec0', fontSize: 13, lineHeight: 19 },
 
-  countdownCard: { backgroundColor: '#1E2229', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  countdownCardUrgent: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)' },
+  countdownCard: { backgroundColor: '#00253D', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  countdownCardUrgent: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)' },
   countdownRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  countdownKicker: { color: '#FC4C02', fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 3 },
+  countdownKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 3 },
   countdownDate: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   countdownDaysBox: { alignItems: 'flex-end' },
   countdownNum: { color: '#ffffff', fontSize: 32, fontWeight: '900' },
-  countdownNumUrgent: { color: '#F5A623', fontSize: 32, fontWeight: '900' },
-  countdownUnit: { color: '#A7ADB8', fontSize: 11, fontWeight: '800' },
+  countdownNumUrgent: { color: '#D4A01A', fontSize: 32, fontWeight: '900' },
+  countdownUnit: { color: '#8FAEC8', fontSize: 11, fontWeight: '800' },
 
   dfiftCard: { backgroundColor: '#0e1410', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#2a3d2c', gap: 0 },
   dfiftHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  dfiftKicker: { color: '#FC4C02', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  dfiftProfileLink: { color: '#FC4C02', fontSize: 12, fontWeight: '900' },
+  dfiftKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  dfiftProfileLink: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
   dfiftRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingVertical: 12 },
   dfiftRowLeft: { flex: 1, gap: 3 },
   dfiftLabel: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
-  dfiftStandard: { color: '#A7ADB8', fontSize: 12, fontWeight: '800' },
+  dfiftStandard: { color: '#8FAEC8', fontSize: 12, fontWeight: '800' },
   dfiftRowRight: { alignItems: 'flex-end', gap: 4 },
   dfiftResult: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
-  dfiftBadgePass: { backgroundColor: '#0d2a14', borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  dfiftBadgeTextPass: { color: '#FC4C02', fontSize: 11, fontWeight: '900' },
+  dfiftBadgePass: { backgroundColor: '#0d2a14', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  dfiftBadgeTextPass: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
   dfiftBadgeFail: { backgroundColor: '#2a1008', borderWidth: 1, borderColor: '#7a3a1f', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  dfiftBadgeTextFail: { color: '#F5A623', fontSize: 11, fontWeight: '900' },
+  dfiftBadgeTextFail: { color: '#D4A01A', fontSize: 11, fontWeight: '900' },
   dfiftNoData: { color: '#4a5e4a', fontSize: 14, fontWeight: '900' },
   dfiftDivider: { height: 1, backgroundColor: '#1a2c1e' },
   dfiftFootnote: { color: '#4a5e4a', fontSize: 11, lineHeight: 16, marginTop: 12 },
 
-  guidanceCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#31411f', gap: 6 },
+  guidanceCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.2)', gap: 6 },
   guidanceTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   guidanceText: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
 });

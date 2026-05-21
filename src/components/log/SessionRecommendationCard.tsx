@@ -46,32 +46,32 @@ const SessionRecommendationCard = memo(function SessionRecommendationCard({ reco
 export default SessionRecommendationCard;
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
-  cardGood: { backgroundColor: '#1E2229', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(252,76,2,0.3)', gap: 6 },
-  cardWarning: { backgroundColor: 'rgba(245,166,35,0.1)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 6 },
-  cardCaution: { backgroundColor: 'rgba(245,166,35,0.08)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(245,166,35,0.3)', gap: 6 },
+  card: { backgroundColor: '#00253D', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
+  cardGood: { backgroundColor: '#00253D', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 6 },
+  cardWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 6 },
+  cardCaution: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 6 },
 
-  kicker: { color: '#FC4C02', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  kickerWarning: { color: '#F5A623', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  kickerWarning: { color: '#D4A01A', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
 
   sessionType: { color: '#ffffff', fontSize: 26, fontWeight: '900', marginTop: 2 },
-  sessionTypeGood: { color: '#FC4C02', fontSize: 26, fontWeight: '900', marginTop: 2 },
-  sessionTypeWarning: { color: '#F5A623', fontSize: 26, fontWeight: '900', marginTop: 2 },
-  sessionTypeCaution: { color: '#F5A623', fontSize: 26, fontWeight: '900', marginTop: 2 },
+  sessionTypeGood: { color: '#B5852C', fontSize: 26, fontWeight: '900', marginTop: 2 },
+  sessionTypeWarning: { color: '#D4A01A', fontSize: 26, fontWeight: '900', marginTop: 2 },
+  sessionTypeCaution: { color: '#D4A01A', fontSize: 26, fontWeight: '900', marginTop: 2 },
 
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginVertical: 6 },
-  dividerWarning: { height: 1, backgroundColor: 'rgba(245,166,35,0.3)', marginVertical: 6 },
-  dividerCaution: { height: 1, backgroundColor: 'rgba(245,166,35,0.3)', marginVertical: 6 },
+  dividerWarning: { height: 1, backgroundColor: 'rgba(212,160,26,0.3)', marginVertical: 6 },
+  dividerCaution: { height: 1, backgroundColor: 'rgba(212,160,26,0.3)', marginVertical: 6 },
 
-  label: { color: '#FC4C02', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.2 },
-  labelWarning: { color: '#F5A623', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.2 },
+  label: { color: '#B5852C', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.2 },
+  labelWarning: { color: '#D4A01A', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1.2 },
   labelSpacing: { marginTop: 8 },
 
-  body: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
-  bodyWarning: { color: '#A7ADB8', fontSize: 13, lineHeight: 20 },
+  body: { color: '#8FAEC8', fontSize: 13, lineHeight: 20 },
+  bodyWarning: { color: '#8FAEC8', fontSize: 13, lineHeight: 20 },
 
-  button: { backgroundColor: '#FC4C02', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'flex-start', marginTop: 8 },
-  buttonWarning: { backgroundColor: '#F5A623', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'flex-start', marginTop: 8 },
-  buttonCaution: { backgroundColor: '#F5A623', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'flex-start', marginTop: 8 },
-  buttonText: { color: '#0F1115', fontSize: 13, fontWeight: '900' },
+  button: { backgroundColor: '#B5852C', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'flex-start', marginTop: 8 },
+  buttonWarning: { backgroundColor: '#D4A01A', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'flex-start', marginTop: 8 },
+  buttonCaution: { backgroundColor: '#D4A01A', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'flex-start', marginTop: 8 },
+  buttonText: { color: '#000D1A', fontSize: 13, fontWeight: '900' },
 });
