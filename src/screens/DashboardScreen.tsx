@@ -16,6 +16,7 @@ import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { useCheckIn } from '@/src/hooks/useCheckIn';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -62,7 +63,20 @@ export default function DashboardScreen() {
   const { injuryNotes } = useUser();
   const router = useRouter();
 
-  const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
+  const trainingReadiness = useMemo(() => calculateReadinessPercentage(logs), [logs]);
+  const checkIn = useCheckIn();
+
+  // Blend training readiness (65%) with today's check-in score (35%).
+  // If no training data yet, use check-in score alone. Falls back to training-only if no check-in.
+  const readinessPercentage = useMemo(() => {
+    if (checkIn.checkedInToday && checkIn.score !== null) {
+      if (trainingReadiness > 0) {
+        return Math.round(trainingReadiness * 0.65 + checkIn.score * 0.35);
+      }
+      return checkIn.score;
+    }
+    return trainingReadiness;
+  }, [trainingReadiness, checkIn.checkedInToday, checkIn.score]);
   const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
@@ -197,6 +211,39 @@ export default function DashboardScreen() {
           Readiness overview for strength, endurance, ruck performance and recovery.
         </Text>
       </View>
+
+      {/* DAILY CHECK-IN PROMPT */}
+      {!checkIn.checkedInToday && !checkIn.isLoading && (
+        <TouchableOpacity
+          style={styles.checkInBanner}
+          onPress={() => { router.push('/check-in'); }}
+          accessibilityRole="button"
+          accessibilityLabel="Log today's check-in"
+        >
+          <View style={styles.checkInBannerLeft}>
+            <Text style={styles.checkInBannerKicker}>DAILY CHECK-IN</Text>
+            <Text style={styles.checkInBannerTitle}>Log Your Readiness</Text>
+            <Text style={styles.checkInBannerSub}>Sleep · Soreness · Stress · Mood</Text>
+          </View>
+          <Text style={styles.checkInBannerCta}>[ LOG NOW ]</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* CHECK-IN SCORE BANNER (if checked in today) */}
+      {checkIn.checkedInToday && checkIn.score !== null && (
+        <TouchableOpacity
+          style={styles.checkInDoneBanner}
+          onPress={() => { router.push('/check-in'); }}
+          accessibilityRole="button"
+          accessibilityLabel="View or edit today's check-in"
+        >
+          <View style={styles.checkInBannerLeft}>
+            <Text style={styles.checkInBannerKicker}>TODAY'S CHECK-IN</Text>
+            <Text style={styles.checkInBannerTitle}>Readiness Score: {checkIn.score}%</Text>
+          </View>
+          <Text style={styles.checkInDoneCta}>[ EDIT ]</Text>
+        </TouchableOpacity>
+      )}
 
       {/* MAPS HERO CARD */}
       <TouchableOpacity
@@ -908,6 +955,40 @@ const styles = StyleSheet.create({
   connectPillDotProgress: { backgroundColor: '#1A74D4' },
   connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
   connectPillText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+
+  // Check-in banners
+  checkInBanner: {
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(181,133,44,0.4)',
+    borderTopWidth: 2,
+    borderTopColor: '#B5852C',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  checkInDoneBanner: {
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(94,122,47,0.4)',
+    borderTopWidth: 2,
+    borderTopColor: '#5E7A2F',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  checkInBannerLeft: { flex: 1, gap: 2 },
+  checkInBannerKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.6 },
+  checkInBannerTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+  checkInBannerSub: { color: '#b8c0b0', fontSize: 12, marginTop: 2 },
+  checkInBannerCta: { color: '#B5852C', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
+  checkInDoneCta: { color: '#5E7A2F', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 
   // Maps hero card
   mapsHero: {
