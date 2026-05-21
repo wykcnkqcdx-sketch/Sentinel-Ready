@@ -194,3 +194,73 @@ Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░
 λ node_modules\expo-router\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
 Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
 λ node_modules\expo-router\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 91858ms node_modules\expo-router\node\render.js (1473 modules)
+λ Bundled 88773ms node_modules\expo-router\node\render.js (1 module)
+λ Bundled 62683ms node_modules\expo-router\node\render.js (1 module)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.0% (1466/1478)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1497/1497)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 105305ms node_modules\expo-router\entry.js (1497 modules)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1497/1497)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 102209ms node_modules\expo-router\entry.js (1 module)
+Web Bundled 76146ms node_modules\expo-router\entry.js (1 module)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 33.1% (182/339)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.7% (350/569)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.7% (466/648)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.5% (636/780)
+| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:359:24):
+|   357 | 	}
+|   358 | .leaflet-control-layers-toggle {
+| > 359 | 	background-image: url(images/layers.png);
+|       | 	                      ^
+|   360 | 	width: 36px;
+|   361 | 	height: 36px;
+|   362 | 	}
+| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:364:24):
+|   362 | 	}
+|   363 | .leaflet-retina .leaflet-control-layers-toggle {
+| > 364 | 	background-image: url(images/layers-2x.png);
+|       | 	                      ^
+|   365 | 	background-size: 26px 26px;
+|   366 | 	}
+|   367 | .leaflet-touch .leaflet-control-layers-toggle {
+| Importing local resources in CSS is not supported yet. (node_modules\leaflet\dist\leaflet.css:407:24):
+|   405 | /* Default icon URLs */
+|   406 | .leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+| > 407 | 	background-image: url(images/marker-icon.png);
+|       | 	                      ^
+|   408 | 	}
+|   409 |
+|   410 |
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 81.4% ( 938/1045)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.6% (1137/1229)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.0% (1358/1388)
+Web Bundled 26180ms node_modules\expo-router\entry.js (1498 modules)
+ LOG  [web] Logs will appear in the browser console
+λ Bundled 102ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 1856ms node_modules\expo-router\entry.js (1 module)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 152ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 1410ms node_modules\expo-router\entry.js (1 module)
+Web Bundled 153ms node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\react-leaflet\lib\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 1607ms node_modules\leaflet\dist\leaflet-src.js (1 module)
+Web Bundled 2958ms node_modules\react-leaflet\lib\index.js (47 modules)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 142ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 2474ms node_modules\expo-router\entry.js (1 module)
+Web Bundled 336ms node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 170ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 1853ms node_modules\expo-router\entry.js (1 module)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 97ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 1899ms node_modules\expo-router\entry.js (1 module)
