@@ -50,16 +50,16 @@ const ReadinessTrendCard = memo(function ReadinessTrendCard({ trend }: Props) {
 export default ReadinessTrendCard;
 
 const styles = StyleSheet.create({
-  trendCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8 },
-  trendCardWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 8 },
+  trendCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 8 },
+  trendCardWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 8 },
   trendHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   trendKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   trendTitle: { color: '#ffffff', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  trendTitleWarning: { color: '#D4A01A', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  trendPill: { backgroundColor: '#003050', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  trendPillWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  trendTitleWarning: { color: '#ffaa44', fontSize: 24, fontWeight: '900', marginTop: 4 },
+  trendPill: { backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  trendPillWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   trendPillText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  trendPillTextWarning: { color: '#D4A01A', fontSize: 12, fontWeight: '900' },
-  trendText: { color: '#8FAEC8', fontSize: 13, lineHeight: 19 },
-  trendTextWarning: { color: '#D4A01A', fontSize: 13, lineHeight: 19, fontWeight: '800' },
+  trendPillTextWarning: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
+  trendText: { color: '#b8c0b0', fontSize: 13, lineHeight: 19 },
+  trendTextWarning: { color: '#ffaa44', fontSize: 13, lineHeight: 19, fontWeight: '800' },
 });

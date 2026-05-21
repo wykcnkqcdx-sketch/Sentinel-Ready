@@ -22,8 +22,8 @@ export const tokens = {
   bgDark: '#0F1115',
 
   // Borders
-  borderDefault: 'rgba(255,255,255,0.08)',
-  borderSubtle: 'rgba(255,255,255,0.08)',
+  borderDefault: 'rgba(181,133,44,0.12)',
+  borderSubtle: 'rgba(181,133,44,0.12)',
   borderField: 'rgba(255,255,255,0.10)',
   borderAlt: 'rgba(252,76,2,0.3)',
   borderTag: 'rgba(252,76,2,0.24)',
@@ -35,7 +35,7 @@ export const tokens = {
   borderWarnModerate: '#F5A623',
   borderBack: 'rgba(255,255,255,0.14)',
   borderBright: 'rgba(252,76,2,0.32)',
-  borderDim: 'rgba(255,255,255,0.08)',
+  borderDim: 'rgba(181,133,44,0.12)',
   borderGreen: '#35C759',
   divider: '#162218',
 
@@ -74,7 +74,7 @@ export const tokens = {
 
   // Inputs
   inputBg: '#0F1115',
-  inputBorder: 'rgba(255,255,255,0.08)',
+  inputBorder: 'rgba(181,133,44,0.12)',
   placeholder: '#737A86',
 
   // Radius

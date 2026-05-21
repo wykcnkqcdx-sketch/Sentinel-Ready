@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     height: 46,
     backgroundColor: 'rgba(5,14,9,0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   buttonLabel: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 6,
     fontWeight: '900',
     letterSpacing: 0.8,

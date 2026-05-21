@@ -1,3 +1,4 @@
+import { getCategoryPalette } from '@/constants/theme';
 import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
@@ -15,6 +16,7 @@ import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
 import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
 import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
+import { useCheckIn } from '@/src/hooks/useCheckIn';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -61,7 +63,20 @@ export default function DashboardScreen() {
   const { injuryNotes } = useUser();
   const router = useRouter();
 
-  const readinessPercentage = useMemo(() => calculateReadinessPercentage(logs), [logs]);
+  const trainingReadiness = useMemo(() => calculateReadinessPercentage(logs), [logs]);
+  const checkIn = useCheckIn();
+
+  // Blend training readiness (65%) with today's check-in score (35%).
+  // If no training data yet, use check-in score alone. Falls back to training-only if no check-in.
+  const readinessPercentage = useMemo(() => {
+    if (checkIn.checkedInToday && checkIn.score !== null) {
+      if (trainingReadiness > 0) {
+        return Math.round(trainingReadiness * 0.65 + checkIn.score * 0.35);
+      }
+      return checkIn.score;
+    }
+    return trainingReadiness;
+  }, [trainingReadiness, checkIn.checkedInToday, checkIn.score]);
   const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
   const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
@@ -90,13 +105,13 @@ export default function DashboardScreen() {
 
   const readinessStatus = useMemo(() => {
     if (readinessPercentage === 0) {
-      return { text: 'NO DATA', bg: '#00253D', textCol: '#8FAEC8', prog: 'rgba(255,255,255,0.2)', msg: 'Log a session to calculate your readiness score.' };
+      return { text: 'NO DATA', bg: '#0c1008', textCol: '#b8c0b0', prog: 'rgba(255,255,255,0.2)', msg: 'Log a session to calculate your readiness score.' };
     }
     if (readinessPercentage < 60) {
-      return { text: 'RED', bg: 'rgba(204,42,42,0.15)', textCol: '#FFFFFF', prog: '#CC2A2A', msg: 'High fatigue detected. Prioritise recovery and rest today.' };
+      return { text: 'RED', bg: 'rgba(224,80,80,0.15)', textCol: '#FFFFFF', prog: '#e05050', msg: 'High fatigue detected. Prioritise recovery and rest today.' };
     }
     if (readinessPercentage < 75) {
-      return { text: 'AMBER', bg: 'rgba(212,160,26,0.15)', textCol: '#FFFFFF', prog: '#D4A01A', msg: 'Moderate fatigue. Keep training volume controlled.' };
+      return { text: 'AMBER', bg: 'rgba(255,170,68,0.15)', textCol: '#FFFFFF', prog: '#ffaa44', msg: 'Moderate fatigue. Keep training volume controlled.' };
     }
     return { text: 'GREEN', bg: 'rgba(94,122,47,0.15)', textCol: '#FFFFFF', prog: '#5E7A2F', msg: 'Fit for training. Monitor fatigue and recovery.' };
   }, [readinessPercentage]);
@@ -151,8 +166,8 @@ export default function DashboardScreen() {
       const score = getReadinessNumber(log.readiness);
       const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
       let barColor = '#5E7A2F';
-      if (score < 6) barColor = '#CC2A2A';
-      else if (score < 8) barColor = '#D4A01A';
+      if (score < 6) barColor = '#e05050';
+      else if (score < 8) barColor = '#ffaa44';
 
       const dateLabel = log.date.substring(5, 10).replace('-', '/');
       return { id: log.id, score, heightPercentage, barColor, dateLabel };
@@ -191,10 +206,44 @@ export default function DashboardScreen() {
       <View style={styles.header}>
         <Text style={styles.kicker}>SENTINEL READY</Text>
         <Text style={styles.title}>Operational Fitness Dashboard</Text>
+        <View style={styles.headerRule} />
         <Text style={styles.subtitle}>
           Readiness overview for strength, endurance, ruck performance and recovery.
         </Text>
       </View>
+
+      {/* DAILY CHECK-IN PROMPT */}
+      {!checkIn.checkedInToday && !checkIn.isLoading && (
+        <TouchableOpacity
+          style={styles.checkInBanner}
+          onPress={() => { router.push('/check-in'); }}
+          accessibilityRole="button"
+          accessibilityLabel="Log today's check-in"
+        >
+          <View style={styles.checkInBannerLeft}>
+            <Text style={styles.checkInBannerKicker}>DAILY CHECK-IN</Text>
+            <Text style={styles.checkInBannerTitle}>Log Your Readiness</Text>
+            <Text style={styles.checkInBannerSub}>Sleep · Soreness · Stress · Mood</Text>
+          </View>
+          <Text style={styles.checkInBannerCta}>[ LOG NOW ]</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* CHECK-IN SCORE BANNER (if checked in today) */}
+      {checkIn.checkedInToday && checkIn.score !== null && (
+        <TouchableOpacity
+          style={styles.checkInDoneBanner}
+          onPress={() => { router.push('/check-in'); }}
+          accessibilityRole="button"
+          accessibilityLabel="View or edit today's check-in"
+        >
+          <View style={styles.checkInBannerLeft}>
+            <Text style={styles.checkInBannerKicker}>TODAY'S CHECK-IN</Text>
+            <Text style={styles.checkInBannerTitle}>Readiness Score: {checkIn.score}%</Text>
+          </View>
+          <Text style={styles.checkInDoneCta}>[ EDIT ]</Text>
+        </TouchableOpacity>
+      )}
 
       {/* MAPS HERO CARD */}
       <TouchableOpacity
@@ -230,7 +279,7 @@ export default function DashboardScreen() {
           </View>
         </View>
         <View style={styles.mapsHeroCta}>
-          <Text style={styles.mapsHeroCtaText}>▶  START RUCK  →</Text>
+          <Text style={styles.mapsHeroCtaText}>[ START RUCK ]</Text>
         </View>
       </TouchableOpacity>
 
@@ -515,7 +564,7 @@ export default function DashboardScreen() {
             styles.loadFill,
             {
               width: `${weekProgress * 100}%`,
-              backgroundColor: weekLoadStatus.isWarn ? '#D4A01A' : thisWeek.total >= WEEKLY_TARGET ? '#5E7A2F' : '#B5852C',
+              backgroundColor: weekLoadStatus.isWarn ? '#ffaa44' : thisWeek.total >= WEEKLY_TARGET ? '#5E7A2F' : '#B5852C',
             },
           ]} />
         </View>
@@ -524,12 +573,12 @@ export default function DashboardScreen() {
 
         {thisWeek.total > 0 ? (
           <View style={styles.pillRow}>
-            {thisWeek.ruck > 0 && <View style={styles.pill}><Text style={styles.pillText}>Ruck {thisWeek.ruck}</Text></View>}
-            {thisWeek.strength > 0 && <View style={styles.pill}><Text style={styles.pillText}>Strength {thisWeek.strength}</Text></View>}
-            {thisWeek.run > 0 && <View style={styles.pill}><Text style={styles.pillText}>Run {thisWeek.run}</Text></View>}
-            {thisWeek.mobility > 0 && <View style={styles.pill}><Text style={styles.pillText}>Mobility {thisWeek.mobility}</Text></View>}
-            {thisWeek.test > 0 && <View style={styles.pill}><Text style={styles.pillText}>Test {thisWeek.test}</Text></View>}
-            {thisWeek.recovery > 0 && <View style={styles.pill}><Text style={styles.pillText}>Recovery {thisWeek.recovery}</Text></View>}
+            {thisWeek.ruck > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Ruck').bg, borderColor: getCategoryPalette('Ruck').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Ruck').color }]}>Ruck {thisWeek.ruck}</Text></View>}
+            {thisWeek.strength > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Strength').bg, borderColor: getCategoryPalette('Strength').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Strength').color }]}>Strength {thisWeek.strength}</Text></View>}
+            {thisWeek.run > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Run').bg, borderColor: getCategoryPalette('Run').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Run').color }]}>Run {thisWeek.run}</Text></View>}
+            {thisWeek.mobility > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Mobility').bg, borderColor: getCategoryPalette('Mobility').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Mobility').color }]}>Mobility {thisWeek.mobility}</Text></View>}
+            {thisWeek.test > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Test').bg, borderColor: getCategoryPalette('Test').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Test').color }]}>Test {thisWeek.test}</Text></View>}
+            {thisWeek.recovery > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Recovery').bg, borderColor: getCategoryPalette('Recovery').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Recovery').color }]}>Recovery {thisWeek.recovery}</Text></View>}
           </View>
         ) : (
           <Text style={styles.loadNoData}>No sessions logged this week. Aim for {WEEKLY_TARGET} sessions.</Text>
@@ -693,14 +742,14 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000D1A', position: 'relative' },
+  screen: { flex: 1, backgroundColor: '#050e09', position: 'relative' },
   fab: {
     position: 'absolute',
     bottom: 24,
     left: 20,
     right: 20,
     backgroundColor: '#B5852C',
-    borderRadius: 16,
+    borderRadius: 4,
     paddingVertical: 16,
     alignItems: 'center',
     shadowColor: '#B5852C',
@@ -716,118 +765,119 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   content: { padding: 20, gap: 18, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
-  header: { gap: 10 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
-  subtitle: { color: '#8FAEC8', fontSize: 15, lineHeight: 22 },
+  header: { gap: 8 },
+  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 3.5, textTransform: 'uppercase' },
+  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: -0.5 },
+  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
+  subtitle: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
   readinessRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' },
   metric: { color: '#FFFFFF', fontSize: 56, fontWeight: '900', marginTop: 8 },
-  cardText: { color: '#8FAEC8', marginTop: 4, lineHeight: 20 },
+  cardText: { color: '#b8c0b0', marginTop: 4, lineHeight: 20 },
   statusBadge: { backgroundColor: 'rgba(94,122,47,0.15)', borderColor: 'rgba(94,122,47,0.4)', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
   statusBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
-  progressTrack: { height: 10, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, marginTop: 20, overflow: 'hidden' },
+  progressTrack: { height: 10, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 999, marginTop: 20, overflow: 'hidden' },
   progressFill: { width: '82%', height: '100%', backgroundColor: '#5E7A2F', borderRadius: 999 },
   readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
-  detailText: { color: '#FFFFFF', backgroundColor: '#003050', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
+  detailText: { color: '#FFFFFF', backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
   briefHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   briefTitleBlock: { flex: 1 },
   briefTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  briefTitleWarn: { color: '#D4A01A', fontSize: 22, fontWeight: '900' },
-  briefBadge: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
-  briefBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  briefTitleWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900' },
+  briefBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
+  briefBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
   briefBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  briefBadgeTextWarn: { color: '#D4A01A', fontSize: 11, fontWeight: '900' },
-  briefActionBox: { backgroundColor: '#000D1A', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 4, marginTop: 10 },
+  briefBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
+  briefActionBox: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 4, marginTop: 10 },
   briefActionLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   briefActionText: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800' },
-  briefSecondary: { color: '#8FAEC8', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  briefSecondary: { color: '#b8c0b0', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  performanceItem: { width: '47%', backgroundColor: '#000D1A', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 3 },
+  performanceItem: { width: '47%', backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 3 },
   performanceValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  performanceLabel: { color: '#8FAEC8', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  performanceLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   recoveryDebtRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   recoveryDebtScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  recoveryDebtScoreWarn: { color: '#D4A01A', fontSize: 34, fontWeight: '900' },
-  recoveryDebtBadge: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
-  recoveryDebtBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  recoveryDebtScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  recoveryDebtBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
+  recoveryDebtBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
   recoveryDebtBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  recoveryDebtBadgeTextWarn: { color: '#D4A01A', fontSize: 11, fontWeight: '900' },
+  recoveryDebtBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
   recoveryDebtAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   injuryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   injuryScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  injuryScoreWarn: { color: '#D4A01A', fontSize: 34, fontWeight: '900' },
-  injuryBadge: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
-  injuryBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  injuryScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  injuryBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
+  injuryBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
   injuryBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  injuryBadgeTextWarn: { color: '#D4A01A', fontSize: 11, fontWeight: '900' },
+  injuryBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
   injuryAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   balanceScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  balanceScoreWarn: { color: '#D4A01A', fontSize: 34, fontWeight: '900' },
-  balanceBadge: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
-  balanceBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  balanceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  balanceBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
+  balanceBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
   balanceBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  balanceBadgeTextWarn: { color: '#D4A01A', fontSize: 11, fontWeight: '900' },
+  balanceBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
   balanceFocus: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
   forecastHeader: { gap: 3 },
   forecastTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  forecastTitleWarn: { color: '#D4A01A', fontSize: 22, fontWeight: '900' },
+  forecastTitleWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900' },
   forecastRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, marginTop: 8 },
   forecastDay: { alignItems: 'center', gap: 6, flex: 1 },
-  forecastDayLabel: { color: '#8FAEC8', fontSize: 10, fontWeight: '900' },
+  forecastDayLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '900' },
   forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#5E7A2F' },
-  forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#D4A01A' },
-  forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#CC2A2A' },
+  forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffaa44' },
+  forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#e05050' },
   adherenceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   adherenceScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  adherenceScoreWarn: { color: '#D4A01A', fontSize: 34, fontWeight: '900' },
-  adherenceBadge: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8 },
-  adherenceBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  adherenceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
+  adherenceBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
+  adherenceBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
   adherenceBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  adherenceBadgeTextWarn: { color: '#D4A01A', fontSize: 11, fontWeight: '900' },
+  adherenceBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
   adherenceAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
-  adherenceMissing: { color: '#8FAEC8', fontSize: 12, lineHeight: 18, fontWeight: '800' },
-  insightItem: { backgroundColor: '#000D1A', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 4 },
-  insightItemGood: { backgroundColor: 'rgba(94,122,47,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(94,122,47,0.25)', padding: 12, gap: 4 },
-  insightItemWarn: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.25)', padding: 12, gap: 4 },
+  adherenceMissing: { color: '#b8c0b0', fontSize: 12, lineHeight: 18, fontWeight: '800' },
+  insightItem: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 4 },
+  insightItemGood: { backgroundColor: 'rgba(94,122,47,0.08)', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(94,122,47,0.25)', padding: 12, gap: 4 },
+  insightItemWarn: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,170,68,0.25)', padding: 12, gap: 4 },
   insightTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  insightTitleWarn: { color: '#D4A01A', fontSize: 13, fontWeight: '900' },
+  insightTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
   insightText: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
   milestoneCount: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
-  milestoneNext: { backgroundColor: '#000D1A', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 10, maxWidth: '48%' },
+  milestoneNext: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 10, maxWidth: '48%' },
   milestoneNextLabel: { color: '#B5852C', fontSize: 10, fontWeight: '900' },
   milestoneNextTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', marginTop: 2 },
   milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  milestonePill: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
+  milestonePill: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.18)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
   milestonePillEarned: { backgroundColor: 'rgba(181,133,44,0.12)', borderWidth: 1, borderColor: 'rgba(181,133,44,0.35)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
-  milestonePillText: { color: '#8FAEC8', fontSize: 11, fontWeight: '900' },
+  milestonePillText: { color: '#b8c0b0', fontSize: 11, fontWeight: '900' },
   milestonePillTextEarned: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalStat: { flex: 1 },
   goalNumber: { color: '#FFFFFF', fontSize: 26, fontWeight: '900' },
   goalNumberComplete: { color: '#5E7A2F', fontSize: 26, fontWeight: '900' },
-  goalLabel: { color: '#8FAEC8', fontSize: 11, fontWeight: '800', marginTop: 2 },
+  goalLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '800', marginTop: 2 },
   goalButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
   goalButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  goalTrack: { height: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginTop: 12 },
+  goalTrack: { height: 8, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 999, overflow: 'hidden', marginTop: 12 },
   goalFill: { height: '100%', backgroundColor: '#B5852C', borderRadius: 999 },
-  goalAction: { backgroundColor: '#000D1A', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 4, marginTop: 12 },
-  goalActionWarn: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.25)', padding: 12, gap: 4, marginTop: 12 },
+  goalAction: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 4, marginTop: 12 },
+  goalActionWarn: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,170,68,0.25)', padding: 12, gap: 4, marginTop: 12 },
   goalActionTitle: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
-  goalActionTitleWarn: { color: '#D4A01A', fontSize: 13, fontWeight: '900' },
+  goalActionTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
   goalActionText: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   section: { marginTop: 8, gap: 12 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '900' },
-  sectionTag: { color: '#8FAEC8', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  sectionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
+  sectionTag: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, borderWidth: 1, borderColor: 'rgba(181,133,44,0.35)', paddingHorizontal: 9, paddingVertical: 4, borderRadius: 3 },
   chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 140, marginTop: 4 },
   barColumn: { alignItems: 'center', width: 40 },
-  barScore: { color: '#8FAEC8', fontSize: 11, fontWeight: '800', marginBottom: 6 },
-  barBackground: { width: 24, height: 100, backgroundColor: '#000D1A', borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  barScore: { color: '#b8c0b0', fontSize: 11, fontWeight: '800', marginBottom: 6 },
+  barBackground: { width: 24, height: 100, backgroundColor: '#080c05', borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
   barFill: { width: '100%', borderRadius: 4 },
-  barLabel: { color: '#8FAEC8', fontSize: 10, fontWeight: '800', marginTop: 8 },
+  barLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800', marginTop: 8 },
 
   reportToggle: {
     alignItems: 'center',
@@ -843,31 +893,33 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.5,
   },
-  loadCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
-  loadCardWarn: { backgroundColor: 'rgba(212,160,26,0.08)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 12 },
+  loadCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderTopWidth: 2, borderColor: 'rgba(181,133,44,0.15)', borderTopColor: '#B5852C', gap: 12 },
+  loadCardWarn: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 16, borderWidth: 1, borderTopWidth: 2, borderColor: 'rgba(255,170,68,0.3)', borderTopColor: '#ffaa44', gap: 12 },
   loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   loadKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   loadCount: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  loadCountWarn: { color: '#D4A01A', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  loadBadge: { backgroundColor: '#003050', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
-  loadBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  loadCountWarn: { color: '#ffaa44', fontSize: 24, fontWeight: '900', marginTop: 4 },
+  loadBadge: { backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  loadBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   loadBadgeText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  loadBadgeTextWarn: { color: '#D4A01A', fontSize: 12, fontWeight: '900' },
-  loadTrack: { height: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden' },
+  loadBadgeTextWarn: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
+  loadTrack: { height: 8, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 999, overflow: 'hidden' },
   loadFill: { height: '100%', borderRadius: 999 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: { backgroundColor: 'rgba(181,133,44,0.1)', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6 },
   pillText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  loadNoData: { color: '#4A6070', fontSize: 13, fontWeight: '800' },
-  loadSubText: { color: '#8FAEC8', fontSize: 12, fontWeight: '800' },
-  loadWarnText: { color: '#D4A01A', fontSize: 12, fontWeight: '900' },
+  loadNoData: { color: '#4a5a44', fontSize: 13, fontWeight: '800' },
+  loadSubText: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
+  loadWarnText: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
 
   // Connections section
   connectSection: {
-    backgroundColor: '#00253D',
-    borderRadius: 18,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderTopWidth: 2,
+    borderColor: 'rgba(181,133,44,0.15)',
+    borderTopColor: '#B5852C',
     padding: 16,
     gap: 12,
   },
@@ -882,10 +934,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#003050',
+    backgroundColor: '#141810',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
@@ -899,15 +951,49 @@ const styles = StyleSheet.create({
   connectPillDotGpx: { backgroundColor: '#5E7A2F' },
   connectPillDotCheckin: { backgroundColor: '#B5852C' },
   connectPillDotOffline: { backgroundColor: '#4ECDC4' },
-  connectPillDotAlerts: { backgroundColor: '#D4A01A' },
+  connectPillDotAlerts: { backgroundColor: '#ffaa44' },
   connectPillDotProgress: { backgroundColor: '#1A74D4' },
   connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
   connectPillText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
 
+  // Check-in banners
+  checkInBanner: {
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(181,133,44,0.4)',
+    borderTopWidth: 2,
+    borderTopColor: '#B5852C',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  checkInDoneBanner: {
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(94,122,47,0.4)',
+    borderTopWidth: 2,
+    borderTopColor: '#5E7A2F',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  checkInBannerLeft: { flex: 1, gap: 2 },
+  checkInBannerKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.6 },
+  checkInBannerTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+  checkInBannerSub: { color: '#b8c0b0', fontSize: 12, marginTop: 2 },
+  checkInBannerCta: { color: '#B5852C', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
+  checkInDoneCta: { color: '#5E7A2F', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
+
   // Maps hero card
   mapsHero: {
     backgroundColor: '#B5852C',
-    borderRadius: 20,
+    borderRadius: 6,
     padding: 20,
     gap: 16,
     shadowColor: '#B5852C',

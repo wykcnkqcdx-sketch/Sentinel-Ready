@@ -142,6 +142,7 @@ export default function LogScreen() {
           <View style={styles.header}>
             <Text style={styles.kicker}>SENTINEL READY</Text>
             <Text style={styles.title}>Training Log</Text>
+            <View style={styles.headerRule} />
             <Text style={styles.subtitle}>
               Review saved sessions, readiness, fatigue watch and operational training balance.
             </Text>
@@ -277,33 +278,34 @@ export default function LogScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000D1A' },
-  loadingScreen: { flex: 1, backgroundColor: '#000D1A', justifyContent: 'center', alignItems: 'center' },
+  screen: { flex: 1, backgroundColor: '#080c05' },
+  loadingScreen: { flex: 1, backgroundColor: '#080c05', justifyContent: 'center', alignItems: 'center' },
   loadingText: { color: '#B5852C', fontSize: 15, fontWeight: '900' },
   listContent: { padding: 18, paddingBottom: 110, gap: 14 },
   header: { gap: 12, marginBottom: 4 },
   kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 1.8 },
+  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
   title: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  subtitle: { color: '#8FAEC8', fontSize: 14, lineHeight: 21 },
+  subtitle: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
   topButtonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   primaryButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 16 },
-  primaryButtonText: { color: '#000D1A', fontSize: 13, fontWeight: '900' },
+  primaryButtonText: { color: '#080c05', fontSize: 13, fontWeight: '900' },
   secondaryButton: { borderWidth: 1, borderColor: '#B5852C', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 16 },
   secondaryButtonText: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
-  infoCard: { backgroundColor: '#00253D', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 10 },
+  infoCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 10 },
   infoCardTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
-  infoCardText: { color: '#8FAEC8', fontSize: 13 },
-  insightRow: { backgroundColor: '#000D1A', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 10, gap: 3 },
-  insightRowWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', padding: 10, gap: 3 },
+  infoCardText: { color: '#b8c0b0', fontSize: 13 },
+  insightRow: { backgroundColor: '#080c05', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 10, gap: 3 },
+  insightRowWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', padding: 10, gap: 3 },
   insightTitle: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  insightTitleWarn: { color: '#D4A01A', fontSize: 13, fontWeight: '900' },
-  insightText: { color: '#8FAEC8', fontSize: 12, lineHeight: 18 },
+  insightTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
+  insightText: { color: '#b8c0b0', fontSize: 12, lineHeight: 18 },
   sectionTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900', marginTop: 4 },
-  emptyCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', alignItems: 'flex-start', gap: 8 },
+  emptyCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', alignItems: 'flex-start', gap: 8 },
   emptyTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
-  emptyText: { color: '#8FAEC8', fontSize: 14, lineHeight: 21 },
+  emptyText: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
   emptyButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
-  emptyButtonText: { color: '#000D1A', fontSize: 13, fontWeight: '900' },
+  emptyButtonText: { color: '#080c05', fontSize: 13, fontWeight: '900' },
   fab: { position: 'absolute', bottom: 24, right: 24, backgroundColor: '#B5852C', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
-  fabIcon: { color: '#000D1A', fontSize: 32, fontWeight: '400' },
+  fabIcon: { color: '#080c05', fontSize: 32, fontWeight: '400' },
 });

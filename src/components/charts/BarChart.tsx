@@ -17,7 +17,7 @@ export default function BarChart({
   width = 280,
   height = 80,
   barColor = '#B5852C',
-  labelColor = '#8FAEC8',
+  labelColor = '#b8c0b0',
 }: Props) {
   const max = Math.max(...data);
   if (max === 0) return null;

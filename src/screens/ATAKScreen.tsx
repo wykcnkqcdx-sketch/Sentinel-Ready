@@ -59,7 +59,7 @@ function isStale(staleIso: string): boolean {
 
 function dotColour(status: FTSStatus): string {
   if (status === 'connected') return '#B5852C';
-  if (status === 'connecting') return '#D4A01A';
+  if (status === 'connecting') return '#ffaa44';
   if (status === 'error') return '#F44336';
   return '#4a5e4a';
 }
@@ -503,7 +503,7 @@ export default function ATAKScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#000D1A',
+    backgroundColor: '#080c05',
   },
   content: {
     padding: 20,
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   kicker: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 2.5,
@@ -538,8 +538,8 @@ const styles = StyleSheet.create({
 
   // Card base
   card: {
-    backgroundColor: '#00253D',
-    borderRadius: 18,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     padding: 16,
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
 
   // Config display
   configLine: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   editBtn: {
-    backgroundColor: '#003050',
+    backgroundColor: '#141810',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 10,
@@ -605,10 +605,10 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   input: {
-    backgroundColor: '#000D1A',
+    backgroundColor: '#080c05',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '800',
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: '#003050',
+    backgroundColor: '#141810',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 10,
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtnText: {
-    color: '#D4A01A',
+    color: '#ffaa44',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -657,10 +657,10 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     width: '47%',
-    backgroundColor: '#000D1A',
+    backgroundColor: '#080c05',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
-    borderRadius: 14,
+    borderRadius: 6,
     padding: 16,
     alignItems: 'center',
     gap: 6,
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actionBtnSub: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 11,
     fontWeight: '700',
   },
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   countBadge: {
-    backgroundColor: '#003050',
+    backgroundColor: '#141810',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
     borderRadius: 999,
@@ -715,10 +715,10 @@ const styles = StyleSheet.create({
 
   // CoT row
   cotRow: {
-    backgroundColor: '#000D1A',
+    backgroundColor: '#080c05',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 12,
     gap: 4,
   },
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   staleChip: {
-    backgroundColor: '#00253D',
+    backgroundColor: '#0c1008',
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 999,
@@ -757,18 +757,18 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   cotCoords: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 12,
     fontWeight: '700',
   },
 
   // Info card
   infoCard: {
-    backgroundColor: '#00253D',
-    borderRadius: 18,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     gap: 8,
   },
   infoTitle: {
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   infoText: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 13,
     lineHeight: 20,
     fontWeight: '700',

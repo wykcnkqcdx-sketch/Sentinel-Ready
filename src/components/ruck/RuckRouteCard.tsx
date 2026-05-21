@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     right: 12,
     backgroundColor: 'rgba(7,17,12,0.96)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     borderRadius: 6,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -128,10 +128,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   startButton: {
-    backgroundColor: '#163d22',
+    backgroundColor: '#141810',
     borderWidth: 1,
     borderColor: '#B5852C',
-    borderRadius: 4,
+    borderRadius: 3,
     paddingHorizontal: 14,
     paddingVertical: 10,
     alignSelf: 'flex-start',
@@ -146,8 +146,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#172c20',
-    borderRadius: 4,
+    borderColor: 'rgba(181,133,44,0.15)',
+    borderRadius: 3,
     overflow: 'hidden',
   },
   stat: {
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   statLabel: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,
@@ -170,13 +170,13 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: '#172c20',
+    backgroundColor: 'rgba(181,133,44,0.15)',
   },
   tagRow: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: '#172c20',
-    borderRadius: 4,
+    borderColor: 'rgba(181,133,44,0.15)',
+    borderRadius: 3,
     overflow: 'hidden',
   },
   tag: {
@@ -187,10 +187,10 @@ const styles = StyleSheet.create({
   },
   tagDivider: {
     width: 1,
-    backgroundColor: '#172c20',
+    backgroundColor: 'rgba(181,133,44,0.15)',
   },
   tagLabel: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 8,
     fontWeight: '900',
     letterSpacing: 1,

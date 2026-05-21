@@ -16,9 +16,9 @@ import { memo, useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
-  if (intensity === 'Rest' || intensity === 'Low') return '#8FAEC8';
-  if (planType === 'recovery') return '#8FAEC8';
-  if (intensity === 'High') return '#D4A01A';
+  if (intensity === 'Rest' || intensity === 'Low') return '#b8c0b0';
+  if (planType === 'recovery') return '#b8c0b0';
+  if (intensity === 'High') return '#ffaa44';
   return '#B5852C';
 }
 
@@ -88,13 +88,13 @@ export default function TrainingScreen() {
   const isRecovery = planType === 'recovery';
   const isProgressive = planType === 'progressive';
 
-  const heroBorderColor = isRecovery ? 'rgba(212,160,26,0.3)' : isProgressive ? 'rgba(181,133,44,0.3)' : '#2d6b3f';
+  const heroBorderColor = isRecovery ? 'rgba(255,170,68,0.3)' : isProgressive ? 'rgba(181,133,44,0.3)' : '#2d6b3f';
   const heroBgColor = isRecovery ? '#1a0f0b' : '#102016';
-  const focusLabelColor = isRecovery ? '#D4A01A' : '#B5852C';
+  const focusLabelColor = isRecovery ? '#ffaa44' : '#B5852C';
   const badgeText = isRecovery ? 'DELOAD' : isProgressive ? 'PROGRESSIVE' : 'ON TRACK';
-  const badgeBg = isRecovery ? 'rgba(212,160,26,0.1)' : isProgressive ? '#003050' : '#0b2a14';
-  const badgeBorder = isRecovery ? 'rgba(212,160,26,0.3)' : isProgressive ? 'rgba(181,133,44,0.3)' : '#58d77a';
-  const badgeTextColor = isRecovery ? '#D4A01A' : '#B5852C';
+  const badgeBg = isRecovery ? 'rgba(212,160,26,0.1)' : isProgressive ? '#141810' : '#0b2a14';
+  const badgeBorder = isRecovery ? 'rgba(255,170,68,0.3)' : isProgressive ? 'rgba(181,133,44,0.3)' : '#58d77a';
+  const badgeTextColor = isRecovery ? '#ffaa44' : '#B5852C';
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -102,6 +102,7 @@ export default function TrainingScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>SENTINEL READY</Text>
       <Text style={styles.title}>Mission Training</Text>
+      <View style={styles.headerRule} />
       <Text style={styles.subtitle}>
         {"Today's session and weekly plan built from your readiness, load and training split."}
       </Text>
@@ -218,8 +219,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#06100b' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
   kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#f4f7f0', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#c4cec0', fontSize: 15, lineHeight: 22 },
+  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
+  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
+  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
 
   heroCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 8 },
   heroTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
@@ -230,34 +232,34 @@ const styles = StyleSheet.create({
   heroSession: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
   heroIntensity: { fontSize: 12, fontWeight: '900' },
   heroButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
-  heroButtonRest: { backgroundColor: '#102016', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  heroButtonText: { color: '#000D1A', fontSize: 12, fontWeight: '900' },
-  heroButtonTextRest: { color: '#8FAEC8', fontSize: 12, fontWeight: '900' },
-  detailBox: { backgroundColor: '#000D1A', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', padding: 12, gap: 5, marginTop: 4 },
+  heroButtonRest: { backgroundColor: '#102016', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
+  heroButtonText: { color: '#080c05', fontSize: 12, fontWeight: '900' },
+  heroButtonTextRest: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
+  detailBox: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 5, marginTop: 4 },
   detailLine: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  briefCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 7 },
-  briefCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 7 },
+  briefCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 7 },
+  briefCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 7 },
   briefStatus: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
-  briefStatusWarn: { color: '#D4A01A', fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
+  briefStatusWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
   briefTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
-  briefTitleWarn: { color: '#D4A01A', fontSize: 20, fontWeight: '900' },
+  briefTitleWarn: { color: '#ffaa44', fontSize: 20, fontWeight: '900' },
   briefText: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800' },
-  briefSubText: { color: '#8FAEC8', fontSize: 12, lineHeight: 18 },
+  briefSubText: { color: '#b8c0b0', fontSize: 12, lineHeight: 18 },
   briefButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
-  briefButtonWarn: { backgroundColor: '#D4A01A', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
-  briefButtonText: { color: '#000D1A', fontSize: 12, fontWeight: '900' },
+  briefButtonWarn: { backgroundColor: '#ffaa44', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
+  briefButtonText: { color: '#080c05', fontSize: 12, fontWeight: '900' },
   briefButtonTextWarn: { color: 'rgba(212,160,26,0.1)', fontSize: 12, fontWeight: '900' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  statCard: { width: '47%', backgroundColor: '#00253D', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 4 },
+  statCard: { width: '47%', backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 4 },
   statKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
   statNumber: { color: '#ffffff', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  statNumberWarn: { color: '#D4A01A', fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statNumberWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900', marginTop: 4 },
   statNumberGood: { color: '#B5852C', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  statLabel: { color: '#8FAEC8', fontSize: 11, fontWeight: '800' },
+  statLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
 
-  rationaleCard: { backgroundColor: '#00253D', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 6 },
-  rationaleCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 6 },
+  rationaleCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
+  rationaleCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 6 },
   rationaleKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   rationaleText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
 
@@ -265,9 +267,9 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
   sectionPill: { color: '#B5852C', borderWidth: 1, borderColor: '#274b32', borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 
-  weekList: { backgroundColor: '#00253D', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
+  weekList: { backgroundColor: '#0c1008', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', overflow: 'hidden' },
   miniRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#162218' },
-  miniRowToday: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#162218', backgroundColor: '#003050' },
+  miniRowToday: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#162218', backgroundColor: '#141810' },
   miniRowRest: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#0e1710', backgroundColor: '#080f0a' },
   miniLeft: { flexDirection: 'row', gap: 14, alignItems: 'center' },
   miniDay: { color: '#ffffff', fontSize: 13, fontWeight: '900', width: 32 },
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
   miniFocusRest: { color: '#4a5e4a', fontSize: 13, fontWeight: '800' },
   miniIntensity: { fontSize: 11, fontWeight: '900' },
 
-  ruleCard: { backgroundColor: '#111a10', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.2)', gap: 6 },
+  ruleCard: { backgroundColor: '#111a10', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.2)', gap: 6 },
   ruleTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   ruleText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
 });

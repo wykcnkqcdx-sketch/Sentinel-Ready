@@ -88,8 +88,8 @@ const ts = StyleSheet.create({
   btn: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 6,
+    backgroundColor: 'rgba(181,133,44,0.12)',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
     alignItems: 'center',
@@ -97,7 +97,7 @@ const ts = StyleSheet.create({
   },
   btnText: { color: '#B5852C', fontSize: 18, fontWeight: '900', lineHeight: 22 },
   value: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', minWidth: 32, textAlign: 'center' },
-  colon: { color: '#8FAEC8', fontSize: 22, fontWeight: '900' },
+  colon: { color: '#b8c0b0', fontSize: 22, fontWeight: '900' },
 });
 
 // ---------------------------------------------------------------------------
@@ -156,7 +156,7 @@ export default function NotificationsScreen() {
   const permDotColor =
     permStatus === 'granted' ? '#B5852C'
     : permStatus === 'denied' ? '#ff6b6b'
-    : '#D4A01A';
+    : '#ffaa44';
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={s.content}>
@@ -192,8 +192,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.checkInEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, checkInEnabled: v })}
-            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={prefs.checkInEnabled ? '#B5852C' : '#8FAEC8'}
+            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
+            thumbColor={prefs.checkInEnabled ? '#B5852C' : '#b8c0b0'}
           />
         </View>
         {prefs.checkInEnabled && (
@@ -217,8 +217,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.preSessionEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, preSessionEnabled: v })}
-            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={prefs.preSessionEnabled ? '#B5852C' : '#8FAEC8'}
+            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
+            thumbColor={prefs.preSessionEnabled ? '#B5852C' : '#b8c0b0'}
           />
         </View>
         {prefs.preSessionEnabled && (
@@ -242,8 +242,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.restNudgeEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, restNudgeEnabled: v })}
-            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={prefs.restNudgeEnabled ? '#B5852C' : '#8FAEC8'}
+            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
+            thumbColor={prefs.restNudgeEnabled ? '#B5852C' : '#b8c0b0'}
           />
         </View>
         <Text style={s.detailText}>
@@ -281,18 +281,18 @@ export default function NotificationsScreen() {
 // ---------------------------------------------------------------------------
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000D1A' },
+  screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
   kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#8FAEC8', fontSize: 14 },
+  subtitle: { color: '#b8c0b0', fontSize: 14 },
 
   card: {
-    backgroundColor: '#00253D',
-    borderRadius: 16,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 16,
     gap: 10,
   },
@@ -304,13 +304,13 @@ const s = StyleSheet.create({
     marginBottom: 2,
   },
   fieldLabel: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
-  detailText: { color: '#8FAEC8', fontSize: 13, lineHeight: 19 },
+  detailText: { color: '#b8c0b0', fontSize: 13, lineHeight: 19 },
 
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
   permRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  permStatus: { color: '#8FAEC8', fontWeight: '700' },
+  permStatus: { color: '#b8c0b0', fontWeight: '700' },
 
   grantBtn: {
     backgroundColor: 'rgba(181,133,44,0.3)',
@@ -323,7 +323,7 @@ const s = StyleSheet.create({
 
   testBtn: {
     backgroundColor: 'rgba(181,133,44,0.3)',
-    borderRadius: 14,
+    borderRadius: 6,
     padding: 18,
     alignItems: 'center',
     marginTop: 6,
@@ -332,7 +332,7 @@ const s = StyleSheet.create({
   testBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
 
   cancelBtn: {
-    borderRadius: 14,
+    borderRadius: 6,
     padding: 18,
     alignItems: 'center',
     borderWidth: 1,

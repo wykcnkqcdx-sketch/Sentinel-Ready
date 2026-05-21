@@ -92,7 +92,7 @@ function ScoreBar({ points, max, colour }: { points: number; max: number; colour
 }
 
 const barStyles = StyleSheet.create({
-  track: { height: 5, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden', flex: 1 },
+  track: { height: 5, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 3, overflow: 'hidden', flex: 1 },
   fill: { height: '100%', borderRadius: 3 },
 });
 
@@ -154,11 +154,11 @@ export default function RuckScoreScreen() {
   const physicalDomain = useMemo(() => h2fDomains.find(d => d.id === 'physical') ?? null, [h2fDomains]);
 
   const scoreColour = !ruckScore
-    ? '#8FAEC8'
+    ? '#b8c0b0'
     : ruckScore.score >= 82
     ? '#B5852C'
     : ruckScore.score >= 68
-    ? '#D4A01A'
+    ? '#ffaa44'
     : '#ff8080';
 
   if (ruckLogs.length === 0) {
@@ -252,7 +252,7 @@ export default function RuckScoreScreen() {
               <ScoreBar
                 points={f.points}
                 max={22}
-                colour={f.points >= 14 ? '#B5852C' : f.points >= 8 ? '#D4A01A' : '#ff8080'}
+                colour={f.points >= 14 ? '#B5852C' : f.points >= 8 ? '#ffaa44' : '#ff8080'}
               />
               <Text style={styles.factorPoints}>{f.points}</Text>
             </View>
@@ -296,7 +296,7 @@ export default function RuckScoreScreen() {
       {physicalDomain && (
         <View style={[styles.h2fCard, {
           borderColor: physicalDomain.status === 'GREEN' ? 'rgba(181,133,44,0.3)'
-            : physicalDomain.status === 'AMBER' ? 'rgba(212,160,26,0.3)'
+            : physicalDomain.status === 'AMBER' ? 'rgba(255,170,68,0.3)'
             : '#7a2020',
         }]}>
           <View style={styles.h2fHeaderRow}>
@@ -308,7 +308,7 @@ export default function RuckScoreScreen() {
             }]}>
               <Text style={[styles.h2fBadgeText, {
                 color: physicalDomain.status === 'GREEN' ? '#B5852C'
-                  : physicalDomain.status === 'AMBER' ? '#D4A01A'
+                  : physicalDomain.status === 'AMBER' ? '#ffaa44'
                   : '#ff8080',
               }]}>{physicalDomain.status}</Text>
             </View>
@@ -352,11 +352,11 @@ export default function RuckScoreScreen() {
           : null;
         const sc = s?.score ?? null;
         const scColour = !sc
-          ? '#8FAEC8'
+          ? '#b8c0b0'
           : sc >= 82
           ? '#B5852C'
           : sc >= 68
-          ? '#D4A01A'
+          ? '#ffaa44'
           : '#ff8080';
         return (
           <View key={log.id} style={styles.historyRow}>
@@ -384,65 +384,65 @@ export default function RuckScoreScreen() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000D1A' },
+  screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, paddingBottom: 120, gap: 14 },
   kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#8FAEC8', fontSize: 15, lineHeight: 22 },
+  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
 
-  emptyCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8 },
+  emptyCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 8 },
   emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  emptyText: { color: '#8FAEC8', fontSize: 14, lineHeight: 21 },
+  emptyText: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
 
-  controlCard: { backgroundColor: '#00253D', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8 },
+  controlCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 8 },
   controlSectionLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  pill: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: 'rgba(181,133,44,0.12)', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
   pillActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
-  pillText: { color: '#8FAEC8', fontSize: 12, fontWeight: '900' },
+  pillText: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
   pillTextActive: { color: '#FFFFFF' },
-  controlHint: { color: '#8FAEC8', fontSize: 11, marginTop: 4 },
+  controlHint: { color: '#b8c0b0', fontSize: 11, marginTop: 4 },
 
-  scoreCard: { backgroundColor: '#003050', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 12 },
+  scoreCard: { backgroundColor: '#141810', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 12 },
   scoreHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   scoreKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   scoreBig: { fontSize: 56, fontWeight: '900', lineHeight: 60 },
   scoreRight: { alignItems: 'flex-end', gap: 3 },
-  scoreSubLabel: { color: '#8FAEC8', fontSize: 10, fontWeight: '800' },
+  scoreSubLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800' },
   scoreSubValue: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
+  divider: { height: 1, backgroundColor: 'rgba(181,133,44,0.12)' },
   factorRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   factorLeft: { width: 110, gap: 1 },
   factorLabel: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
-  factorValue: { color: '#8FAEC8', fontSize: 11 },
+  factorValue: { color: '#b8c0b0', fontSize: 11 },
   factorPoints: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', width: 24, textAlign: 'right' },
-  findingText: { color: '#D4A01A', fontSize: 13, fontWeight: '800', lineHeight: 20 },
+  findingText: { color: '#ffaa44', fontSize: 13, fontWeight: '800', lineHeight: 20 },
   recommendationText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
 
-  pandolfCard: { backgroundColor: '#00253D', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
+  pandolfCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
   pandolfKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   pandolfStatRow: { flexDirection: 'row', alignItems: 'center' },
   pandolfStat: { flex: 1, alignItems: 'center', gap: 4 },
   pandolfNumber: { color: '#ffffff', fontSize: 26, fontWeight: '900' },
-  pandolfLabel: { color: '#8FAEC8', fontSize: 10, fontWeight: '800', textTransform: 'uppercase', textAlign: 'center' },
-  pandolfDivider: { width: 1, height: 40, backgroundColor: 'rgba(255,255,255,0.08)' },
-  pandolfNote: { color: '#8FAEC8', fontSize: 12, lineHeight: 18, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', paddingTop: 10 },
+  pandolfLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800', textTransform: 'uppercase', textAlign: 'center' },
+  pandolfDivider: { width: 1, height: 40, backgroundColor: 'rgba(181,133,44,0.12)' },
+  pandolfNote: { color: '#b8c0b0', fontSize: 12, lineHeight: 18, borderTopWidth: 1, borderTopColor: 'rgba(181,133,44,0.12)', paddingTop: 10 },
 
-  h2fCard: { backgroundColor: '#00253D', borderRadius: 16, padding: 16, borderWidth: 1, gap: 8 },
+  h2fCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, gap: 8 },
   h2fHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   h2fKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   h2fBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   h2fBadgeText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
   h2fValue: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  h2fDetail: { color: '#8FAEC8', fontSize: 13, lineHeight: 20 },
+  h2fDetail: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
   sectionTag: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#274b32', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
 
-  historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#00253D', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c1008', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
   historyLeft: { gap: 3 },
-  historyDate: { color: '#8FAEC8', fontSize: 12, fontWeight: '800' },
+  historyDate: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
   historyDetail: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
   historyScore: { fontSize: 22, fontWeight: '900' },
 
