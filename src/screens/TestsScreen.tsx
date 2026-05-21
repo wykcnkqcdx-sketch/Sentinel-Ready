@@ -159,8 +159,8 @@ export default function TestsScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>SENTINEL READY</Text>
-      <Text style={styles.title}>Fitness Test Centre</Text>
+      <Text style={styles.kicker}>OPERATOR TESTS | MISSION: READY</Text>
+      <Text style={styles.title}>Operator Tests</Text>
       <View style={styles.headerRule} />
       <Text style={styles.subtitle}>
         Track test results, monitor readiness for assessment and review performance history by test type.
@@ -390,12 +390,12 @@ export default function TestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  content: { padding: 20, paddingBottom: 120, gap: 14 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
   headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
+  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
 
   heroCard: { backgroundColor: '#0c1008', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
   heroCardGood: { backgroundColor: '#0c1008', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },

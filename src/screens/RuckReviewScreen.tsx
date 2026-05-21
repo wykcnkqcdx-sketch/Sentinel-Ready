@@ -231,7 +231,7 @@ export default function RuckReviewScreen() {
   if (!log || !log.ruck) {
     return (
       <View style={[styles.screen, styles.missingWrap]}>
-        <Text style={styles.kicker}>RUCK REVIEW</Text>
+        <Text style={styles.kicker}>MISSION COMPLETE DEBRIEF</Text>
         <Text style={styles.title}>Session not found</Text>
         <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/ruck')}>
           <Text style={styles.primaryButtonText}>Back to Ruck</Text>
@@ -246,7 +246,7 @@ export default function RuckReviewScreen() {
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
 
-      <Text style={styles.kicker}>RUCK REVIEW</Text>
+      <Text style={styles.kicker}>MISSION COMPLETE DEBRIEF</Text>
       <Text style={styles.title}>{log.type}</Text>
       <Text style={styles.subtitle}>{log.date}</Text>
 
@@ -399,14 +399,14 @@ export default function RuckReviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  content: { padding: 18, paddingBottom: 90, gap: 14 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 90, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   missingWrap: { padding: 20, justifyContent: 'center', gap: 14 },
   backButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(181,133,44,0.18)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   backButtonText: { color: '#c8f7d0', fontSize: 13, fontWeight: '900' },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 2.2 },
-  title: { color: '#ffffff', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 14, fontWeight: '800' },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, fontWeight: '800' },
   exportRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   exportButton: { alignSelf: 'flex-start', backgroundColor: '#B5852C', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 },
   exportButtonDisabled: { opacity: 0.45 },

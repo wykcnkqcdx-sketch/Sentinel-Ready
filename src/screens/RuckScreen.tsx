@@ -425,8 +425,11 @@ export default function RuckScreen() {
     <View style={styles.screen}>
       {/* Header row */}
       <View style={styles.headerBlock}>
-        <Text style={styles.kicker}>LOAD CARRIAGE</Text>
-        <Text style={styles.title}>Ruck Performance</Text>
+        <View style={styles.ruckBrandRow}>
+          <Text style={styles.kicker}>SENTINEL READY - RUCK TRACK</Text>
+          <Text style={styles.ruckStatus}>[GPS: ARMED]</Text>
+        </View>
+        <Text style={styles.title}>Mission HUD</Text>
       </View>
 
       {/* Tab pills */}
@@ -438,7 +441,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'stats' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'stats' && styles.tabPillTextActive]}>
-            Stats
+            Simple
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -448,7 +451,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'track' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'track' && styles.tabPillTextActive]}>
-            Track
+            Mission
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -458,7 +461,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'routes' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'routes' && styles.tabPillTextActive]}>
-            Routes
+            Map
           </Text>
         </TouchableOpacity>
       </View>
@@ -716,18 +719,20 @@ export default function RuckScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  content: { padding: 20, paddingBottom: 120, gap: 14 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  title: { color: '#F4BD5F', fontSize: 28, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
 
-  headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10, gap: 4 },
-  tabRow: { flexDirection: 'row', backgroundColor: '#0c1008', borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
-  tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
-  tabPillActive: { backgroundColor: 'rgba(181,133,44,0.3)' },
-  tabPillText: { color: '#b8c0b0', fontSize: 13, fontWeight: '900' },
-  tabPillTextActive: { color: '#ffffff' },
+  headerBlock: { paddingHorizontal: 10, paddingTop: 12, paddingBottom: 8, gap: 4, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  ruckBrandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  ruckStatus: { color: '#21e371', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  tabRow: { flexDirection: 'row', backgroundColor: '#111d15', borderRadius: 2, padding: 3, marginHorizontal: 10, marginBottom: 12, borderWidth: 1, borderColor: '#3F4727', maxWidth: 820, width: '95%', alignSelf: 'center' },
+  tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 2, borderWidth: 1, borderColor: 'transparent' },
+  tabPillActive: { backgroundColor: '#18221c', borderColor: '#B5852C' },
+  tabPillText: { color: '#d3c4b1', fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  tabPillTextActive: { color: '#F4BD5F' },
 
   volumeCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },

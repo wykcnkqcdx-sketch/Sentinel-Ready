@@ -140,8 +140,8 @@ export default function LogScreen() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.kicker}>SENTINEL READY</Text>
-            <Text style={styles.title}>Training Log</Text>
+            <Text style={styles.kicker}>SENTINEL READY TRAINING LOG</Text>
+            <Text style={styles.title}>Training Logbook</Text>
             <View style={styles.headerRule} />
             <Text style={styles.subtitle}>
               Review saved sessions, readiness, fatigue watch and operational training balance.
@@ -278,15 +278,15 @@ export default function LogScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  loadingScreen: { flex: 1, backgroundColor: '#080c05', justifyContent: 'center', alignItems: 'center' },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  loadingScreen: { flex: 1, backgroundColor: '#050e09', justifyContent: 'center', alignItems: 'center' },
   loadingText: { color: '#B5852C', fontSize: 15, fontWeight: '900' },
-  listContent: { padding: 18, paddingBottom: 110, gap: 14 },
+  listContent: { padding: 10, paddingBottom: 110, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   header: { gap: 12, marginBottom: 4 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 1.8 },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
   headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
+  title: { color: '#F4BD5F', fontSize: 32, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
   topButtonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   primaryButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 16 },
   primaryButtonText: { color: '#080c05', fontSize: 13, fontWeight: '900' },

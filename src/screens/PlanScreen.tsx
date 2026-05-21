@@ -125,8 +125,8 @@ export default function PlanScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.planHeader}>
         <View style={styles.planHeaderLeft}>
-          <Text style={styles.kicker}>SENTINEL READY</Text>
-          <Text style={styles.title}>7-Day Training Plan</Text>
+          <Text style={styles.kicker}>MISSION PLANNING</Text>
+          <Text style={styles.title}>7-Day Mission Plan</Text>
           <View style={styles.headerRule} />
         </View>
         <TouchableOpacity
@@ -266,14 +266,14 @@ export default function PlanScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#06100b' },
-  content: { padding: 20, paddingBottom: 120, gap: 14 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   planHeaderLeft: { flex: 1 },
   editPlanButton: {
     borderWidth: 1,
     borderColor: '#141810',
-    borderRadius: 8,
+    borderRadius: 2,
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginTop: 4,
@@ -291,10 +291,10 @@ const styles = StyleSheet.create({
   planModePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   planModePillTextAmber: { color: '#FFB86B' },
   planModePillTextMuted: { color: '#b8c0b0' },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
   headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
+  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
 
   thisWeekCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
   cardKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },

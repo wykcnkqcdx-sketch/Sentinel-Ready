@@ -11,26 +11,26 @@ import { Platform } from 'react-native';
 export const DS = {
   // Backgrounds — tactical black/green identity
   bgPrimary:   '#050e09',      // Tactical black (primary app background)
-  bgCard:      '#0c1008',      // Dark tactical panel
-  bgCardAlt:   '#080c05',      // Deeper nested panel
-  bgSurface:   '#141810',      // Control surfaces (inputs, chips, badges)
+  bgCard:      '#111d15',      // Stitch tactical panel
+  bgCardAlt:   '#07100b',      // Deep inset well
+  bgSurface:   '#18221c',      // Control surfaces (inputs, chips, badges)
 
   // DF Gold — primary accent (Pantone 125)
   gold:        '#B5852C',
-  goldSoft:    '#C9A04D',
+  goldSoft:    '#F4BD5F',
   goldMuted:   'rgba(181,133,44,0.15)',
 
   // Text
-  textPrimary:   '#FFFFFF',
-  textSecondary: '#b8c0b0',    // Warm muted (army-toned, not blue-grey)
-  textMuted:     '#4a5a44',    // Army-toned dim text
+  textPrimary:   '#dae5dc',
+  textSecondary: '#d3c4b1',    // Warm muted tactical text
+  textMuted:     '#9c8f7d',    // Low-priority data text
 
   // Borders
-  border:        'rgba(181,133,44,0.12)',  // Gold-tinted, not plain white
-  borderActive:  'rgba(181,133,44,0.5)',
+  border:        '#3F4727',
+  borderActive:  '#B5852C',
 
   // Semantic — mapped to DF service colours
-  success:  '#5E7A2F',         // Army Green (lightened for UI readability)
+  success:  '#21e371',         // Stitch operational green
   armyGreen:'#3F4727',         // Official DF Army Green (Pantone 5743)
   warning:  '#ffaa44',         // Bright operational amber
   danger:   '#e05050',         // Operational red
