@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTINEL READY RECOVERY CENTER</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..900&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#65ff91",
+                    "surface-container-lowest": "#07100b",
+                    "error-container": "#93000a",
+                    "on-secondary": "#2c3315",
+                    "background": "#0b1510",
+                    "inverse-primary": "#7e5700",
+                    "tertiary-fixed-dim": "#21e371",
+                    "secondary-fixed": "#dee7bb",
+                    "primary": "#f4bd5f",
+                    "tertiary": "#21e371",
+                    "on-primary-fixed": "#281900",
+                    "on-tertiary-fixed": "#00210a",
+                    "surface-container-low": "#141e18",
+                    "surface-bright": "#313c35",
+                    "on-primary": "#432c00",
+                    "on-error-container": "#ffdad6",
+                    "on-background": "#dae5dc",
+                    "surface-tint": "#f4bd5f",
+                    "inverse-on-surface": "#28332d",
+                    "on-surface": "#dae5dc",
+                    "secondary-container": "#444c2c",
+                    "inverse-surface": "#dae5dc",
+                    "surface-container-highest": "#2d3731",
+                    "secondary-fixed-dim": "#c2cba1",
+                    "on-secondary-container": "#b4bd93",
+                    "on-error": "#690005",
+                    "surface-container-high": "#222c26",
+                    "surface": "#0b1510",
+                    "on-primary-fixed-variant": "#604100",
+                    "on-tertiary-fixed-variant": "#005323",
+                    "on-primary-container": "#3a2600",
+                    "surface-container": "#18221c",
+                    "on-tertiary": "#003916",
+                    "surface-dim": "#0b1510",
+                    "on-tertiary-container": "#003112",
+                    "error": "#ffb4ab",
+                    "surface-variant": "#2d3731",
+                    "primary-container": "#b9882f",
+                    "outline": "#9c8f7d",
+                    "tertiary-container": "#00a74e",
+                    "on-secondary-fixed": "#171e04",
+                    "outline-variant": "#4f4537",
+                    "primary-fixed-dim": "#f4bd5f",
+                    "secondary": "#c2cba1",
+                    "on-secondary-fixed-variant": "#424a2a",
+                    "on-surface-variant": "#d3c4b1",
+                    "primary-fixed": "#ffdeac"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "10px",
+                    "xs": "4px",
+                    "base": "4px",
+                    "sm": "8px",
+                    "lg": "16px",
+                    "gutter": "12px",
+                    "xl": "24px",
+                    "md": "12px",
+                    "margin-desktop": "18px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Space Grotesk"],
+                    "data-mono": ["JetBrains Mono"],
+                    "display-lg": ["Space Grotesk"],
+                    "body-bold": ["Inter"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Space Grotesk"],
+                    "body-base": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "data-mono": ["13px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["34px", {"lineHeight": "38px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "body-bold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.15em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "28px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                    "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #050e09; /* Deep Tactical Black */
+            color: #dae5dc;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wireframe-border {
+            border: 1px solid #3F4727; /* Army Green */
+        }
+        .active-border {
+            border: 1px solid #B5852C; /* Tactical Gold */
+        }
+        .gold-divider {
+            border-bottom: 1px solid #B5852C;
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(181, 133, 44, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-background fixed top-0 left-0 w-full z-50 border-b border-outline">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-[820px] mx-auto h-16">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="security">security</span>
+<h1 class="text-headline-md font-headline-md font-black text-primary uppercase tracking-tighter">SENTINEL READY [09:42:00]</h1>
+</div>
+<div class="text-label-caps font-label-caps text-primary">[STATUS: GREEN]</div>
+</div>
+</header>
+<main class="max-w-[820px] mx-auto pt-20 px-margin-mobile md:px-margin-desktop space-y-md">
+<!-- Hero Recovery Score -->
+<section class="bg-[#111d15] wireframe-border p-md relative overflow-hidden">
+<div class="scanline"></div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<span class="text-label-caps font-label-caps text-primary-container">[ RECOVERY: SCORE ]</span>
+<div class="flex items-baseline gap-xs">
+<span class="text-display-lg font-display-lg text-primary">72</span>
+<span class="text-headline-md font-headline-md text-primary">%</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-xs">
+<div class="flex items-center gap-xs bg-black px-sm py-1 border border-primary">
+<div class="w-2 h-2 rounded-full bg-[#f4bd5f] animate-pulse"></div>
+<span class="text-label-caps font-label-caps text-primary">[ FATIGUE WARNING: AMBER ]</span>
+</div>
+<div class="text-data-mono font-data-mono text-on-surface-variant">OPERATIONAL CAPACITY: REDUCED</div>
+</div>
+</div>
+<div class="mt-lg h-2 w-full bg-black wireframe-border overflow-hidden">
+<div class="h-full bg-primary" style="width: 72%;"></div>
+</div>
+</section>
+<!-- Alerts Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="bg-[#111d15] wireframe-border p-md flex items-center gap-md border-l-4 border-error">
+<span class="material-symbols-outlined text-error" data-icon="bedtime">bedtime</span>
+<div>
+<div class="text-label-caps font-label-caps text-error">CRITICAL ALERT</div>
+<div class="font-body-bold text-body-bold">SLEEP DEFICIT DETECTED</div>
+</div>
+</div>
+<div class="bg-[#111d15] wireframe-border p-md flex items-center gap-md border-l-4 border-error">
+<span class="material-symbols-outlined text-error" data-icon="water_drop">water_drop</span>
+<div>
+<div class="text-label-caps font-label-caps text-error">CRITICAL ALERT</div>
+<div class="font-body-bold text-body-bold">HYDRATION CRITICAL</div>
+</div>
+</div>
+</div>
+<!-- Protocol & Advice -->
+<section class="bg-[#111d15] wireframe-border">
+<div class="gold-divider p-md flex justify-between items-center">
+<span class="text-label-caps font-label-caps text-primary-fixed">[ RECOMMENDED PROTOCOL ]</span>
+<span class="material-symbols-outlined text-primary-fixed" data-icon="bolt">bolt</span>
+</div>
+<div class="p-md space-y-md">
+<div class="flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-primary">[ MOBILITY FLOW: LOWER POSTERIOR ]</span>
+<button class="bg-primary text-on-primary font-label-caps px-lg py-sm uppercase font-black hover:opacity-90 active:scale-95 transition-all">START</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-sm pt-sm border-t border-[#3F4727]">
+<div class="bg-black p-sm wireframe-border">
+<div class="text-label-caps font-label-caps text-on-surface-variant">DELOAD ADVICE</div>
+<div class="font-body-bold text-body-bold text-primary">"REDUCE LOAD BY 20% FOR NEXT 48H"</div>
+</div>
+<div class="bg-black p-sm wireframe-border">
+<div class="text-label-caps font-label-caps text-on-surface-variant">SESSION INTENSITY</div>
+<div class="font-body-bold text-body-bold">ZONE 2 - RECOVERY FOCUS</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Grid (Bento Style) -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-md">
+<div class="bg-[#111d15] wireframe-border p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-label-caps font-label-caps text-on-surface-variant">SLEEP</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="schedule">schedule</span>
+</div>
+<div class="text-headline-md font-headline-md">6h 12m</div>
+<div class="text-data-mono font-data-mono text-error">-1h 48m vs Base</div>
+</div>
+<div class="bg-[#111d15] wireframe-border p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-label-caps font-label-caps text-on-surface-variant">HRV</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="monitor_heart">monitor_heart</span>
+</div>
+<div class="text-headline-md font-headline-md">55ms</div>
+<div class="text-data-mono font-data-mono text-tertiary">STABLE</div>
+</div>
+<div class="bg-[#111d15] wireframe-border p-md flex flex-col justify-between h-32 col-span-2 md:col-span-1">
+<div class="flex justify-between items-start">
+<span class="text-label-caps font-label-caps text-on-surface-variant">RPE AVG</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="assessment">assessment</span>
+</div>
+<div class="text-headline-md font-headline-md">7/10</div>
+<div class="text-data-mono font-data-mono text-primary">THRESHOLD MET</div>
+</div>
+</div>
+<!-- Biometric Visualization -->
+<section class="bg-[#111d15] wireframe-border p-md h-64 relative flex items-center justify-center overflow-hidden">
+<div class="absolute top-md left-md text-label-caps font-label-caps text-primary-fixed-dim">[ NEURAL: READINESS: SCAN ]</div>
+<div class="w-full h-32 flex items-end gap-1 px-lg">
+<!-- Simple reactive bar chart visualization -->
+<div class="bg-primary/20 w-full h-[40%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[65%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[55%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/60 w-full h-[85%] wireframe-border border-primary"></div>
+<div class="bg-primary/20 w-full h-[45%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[30%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[50%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[75%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[60%] wireframe-border border-primary/40"></div>
+<div class="bg-primary/20 w-full h-[40%] wireframe-border border-primary/40"></div>
+</div>
+<div class="absolute bottom-md right-md text-data-mono font-data-mono text-[10px] opacity-50">SNTL_RECOV_SYS_v4.2.0</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-16 bg-background border-t border-primary">
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2 transition-all duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="directions_run" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+</a>
+</nav>
+<script>
+        // Simple atmospheric interaction
+        document.querySelectorAll('.wireframe-border').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.boxShadow = '0 0 15px rgba(181, 133, 44, 0.1)';
+                card.style.transition = 'all 0.3s ease';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.boxShadow = 'none';
+            });
+        });
+
+        // Dynamic timestamp update
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const header = document.querySelector('h1');
+            if (header) {
+                header.textContent = `SENTINEL READY [${timeStr}]`;
+            }
+        }
+        setInterval(updateTime, 1000);
+    </script>
+</body></html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..900&amp;family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#65ff91",
+                    "surface-container-lowest": "#07100b",
+                    "error-container": "#93000a",
+                    "on-secondary": "#2c3315",
+                    "background": "#0b1510",
+                    "inverse-primary": "#7e5700",
+                    "tertiary-fixed-dim": "#21e371",
+                    "secondary-fixed": "#dee7bb",
+                    "primary": "#f4bd5f",
+                    "tertiary": "#21e371",
+                    "on-primary-fixed": "#281900",
+                    "on-tertiary-fixed": "#00210a",
+                    "surface-container-low": "#141e18",
+                    "surface-bright": "#313c35",
+                    "on-primary": "#432c00",
+                    "on-error-container": "#ffdad6",
+                    "on-background": "#dae5dc",
+                    "surface-tint": "#f4bd5f",
+                    "inverse-on-surface": "#28332d",
+                    "on-surface": "#dae5dc",
+                    "secondary-container": "#444c2c",
+                    "inverse-surface": "#dae5dc",
+                    "surface-container-highest": "#2d3731",
+                    "secondary-fixed-dim": "#c2cba1",
+                    "on-secondary-container": "#b4bd93",
+                    "on-error": "#690005",
+                    "surface-container-high": "#222c26",
+                    "surface": "#0b1510",
+                    "on-primary-fixed-variant": "#604100",
+                    "on-tertiary-fixed-variant": "#005323",
+                    "on-primary-container": "#3a2600",
+                    "surface-container": "#18221c",
+                    "on-tertiary": "#003916",
+                    "surface-dim": "#0b1510",
+                    "on-tertiary-container": "#003112",
+                    "error": "#ffb4ab",
+                    "surface-variant": "#2d3731",
+                    "primary-container": "#b9882f",
+                    "outline": "#9c8f7d",
+                    "tertiary-container": "#00a74e",
+                    "on-secondary-fixed": "#171e04",
+                    "outline-variant": "#4f4537",
+                    "primary-fixed-dim": "#f4bd5f",
+                    "secondary": "#c2cba1",
+                    "on-secondary-fixed-variant": "#424a2a",
+                    "on-surface-variant": "#d3c4b1",
+                    "primary-fixed": "#ffdeac"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "10px",
+                    "xs": "4px",
+                    "base": "4px",
+                    "sm": "8px",
+                    "lg": "16px",
+                    "gutter": "12px",
+                    "xl": "24px",
+                    "md": "12px",
+                    "margin-desktop": "18px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Space Grotesk"],
+                    "data-mono": ["JetBrains Mono"],
+                    "display-lg": ["Space Grotesk"],
+                    "body-bold": ["Inter"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Space Grotesk"],
+                    "body-base": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "data-mono": ["13px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["34px", {"lineHeight": "38px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "body-bold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.15em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "28px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                    "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hud-scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(181, 133, 44, 0.05) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+        .map-mesh {
+            background-image: radial-gradient(rgba(63, 71, 39, 0.4) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base overflow-hidden select-none">
+<!-- TOP APP BAR -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-background border-b border-outline">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-[820px] mx-auto h-14">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="security">security</span>
+<h1 class="text-headline-md font-headline-md font-black text-primary uppercase tracking-tighter">SENTINEL READY [09:42:00]</h1>
+</div>
+<div class="text-label-caps font-label-caps text-primary">[STATUS: GREEN]</div>
+</div>
+</header>
+<!-- MAIN OPERATIONAL CANVAS (MAP) -->
+<main class="relative h-screen w-full pt-14 pb-16 overflow-hidden max-w-[820px] mx-auto bg-surface-container-lowest">
+<!-- MAP BACKGROUND LAYER -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-60 grayscale brightness-50" data-alt="A high-contrast dark mode topographic map showing elevation contours and rugged terrain. The map is rendered in deep tactical blacks and dark foliage greens, with glowing gold lines indicating hiking routes. The aesthetic is clinical and military-grade, suggesting a specialized satellite interface used for high-stakes mission planning in mountainous environments." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFRGM_ZiqlNEM29_CDeO_ZfPsogtRAZu4FwLqNAeFilqCMfFJSWxoLcvChXUNc9E0NPSIveukvpUaEJ9yVaCI1FaXEr5ROkxeHzd-cAm0V7tMHQ0IgF2K2S1nJljxbtnvBGebQf8HQqOD3iVxwseLCtjDtgbyGU9oA8FbcfKcL0RO77nWY7xyu3eT9V0SsJB_IVI-ch5w8IfO5N9oa4xAxa-5KVYgjJixE_WWHqoXvdbmKB3_EnqZ-AGqSa12_obBSyQT4EPCRV1rR"/>
+<div class="absolute inset-0 map-mesh opacity-30"></div>
+<div class="absolute inset-0 hud-scanline"></div>
+<!-- TACTICAL OVERLAY ARTIFACTS -->
+<div class="absolute top-20 left-4 text-primary opacity-80 pointer-events-none">
+<div class="text-label-caps font-label-caps border-l-2 border-primary pl-2 py-1 bg-black/40">
+                    LAT: 51.5074 N<br/>LON: 0.1278 W<br/>ALT: 42M
+                </div>
+</div>
+<!-- SEARCH & FILTERS -->
+<div class="absolute top-4 left-0 right-0 px-4 z-20 flex flex-col gap-3">
+<div class="flex gap-2">
+<div class="flex-1 flex items-center bg-black border border-secondary px-3 py-2">
+<span class="material-symbols-outlined text-primary text-sm mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-caps font-label-caps w-full placeholder:text-on-surface-variant/50 text-on-surface" placeholder="SEARCH SECTOR" type="text"/>
+</div>
+<button class="bg-black border border-secondary px-4 py-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="bookmark">bookmark</span>
+</button>
+</div>
+<!-- FILTER CHIPS -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+<button class="flex items-center gap-1 bg-surface-container-high border border-primary px-3 py-1.5 whitespace-nowrap">
+<span class="text-label-caps font-label-caps text-primary">DISTANCE</span>
+</button>
+<button class="flex items-center gap-1 bg-black border border-secondary px-3 py-1.5 whitespace-nowrap">
+<span class="text-label-caps font-label-caps text-on-surface-variant">LOAD</span>
+</button>
+<button class="flex items-center gap-1 bg-black border border-secondary px-3 py-1.5 whitespace-nowrap">
+<span class="text-label-caps font-label-caps text-on-surface-variant">ELEVATION</span>
+</button>
+<button class="flex items-center gap-1 bg-black border border-secondary px-3 py-1.5 whitespace-nowrap">
+<span class="text-label-caps font-label-caps text-on-surface-variant">RISK</span>
+</button>
+</div>
+</div>
+<!-- MAP LAYER TOGGLE -->
+<div class="absolute right-4 top-40 flex flex-col gap-2 z-20">
+<button class="w-10 h-10 bg-black/80 border border-secondary flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+</button>
+<button class="w-10 h-10 bg-black/80 border border-secondary flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="my_location">my_location</span>
+</button>
+</div>
+</div>
+<!-- BOTTOM DATA CARD -->
+<div class="absolute bottom-4 left-4 right-4 z-30">
+<div class="bg-surface-container border border-outline p-4 shadow-2xl">
+<!-- Card Header -->
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="text-label-caps font-label-caps text-on-surface-variant mb-1">[ ROUTE SELECTION ]</div>
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight uppercase">CONVENT ROAD - THE BARROW</h2>
+</div>
+<div class="bg-tertiary/20 border border-tertiary px-2 py-0.5">
+<span class="text-label-caps font-label-caps text-tertiary">EASY</span>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-3 gap-2 mb-4 border-y border-secondary py-3">
+<div class="flex flex-col">
+<span class="text-label-caps font-label-caps text-on-surface-variant text-[9px]">DISTANCE</span>
+<span class="font-data-mono text-data-mono text-primary text-lg">6.7 KM</span>
+</div>
+<div class="flex flex-col border-x border-secondary px-2">
+<span class="text-label-caps font-label-caps text-on-surface-variant text-[9px]">ELEVATION</span>
+<span class="font-data-mono text-data-mono text-primary text-lg">35M</span>
+</div>
+<div class="flex flex-col pl-2">
+<span class="text-label-caps font-label-caps text-on-surface-variant text-[9px]">EST. TIME</span>
+<span class="font-data-mono text-data-mono text-primary text-lg">38 MIN</span>
+</div>
+</div>
+<!-- Suitability Indicators -->
+<div class="flex gap-4 mb-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-label-caps font-label-caps text-on-surface-variant">LOAD: [ GREEN ]</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-label-caps font-label-caps text-on-surface-variant">RUCK RISK: [ LOW ]</span>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary py-4 text-on-primary font-label-caps flex items-center justify-center gap-2 active:scale-[0.98] transition-all group">
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="directions_run">directions_run</span>
+                    START RUCK
+                </button>
+</div>
+</div>
+</main>
+<!-- BOTTOM NAVIGATION BAR -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-16 bg-background border-t border-primary">
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2 transition-all duration-100">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="directions_run">directions_run</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+</button>
+</nav>
+<script>
+        // Micro-interaction for UI feel
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.add('scale-95');
+                setTimeout(() => this.classList.remove('scale-95'), 100);
+            });
+        });
+
+        // Simple atmospheric parallax effect on the map
+        window.addEventListener('mousemove', (e) => {
+            const map = document.querySelector('img[data-alt]');
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            map.style.transform = `scale(1.1) translate(${x}px, ${y}px)`;
+        });
+    </script>
+</body></html>
