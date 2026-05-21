@@ -55,7 +55,7 @@ export function DfiftSparkline({
           const barH = Math.abs(yOf(pt.value) - chartH);
           const x = i * (barW + BAR_GAP);
           const color = passes ? 'rgba(181,133,44,0.3)' : '#7a3a1f';
-          const topColor = passes ? '#B5852C' : '#D4A01A';
+          const topColor = passes ? '#B5852C' : '#ffaa44';
           return (
             <G key={i}>
               <Rect
@@ -102,7 +102,7 @@ export function DfiftSparkline({
           x={0}
           y={height}
           fontSize={9}
-          fill="#8FAEC8"
+          fill="#b8c0b0"
           fontWeight="bold"
         >
           {label}

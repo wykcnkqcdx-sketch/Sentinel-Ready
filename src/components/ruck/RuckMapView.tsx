@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   followButtonTextActive: {
-    color: '#000D1A',
+    color: '#080c05',
   },
   panPad: {
     position: 'absolute',

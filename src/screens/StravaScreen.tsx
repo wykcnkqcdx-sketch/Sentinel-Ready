@@ -291,7 +291,7 @@ export default function StravaScreen() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000D1A' },
+  screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, gap: 18, paddingBottom: 60 },
 
   // Header
@@ -305,19 +305,19 @@ const styles = StyleSheet.create({
   // Error
   errorBanner: {
     backgroundColor: 'rgba(212,160,26,0.1)',
-    borderRadius: 14,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(212,160,26,0.3)',
+    borderColor: 'rgba(255,170,68,0.3)',
     padding: 14,
   },
-  errorText: { color: '#D4A01A', fontSize: 13, fontWeight: '800', lineHeight: 20 },
+  errorText: { color: '#ffaa44', fontSize: 13, fontWeight: '800', lineHeight: 20 },
 
   // Connect card
   connectCard: {
-    backgroundColor: '#00253D',
-    borderRadius: 18,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 20,
     gap: 14,
   },
@@ -330,14 +330,14 @@ const styles = StyleSheet.create({
   },
   connectHeading: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
   connectSubtext: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 14,
     lineHeight: 22,
     fontWeight: '600',
   },
   connectButton: {
     backgroundColor: '#B5852C',
-    borderRadius: 14,
+    borderRadius: 6,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   credentialNote: {
-    color: '#4A6070',
+    color: '#4a5a44',
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '700',
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#003050',
+    backgroundColor: '#141810',
     borderRadius: 999,
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
@@ -384,46 +384,46 @@ const styles = StyleSheet.create({
   },
   athleteText: { color: '#B5852C', fontSize: 13, fontWeight: '800' },
   refreshButton: {
-    backgroundColor: '#00253D',
+    backgroundColor: '#0c1008',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  refreshText: { color: '#8FAEC8', fontSize: 13, fontWeight: '800' },
+  refreshText: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
 
   // Loading
   loadingBox: {
-    backgroundColor: '#00253D',
-    borderRadius: 14,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 20,
     alignItems: 'center',
   },
-  loadingText: { color: '#8FAEC8', fontSize: 14, fontWeight: '700' },
+  loadingText: { color: '#b8c0b0', fontSize: 14, fontWeight: '700' },
 
   // Activity list
   activityList: { gap: 10 },
 
   // Empty
   emptyBox: {
-    backgroundColor: '#00253D',
-    borderRadius: 14,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 20,
     alignItems: 'center',
   },
-  emptyText: { color: '#8FAEC8', fontSize: 14, fontWeight: '700' },
+  emptyText: { color: '#b8c0b0', fontSize: 14, fontWeight: '700' },
 
   // Activity card
   activityCard: {
-    backgroundColor: '#00253D',
-    borderRadius: 16,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 14,
   },
   activityMain: {
@@ -438,23 +438,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activityDate: { color: '#8FAEC8', fontSize: 12, fontWeight: '700' },
+  activityDate: { color: '#b8c0b0', fontSize: 12, fontWeight: '700' },
   typeChip: {
-    backgroundColor: '#000D1A',
+    backgroundColor: '#080c05',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  typeChipText: { color: '#8FAEC8', fontSize: 11, fontWeight: '800' },
+  typeChipText: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
   activityStats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 4,
   },
-  statText: { color: '#8FAEC8', fontSize: 12, fontWeight: '700' },
+  statText: { color: '#b8c0b0', fontSize: 12, fontWeight: '700' },
   statDot: { color: '#3d5240', fontSize: 12 },
 
   // Import button
@@ -473,10 +473,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   importedBadge: {
-    backgroundColor: '#000D1A',
+    backgroundColor: '#080c05',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     paddingHorizontal: 10,
     paddingVertical: 10,
     alignItems: 'center',

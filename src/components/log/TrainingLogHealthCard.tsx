@@ -37,16 +37,16 @@ const TrainingLogHealthCard = memo(function TrainingLogHealthCard({ score, label
 export default TrainingLogHealthCard;
 
 const styles = StyleSheet.create({
-  healthCard: { backgroundColor: '#00253D', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
-  healthCardWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', gap: 10 },
+  healthCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
+  healthCardWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 10 },
   healthHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   healthKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   healthScore: { color: '#ffffff', fontSize: 34, fontWeight: '900', marginTop: 4 },
-  healthScoreWarning: { color: '#D4A01A', fontSize: 34, fontWeight: '900', marginTop: 4 },
-  healthPill: { backgroundColor: '#003050', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  healthPillWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(212,160,26,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  healthScoreWarning: { color: '#ffaa44', fontSize: 34, fontWeight: '900', marginTop: 4 },
+  healthPill: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
+  healthPillWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
   healthPillText: { color: '#B5852C', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  healthPillTextWarning: { color: '#D4A01A', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  healthMessage: { color: '#8FAEC8', fontSize: 13, lineHeight: 19 },
-  healthMessageWarning: { color: '#D4A01A', fontSize: 13, lineHeight: 19, fontWeight: '800' },
+  healthPillTextWarning: { color: '#ffaa44', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+  healthMessage: { color: '#b8c0b0', fontSize: 13, lineHeight: 19 },
+  healthMessageWarning: { color: '#ffaa44', fontSize: 13, lineHeight: 19, fontWeight: '800' },
 });

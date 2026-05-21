@@ -64,12 +64,12 @@ const scaleStyles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(181,133,44,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
   },
   pipActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
-  pipText: { color: '#8FAEC8', fontSize: 13, fontWeight: '900' },
+  pipText: { color: '#b8c0b0', fontSize: 13, fontWeight: '900' },
   pipTextActive: { color: '#FFFFFF' },
 });
 
@@ -303,8 +303,8 @@ export default function CheckInScreen() {
           <Switch
             value={hasPain}
             onValueChange={setHasPain}
-            trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={hasPain ? '#B5852C' : '#8FAEC8'}
+            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
+            thumbColor={hasPain ? '#B5852C' : '#b8c0b0'}
           />
         </View>
 
@@ -333,8 +333,8 @@ export default function CheckInScreen() {
               <Switch
                 value={limitsTraining}
                 onValueChange={setLimitsTraining}
-                trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(181,133,44,0.3)' }}
-                thumbColor={limitsTraining ? '#B5852C' : '#8FAEC8'}
+                trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
+                thumbColor={limitsTraining ? '#B5852C' : '#b8c0b0'}
               />
             </View>
           </>
@@ -362,27 +362,27 @@ export default function CheckInScreen() {
 // ---------------------------------------------------------------------------
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000D1A' },
+  screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
   kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#8FAEC8', fontSize: 14 },
+  subtitle: { color: '#b8c0b0', fontSize: 14 },
 
   amberBanner: {
     backgroundColor: 'rgba(212,160,26,0.1)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(212,160,26,0.3)',
+    borderColor: 'rgba(255,170,68,0.3)',
     padding: 12,
   },
-  amberBannerText: { color: '#D4A01A', fontSize: 13, fontWeight: '800' },
+  amberBannerText: { color: '#ffaa44', fontSize: 13, fontWeight: '800' },
 
   card: {
-    backgroundColor: '#00253D',
-    borderRadius: 16,
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 16,
     gap: 10,
   },
@@ -402,7 +402,7 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(181,133,44,0.12)',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
     alignItems: 'center',
@@ -416,17 +416,17 @@ const s = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(181,133,44,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
   },
   pillActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
-  pillText: { color: '#8FAEC8', fontSize: 12, fontWeight: '900' },
+  pillText: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
   pillTextActive: { color: '#FFFFFF' },
 
   saveBtn: {
     backgroundColor: 'rgba(181,133,44,0.3)',
-    borderRadius: 14,
+    borderRadius: 6,
     padding: 18,
     alignItems: 'center',
     marginTop: 6,

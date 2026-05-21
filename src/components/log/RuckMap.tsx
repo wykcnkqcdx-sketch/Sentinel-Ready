@@ -86,7 +86,7 @@ export default function RuckMap({ route, routePoints, colorScheme }: RuckMapProp
     const total = coordinates.length;
     if (total === 0) return [];
     return coordinates.map((_, index) =>
-      interpolateColor('#5E7A2F', '#CC2A2A', index / Math.max(1, total - 1))
+      interpolateColor('#5E7A2F', '#e05050', index / Math.max(1, total - 1))
     );
   }, [coordinates]);
 
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   customMarker: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#5E7A2F', // Emerald green
   },
   endMarker: {
-    backgroundColor: '#CC2A2A', // Red
+    backgroundColor: '#e05050', // Red
   },
   kmMarker: {
     width: 22,

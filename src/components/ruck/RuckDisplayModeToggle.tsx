@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(7,17,12,0.9)',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     padding: 4,
   },
   button: {
@@ -56,11 +56,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#B5852C',
   },
   label: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 11,
     fontWeight: '900',
   },
   labelActive: {
-    color: '#000D1A',
+    color: '#080c05',
   },
 });

@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     right: 12,
     backgroundColor: 'rgba(7,17,12,0.96)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(181,133,44,0.12)',
     borderRadius: 6,
     flexDirection: 'row',
     overflow: 'hidden',

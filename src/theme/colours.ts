@@ -9,7 +9,7 @@ export const colours = {
   pass: '#35C759',
   warning: '#F5A623',
   fail: '#FF453A',
-  border: 'rgba(255,255,255,0.08)',
+  border: 'rgba(181,133,44,0.12)',
   orange: '#FC4C02',
   orangeLight: '#FF7A3D'
 };
