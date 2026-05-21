@@ -10,8 +10,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: DS.bgPrimary,
-          borderTopColor: DS.border,
-          borderTopWidth: 1,
+          borderTopColor: 'rgba(181,133,44,0.35)',
+          borderTopWidth: 2,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
@@ -44,7 +44,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="training"
         options={{
-          title: 'Train',
+          title: 'Training',
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="dumbbell" color={color} size={size} />,
         }}
       />
@@ -68,8 +68,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tests"
         options={{
-          title: 'Tests',
-          tabBarIcon: ({ color, size }) => <Ionicons name="ribbon-outline" color={color} size={size} />,
+          title: 'DFITT',
+          tabBarIcon: ({ color, size }) => <Ionicons name="shield-outline" color={color} size={size} />,
         }}
       />
 
