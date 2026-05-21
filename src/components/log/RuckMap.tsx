@@ -5,7 +5,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import polylineDecoder from '@mapbox/polyline';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// eslint-disable-next-line import/no-unresolved
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import Svg, { ClipPath, Defs, G, LinearGradient, Polygon, Rect, Stop, Polyline as SvgPolyline } from 'react-native-svg';
 
