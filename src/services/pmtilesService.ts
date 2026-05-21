@@ -1,4 +1,6 @@
+// eslint-disable-next-line import/no-unresolved
 import * as MapboxGLModule from '@maplibre/maplibre-react-native';
+// eslint-disable-next-line import/no-unresolved
 import { PMTiles } from 'pmtiles';
 import * as FileSystem from 'expo-file-system/legacy';
 const MapboxGL = MapboxGLModule as any;
