@@ -42,6 +42,21 @@ export const DS = {
   mapBackground: '#00101F',    // Very dark navy map bg
 } as const;
 
+// ─── DF Category Colour Palette ──────────────────────────────────────────────
+// Maps training categories to DF service colours for visual coding
+export const CATEGORY_PALETTE: Record<string, { color: string; bg: string; border: string }> = {
+  Ruck:     { color: '#5E7A2F', bg: 'rgba(94,122,47,0.12)',  border: 'rgba(94,122,47,0.4)'   }, // Army Green
+  Run:      { color: '#1A74D4', bg: 'rgba(26,116,212,0.12)', border: 'rgba(26,116,212,0.4)'  }, // Air Corps Blue
+  Strength: { color: '#B5852C', bg: 'rgba(181,133,44,0.12)', border: 'rgba(181,133,44,0.4)'  }, // DF Gold
+  Recovery: { color: '#4A8FAF', bg: 'rgba(74,143,175,0.12)', border: 'rgba(74,143,175,0.4)'  }, // Naval steel blue
+  Mobility: { color: '#4A8FAF', bg: 'rgba(74,143,175,0.12)', border: 'rgba(74,143,175,0.4)'  }, // Naval steel blue
+  Test:     { color: '#B5852C', bg: 'rgba(181,133,44,0.12)', border: 'rgba(181,133,44,0.4)'  }, // DF Gold (DFITT)
+};
+const _DEFAULT_PALETTE = { color: '#B5852C', bg: 'rgba(181,133,44,0.12)', border: 'rgba(181,133,44,0.4)' };
+export function getCategoryPalette(category: string) {
+  return CATEGORY_PALETTE[category] ?? _DEFAULT_PALETTE;
+}
+
 // ─── Legacy Colors (kept for components not yet migrated) ─────────────────────
 export const Colors = {
   light: {

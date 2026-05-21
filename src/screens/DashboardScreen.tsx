@@ -1,3 +1,4 @@
+import { getCategoryPalette } from '@/constants/theme';
 import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
 import AlertCard from '@/src/components/ui/AlertCard';
 import MissionStat from '@/src/components/ui/MissionStat';
@@ -524,12 +525,12 @@ export default function DashboardScreen() {
 
         {thisWeek.total > 0 ? (
           <View style={styles.pillRow}>
-            {thisWeek.ruck > 0 && <View style={styles.pill}><Text style={styles.pillText}>Ruck {thisWeek.ruck}</Text></View>}
-            {thisWeek.strength > 0 && <View style={styles.pill}><Text style={styles.pillText}>Strength {thisWeek.strength}</Text></View>}
-            {thisWeek.run > 0 && <View style={styles.pill}><Text style={styles.pillText}>Run {thisWeek.run}</Text></View>}
-            {thisWeek.mobility > 0 && <View style={styles.pill}><Text style={styles.pillText}>Mobility {thisWeek.mobility}</Text></View>}
-            {thisWeek.test > 0 && <View style={styles.pill}><Text style={styles.pillText}>Test {thisWeek.test}</Text></View>}
-            {thisWeek.recovery > 0 && <View style={styles.pill}><Text style={styles.pillText}>Recovery {thisWeek.recovery}</Text></View>}
+            {thisWeek.ruck > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Ruck').bg, borderColor: getCategoryPalette('Ruck').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Ruck').color }]}>Ruck {thisWeek.ruck}</Text></View>}
+            {thisWeek.strength > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Strength').bg, borderColor: getCategoryPalette('Strength').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Strength').color }]}>Strength {thisWeek.strength}</Text></View>}
+            {thisWeek.run > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Run').bg, borderColor: getCategoryPalette('Run').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Run').color }]}>Run {thisWeek.run}</Text></View>}
+            {thisWeek.mobility > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Mobility').bg, borderColor: getCategoryPalette('Mobility').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Mobility').color }]}>Mobility {thisWeek.mobility}</Text></View>}
+            {thisWeek.test > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Test').bg, borderColor: getCategoryPalette('Test').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Test').color }]}>Test {thisWeek.test}</Text></View>}
+            {thisWeek.recovery > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Recovery').bg, borderColor: getCategoryPalette('Recovery').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Recovery').color }]}>Recovery {thisWeek.recovery}</Text></View>}
           </View>
         ) : (
           <Text style={styles.loadNoData}>No sessions logged this week. Aim for {WEEKLY_TARGET} sessions.</Text>

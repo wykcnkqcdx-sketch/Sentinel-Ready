@@ -1,4 +1,5 @@
 import RuckMap from '@/src/components/log/RuckMap';
+import { getCategoryPalette } from '@/constants/theme';
 import { TrainingLog } from '@/src/screens/TrainingContext';
 import { getReadinessLabel, getWeakLogReasons, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { memo } from 'react';
@@ -17,12 +18,13 @@ const TrainingLogCard = memo(function TrainingLogCard({ log, weakReasons: propWe
   const weakReasons = propWeakReasons ?? getWeakLogReasons(log);
   const weakLog = weakReasons.length > 0;
   const colorScheme = useColorScheme() ?? 'dark';
+  const catPalette = getCategoryPalette(log.category);
 
   return (
-    <View style={fatigueWatch ? styles.logCardWarning : styles.logCard}>
+    <View style={[fatigueWatch ? styles.logCardWarning : styles.logCard, { borderLeftColor: catPalette.color, borderLeftWidth: 4 }]}>
       <View style={styles.logHeader}>
         <View style={styles.logHeaderText}>
-          <Text style={styles.logCategory}>{log.category}</Text>
+          <Text style={[styles.logCategory, { color: catPalette.color }]}>{log.category}</Text>
           <Text style={styles.logTitle}>{log.type}</Text>
         </View>
 
