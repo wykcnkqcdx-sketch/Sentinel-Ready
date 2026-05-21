@@ -1,3 +1,4 @@
+import ReadinessHistoryCard from '@/src/components/recovery/ReadinessHistoryCard';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
@@ -241,6 +242,8 @@ export default function RecoveryScreen() {
           </Text>
         </View>
       </View>
+
+      <ReadinessHistoryCard />
 
       {recentFatigueLogs.length > 0 ? (
         <View style={styles.fatigueCard}>
