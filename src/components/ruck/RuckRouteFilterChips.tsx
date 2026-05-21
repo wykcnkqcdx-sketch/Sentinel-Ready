@@ -48,18 +48,18 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 4,
+    borderColor: 'rgba(181,133,44,0.15)',
+    borderRadius: 3,
     paddingHorizontal: 10,
     paddingVertical: 7,
-    backgroundColor: 'rgba(5,14,9,0.88)',
+    backgroundColor: 'rgba(12,16,8,0.92)',
   },
   chipActive: {
-    backgroundColor: '#163d22',
+    backgroundColor: '#141810',
     borderColor: '#B5852C',
   },
   chipText: {
-    color: '#8FAEC8',
+    color: '#b8c0b0',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.2,

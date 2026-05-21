@@ -16,7 +16,7 @@ export function RuckRouteSearchBar({ value, onChangeText, onSavedRoutes }: RuckR
         <TextInput
           style={styles.input}
           placeholder="SEARCH ROUTES"
-          placeholderTextColor="#4a6b52"
+          placeholderTextColor="#4a5a44"
           value={value}
           onChangeText={onChangeText}
           autoCapitalize="none"
@@ -45,10 +45,10 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(5,14,9,0.92)',
+    backgroundColor: 'rgba(12,16,8,0.96)',
     borderWidth: 1,
-    borderColor: '#235c32',
-    borderRadius: 6,
+    borderColor: 'rgba(181,133,44,0.3)',
+    borderRadius: 4,
     paddingHorizontal: 10,
     height: 44,
     gap: 8,
@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
   },
   savedButton: {
     borderWidth: 1,
-    borderColor: '#235c32',
-    borderRadius: 4,
+    borderColor: 'rgba(181,133,44,0.35)',
+    borderRadius: 3,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },

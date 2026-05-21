@@ -9,11 +9,11 @@ import { Platform } from 'react-native';
 //   Black:       #000000  / White: #FFFFFF
 // ─────────────────────────────────────────────────────────────────────────────
 export const DS = {
-  // Backgrounds
-  bgPrimary:   '#000D1A',      // Very dark navy-black (app background)
-  bgCard:      '#00253D',      // DF Navy — Pantone 2965
-  bgCardAlt:   '#001829',      // Deeper navy (nested/alt cards)
-  bgSurface:   '#003050',      // Medium navy (inputs, buttons, chips)
+  // Backgrounds — tactical black/green identity
+  bgPrimary:   '#050e09',      // Tactical black (primary app background)
+  bgCard:      '#0c1008',      // Dark tactical panel
+  bgCardAlt:   '#080c05',      // Deeper nested panel
+  bgSurface:   '#141810',      // Control surfaces (inputs, chips, badges)
 
   // DF Gold — primary accent (Pantone 125)
   gold:        '#B5852C',
@@ -22,24 +22,25 @@ export const DS = {
 
   // Text
   textPrimary:   '#FFFFFF',
-  textSecondary: '#8FAEC8',    // muted blue-grey on navy
-  textMuted:     '#4A6070',
+  textSecondary: '#b8c0b0',    // Warm muted (army-toned, not blue-grey)
+  textMuted:     '#4a5a44',    // Army-toned dim text
 
   // Borders
-  border:        'rgba(255,255,255,0.08)',
+  border:        'rgba(181,133,44,0.12)',  // Gold-tinted, not plain white
   borderActive:  'rgba(181,133,44,0.5)',
 
   // Semantic — mapped to DF service colours
-  success:  '#5E7A2F',         // Army Green (Pantone 5743 lightened for UI readability)
-  warning:  '#D4A01A',         // Bright gold-amber
-  danger:   '#CC2A2A',         // Military red
-  info:     '#1A74D4',         // Air Corps Blue (Pantone 301 lightened for readability)
+  success:  '#5E7A2F',         // Army Green (lightened for UI readability)
+  armyGreen:'#3F4727',         // Official DF Army Green (Pantone 5743)
+  warning:  '#ffaa44',         // Bright operational amber
+  danger:   '#e05050',         // Operational red
+  info:     '#1A74D4',         // Air Corps Blue (Pantone 301 lightened)
 
   // Map
   mapRoute:      '#B5852C',    // DF Gold route line
   mapMarkerStart:'#5E7A2F',    // Army green start marker
-  mapMarkerEnd:  '#CC2A2A',    // Red end marker
-  mapBackground: '#00101F',    // Very dark navy map bg
+  mapMarkerEnd:  '#e05050',    // Red end marker
+  mapBackground: '#050e09',    // Tactical black map bg
 } as const;
 
 // ─── DF Category Colour Palette ──────────────────────────────────────────────
@@ -61,7 +62,7 @@ export function getCategoryPalette(category: string) {
 export const Colors = {
   light: {
     text: '#11181C',
-    background: '#fff',
+    background: '#f5f0e8',
     tint: DS.gold,
     icon: '#687076',
     tabIconDefault: '#687076',

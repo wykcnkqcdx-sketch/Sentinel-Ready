@@ -91,12 +91,12 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         <Svg width="100%" height="100%">
           <Defs>
             <LinearGradient id="topGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#000D1A" stopOpacity="0.8" />
-              <Stop offset="0.25" stopColor="#000D1A" stopOpacity="0" />
+              <Stop offset="0" stopColor="#050e09" stopOpacity="0.8" />
+              <Stop offset="0.25" stopColor="#050e09" stopOpacity="0" />
             </LinearGradient>
             <LinearGradient id="bottomGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0.5" stopColor="#000D1A" stopOpacity="0" />
-              <Stop offset="1" stopColor="#000D1A" stopOpacity="1" />
+              <Stop offset="0.5" stopColor="#050e09" stopOpacity="0" />
+              <Stop offset="1" stopColor="#050e09" stopOpacity="1" />
             </LinearGradient>
           </Defs>
           <Rect width="100%" height="100%" fill="url(#topGrad)" />
@@ -230,9 +230,9 @@ const styles = StyleSheet.create({
     paddingBottom: 92,
     paddingHorizontal: 16,
     paddingTop: 16,
-    backgroundColor: 'rgba(7,17,12,0.92)',
+    backgroundColor: 'rgba(5,14,9,0.96)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: 'rgba(181,133,44,0.25)',
   },
   layerPickerWrapper: {
     position: 'absolute',
@@ -249,30 +249,30 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   overlayImportBtn: {
-    borderRadius: 16,
+    borderRadius: 4,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    backgroundColor: '#00253D',
+    backgroundColor: '#0c1008',
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.3)',
   },
-  overlayImportBtnDisabled: { borderColor: 'rgba(255,255,255,0.08)' },
+  overlayImportBtnDisabled: { borderColor: 'rgba(181,133,44,0.12)' },
   overlayImportBtnText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
   overlayChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    borderRadius: 16,
+    borderRadius: 4,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#00253D',
+    backgroundColor: '#0c1008',
     borderWidth: 1,
-    borderColor: '#2a3a2a',
+    borderColor: 'rgba(181,133,44,0.2)',
     maxWidth: 130,
   },
   overlayChipHidden: { opacity: 0.4 },
   overlayDot: { width: 8, height: 8, borderRadius: 4 },
-  overlayChipText: { color: '#c4cec0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
+  overlayChipText: { color: '#b8c0b0', fontSize: 11, fontWeight: '700', flexShrink: 1 },
   savePanelWrapper: {
     position: 'absolute',
     left: 16,

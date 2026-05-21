@@ -14,7 +14,12 @@ export default function SentinelCard({
 }: SentinelCardProps) {
   return (
     <View style={[styles.card, styles[variant]]}>
-      {title ? <Text style={styles.title}>{title}</Text> : null}
+      {title ? (
+        <>
+          <Text style={styles.title}>{title.toUpperCase()}</Text>
+          <View style={styles.titleRule} />
+        </>
+      ) : null}
       <View style={styles.body}>{children}</View>
     </View>
   );
@@ -22,27 +27,36 @@ export default function SentinelCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: 6,
+    padding: 16,
     borderWidth: 1,
+    borderTopWidth: 2,
   },
   default: {
-    backgroundColor: '#00253D',
-    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#0c1008',
+    borderColor: 'rgba(181,133,44,0.15)',
+    borderTopColor: '#B5852C',
   },
   warning: {
-    backgroundColor: 'rgba(212,160,26,0.08)',
-    borderColor: 'rgba(212,160,26,0.25)',
+    backgroundColor: 'rgba(255,170,68,0.06)',
+    borderColor: 'rgba(255,170,68,0.25)',
+    borderTopColor: '#ffaa44',
   },
   success: {
     backgroundColor: 'rgba(94,122,47,0.08)',
     borderColor: 'rgba(94,122,47,0.25)',
+    borderTopColor: '#5E7A2F',
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0.2,
+    color: '#b8c0b0',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+  titleRule: {
+    height: 1,
+    backgroundColor: 'rgba(181,133,44,0.35)',
     marginBottom: 12,
   },
   body: {
