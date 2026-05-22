@@ -1,0 +1,29 @@
+
+> sentinel-ready@1.1.0 web
+> expo start --web --port 8083
+
+Starting project at C:\Users\mcwemyss\Documents\Sentinel-Ready-main
+React Compiler enabled
+Starting Metro Bundler
+Waiting on http://localhost:8083
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ▓▓░░░░░░░░░░░░░░ 13.0% (104/298)
+λ node_modules\expo-router\node\render.js ▓▓▓▓▓░░░░░░░░░░░ 32.6% (291/510)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ node_modules\expo-router\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 81.3% (1118/1240)
+λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 86.3% (1180/1289)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ node_modules\expo-router\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 7975ms node_modules\expo-router\node\render.js (1475 modules)
+λ Bundled 7678ms node_modules\expo-router\node\render.js (1 module)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1499/1499)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 17329ms node_modules\expo-router\entry.js (1499 modules)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1499/1499)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 17022ms node_modules\expo-router\entry.js (1 module)
+Web Bundled 1615ms node_modules\expo-router\entry.js (1479 modules)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 134ms node_modules\expo-router\node\render.js (1 module)
