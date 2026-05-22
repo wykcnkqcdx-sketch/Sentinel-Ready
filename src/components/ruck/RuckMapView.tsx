@@ -9,7 +9,7 @@ import { formatCoordinate } from '../../utils/coordinates';
 import { bearingBetween, distanceBetween } from '../../utils/mapUtils';
 import { CompassOverlay } from './CompassOverlay';
 import type { WaypointMarker } from '../../services/waypointService';
-import { waypointColor, waypointSymbol } from '../../services/waypointService';
+import { waypointColor } from '../../services/waypointService';
 
 let Svg: React.ComponentType<any> | null = null;
 let Polyline: React.ComponentType<any> | null = null;

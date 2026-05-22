@@ -101,7 +101,6 @@ export default function RecoveryScreen() {
   const isModerate = recoveryScore >= 50 && recoveryScore < 75;
   const isPrime = recoveryScore >= 75;
 
-  const scoreLabel = isPrime ? 'Prime' : isModerate ? 'Moderate' : recoveryScore > 0 ? 'High Fatigue' : 'No Data';
   const scoreMessage = isPrime
     ? 'Readiness is strong. You are ready for high-intensity or heavy load.'
     : isModerate
@@ -109,11 +108,6 @@ export default function RecoveryScreen() {
     : recoveryScore > 0
     ? 'High fatigue detected. Prioritise recovery, mobility and rest today.'
     : 'Log a session with a readiness score to calculate your recovery status.';
-
-  const mainCardStyle = isHighFatigue ? styles.mainCardWarning : isModerate ? styles.mainCardModerate : styles.mainCard;
-  const scoreStyle = isHighFatigue ? styles.scoreWarning : styles.score;
-  const badgeStyle = isHighFatigue ? styles.badgeWarning : isModerate ? styles.badgeModerate : recoveryScore > 0 ? styles.badge : styles.badgeNeutral;
-  const badgeTextStyle = isHighFatigue ? styles.badgeTextWarning : isModerate ? styles.badgeTextModerate : recoveryScore > 0 ? styles.badgeText : styles.badgeTextNeutral;
 
   const protocol = useMemo(() => getProtocol(recoveryScore), [recoveryScore]);
 

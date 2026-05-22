@@ -11,9 +11,6 @@ const R = SIZE / 2;
 const NEEDLE_LEN = R - 8;
 
 export function CompassOverlay({ heading }: CompassOverlayProps) {
-  // SVG rotation: needle points north (up) by default, rotate by heading to show device bearing
-  const needleRotation = heading;
-
   // North tip of needle (red)
   const northTipX = R + NEEDLE_LEN * Math.sin(((heading - 180) * Math.PI) / 180);
   const northTipY = R - NEEDLE_LEN * Math.cos(((heading - 180) * Math.PI) / 180);
