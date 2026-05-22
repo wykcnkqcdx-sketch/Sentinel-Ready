@@ -21,9 +21,9 @@ export const DEFAULT_PREFS: NotificationPrefs = {
   checkInHour: 20,
   checkInMinute: 0,
   restNudgeEnabled: true,
-  preSessionEnabled: false,
-  preSessionHour: 6,
-  preSessionMinute: 30,
+  preSessionEnabled: true,
+  preSessionHour: 7,
+  preSessionMinute: 0,
 };
 
 export async function loadNotificationPrefs(): Promise<NotificationPrefs> {
@@ -82,8 +82,8 @@ export async function schedulePreSessionReminder(prefs: NotificationPrefs): Prom
   if (!prefs.preSessionEnabled) return;
   const id = await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Pre-Session Check',
-      body: 'Quick readiness check before your session. Are you good to train?',
+      title: 'Sentinel Ready — Morning Briefing',
+      body: 'Readiness check: rate sleep, mood and soreness before stepping off.',
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,

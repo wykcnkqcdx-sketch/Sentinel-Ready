@@ -230,7 +230,7 @@ export default function NotificationsScreen() {
           />
         )}
         <Text style={s.detailText}>
-          A morning nudge to check readiness before your planned session.
+          07:00 daily briefing — rate sleep quality, mood and soreness before the day begins.
         </Text>
       </View>
 
