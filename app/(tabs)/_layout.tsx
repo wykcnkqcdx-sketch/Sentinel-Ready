@@ -10,25 +10,31 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: DS.bgPrimary,
-          borderTopColor: 'rgba(181,133,44,0.35)',
-          borderTopWidth: 2,
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 8,
+          borderTopColor: DS.gold,
+          borderTopWidth: 1,
+          height: 68,
+          paddingBottom: 7,
+          paddingTop: 7,
         },
         tabBarActiveTintColor: DS.gold,
-        tabBarInactiveTintColor: DS.textMuted,
+        tabBarInactiveTintColor: DS.textSecondary,
+        tabBarItemStyle: {
+          borderTopWidth: 2,
+          borderTopColor: 'transparent',
+          paddingTop: 4,
+        },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '700',
-          letterSpacing: 0.3,
+          fontWeight: '800',
+          letterSpacing: 1.2,
+          textTransform: 'uppercase',
         },
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Home',
+          title: 'Command',
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} />,
         }}
       />
@@ -36,7 +42,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ruck"
         options={{
-          title: 'Maps',
+          title: 'Ruck',
           tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" color={color} size={size} />,
         }}
       />
@@ -68,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tests"
         options={{
-          title: 'DFITT',
+          title: 'Tests',
           tabBarIcon: ({ color, size }) => <Ionicons name="shield-outline" color={color} size={size} />,
         }}
       />

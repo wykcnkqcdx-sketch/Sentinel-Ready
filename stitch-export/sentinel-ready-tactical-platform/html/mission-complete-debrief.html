@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTINEL READY - Mission Debrief</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..900&amp;family=Inter:wght@400;600;800&amp;family=JetBrains+Mono:wght@400;500;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #050e09; /* Level 0: Deep Tactical Black */
+            color: #dae5dc;
+            -webkit-font-smoothing: antialiased;
+        }
+        .tactical-glow {
+            box-shadow: 0 0 15px rgba(181, 133, 44, 0.2);
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(181, 133, 44, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "surface-container-lowest": "#07100b",
+                "tertiary-fixed": "#65ff91",
+                "on-secondary": "#2c3315",
+                "error-container": "#93000a",
+                "primary": "#f4bd5f",
+                "tertiary-fixed-dim": "#21e371",
+                "secondary-fixed": "#dee7bb",
+                "inverse-primary": "#7e5700",
+                "background": "#0b1510",
+                "tertiary": "#21e371",
+                "surface-bright": "#313c35",
+                "on-primary": "#432c00",
+                "surface-container-low": "#141e18",
+                "on-tertiary-fixed": "#00210a",
+                "on-primary-fixed": "#281900",
+                "on-background": "#dae5dc",
+                "on-error-container": "#ffdad6",
+                "inverse-surface": "#dae5dc",
+                "secondary-container": "#444c2c",
+                "on-surface": "#dae5dc",
+                "inverse-on-surface": "#28332d",
+                "surface-tint": "#f4bd5f",
+                "secondary-fixed-dim": "#c2cba1",
+                "surface-container-highest": "#2d3731",
+                "on-secondary-container": "#b4bd93",
+                "on-error": "#690005",
+                "surface": "#0b1510",
+                "surface-container-high": "#222c26",
+                "surface-dim": "#0b1510",
+                "surface-container": "#18221c",
+                "on-tertiary": "#003916",
+                "on-primary-container": "#3a2600",
+                "on-tertiary-fixed-variant": "#005323",
+                "on-primary-fixed-variant": "#604100",
+                "primary-container": "#b9882f",
+                "outline": "#9c8f7d",
+                "surface-variant": "#2d3731",
+                "on-tertiary-container": "#003112",
+                "error": "#ffb4ab",
+                "outline-variant": "#4f4537",
+                "tertiary-container": "#00a74e",
+                "on-secondary-fixed": "#171e04",
+                "secondary": "#c2cba1",
+                "on-secondary-fixed-variant": "#424a2a",
+                "primary-fixed-dim": "#f4bd5f",
+                "primary-fixed": "#ffdeac",
+                "on-surface-variant": "#d3c4b1"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+              },
+              "spacing": {
+                "margin-mobile": "10px",
+                "xl": "24px",
+                "xs": "4px",
+                "sm": "8px",
+                "lg": "16px",
+                "gutter": "12px",
+                "base": "4px",
+                "md": "12px",
+                "margin-desktop": "18px"
+              },
+              "fontFamily": {
+                "display-lg-mobile": ["Space Grotesk"],
+                "data-mono": ["JetBrains Mono"],
+                "label-caps": ["JetBrains Mono"],
+                "body-bold": ["Inter"],
+                "display-lg": ["Space Grotesk"],
+                "headline-md": ["Space Grotesk"],
+                "body-base": ["Inter"]
+              },
+              "fontSize": {
+                "display-lg-mobile": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                "data-mono": ["13px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.15em", "fontWeight": "800"}],
+                "body-bold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                "display-lg": ["34px", {"lineHeight": "38px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                "headline-md": ["24px", {"lineHeight": "28px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-base overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 z-50 bg-background border-b border-outline">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-[820px] mx-auto h-16">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="text-label-caps font-label-caps tracking-tighter uppercase font-black">SENTINEL READY [09:42:00]</span>
+</div>
+<div class="text-label-caps font-label-caps text-primary">
+                [STATUS: GREEN]
+            </div>
+</div>
+</header>
+<main class="max-w-[820px] mx-auto pb-32 pt-4 px-margin-mobile md:px-margin-desktop relative">
+<div class="scanline"></div>
+<!-- Hero Section -->
+<section class="mb-xl text-center py-lg relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+<p class="text-label-caps font-label-caps text-primary mb-2 tracking-[0.3em] uppercase">Debriefing Protocol 77-A</p>
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg text-primary uppercase leading-none italic">
+                MISSION SUCCESSFUL
+            </h1>
+<div class="mt-4 inline-flex items-center gap-2 border border-primary/30 px-4 py-1 bg-surface-container-low">
+<div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#21e371]"></div>
+<span class="text-label-caps font-label-caps text-on-surface">ALL OBJECTIVES MET</span>
+</div>
+</section>
+<!-- Primary Stats Grid (Bento Style) -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-base mb-xl">
+<!-- Distance -->
+<div class="bg-[#111d15] p-md border border-[#3F4727] flex flex-col justify-between aspect-square md:aspect-auto md:h-28">
+<span class="text-label-caps font-label-caps text-on-surface-variant">[ DISTANCE ]</span>
+<div class="mt-auto">
+<span class="font-data-mono text-headline-md text-primary">10.2</span>
+<span class="text-label-caps font-label-caps text-on-surface-variant ml-1">KM</span>
+</div>
+</div>
+<!-- Time -->
+<div class="bg-[#111d15] p-md border border-[#3F4727] flex flex-col justify-between aspect-square md:aspect-auto md:h-28">
+<span class="text-label-caps font-label-caps text-on-surface-variant">[ DURATION ]</span>
+<div class="mt-auto">
+<span class="font-data-mono text-headline-md text-primary">01:04:12</span>
+</div>
+</div>
+<!-- Pace -->
+<div class="bg-[#111d15] p-md border border-[#3F4727] flex flex-col justify-between aspect-square md:aspect-auto md:h-28">
+<span class="text-label-caps font-label-caps text-on-surface-variant">[ AVG PACE ]</span>
+<div class="mt-auto">
+<span class="font-data-mono text-headline-md text-primary">9:52</span>
+<span class="text-label-caps font-label-caps text-on-surface-variant ml-1">/KM</span>
+</div>
+</div>
+<!-- Weight -->
+<div class="bg-[#111d15] p-md border border-[#3F4727] flex flex-col justify-between aspect-square md:aspect-auto md:h-28">
+<span class="text-label-caps font-label-caps text-on-surface-variant">[ LOAD ]</span>
+<div class="mt-auto">
+<span class="font-data-mono text-headline-md text-primary">22</span>
+<span class="text-label-caps font-label-caps text-on-surface-variant ml-1">KG</span>
+</div>
+</div>
+</section>
+<!-- Insights & Impact -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-xl">
+<!-- Performance Insights -->
+<div class="bg-[#111d15] p-md border border-[#3F4727] relative">
+<div class="flex items-center justify-between mb-lg border-b border-[#3F4727] pb-2">
+<span class="text-label-caps font-label-caps text-primary">[ PERFORMANCE ANALYSIS ]</span>
+<span class="material-symbols-outlined text-primary text-sm" data-icon="analytics">analytics</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-end">
+<span class="text-body-base text-on-surface-variant">Objective Variance:</span>
+<span class="text-body-bold text-tertiary">0:08 AHEAD OF TARGET</span>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-body-base text-on-surface-variant">Tactical Load Score:</span>
+<div class="text-right">
+<span class="text-body-bold text-primary">8.2</span>
+<span class="block text-[10px] text-label-caps font-label-caps text-on-surface-variant">HIGH AEROBIC</span>
+</div>
+</div>
+<div class="w-full bg-black h-1 mt-2">
+<div class="h-full bg-primary w-[82%]"></div>
+</div>
+</div>
+</div>
+<!-- Physiological Impact -->
+<div class="bg-[#111d15] p-md border border-[#3F4727]">
+<div class="flex items-center justify-between mb-lg border-b border-[#3F4727] pb-2">
+<span class="text-label-caps font-label-caps text-primary">[ PHYSIOLOGICAL DATA ]</span>
+<span class="material-symbols-outlined text-primary text-sm" data-icon="monitor_heart">monitor_heart</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between">
+<span class="text-body-base text-on-surface-variant">Avg. Heart Rate:</span>
+<span class="text-body-bold font-data-mono">158 BPM</span>
+</div>
+<div class="flex justify-between">
+<span class="text-body-base text-on-surface-variant">Energy Output:</span>
+<span class="text-body-bold font-data-mono">842 KCAL</span>
+</div>
+<div class="flex justify-between">
+<span class="text-body-base text-on-surface-variant">Readiness Impact:</span>
+<span class="text-body-bold font-data-mono text-error">-12.4%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Map & Advice -->
+<div class="flex flex-col md:flex-row gap-gutter mb-xl">
+<!-- Map Snippet -->
+<div class="flex-1 bg-black border border-[#3F4727] h-48 relative overflow-hidden">
+<div class="absolute top-2 left-2 z-20 bg-black/80 border border-[#3F4727] px-2 py-1">
+<span class="text-[10px] font-label-caps text-primary">ROUTE_TRACE_LOG_V1.4</span>
+</div>
+<img class="w-full h-full object-cover opacity-60 grayscale brightness-75" data-alt="A dark, high-contrast topographic satellite map of a rugged outdoor terrain with a glowing gold GPS line tracing a complex route through a forest and across a ridge. The image uses a tactical night-vision aesthetic with deep blacks, army greens, and bright amber accents, maintaining the Sentinel Ready mission-critical dashboard style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXH68bsiWJQVInX8dJogt--mNkD5w0Obb0smbDjiIar_5DaaZd9hil84u0IKW-ioaPLnAAWZ0cCLgyANPRY-FXkVVSNyG2xILwwmNetxbpkyJuu-w9jOq4t_JH3M6zgKrAvJLJhaYoHBBLFzr6bpSGNIrGS68tAi_C8kyemTFyS-kJehgIlnpzkPgT9WnO0KU0bGyHAVXweR_eRMD19n5ZAEcRUJayZJmU9s1Jz_DQA7FEXN-4dzTeJAhAmLV6sJkafUgWly8iqEI5"/>
+<div class="absolute inset-0 pointer-events-none border-[16px] border-black/10"></div>
+<!-- Path Glow Effect Overlay (Faked with CSS) -->
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent pointer-events-none"></div>
+</div>
+<!-- Command Advice -->
+<div class="flex-1 bg-primary/5 border border-primary p-md flex flex-col">
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-primary" data-icon="warning">warning</span>
+<span class="text-label-caps font-label-caps text-primary">FIELD COMMAND ADVICE</span>
+</div>
+<p class="text-body-bold text-on-surface mb-md leading-tight uppercase font-black text-sm">
+                    IMMEDIATE HYDRATION AND MOBILITY PROTOCOL RECOMMENDED. 
+                </p>
+<div class="mt-auto border-t border-primary/20 pt-2 flex items-center justify-between">
+<span class="text-label-caps font-label-caps text-on-surface-variant">RECOVERY WINDOW:</span>
+<span class="text-headline-md font-data-mono text-primary">24H</span>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-sm">
+<button class="w-full bg-primary text-on-primary font-label-caps py-4 text-headline-md uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all shadow-lg tactical-glow">
+                [ LOG MISSION ]
+            </button>
+<button class="w-full bg-transparent border border-primary text-primary font-label-caps py-3 text-sm uppercase tracking-widest hover:bg-primary/5 transition-all">
+                [ SHARE DEBRIEF ]
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-16 bg-background border-t border-primary">
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2" href="#">
+<span class="material-symbols-outlined" data-icon="directions_run" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for tactical feel
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-29.mp3');
+                audio.volume = 0.05;
+                audio.play().catch(e => {}); // Ignore if browser blocks audio
+            });
+        });
+
+        // Dynamic timestamp update if needed, but the headline says [09:42:00] specifically per JSON
+    </script>
+</body></html>

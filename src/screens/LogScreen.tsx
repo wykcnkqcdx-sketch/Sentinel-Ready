@@ -140,80 +140,44 @@ export default function LogScreen() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.header}>
-            {/* ── Stitch: OPERATIONAL OVERVIEW header ── */}
-            <View style={ls.headerTop}>
-              <Text style={styles.kicker}>OPERATIONAL OVERVIEW</Text>
-            </View>
-            <View style={ls.logHealthRow}>
-              <Text style={ls.logHealthLabel}>[ LOG HEALTH: </Text>
-              <Text style={[ls.logHealthValue, { color: healthScore >= 70 ? '#5E7A2F' : healthScore >= 50 ? '#ffaa44' : '#e05050' }]}>
-                {healthScore}%
-              </Text>
-              <Text style={ls.logHealthLabel}> ]</Text>
-            </View>
+            <Text style={styles.kicker}>SENTINEL READY TRAINING LOG</Text>
+            <Text style={styles.title}>Training Logbook</Text>
             <View style={styles.headerRule} />
+            <Text style={styles.subtitle}>
+              Review saved sessions, readiness, fatigue watch and operational training balance.
+            </Text>
 
-            <View style={ls.topButtonRow}>
+            <View style={styles.topButtonRow}>
               <TouchableOpacity
-                style={ls.primaryBtn}
+                style={styles.primaryButton}
                 onPress={() => router.push('/add-log')}
                 accessibilityRole="button"
                 accessibilityLabel="Add training log"
               >
-                <Text style={ls.primaryBtnText}>[ ADD SESSION ]</Text>
+                <Text style={styles.primaryButtonText}>Add Training Log</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
-                style={ls.secondaryBtn}
+                style={styles.secondaryButton}
                 onPress={() => router.push('/weekly-report')}
                 accessibilityRole="button"
                 accessibilityLabel="View weekly report"
               >
-                <Text style={ls.secondaryBtnText}>[ EXPORT REPORT ]</Text>
+                <Text style={styles.secondaryButtonText}>Weekly Report</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={ls.secondaryBtn} onPress={shareCsvExport}>
-                <Text style={ls.secondaryBtnText}>[ CSV ]</Text>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/goals')}>
+                <Text style={styles.secondaryButtonText}>Goals ({goals.filter((goal) => goal.status === 'active').length})</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={ls.secondaryBtn} onPress={() => router.push('/import-logs')}>
-                <Text style={ls.secondaryBtnText}>[ IMPORT ]</Text>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={shareCsvExport}>
+                <Text style={styles.secondaryButtonText}>Export CSV</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/import-logs')}>
+                <Text style={styles.secondaryButtonText}>Import CSV</Text>
               </TouchableOpacity>
             </View>
-
-            {/* ── Stitch: WEAK LOGS card ── */}
-            {summary.weakLogs > 0 && (
-              <View style={ls.weakLogsCard}>
-                <View style={ls.weakLogsHeader}>
-                  <Text style={ls.weakLogsKicker}>[ WEAK LOGS: DATA GAPS IDENTIFIED ]</Text>
-                  <TouchableOpacity onPress={handleToggleWeakLogs}>
-                    <Text style={ls.weakLogsToggle}>{showWeakLogsOnly ? '[ SHOW ALL ]' : `[ ${summary.weakLogs} FLAGGED ]`}</Text>
-                  </TouchableOpacity>
-                </View>
-                {logs.filter((l) => (weakReasonsMap.get(l.id) ?? []).length > 0).slice(0, 3).map((l) => (
-                  <View key={l.id} style={ls.weakLogRow}>
-                    <View style={ls.weakLogInfo}>
-                      <Text style={ls.weakLogTitle}>{l.category} — {l.date}</Text>
-                      <Text style={ls.weakLogReasons}>{(weakReasonsMap.get(l.id) ?? []).join(' · ')}</Text>
-                    </View>
-                    <TouchableOpacity style={ls.repairBtn} onPress={() => handleEditLog(l.id)}>
-                      <Text style={ls.repairBtnText}>REPAIR</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* ── Stitch: READINESS IMPACT ── */}
-            {logs.length > 0 && (
-              <View style={ls.impactCard}>
-                <Text style={ls.impactKicker}>READINESS IMPACT</Text>
-                <View style={ls.impactValueRow}>
-                  <Text style={[ls.impactValue, { color: readinessTrend.status === 'good' ? '#5E7A2F' : readinessTrend.status === 'warning' ? '#e05050' : '#ffaa44' }]}>
-                    {readinessTrend.status === 'good' ? '+' : readinessTrend.status === 'warning' ? '−' : '↔'}{' '}
-                    {readinessTrend.label}
-                  </Text>
-                  <Text style={ls.impactSub}>7-DAY AGGREGATE</Text>
-                </View>
-              </View>
-            )}
 
             <SessionRecommendationCard
               recommendation={sessionRecommendation}
@@ -266,7 +230,7 @@ export default function LogScreen() {
               showWeakLogsOnly={showWeakLogsOnly}
             />
 
-            <Text style={ls.sectionTitle}>RECENT TACTICAL ENTRIES</Text>
+            <Text style={styles.sectionTitle}>Recent Logs</Text>
           </View>
         }
         ListEmptyComponent={
@@ -314,15 +278,15 @@ export default function LogScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  loadingScreen: { flex: 1, backgroundColor: '#080c05', justifyContent: 'center', alignItems: 'center' },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  loadingScreen: { flex: 1, backgroundColor: '#050e09', justifyContent: 'center', alignItems: 'center' },
   loadingText: { color: '#B5852C', fontSize: 15, fontWeight: '900' },
-  listContent: { padding: 18, paddingBottom: 110, gap: 14 },
+  listContent: { padding: 10, paddingBottom: 110, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   header: { gap: 12, marginBottom: 4 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 1.8 },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
   headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#ffffff', fontSize: 34, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
+  title: { color: '#F4BD5F', fontSize: 32, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
   topButtonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   primaryButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 16 },
   primaryButtonText: { color: '#080c05', fontSize: 13, fontWeight: '900' },
@@ -344,46 +308,4 @@ const styles = StyleSheet.create({
   emptyButtonText: { color: '#080c05', fontSize: 13, fontWeight: '900' },
   fab: { position: 'absolute', bottom: 24, right: 24, backgroundColor: '#B5852C', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
   fabIcon: { color: '#080c05', fontSize: 32, fontWeight: '400' },
-});
-
-// ── Stitch-derived LogScreen additions ─────────────────────────────────
-const ls = StyleSheet.create({
-  headerTop:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  logHealthRow:    { flexDirection: 'row', alignItems: 'baseline', marginTop: 2 },
-  logHealthLabel:  { color: '#B5852C', fontSize: 22, fontWeight: '900', letterSpacing: 0.5 },
-  logHealthValue:  { fontSize: 28, fontWeight: '900' },
-
-  topButtonRow:    { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  primaryBtn:      { borderWidth: 1, borderColor: '#B5852C', borderRadius: 4, paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(181,133,44,0.12)' },
-  primaryBtnText:  { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  secondaryBtn:    { borderWidth: 1, borderColor: 'rgba(181,133,44,0.35)', borderRadius: 4, paddingVertical: 10, paddingHorizontal: 14 },
-  secondaryBtnText:{ color: '#b8c0b0', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-
-  weakLogsCard: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderLeftWidth: 3,
-    borderColor: 'rgba(255,170,68,0.2)',
-    borderLeftColor: '#ffaa44',
-    padding: 14,
-    gap: 10,
-  },
-  weakLogsHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  weakLogsKicker:  { color: '#ffaa44', fontSize: 10, fontWeight: '900', letterSpacing: 1.2, flex: 1 },
-  weakLogsToggle:  { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  weakLogRow:      { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#080c05', borderRadius: 4, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 10 },
-  weakLogInfo:     { flex: 1, gap: 2 },
-  weakLogTitle:    { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  weakLogReasons:  { color: '#b8c0b0', fontSize: 11 },
-  repairBtn:       { borderWidth: 1, borderColor: '#ffaa44', borderRadius: 4, paddingVertical: 6, paddingHorizontal: 10 },
-  repairBtnText:   { color: '#ffaa44', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-
-  impactCard:      { backgroundColor: '#0c1008', borderRadius: 6, borderWidth: 1, borderTopWidth: 2, borderColor: 'rgba(181,133,44,0.12)', borderTopColor: '#B5852C', padding: 14, gap: 4 },
-  impactKicker:    { color: '#b8c0b0', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  impactValueRow:  { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
-  impactValue:     { fontSize: 28, fontWeight: '900' },
-  impactSub:       { color: '#b8c0b0', fontSize: 11, fontWeight: '700' },
-
-  sectionTitle:    { color: '#b8c0b0', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 4 },
 });

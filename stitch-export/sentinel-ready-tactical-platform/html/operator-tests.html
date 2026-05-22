@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OPERATOR TESTS | MISSION: READY</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#0b1510",
+                      "on-background": "#dae5dc",
+                      "secondary-fixed": "#dee7bb",
+                      "outline-variant": "#4f4537",
+                      "surface-container-high": "#222c26",
+                      "surface-bright": "#313c35",
+                      "surface": "#0b1510",
+                      "secondary": "#c2cba1",
+                      "on-tertiary-fixed-variant": "#005323",
+                      "surface-container-low": "#141e18",
+                      "tertiary-container": "#00a74e",
+                      "surface-variant": "#2d3731",
+                      "on-error": "#690005",
+                      "inverse-primary": "#7e5700",
+                      "on-secondary-container": "#b4bd93",
+                      "on-error-container": "#ffdad6",
+                      "surface-dim": "#0b1510",
+                      "inverse-on-surface": "#28332d",
+                      "error-container": "#93000a",
+                      "tertiary": "#21e371",
+                      "primary-fixed-dim": "#f4bd5f",
+                      "secondary-fixed-dim": "#c2cba1",
+                      "on-primary": "#432c00",
+                      "tertiary-fixed-dim": "#21e371",
+                      "on-tertiary-fixed": "#00210a",
+                      "primary-fixed": "#ffdeac",
+                      "primary-container": "#b9882f",
+                      "on-primary-container": "#3a2600",
+                      "on-tertiary-container": "#003112",
+                      "outline": "#9c8f7d",
+                      "tertiary-fixed": "#65ff91",
+                      "on-tertiary": "#003916",
+                      "on-surface-variant": "#d3c4b1",
+                      "inverse-surface": "#dae5dc",
+                      "on-surface": "#dae5dc",
+                      "surface-container-lowest": "#07100b",
+                      "on-secondary-fixed-variant": "#424a2a",
+                      "primary": "#f4bd5f",
+                      "on-secondary-fixed": "#171e04",
+                      "surface-container-highest": "#2d3731",
+                      "on-secondary": "#2c3315",
+                      "secondary-container": "#444c2c",
+                      "on-primary-fixed": "#281900",
+                      "surface-tint": "#f4bd5f",
+                      "surface-container": "#18221c",
+                      "error": "#ffb4ab",
+                      "on-primary-fixed-variant": "#604100"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "md": "12px",
+                      "base": "4px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "lg": "16px",
+                      "gutter": "12px",
+                      "xl": "24px",
+                      "margin-mobile": "10px",
+                      "margin-desktop": "18px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Space Grotesk"],
+                      "display-lg-mobile": ["Space Grotesk"],
+                      "body-bold": ["Inter"],
+                      "label-caps": ["JetBrains Mono"],
+                      "display-lg": ["Space Grotesk"],
+                      "body-base": ["Inter"],
+                      "data-mono": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "28px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                      "display-lg-mobile": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                      "body-bold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.15em", "fontWeight": "800"}],
+                      "display-lg": ["34px", {"lineHeight": "38px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                      "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "data-mono": ["13px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #050e09;
+            color: #dae5dc;
+            -webkit-font-smoothing: antialiased;
+        }
+        .tactical-border {
+            border: 1px solid #3F4727;
+        }
+        .tactical-border-gold {
+            border: 1px solid #B5852C;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(181, 133, 44, 0.2);
+        }
+        .clip-path-tactical {
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen pb-32">
+<!-- Top AppBar -->
+<header class="bg-surface dark:bg-surface w-full top-0 sticky z-50 border-b border-outline-variant">
+<div class="flex justify-between items-center px-margin-mobile py-base max-w-[820px] mx-auto">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary tracking-tighter">
+                    [ MISSION: TESTS ]
+                </h1>
+</div>
+<div class="font-label-caps text-label-caps text-primary border border-primary px-sm py-xs">
+                [STATUS: GREEN]
+            </div>
+</div>
+</header>
+<main class="max-w-[820px] mx-auto px-margin-mobile mt-lg space-y-lg">
+<!-- Section 1: Benchmark Status -->
+<section>
+<div class="bg-[#111d15] tactical-border p-md relative overflow-hidden">
+<div class="absolute top-0 right-0 p-xs">
+<span class="font-label-caps text-label-caps opacity-40">REF: AX-09</span>
+</div>
+<h2 class="font-label-caps text-label-caps text-primary mb-md">[ BENCHMARK: STATUS ]</h2>
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-xs">
+<p class="font-label-caps text-label-caps opacity-70">OVERALL READINESS</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-display-lg text-display-lg text-primary">94%</span>
+<span class="font-label-caps text-label-caps text-tertiary">▲ 2.1%</span>
+</div>
+</div>
+<div class="space-y-xs text-right">
+<p class="font-label-caps text-label-caps opacity-70">LAST ASSESSMENT</p>
+<p class="font-data-mono text-data-mono">14 OCT 2023</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">NEXT DUE: 48H</p>
+</div>
+</div>
+<!-- Progress Visual -->
+<div class="mt-md h-1 bg-black w-full overflow-hidden">
+<div class="h-full bg-primary w-[94%]"></div>
+</div>
+</div>
+</section>
+<!-- Section 2: Test Categories (Bento Style Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Ruck Test -->
+<button class="bg-[#111d15] tactical-border hover:tactical-border-gold text-left p-md transition-all active:scale-[0.98] clip-path-tactical group">
+<h3 class="font-label-caps text-label-caps text-primary mb-sm">RUCK TEST</h3>
+<p class="font-body-bold text-body-bold mb-xs">10KM / 20KG</p>
+<div class="flex items-center gap-xs mb-md">
+<span class="status-dot bg-primary"></span>
+<span class="font-data-mono text-data-mono">1:04:12</span>
+</div>
+<span class="inline-block font-label-caps text-[10px] bg-primary text-on-primary px-xs py-[2px]">
+                    [ GOLD GRADE ]
+                </span>
+</button>
+<!-- Strength Test -->
+<button class="bg-[#111d15] tactical-border hover:tactical-border-gold text-left p-md transition-all active:scale-[0.98] clip-path-tactical group">
+<h3 class="font-label-caps text-label-caps text-primary mb-sm">STRENGTH</h3>
+<p class="font-body-bold text-body-bold mb-xs">COMPOUND PHALANX</p>
+<div class="flex items-center gap-xs mb-md">
+<span class="status-dot bg-tertiary"></span>
+<span class="font-data-mono text-data-mono">92% PERFORMANCE</span>
+</div>
+<span class="inline-block font-label-caps text-[10px] border border-tertiary text-tertiary px-xs py-[2px]">
+                    [ ELITE ]
+                </span>
+</button>
+<!-- Capacity Test -->
+<button class="bg-[#111d15] tactical-border hover:tactical-border-gold text-left p-md transition-all active:scale-[0.98] clip-path-tactical group">
+<h3 class="font-label-caps text-label-caps text-primary mb-sm">CAPACITY</h3>
+<p class="font-body-bold text-body-bold mb-xs">5KM RUN</p>
+<div class="flex items-center gap-xs mb-md">
+<span class="status-dot bg-on-surface-variant"></span>
+<span class="font-data-mono text-data-mono">22:15</span>
+</div>
+<span class="inline-block font-label-caps text-[10px] bg-outline text-on-surface-variant px-xs py-[2px]">
+                    [ SILVER GRADE ]
+                </span>
+</button>
+</section>
+<!-- Divider -->
+<div class="h-[1px] bg-primary w-full opacity-30"></div>
+<!-- Section 3: Available Protocols -->
+<section class="space-y-md">
+<h2 class="font-label-caps text-label-caps text-on-background opacity-60">AVAILABLE PROTOCOLS</h2>
+<div class="space-y-sm">
+<!-- Protocol Item -->
+<div class="flex items-center justify-between p-md bg-black border border-[#3F4727] hover:bg-[#111d15] transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="timer">timer</span>
+<div>
+<p class="font-body-bold text-body-bold">Standard Ruck Assessment</p>
+<p class="font-label-caps text-[10px] opacity-60 uppercase">Duration: 60-90min | Intensity: High</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Protocol Item -->
+<div class="flex items-center justify-between p-md bg-black border border-[#3F4727] hover:bg-[#111d15] transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="fitness_center">fitness_center</span>
+<div>
+<p class="font-body-bold text-body-bold">Max Strength Battery</p>
+<p class="font-label-caps text-[10px] opacity-60 uppercase">3-Lift Total | Duration: 45min</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Protocol Item -->
+<div class="flex items-center justify-between p-md bg-black border border-[#3F4727] hover:bg-[#111d15] transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="air">air</span>
+<div>
+<p class="font-body-bold text-body-bold">Aerobic Threshold Run</p>
+<p class="font-label-caps text-[10px] opacity-60 uppercase">Zone 2-3 | Duration: 30min</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Section 4: History -->
+<section class="space-y-md">
+<h2 class="font-label-caps text-label-caps text-on-background opacity-60">LOG: RECENT ASSESSMENTS</h2>
+<div class="bg-[#111d15] tactical-border p-sm space-y-xs">
+<div class="flex items-center justify-between py-xs px-sm bg-black/40">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono">12 OCT</span>
+<span class="font-label-caps text-[10px] text-primary">HRV STRESS TEST</span>
+</div>
+<div class="text-right">
+<span class="font-body-bold text-body-bold text-tertiary">+4 READINESS</span>
+<p class="font-label-caps text-[9px] opacity-50">SCORE: 88</p>
+</div>
+</div>
+<div class="flex items-center justify-between py-xs px-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono">10 OCT</span>
+<span class="font-label-caps text-[10px] text-primary">SQUAT MAX VOL</span>
+</div>
+<div class="text-right">
+<span class="font-body-bold text-body-bold text-error">-2 READINESS</span>
+<p class="font-label-caps text-[9px] opacity-50">SCORE: 102% PREV</p>
+</div>
+</div>
+<div class="flex items-center justify-between py-xs px-sm bg-black/40">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono">08 OCT</span>
+<span class="font-label-caps text-[10px] text-primary">2-MILE RUN</span>
+</div>
+<div class="text-right">
+<span class="font-body-bold text-body-bold text-on-background">+1 READINESS</span>
+<p class="font-label-caps text-[9px] opacity-50">SCORE: 13:40</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Aesthetic Tactical Map Placeholder -->
+<section class="mt-xl">
+<div class="relative h-48 w-full tactical-border overflow-hidden grayscale contrast-125 opacity-40">
+<img alt="Tactical Topography" class="w-full h-full object-cover" data-alt="A high-contrast, black and white satellite topographic map of a rugged mountain range with sharp elevation contours and tactical grid overlays. The aesthetic is military-grade, featuring deep shadows and bright white highlights that emphasize the jagged terrain. Overlaid are faint, translucent digital artifacts like coordinate markers and operational zone boundaries in a sharp, technical style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDchDVHIXHDqbJGR_PkcdpiJD3jnRMNika68zEU7PLKACxXz7owIc-RLfjCMpS2M_zXF4GjrSBUK9mzuu7WWGDpkDEJfAaK7IIcLbudF7PZ9ihnNJBhDkHi6cssmaVTzHgyU9dNjr4aK7RHHMwuVWMiEvqHakUz08hp9hDXvgGUCZexr0mQu3eOfjr_V_kgnyhrsFJV9UPR7zkRb8qNfZeplUWGEnnrmri2-if2433KgeyCsTrxSq-05MAs9mHd3TD8u9BoGl86J4m-"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#050e09] to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="font-label-caps text-label-caps text-primary bg-black/80 px-sm py-xs inline-block">LOC: REGION-7 // PERFORMANCE BIOME</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-background dark:bg-background border-t border-primary">
+<div class="flex justify-around items-center h-[64px] px-margin-mobile max-w-[820px] mx-auto">
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-70 hover:bg-surface-container-highest transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">DASHBOARD</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-70 hover:bg-surface-container-highest transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-label-caps text-label-caps">LOG</span>
+</button>
+<!-- ACTIVE: TRAINING / TESTS -->
+<button class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-1 hover:bg-surface-container-highest transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="fitness_center" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+<span class="font-label-caps text-label-caps">TRAINING</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-70 hover:bg-surface-container-highest transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="directions_run">directions_run</span>
+<span class="font-label-caps text-label-caps">RUCK</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-secondary-container opacity-70 hover:bg-surface-container-highest transition-all active:opacity-80">
+<span class="material-symbols-outlined" data-icon="mops">mop</span>
+<span class="font-label-caps text-label-caps">RECOVERY</span>
+</button>
+</div>
+</nav>
+<script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                // Subtle scanline effect could be added here via JS if desired
+            });
+        });
+
+        // Simulating tactical data flicker
+        setInterval(() => {
+            const markers = document.querySelectorAll('.font-data-mono');
+            const randomIdx = Math.floor(Math.random() * markers.length);
+            markers[randomIdx].classList.add('opacity-50');
+            setTimeout(() => {
+                markers[randomIdx].classList.remove('opacity-50');
+            }, 50);
+        }, 3000);
+    </script>
+</body></html>

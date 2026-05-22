@@ -3,7 +3,7 @@ import { MapLayerKey } from '@/src/utils/mapTiles';
 import { decimateRouteForMap, evaluateRoutePoint, WEAK_ACCURACY_METERS } from '@/src/utils/routeQuality';
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 type TrackingState = 'idle' | 'recording' | 'paused' | 'finished';
 type LocationSubscription = { remove: () => void };
@@ -99,6 +99,31 @@ export function useRuckTracking(): RuckTrackingState {
   const trackingStateRef = useRef<TrackingState>('idle');
   const activeSegmentStartRef = useRef(0);
   const accumulatedTimeRef = useRef(0);
+
+  const resetLiveSession = useCallback(() => {
+    lastAcceptedRef.current = undefined;
+    routePointsRef.current = [];
+    distanceRef.current = 0;
+    elapsedRef.current = 0;
+    accumulatedTimeRef.current = 0;
+    activeSegmentStartRef.current = 0;
+    splitsRef.current = [];
+    nextSplitKmRef.current = 1;
+    lastSplitElapsedRef.current = 0;
+    rejectedPointCountRef.current = 0;
+    acceptedPointCountRef.current = 0;
+    accuracyTotalRef.current = 0;
+    accuracyCountRef.current = 0;
+    setRoutePoints([]);
+    setDistanceKm(0);
+    setElapsedSeconds(0);
+    setCurrentPosition(null);
+    setSessionResult(null);
+    setSplits([]);
+    setRejectedPointCount(0);
+    setAverageAccuracyMeters(null);
+    setRouteConfidence('High');
+  }, []);
 
   const removeLocationSubscription = useCallback(() => {
     if (!locationSubRef.current) return;
@@ -235,45 +260,48 @@ export function useRuckTracking(): RuckTrackingState {
   }, []);
 
   const startRecording = useCallback(async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
+    let canUseGps = true;
+
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      canUseGps = status === 'granted';
+    } catch (error) {
+      canUseGps = false;
+      console.warn('Ruck tracking: failed to request location permission', error);
+    }
+
+    if (!canUseGps && Platform.OS !== 'web') {
       setGpsQualityWarning('Location permission denied');
+      Alert.alert('Location Required', 'Allow location access to start GPS ruck tracking.');
       return;
     }
 
     removeLocationSubscription();
+    resetLiveSession();
 
-    lastAcceptedRef.current = undefined;
-    routePointsRef.current = [];
-    distanceRef.current = 0;
-    elapsedRef.current = 0;
-    accumulatedTimeRef.current = 0;
-    activeSegmentStartRef.current = 0;
-    splitsRef.current = [];
-    nextSplitKmRef.current = 1;
-    lastSplitElapsedRef.current = 0;
-    rejectedPointCountRef.current = 0;
-    acceptedPointCountRef.current = 0;
-    accuracyTotalRef.current = 0;
-    accuracyCountRef.current = 0;
-    setRoutePoints([]);
-    setDistanceKm(0);
-    setElapsedSeconds(0);
-    setCurrentPosition(null);
-    setGpsQualityWarning(null);
-    setSessionResult(null);
-    setSplits([]);
-    setRejectedPointCount(0);
-    setAverageAccuracyMeters(null);
-    setRouteConfidence('High');
-
-    const sub = await watchPosition();
-
-    locationSubRef.current = sub;
     trackingStateRef.current = 'recording';
     setTrackingState('recording');
     startTimer();
-  }, [removeLocationSubscription, startTimer, watchPosition]);
+
+    if (!canUseGps) {
+      setGpsQualityWarning('GPS unavailable on this web address');
+      Alert.alert(
+        'GPS Unavailable',
+        'The ruck timer has started, but browser GPS usually requires HTTPS or localhost. Use Expo Go for full GPS tracking.'
+      );
+      return;
+    }
+
+    try {
+      const sub = await watchPosition();
+      locationSubRef.current = sub;
+      setGpsQualityWarning(null);
+    } catch (error) {
+      console.warn('Ruck tracking: failed to start location updates', error);
+      setGpsQualityWarning('Location updates unavailable');
+      Alert.alert('GPS Unavailable', 'The ruck timer is running, but location updates could not start.');
+    }
+  }, [removeLocationSubscription, resetLiveSession, startTimer, watchPosition]);
 
   const stopRecording = useCallback(() => {
     removeLocationSubscription();

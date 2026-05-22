@@ -1,16 +1,16 @@
 export const SentinelTheme = {
   colours: {
-    background: '#050806',
-    surface: '#0b1410',
-    card: '#101c15',
-    cardAlt: '#14241b',
-    border: '#26382d',
-    text: '#f2f5ef',
-    mutedText: '#9aa89e',
-    accent: '#8fbf8f',
+    background: '#050e09',
+    surface: '#0b1510',
+    card: '#111d15',
+    cardAlt: '#18221c',
+    border: '#3F4727',
+    text: '#dae5dc',
+    mutedText: '#d3c4b1',
+    accent: '#B5852C',
     warning: '#d7a84b',
     danger: '#d96c5f',
-    success: '#6fbf73',
+    success: '#21e371',
   },
 
   spacing: {
@@ -23,8 +23,8 @@ export const SentinelTheme = {
   },
 
   radius: {
-    sm: 8,
-    md: 14,
-    lg: 20,
+    sm: 2,
+    md: 4,
+    lg: 8,
   },
 };

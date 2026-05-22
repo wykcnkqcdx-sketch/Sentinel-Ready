@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTINEL READY DASHBOARD</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..900&amp;family=Inter:wght@400;600;800&amp;family=JetBrains+Mono:wght@400;500;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #050e09;
+            color: #dae5dc;
+            -webkit-font-smoothing: antialiased;
+        }
+        .circular-progress {
+            background: radial-gradient(closest-side, #0b1510 79%, transparent 80% 100%),
+                        conic-gradient(#f4bd5f 84%, #3F4727 0);
+        }
+        .tactical-grid-bg {
+            background-image: linear-gradient(#3F4727 1px, transparent 1px), linear-gradient(90deg, #3F4727 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.05;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#65ff91",
+                    "surface-container-lowest": "#07100b",
+                    "error-container": "#93000a",
+                    "on-secondary": "#2c3315",
+                    "background": "#0b1510",
+                    "inverse-primary": "#7e5700",
+                    "tertiary-fixed-dim": "#21e371",
+                    "secondary-fixed": "#dee7bb",
+                    "primary": "#f4bd5f",
+                    "tertiary": "#21e371",
+                    "on-primary-fixed": "#281900",
+                    "on-tertiary-fixed": "#00210a",
+                    "surface-container-low": "#141e18",
+                    "surface-bright": "#313c35",
+                    "on-primary": "#432c00",
+                    "on-error-container": "#ffdad6",
+                    "on-background": "#dae5dc",
+                    "surface-tint": "#f4bd5f",
+                    "inverse-on-surface": "#28332d",
+                    "on-surface": "#dae5dc",
+                    "secondary-container": "#444c2c",
+                    "inverse-surface": "#dae5dc",
+                    "surface-container-highest": "#2d3731",
+                    "secondary-fixed-dim": "#c2cba1",
+                    "on-secondary-container": "#b4bd93",
+                    "on-error": "#690005",
+                    "surface-container-high": "#222c26",
+                    "surface": "#0b1510",
+                    "on-primary-fixed-variant": "#604100",
+                    "on-tertiary-fixed-variant": "#005323",
+                    "on-primary-container": "#3a2600",
+                    "surface-container": "#18221c",
+                    "on-tertiary": "#003916",
+                    "surface-dim": "#0b1510",
+                    "on-tertiary-container": "#003112",
+                    "error": "#ffb4ab",
+                    "surface-variant": "#2d3731",
+                    "primary-container": "#b9882f",
+                    "outline": "#9c8f7d",
+                    "tertiary-container": "#00a74e",
+                    "on-secondary-fixed": "#171e04",
+                    "outline-variant": "#4f4537",
+                    "primary-fixed-dim": "#f4bd5f",
+                    "secondary": "#c2cba1",
+                    "on-secondary-fixed-variant": "#424a2a",
+                    "on-surface-variant": "#d3c4b1",
+                    "primary-fixed": "#ffdeac"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "10px",
+                    "xs": "4px",
+                    "base": "4px",
+                    "sm": "8px",
+                    "lg": "16px",
+                    "gutter": "12px",
+                    "xl": "24px",
+                    "md": "12px",
+                    "margin-desktop": "18px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Space Grotesk"],
+                    "data-mono": ["JetBrains Mono"],
+                    "display-lg": ["Space Grotesk"],
+                    "body-bold": ["Inter"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Space Grotesk"],
+                    "body-base": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "data-mono": ["13px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-lg": ["34px", {"lineHeight": "38px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "body-bold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.15em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "28px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                    "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base pb-24">
+<!-- TopAppBar -->
+<header class="bg-background border-b border-outline fixed top-0 w-full z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-[820px] mx-auto h-14">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="security">security</span>
+<h1 class="text-headline-md font-headline-md font-black text-primary uppercase tracking-tighter">SENTINEL READY [09:42:00]</h1>
+</div>
+<div class="text-label-caps font-label-caps text-primary">
+                [STATUS: GREEN]
+            </div>
+</div>
+</header>
+<main class="max-w-[820px] mx-auto px-margin-mobile md:px-margin-desktop pt-20 space-y-md">
+<!-- Hero Section: Readiness -->
+<section class="bg-[#111d15] border border-[#3F4727] p-md relative overflow-hidden">
+<div class="tactical-grid-bg absolute inset-0 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col md:flex-row items-center justify-around gap-lg">
+<div class="circular-progress w-40 h-40 rounded-full flex items-center justify-center border-2 border-primary/20 shadow-[0_0_20px_rgba(181,133,44,0.1)]">
+<div class="flex flex-col items-center">
+<span class="font-display-lg text-display-lg text-primary">84%</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">READY</span>
+</div>
+</div>
+<div class="text-center md:text-left space-y-sm">
+<span class="font-label-caps text-label-caps text-tertiary flex items-center justify-center md:justify-start gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                        [ READINESS STATUS: GREEN ]
+                    </span>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary leading-tight">SYSTEMS FULLY<br/>OPERATIONAL</h2>
+<p class="font-data-mono text-data-mono text-on-surface-variant max-w-[300px]">Optimal physiological metrics detected. Deployment recommended for high-intensity mission profiles.</p>
+</div>
+</div>
+</section>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-sm">
+<div class="bg-[#111d15] border border-[#3F4727] p-sm text-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">STRENGTH</span>
+<span class="font-headline-md text-headline-md text-primary">B+</span>
+</div>
+<div class="bg-[#111d15] border border-[#3F4727] p-sm text-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">CARDIO</span>
+<span class="font-headline-md text-headline-md text-primary">A-</span>
+</div>
+<div class="bg-[#111d15] border border-[#3F4727] p-sm text-center">
+<span class="font-label-caps text-label-caps text-primary border border-primary px-1">RUCK (S)</span>
+<span class="font-headline-md text-headline-md text-primary block mt-1">S</span>
+</div>
+<div class="bg-[#111d15] border border-[#3F4727] p-sm text-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">RECOVERY</span>
+<span class="font-headline-md text-headline-md text-primary">B</span>
+</div>
+</div>
+<!-- Weekly Load Risk -->
+<section class="bg-[#111d15] border border-[#3F4727] p-md">
+<div class="flex justify-between items-center mb-md border-b border-[#3F4727] pb-sm">
+<span class="font-label-caps text-label-caps text-primary">[ WEEKLY LOAD RISK ]</span>
+<span class="font-label-caps text-label-caps text-tertiary">LOW RISK</span>
+</div>
+<div class="h-32 flex items-end gap-1 px-2">
+<div class="w-full bg-[#3F4727]/30 h-[20%] relative group">
+<div class="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="w-full bg-[#3F4727]/30 h-[35%]"></div>
+<div class="w-full bg-[#3F4727]/30 h-[30%]"></div>
+<div class="w-full bg-[#3F4727]/30 h-[55%]"></div>
+<div class="w-full bg-primary h-[40%] shadow-[0_0_10px_rgba(181,133,44,0.3)]"></div>
+<div class="w-full bg-[#3F4727]/30 h-[25%]"></div>
+<div class="w-full bg-[#3F4727]/10 h-[5%] border border-dashed border-[#3F4727]"></div>
+</div>
+<div class="flex justify-between mt-2 font-data-mono text-[10px] text-on-surface-variant px-1">
+<span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+</div>
+</section>
+<!-- Mission Briefing -->
+<section class="bg-[#111d15] border border-primary p-md relative">
+<div class="absolute top-0 right-0 bg-primary text-background font-label-caps px-2 py-0.5 text-[10px]">NEXT SESSION</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">MISSION BRIEFING</span>
+<div class="mt-md flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">[ RUCK: 10KM / 20KG PACK ]</h3>
+<p class="font-body-base text-body-base text-on-surface-variant mt-1">Focus: Sustained Zone 3 exertion with heavy structural loading. Terrain: Undulating.</p>
+</div>
+<button class="w-full md:w-auto bg-primary text-on-primary font-label-caps py-md px-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors active:scale-95 duration-75">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+                    EXECUTE SESSION
+                </button>
+</div>
+</section>
+<!-- Mission Alerts -->
+<div class="bg-black border-l-4 border-tertiary p-md flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary" data-icon="info" style="font-variation-settings: 'FILL' 1;">info</span>
+<div>
+<span class="font-label-caps text-label-caps text-tertiary">SYSTEM ALERT</span>
+<p class="font-body-bold text-body-bold text-on-background">OPTIMAL RECOVERY WINDOW DETECTED</p>
+<p class="font-data-mono text-data-mono text-on-surface-variant text-xs">Deep sleep metrics (+12%) and HRV stability suggest peak performance capacity.</p>
+</div>
+</div>
+<!-- Ambient Data Visual -->
+<div class="rounded border border-[#3F4727] overflow-hidden grayscale contrast-125 opacity-40 h-24">
+<img class="w-full h-full object-cover" data-alt="A gritty, cinematic close-up of a tactical operator's gear, including a heavy rucksack and mud-stained boots, set in a low-light forest environment. The lighting is moody and focused, highlighting the rugged textures of the equipment. The overall aesthetic is disciplined and functional, using a dark palette with deep greens and shadowed blacks, matching the tactical readiness of a high-stakes mission briefing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk7nGN6WEnpMQ-FqPfbYsSMNBOWdEEjmY9vHNI32lDYjwh0S6Er2NmMcEue9mLqYbEfXS2IILQOJL1jaJ-SnpH9F98VL-FHwU_RyoS1EZP7ep3ZSxpYDHwblNJlilPA0zi9nV7izGVVulbxfZCY1E_MIpAq9SqKCuC5xrxaJwo-3-dtiWMG77YWbFmpY9KWbmHV4nsLJnL6jjiHKi00Yi5keCoWVn6UfTVGDn11rgNhih1awJgfJJ5Mqf5mtjkMdL_RSfB8z3l1dGw"/>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-16 bg-background border-t border-primary">
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2 transition-all duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="directions_run">directions_run</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-container opacity-60 pt-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for buttons and cards
+        document.querySelectorAll('button, .bg-[#111d15]').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.98)';
+                el.style.transition = 'transform 0.075s';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = 'scale(1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'scale(1)';
+            });
+        });
+
+        // Simple typing effect for status
+        const statusEl = document.querySelector('h1');
+        const updateTime = () => {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            statusEl.textContent = `SENTINEL READY [${timeStr}]`;
+        };
+        setInterval(updateTime, 1000);
+    </script>
+</body></html>

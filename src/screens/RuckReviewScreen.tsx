@@ -231,7 +231,7 @@ export default function RuckReviewScreen() {
   if (!log || !log.ruck) {
     return (
       <View style={[styles.screen, styles.missingWrap]}>
-        <Text style={styles.kicker}>RUCK REVIEW</Text>
+        <Text style={styles.kicker}>MISSION COMPLETE DEBRIEF</Text>
         <Text style={styles.title}>Session not found</Text>
         <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/ruck')}>
           <Text style={styles.primaryButtonText}>Back to Ruck</Text>
@@ -243,16 +243,12 @@ export default function RuckReviewScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/ruck')}>
-        <Text style={styles.backButtonText}>[ ← BACK ]</Text>
+        <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
 
-      <View style={[rr2.missionHeroBanner, { borderColor: outcome?.tone === 'bad' ? '#8a2f2a' : outcome?.tone === 'warn' ? 'rgba(255,170,68,0.4)' : 'rgba(94,122,47,0.5)' }]}>
-        <Text style={rr2.missionHeroKicker}>[ MISSION DEBRIEF ]</Text>
-        <Text style={[rr2.missionHeroTitle, { color: outcome?.tone === 'bad' ? '#e05050' : outcome?.tone === 'warn' ? '#ffaa44' : '#B5852C' }]}>
-          {outcome?.tone === 'bad' ? 'REVIEW REQUIRED' : outcome?.tone === 'warn' ? 'MISSION PARTIAL' : 'MISSION COMPLETE'}
-        </Text>
-        <Text style={rr2.missionHeroSub}>{log.type} · {log.date}</Text>
-      </View>
+      <Text style={styles.kicker}>MISSION COMPLETE DEBRIEF</Text>
+      <Text style={styles.title}>{log.type}</Text>
+      <Text style={styles.subtitle}>{log.date}</Text>
 
       <View style={styles.exportRow}>
         <TouchableOpacity
@@ -374,8 +370,8 @@ export default function RuckReviewScreen() {
         </View>
       ) : null}
 
-      <View style={rr2.fieldCommandCard}>
-        <Text style={rr2.fieldCommandKicker}>[ FIELD COMMAND ]</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardKicker}>NEXT RUCK</Text>
         <Text style={styles.cardText}>{recommendation}</Text>
       </View>
 
@@ -403,14 +399,14 @@ export default function RuckReviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  content: { padding: 18, paddingBottom: 90, gap: 14 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 90, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   missingWrap: { padding: 20, justifyContent: 'center', gap: 14 },
   backButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(181,133,44,0.18)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
   backButtonText: { color: '#c8f7d0', fontSize: 13, fontWeight: '900' },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 2.2 },
-  title: { color: '#ffffff', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 14, fontWeight: '800' },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, fontWeight: '800' },
   exportRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   exportButton: { alignSelf: 'flex-start', backgroundColor: '#B5852C', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 },
   exportButtonDisabled: { opacity: 0.45 },
@@ -446,13 +442,4 @@ const styles = StyleSheet.create({
   splitText: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
   primaryButton: { backgroundColor: '#B5852C', borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
   primaryButtonText: { color: '#080c05', fontSize: 14, fontWeight: '900' },
-});
-
-const rr2 = StyleSheet.create({
-  missionHeroBanner: { borderWidth: 1, borderRadius: 6, padding: 18, gap: 6, backgroundColor: '#0c1008' },
-  missionHeroKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 },
-  missionHeroTitle: { fontSize: 30, fontWeight: '900', letterSpacing: 1 },
-  missionHeroSub: { color: '#b8c0b0', fontSize: 14, fontWeight: '800' },
-  fieldCommandCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(181,133,44,0.2)', borderLeftColor: '#B5852C', gap: 8 },
-  fieldCommandKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
 });

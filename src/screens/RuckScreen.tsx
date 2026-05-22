@@ -425,17 +425,11 @@ export default function RuckScreen() {
     <View style={styles.screen}>
       {/* Header row */}
       <View style={styles.headerBlock}>
-        <View style={rs2.headerRow}>
-          <View>
-            <Text style={styles.kicker}>[ RUCK MISSION HUD ]</Text>
-            <Text style={styles.title}>Load Carriage</Text>
-          </View>
-          <View style={[rs2.conditionBadge, { borderColor: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
-            <Text style={[rs2.conditionText, { color: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
-              {readinessGood ? '[ CONDITION: GREEN ]' : '[ CONDITION: AMBER ]'}
-            </Text>
-          </View>
+        <View style={styles.ruckBrandRow}>
+          <Text style={styles.kicker}>SENTINEL READY - RUCK TRACK</Text>
+          <Text style={styles.ruckStatus}>[GPS: ARMED]</Text>
         </View>
+        <Text style={styles.title}>Mission HUD</Text>
       </View>
 
       {/* Tab pills */}
@@ -447,7 +441,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'stats' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'stats' && styles.tabPillTextActive]}>
-            [ STATS ]
+            Simple
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -457,7 +451,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'track' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'track' && styles.tabPillTextActive]}>
-            [ TRACK ]
+            Mission
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -467,7 +461,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'routes' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'routes' && styles.tabPillTextActive]}>
-            [ ROUTES ]
+            Map
           </Text>
         </TouchableOpacity>
       </View>
@@ -609,22 +603,6 @@ export default function RuckScreen() {
                 </View>
               </View>
 
-              {latestMetrics && latestMetrics.pace > 0 && bestPace !== Infinity ? (
-                <View style={rs2.paceBarWrap}>
-                  <View style={rs2.paceBarRow}>
-                    <Text style={rs2.paceBarLabel}>PACE vs PB</Text>
-                    <Text style={rs2.paceBarValue}>
-                      {latestMetrics.pace <= bestPace ? 'PB MATCHED' : `+${Math.round((latestMetrics.pace - bestPace) * 60)}s/km`}
-                    </Text>
-                  </View>
-                  <View style={rs2.paceBarTrack}>
-                    <View style={[rs2.paceBarFill, {
-                      width: `${Math.max(5, Math.min(100, (bestPace / latestMetrics.pace) * 100))}%` as unknown as number,
-                      backgroundColor: latestMetrics.pace <= bestPace * 1.05 ? '#5E7A2F' : latestMetrics.pace <= bestPace * 1.15 ? '#B5852C' : '#ffaa44',
-                    }]} />
-                  </View>
-                </View>
-              ) : null}
               {latest.ruck ? (
                 <TouchableOpacity
                   style={styles.reviewButton}
@@ -632,27 +610,15 @@ export default function RuckScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Open latest ruck review"
                 >
-                  <Text style={styles.reviewButtonText}>[ OPEN REVIEW ]</Text>
+                  <Text style={styles.reviewButtonText}>Open Review</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
           ) : null}
 
-          <View style={rs2.fieldCommandCard}>
-            <View style={rs2.fieldCommandHeader}>
-              <Text style={rs2.fieldCommandKicker}>[ FIELD COMMAND ]</Text>
-              <View style={[rs2.conditionBadge, { borderColor: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
-                <Text style={[rs2.conditionText, { color: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
-                  {readinessGood ? 'GO' : 'CAUTION'}
-                </Text>
-              </View>
-            </View>
+          <View style={readinessGood ? styles.nextCard : styles.nextCardWarn}>
+            <Text style={styles.nextKicker}>NEXT SESSION</Text>
             <Text style={styles.nextText}>{nextSessionAdvice}</Text>
-            {recentFatigue > 0 ? (
-              <Text style={rs2.physiologicalWarning}>
-                ⚡ PHYSIOLOGICAL LOAD: {recentFatigue} fatigue-watch session{recentFatigue > 1 ? 's' : ''} in last 5
-              </Text>
-            ) : null}
           </View>
 
           <View style={styles.sectionHeader}>
@@ -753,18 +719,20 @@ export default function RuckScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#080c05' },
-  content: { padding: 20, paddingBottom: 120, gap: 14 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  title: { color: '#F4BD5F', fontSize: 28, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
 
-  headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10, gap: 4 },
-  tabRow: { flexDirection: 'row', backgroundColor: '#0c1008', borderRadius: 12, padding: 4, marginHorizontal: 20, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
-  tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
-  tabPillActive: { backgroundColor: 'rgba(181,133,44,0.3)' },
-  tabPillText: { color: '#b8c0b0', fontSize: 13, fontWeight: '900' },
-  tabPillTextActive: { color: '#ffffff' },
+  headerBlock: { paddingHorizontal: 10, paddingTop: 12, paddingBottom: 8, gap: 4, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  ruckBrandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  ruckStatus: { color: '#21e371', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  tabRow: { flexDirection: 'row', backgroundColor: '#111d15', borderRadius: 2, padding: 3, marginHorizontal: 10, marginBottom: 12, borderWidth: 1, borderColor: '#3F4727', maxWidth: 820, width: '95%', alignSelf: 'center' },
+  tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 2, borderWidth: 1, borderColor: 'transparent' },
+  tabPillActive: { backgroundColor: '#18221c', borderColor: '#B5852C' },
+  tabPillText: { color: '#d3c4b1', fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  tabPillTextActive: { color: '#F4BD5F' },
 
   volumeCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },
@@ -837,20 +805,4 @@ const styles = StyleSheet.create({
   fieldCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
   fieldLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   fieldText: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
-});
-
-const rs2 = StyleSheet.create({
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  conditionBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  conditionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  fieldCommandCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(181,133,44,0.2)', borderLeftColor: '#B5852C', gap: 10 },
-  fieldCommandHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  fieldCommandKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  physiologicalWarning: { color: '#ffaa44', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
-  paceBarWrap: { gap: 6 },
-  paceBarRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  paceBarLabel: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  paceBarValue: { color: '#b8c0b0', fontSize: 10, fontWeight: '900' },
-  paceBarTrack: { height: 3, backgroundColor: 'rgba(181,133,44,0.15)', borderRadius: 2, overflow: 'hidden' },
-  paceBarFill: { height: 3, borderRadius: 2 },
 });

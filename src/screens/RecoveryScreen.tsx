@@ -121,53 +121,25 @@ export default function RecoveryScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={rs.headerTopRow}>
-        <Text style={styles.kicker}>SENTINEL READY</Text>
-        <Text style={styles.kicker}>RECOVERY CENTER</Text>
-      </View>
+      <Text style={styles.kicker}>RECOVERY CENTER</Text>
+      <Text style={styles.title}>Recovery Center</Text>
       <View style={styles.headerRule} />
+      <Text style={styles.subtitle}>
+        Fatigue, readiness trend and recovery habits reviewed from your training logs.
+      </Text>
 
-      {/* ── Stitch: Recovery Score Hero ── */}
-      <View style={rs.heroCard}>
-        <Text style={rs.heroKicker}>[ RECOVERY: SCORE ]</Text>
-        <View style={rs.heroScoreRow}>
-          <Text style={[rs.heroScore, { color: isPrime ? '#5E7A2F' : isModerate ? '#ffaa44' : recoveryScore > 0 ? '#e05050' : '#b8c0b0' }]}>
-            {recoveryScore > 0 ? `${recoveryScore}%` : '--'}
-          </Text>
-          <View style={rs.heroRight}>
-            {recoveryScore > 0 && (
-              <View style={[rs.fatigueBadge, { borderColor: (isPrime ? '#5E7A2F' : isModerate ? '#ffaa44' : '#e05050') + '88', backgroundColor: (isPrime ? '#5E7A2F' : isModerate ? '#ffaa44' : '#e05050') + '18' }]}>
-                <Text style={[rs.fatigueBadgeText, { color: isPrime ? '#5E7A2F' : isModerate ? '#ffaa44' : '#e05050' }]}>
-                  {isPrime ? '[ ⚡ SYSTEMS OPTIMAL ]' : isModerate ? '[ ⚡ FATIGUE WARNING: AMBER ]' : '[ ⚡ FATIGUE WARNING: RED ]'}
-                </Text>
-              </View>
-            )}
-            <Text style={rs.heroCapacity}>
-              OPERATIONAL CAPACITY: {isPrime ? 'NOMINAL' : isModerate ? 'REDUCED' : recoveryScore > 0 ? 'CRITICAL' : 'UNKNOWN'}
-            </Text>
+      <View style={mainCardStyle}>
+        <View style={styles.scoreHeader}>
+          <View>
+            <Text style={styles.cardKicker}>RECOVERY SCORE</Text>
+            <Text style={scoreStyle}>{recoveryScore > 0 ? `${recoveryScore}%` : '--'}</Text>
           </View>
-        </View>
-        <View style={rs.heroProgressTrack}>
-          <View style={[rs.heroProgressFill, { width: `${recoveryScore}%` as any, backgroundColor: isPrime ? '#5E7A2F' : isModerate ? '#ffaa44' : '#e05050' }]} />
+          <View style={badgeStyle}>
+            <Text style={badgeTextStyle}>{scoreLabel}</Text>
+          </View>
         </View>
         <Text style={styles.scoreMessage}>{scoreMessage}</Text>
       </View>
-
-      {/* ── Stitch: Critical Alerts ── */}
-      {isHighFatigue && (
-        <View style={rs.criticalAlert}>
-          <Text style={rs.criticalAlertLabel}>CRITICAL ALERT</Text>
-          <Text style={rs.criticalAlertTitle}>HIGH FATIGUE LOAD DETECTED</Text>
-          <Text style={rs.criticalAlertSub}>Readiness below operational threshold. Rest required.</Text>
-        </View>
-      )}
-      {thisWeek.fatigueWatch >= 2 && (
-        <View style={rs.criticalAlert}>
-          <Text style={rs.criticalAlertLabel}>CRITICAL ALERT</Text>
-          <Text style={rs.criticalAlertTitle}>FATIGUE ACCUMULATION THIS WEEK</Text>
-          <Text style={rs.criticalAlertSub}>{thisWeek.fatigueWatch} sessions logged at readiness 5 or below.</Text>
-        </View>
-      )}
 
       <View style={
         recoveryDebt.status === 'red' ? styles.debtCardRed
@@ -302,21 +274,15 @@ export default function RecoveryScreen() {
         </View>
       ) : null}
 
-      {/* ── Stitch: Recommended Protocol card ── */}
-      <View style={rs.protocolHeroCard}>
-        <Text style={rs.protocolHeroKicker}>[ RECOMMENDED PROTOCOL ]</Text>
-        <Text style={rs.protocolHeroTitle}>{protocol.title.toUpperCase()}</Text>
-        {recoveryScore > 0 && recoveryScore < 75 && (
-          <Text style={rs.protocolHeroAdvice}>REDUCE LOAD BY 20% FOR NEXT 48H</Text>
-        )}
-        <View style={styles.protocolCard}>
-          {protocol.steps.map((step, i) => (
-            <View key={i} style={styles.protocolRow}>
-              <Text style={styles.protocolNumber}>{i + 1}</Text>
-              <Text style={styles.protocolText}>{step}</Text>
-            </View>
-          ))}
-        </View>
+      <View style={styles.protocolCard}>
+        <Text style={styles.protocolKicker}>PROTOCOL</Text>
+        <Text style={styles.protocolTitle}>{protocol.title}</Text>
+        {protocol.steps.map((step, i) => (
+          <View key={i} style={styles.protocolRow}>
+            <Text style={styles.protocolNumber}>{i + 1}</Text>
+            <Text style={styles.protocolText}>{step}</Text>
+          </View>
+        ))}
       </View>
 
       <View style={styles.targetsCard}>
@@ -343,12 +309,12 @@ export default function RecoveryScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#06100b' },
-  content: { padding: 20, paddingBottom: 120, gap: 14 },
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  screen: { flex: 1, backgroundColor: '#050e09' },
+  content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
   headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
+  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
 
   mainCard: { backgroundColor: '#102016', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: '#2d6b3f', gap: 10 },
   mainCardModerate: { backgroundColor: '#1a1a0d', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(26,116,212,0.25)', gap: 10 },
@@ -411,57 +377,4 @@ const styles = StyleSheet.create({
   targetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#1a2c20' },
   targetLabel: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
   targetValue: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
-});
-
-// ── Stitch-derived RecoveryScreen additions ─────────────────────────────
-const rs = StyleSheet.create({
-  headerTopRow:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-
-  heroCard: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderTopWidth: 2,
-    borderTopColor: '#B5852C',
-    borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
-    padding: 16,
-    gap: 10,
-  },
-  heroKicker:         { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  heroScoreRow:       { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
-  heroScore:          { fontSize: 56, fontWeight: '900', lineHeight: 60 },
-  heroRight:          { flex: 1, gap: 8, alignItems: 'flex-end' },
-  fatigueBadge:       { borderWidth: 1, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 5 },
-  fatigueBadgeText:   { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  heroCapacity:       { color: '#b8c0b0', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  heroProgressTrack:  { height: 6, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 3, overflow: 'hidden' },
-  heroProgressFill:   { height: '100%', borderRadius: 3 },
-
-  criticalAlert: {
-    backgroundColor: 'rgba(224,80,80,0.06)',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderLeftWidth: 4,
-    borderColor: 'rgba(224,80,80,0.2)',
-    borderLeftColor: '#e05050',
-    padding: 12,
-    gap: 3,
-  },
-  criticalAlertLabel:  { color: '#e05050', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  criticalAlertTitle:  { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  criticalAlertSub:    { color: '#b8c0b0', fontSize: 12 },
-
-  protocolHeroCard: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderTopWidth: 2,
-    borderTopColor: '#B5852C',
-    borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
-    padding: 16,
-    gap: 8,
-  },
-  protocolHeroKicker:  { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  protocolHeroTitle:   { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 },
-  protocolHeroAdvice:  { color: '#ffaa44', fontSize: 12, fontWeight: '700', fontStyle: 'italic' },
 });

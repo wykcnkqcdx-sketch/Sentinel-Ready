@@ -1,1137 +1,358 @@
-import { getCategoryPalette } from '@/constants/theme';
-import WeeklyLoadRiskCard from '@/src/components/log/WeeklyLoadRiskCard';
-import AlertCard from '@/src/components/ui/AlertCard';
-import MissionStat from '@/src/components/ui/MissionStat';
-import SentinelCard from '@/src/components/ui/SentinelCard';
-import SparkLine from '@/src/components/charts/SparkLine';
+import { DS } from '@/constants/theme';
+import { useCheckIn } from '@/src/hooks/useCheckIn';
 import { calculateReadinessPercentage, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
-import { buildPlanAdherence } from '@/src/utils/adherenceUtils';
+import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
+import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
 import { buildTrainingBalance } from '@/src/utils/balanceUtils';
 import { weeklyLoadSeries } from '@/src/utils/chartDataUtils';
-import { buildInjuryWatch } from '@/src/utils/injuryWatchUtils';
-import { buildTrainingInsights } from '@/src/utils/insightUtils';
-import { buildMilestones, getEarnedMilestones, getNextMilestone } from '@/src/utils/milestoneUtils';
-import { buildMissionBrief } from '@/src/utils/missionBriefUtils';
-import { buildReadinessForecast } from '@/src/utils/readinessForecastUtils';
-import { buildRecoveryDebt } from '@/src/utils/recoveryUtils';
-import { buildGoalAction, buildGoalSummary, buildPerformanceSnapshot, buildReadinessTrend, buildWeekSummary, buildWeeklyLoadRisk, getReadinessNumber } from '@/src/utils/trainingLogUtils';
-import { useCheckIn } from '@/src/hooks/useCheckIn';
+import {
+  buildReadinessTrend,
+  buildWeekSummary,
+} from '@/src/utils/trainingLogUtils';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Circle, Svg } from 'react-native-svg';
+import { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const WEEKLY_TARGET = 4;
+const WEEK_TARGET = 4;
 
-function getWeeklyLoadStatus(total: number, fatigueWatch: number, avgReadiness: number) {
-  if (fatigueWatch >= 2) return { label: 'Fatigue Risk', isWarn: true };
-  if (total === 0) return { label: 'No Sessions', isWarn: false };
-  if (total <= 2) return { label: 'Light Week', isWarn: false };
-  if (total >= 5 && avgReadiness > 0 && avgReadiness < 6) return { label: 'Heavy Load', isWarn: true };
-  if (total >= 5) return { label: 'Heavy Load', isWarn: false };
-  return { label: 'On Track', isWarn: false };
+function readinessState(score: number) {
+  if (score === 0) return { label: 'NO DATA', color: DS.textMuted, message: 'Log a session to calculate operational readiness.' };
+  if (score < 60) return { label: 'RED', color: DS.danger, message: 'High fatigue detected. Recovery takes priority today.' };
+  if (score < 75) return { label: 'AMBER', color: DS.warning, message: 'Trainable, but keep volume and load controlled.' };
+  return { label: 'GREEN', color: DS.success, message: 'Systems are available for high-intensity mission profiles.' };
 }
 
-function getStrengthStatus(strengthLogs: ReturnType<typeof useTraining>['logs']) {
-  if (strengthLogs.length < 2) return strengthLogs.length === 1 ? 'Baseline' : 'No data';
-  const latest = getReadinessNumber(strengthLogs[0].readiness);
-  const previous = getReadinessNumber(strengthLogs[1].readiness);
-  if (latest > previous) return 'Improving';
-  if (latest < previous) return 'Dropping';
-  return 'Stable';
+function grade(value: number, fallback = '--') {
+  if (!value) return fallback;
+  if (value >= 90) return 'S';
+  if (value >= 80) return 'A-';
+  if (value >= 70) return 'B+';
+  if (value >= 60) return 'B';
+  return 'C';
 }
 
-function getEnduranceStatus(enduranceLogs: ReturnType<typeof useTraining>['logs']) {
-  if (enduranceLogs.length < 2) return enduranceLogs.length === 1 ? 'Baseline' : 'No data';
-  const latest = getReadinessNumber(enduranceLogs[0].readiness);
-  const previous = getReadinessNumber(enduranceLogs[1].readiness);
-  if (latest > previous) return 'Improving';
-  if (latest < previous) return 'Dropping';
-  return 'Stable';
+function MetricTile({ label, value, active }: { label: string; value: string; active?: boolean }) {
+  return (
+    <View style={active ? styles.metricTileActive : styles.metricTile}>
+      <Text style={active ? styles.metricTileLabelActive : styles.metricTileLabel}>{label}</Text>
+      <Text style={styles.metricTileValue}>{value}</Text>
+    </View>
+  );
 }
 
-function getRecoveryStatus(recentLogs: ReturnType<typeof useTraining>['logs']) {
-  const fatigue = recentLogs.filter((l) => getReadinessNumber(l.readiness) <= 5).length;
-  if (recentLogs.length === 0) return 'No data';
-  if (fatigue >= 3) return 'Poor';
-  if (fatigue >= 1) return 'Moderate';
-  return 'Good';
-}
-
-function statusToGrade(status: string): string {
-  switch (status) {
-    case 'Improving': return 'A';
-    case 'Stable':    return 'B+';
-    case 'Baseline':  return 'B';
-    case 'Dropping':  return 'C';
-    case 'Good':      return 'A';
-    case 'Moderate':  return 'B';
-    case 'Poor':      return 'D';
-    default:          return '?';
-  }
+function SectionLabel({ children, status }: { children: string; status?: string }) {
+  return (
+    <View style={styles.sectionLabelRow}>
+      <Text style={styles.sectionLabel}>{children}</Text>
+      {status ? <Text style={styles.sectionStatus}>{status}</Text> : null}
+    </View>
+  );
 }
 
 export default function DashboardScreen() {
   const { logs, goals, isLoading } = useTraining();
   const { injuryNotes } = useUser();
+  const checkIn = useCheckIn();
   const router = useRouter();
 
   const trainingReadiness = useMemo(() => calculateReadinessPercentage(logs), [logs]);
-  const checkIn = useCheckIn();
-
-  // Blend training readiness (65%) with today's check-in score (35%).
-  // If no training data yet, use check-in score alone. Falls back to training-only if no check-in.
   const readinessPercentage = useMemo(() => {
     if (checkIn.checkedInToday && checkIn.score !== null) {
-      if (trainingReadiness > 0) {
-        return Math.round(trainingReadiness * 0.65 + checkIn.score * 0.35);
-      }
-      return checkIn.score;
+      return trainingReadiness > 0 ? Math.round(trainingReadiness * 0.65 + checkIn.score * 0.35) : checkIn.score;
     }
     return trainingReadiness;
-  }, [trainingReadiness, checkIn.checkedInToday, checkIn.score]);
+  }, [checkIn.checkedInToday, checkIn.score, trainingReadiness]);
+
+  const status = useMemo(() => readinessState(readinessPercentage), [readinessPercentage]);
   const thisWeek = useMemo(() => buildWeekSummary(logs, 0), [logs]);
   const trend = useMemo(() => buildReadinessTrend(logs), [logs]);
-  const weeklyLoadRisk = useMemo(() => buildWeeklyLoadRisk(logs), [logs]);
-  const goalSummary = useMemo(() => buildGoalSummary(goals), [goals]);
-  const goalAction = useMemo(() => buildGoalAction(goals, logs), [goals, logs]);
-  const performance = useMemo(() => buildPerformanceSnapshot(logs), [logs]);
-  const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
-  const trainingBalance = useMemo(() => buildTrainingBalance(logs), [logs]);
   const missionBrief = useMemo(() => buildMissionBrief(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
-  const forecast = useMemo(() => buildReadinessForecast(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
-  const insights = useMemo(() => buildTrainingInsights(logs), [logs]);
-  const adherence = useMemo(() => buildPlanAdherence(logs, goals, { injuryNotes }), [logs, goals, injuryNotes]);
-  const injuryWatch = useMemo(() => buildInjuryWatch(logs, injuryNotes), [logs, injuryNotes]);
-  const milestones = useMemo(() => buildMilestones(logs, goals), [logs, goals]);
-  const earnedMilestones = useMemo(() => getEarnedMilestones(milestones), [milestones]);
-  const nextMilestone = useMemo(() => getNextMilestone(milestones), [milestones]);
-  const topInsights = useMemo(() => insights.slice(0, 3), [insights]);
-  const topMilestones = useMemo(() => milestones.slice(0, 4), [milestones]);
-
-  const weeklyLoadData = useMemo(() => weeklyLoadSeries(logs, 8), [logs]);
-  const [showFullReport, setShowFullReport] = useState(false);
-
-  const weekAvgReadiness = Number(thisWeek.averageReadiness);
-  const weekLoadStatus = useMemo(() => getWeeklyLoadStatus(thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness), [thisWeek.total, thisWeek.fatigueWatch, weekAvgReadiness]);
-  const weekProgress = Math.min(thisWeek.total / WEEKLY_TARGET, 1);
-
-  const readinessStatus = useMemo(() => {
-    if (readinessPercentage === 0) {
-      return { text: 'NO DATA', bg: '#0c1008', textCol: '#b8c0b0', prog: 'rgba(255,255,255,0.2)', msg: 'Log a session to calculate your readiness score.' };
-    }
-    if (readinessPercentage < 60) {
-      return { text: 'RED', bg: 'rgba(224,80,80,0.15)', textCol: '#FFFFFF', prog: '#e05050', msg: 'High fatigue detected. Prioritise recovery and rest today.' };
-    }
-    if (readinessPercentage < 75) {
-      return { text: 'AMBER', bg: 'rgba(255,170,68,0.15)', textCol: '#FFFFFF', prog: '#ffaa44', msg: 'Moderate fatigue. Keep training volume controlled.' };
-    }
-    return { text: 'GREEN', bg: 'rgba(94,122,47,0.15)', textCol: '#FFFFFF', prog: '#5E7A2F', msg: 'Fit for training. Monitor fatigue and recovery.' };
-  }, [readinessPercentage]);
-
-  const { 
-    latestRuck, 
-    trendChartData, 
-    strengthLogs, 
-    enduranceLogs, 
-    recentLogs,
-    ruckVal,
-    strengthVal,
-    cardioVal,
-    recoveryVal
-  } = useMemo(() => {
-    let ruck: typeof logs[0] | undefined;
-    let strength: typeof logs[0] | undefined;
-    let run: typeof logs[0] | undefined;
-    let recovery: typeof logs[0] | undefined;
-    const recentTrendLogs: typeof logs = [];
-    const strengthLogsList: typeof logs = [];
-    const enduranceLogsList: typeof logs = [];
-    const recentLogsList: typeof logs = [];
-
-    for (const log of logs) {
-      if (recentLogsList.length < 5) recentLogsList.push(log);
-      if (strengthLogsList.length < 2 && log.category === 'Strength') strengthLogsList.push(log);
-      if (enduranceLogsList.length < 2 && (log.category === 'Ruck' || log.category === 'Run')) enduranceLogsList.push(log);
-
-      if (!ruck && log.category === 'Ruck') ruck = log;
-      if (!strength && log.category === 'Strength') strength = log;
-      if (!run && log.category === 'Run') run = log;
-      if (!recovery && log.category === 'Recovery') recovery = log;
-
-      if (recentTrendLogs.length < 7 && getReadinessNumber(log.readiness) > 0) {
-        recentTrendLogs.push(log);
-      }
-
-      // Once all latest specific logs are found and we have 7 trend logs, break the loop early
-      if (
-        ruck && strength && run && recovery && 
-        recentTrendLogs.length === 7 && 
-        strengthLogsList.length === 2 && 
-        enduranceLogsList.length === 2 && 
-        recentLogsList.length === 5
-      ) {
-        break;
-      }
-    }
-
-    const chartData = recentTrendLogs.reverse().map((log) => {
-      const score = getReadinessNumber(log.readiness);
-      const heightPercentage: DimensionValue = `${(score / 10) * 100}%`;
-      let barColor = '#5E7A2F';
-      if (score < 6) barColor = '#e05050';
-      else if (score < 8) barColor = '#ffaa44';
-
-      const dateLabel = log.date.substring(5, 10).replace('-', '/');
-      return { id: log.id, score, heightPercentage, barColor, dateLabel };
-    });
-
-    return {
-      latestRuck: ruck,
-      trendChartData: chartData,
-      strengthLogs: strengthLogsList,
-      enduranceLogs: enduranceLogsList,
-      recentLogs: recentLogsList,
-      ruckVal: ruck ? ruck.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
-      strengthVal: strength ? `Score: ${strength.readiness}` : 'N/A',
-      cardioVal: run ? run.distanceLoad.split('-')[0].trim() || 'Logged' : 'N/A',
-      recoveryVal: recovery ? `Score: ${recovery.readiness}` : 'N/A',
-    };
-  }, [logs]);
-
-  const strengthStatus = useMemo(() => getStrengthStatus(strengthLogs), [strengthLogs]);
-  const enduranceStatus = useMemo(() => getEnduranceStatus(enduranceLogs), [enduranceLogs]);
-  const recoveryStatus = useMemo(() => getRecoveryStatus(recentLogs), [recentLogs]);
-
-  const navigateToGoals = useCallback(() => router.push('/goals'), [router]);
-  const navigateToStrava = useCallback(() => router.push('/strava'), [router]);
-  const navigateToAtak = useCallback(() => router.push('/atak'), [router]);
-  const navigateToGpx = useCallback(() => router.push('/gpx'), [router]);
-  const navigateToOfflineMap = useCallback(() => router.push('/offline-map'), [router]);
-  const navigateToNotifications = useCallback(() => router.push('/notifications'), [router]);
-  const navigateToRuck = useCallback(() => router.push('/(tabs)/ruck'), [router]);
+  const recoveryDebt = useMemo(() => buildRecoveryDebt(logs, injuryNotes), [logs, injuryNotes]);
+  const balance = useMemo(() => buildTrainingBalance(logs), [logs]);
+  const loadBars = useMemo(() => weeklyLoadSeries(logs, 7), [logs]);
+  const latestRuck = useMemo(() => logs.find((log) => log.category === 'Ruck'), [logs]);
+  const strengthSessions = useMemo(() => logs.filter((log) => log.category === 'Strength').length, [logs]);
+  const runSessions = useMemo(() => logs.filter((log) => log.category === 'Run').length, [logs]);
+  const loadProgress = Math.min(thisWeek.total / WEEK_TARGET, 1);
 
   if (isLoading) return <View style={styles.screen} />;
 
   return (
     <View style={styles.screen}>
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View style={s2.headerTopRow}>
-          <Text style={styles.kicker}>SENTINEL READY</Text>
-          <View style={[s2.statusHeaderBadge, { borderColor: readinessStatus.prog + '88', backgroundColor: readinessStatus.prog + '22' }]}>
-            <Text style={[s2.statusHeaderBadgeText, { color: readinessStatus.prog }]}>[ STATUS: {readinessStatus.text} ]</Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.topBar}>
+          <View style={styles.brandRow}>
+            <Ionicons name="shield-checkmark-outline" size={22} color={DS.goldSoft} />
+            <Text style={styles.brand}>SENTINEL READY</Text>
           </View>
+          <Text style={styles.topStatus}>[STATUS: {status.label}]</Text>
         </View>
-        <Text style={styles.title}>Operational Fitness Dashboard</Text>
-        <View style={styles.headerRule} />
-        <Text style={styles.subtitle}>
-          Readiness overview for strength, endurance, ruck performance and recovery.
-        </Text>
-      </View>
 
-      {/* DAILY CHECK-IN PROMPT */}
-      {!checkIn.checkedInToday && !checkIn.isLoading && (
-        <TouchableOpacity
-          style={s2.checkInBanner}
-          onPress={() => { router.push('/check-in'); }}
-          accessibilityRole="button"
-          accessibilityLabel="Log today's check-in"
-        >
-          <View style={s2.checkInBannerLeft}>
-            <Text style={s2.checkInBannerKicker}>DAILY CHECK-IN</Text>
-            <Text style={s2.checkInBannerTitle}>Log Your Readiness</Text>
-            <Text style={s2.checkInBannerSub}>Sleep · Soreness · Stress · Mood</Text>
+        <View style={styles.hero}>
+          <View style={styles.gridOverlay} />
+          <View style={styles.readinessRing}>
+            <Text style={styles.readinessScore}>{readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}</Text>
+            <Text style={styles.readinessLabel}>READY</Text>
           </View>
-          <Text style={s2.checkInBannerCta}>[ LOG NOW ]</Text>
-        </TouchableOpacity>
-      )}
-
-      {/* CHECK-IN SCORE BANNER (if checked in today) */}
-      {checkIn.checkedInToday && checkIn.score !== null && (
-        <TouchableOpacity
-          style={s2.checkInDoneBanner}
-          onPress={() => { router.push('/check-in'); }}
-          accessibilityRole="button"
-          accessibilityLabel="View or edit today's check-in"
-        >
-          <View style={s2.checkInBannerLeft}>
-            <Text style={s2.checkInBannerKicker}>TODAY'S CHECK-IN</Text>
-            <Text style={s2.checkInBannerTitle}>Readiness Score: {checkIn.score}%</Text>
-          </View>
-          <Text style={s2.checkInDoneCta}>[ EDIT ]</Text>
-        </TouchableOpacity>
-      )}
-
-      {/* MAPS HERO CARD */}
-      <TouchableOpacity
-        style={s2.mapsHero}
-        onPress={navigateToRuck}
-        accessibilityRole="button"
-        accessibilityLabel="Open Maps and Ruck tracking"
-        activeOpacity={0.85}
-      >
-        <View style={s2.mapsHeroTop}>
-          <View>
-            <Text style={s2.mapsHeroKicker}>MAPS & RUCK</Text>
-            <Text style={s2.mapsHeroTitle}>Live Ruck Tracking</Text>
-          </View>
-          <View style={s2.mapsHeroBadge}>
-            <Text style={s2.mapsHeroBadgeText}>GPS</Text>
-          </View>
-        </View>
-        <View style={s2.mapsHeroStats}>
-          <View style={s2.mapsHeroStat}>
-            <Text style={s2.mapsHeroStatValue}>{latestRuck ? ruckVal : '--'}</Text>
-            <Text style={s2.mapsHeroStatLabel}>LAST RUCK</Text>
-          </View>
-          <View style={s2.mapsHeroStatDivider} />
-          <View style={s2.mapsHeroStat}>
-            <Text style={s2.mapsHeroStatValue}>{performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'}</Text>
-            <Text style={s2.mapsHeroStatLabel}>BEST DISTANCE</Text>
-          </View>
-          <View style={s2.mapsHeroStatDivider} />
-          <View style={s2.mapsHeroStat}>
-            <Text style={s2.mapsHeroStatValue}>{thisWeek.ruck > 0 ? `${thisWeek.ruck}` : '0'}</Text>
-            <Text style={s2.mapsHeroStatLabel}>THIS WEEK</Text>
-          </View>
-        </View>
-        <View style={s2.mapsHeroCta}>
-          <Text style={s2.mapsHeroCtaText}>[ START RUCK ]</Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* ── READINESS HERO ── */}
-      <View style={s2.readinessCard}>
-        <View style={s2.readinessCardHeader}>
-          <Text style={styles.kicker}>READINESS STATUS</Text>
-        </View>
-        <View style={{ height: 1, backgroundColor: '#B5852C', opacity: 0.55 }} />
-
-        <View style={s2.gaugeRow}>
-          {/* Circular SVG gauge */}
-          <View style={s2.gaugeWrap}>
-            <Svg width={140} height={140} viewBox="0 0 140 140">
-              <Circle cx="70" cy="70" r="56" stroke="rgba(181,133,44,0.18)" strokeWidth="8" fill="none" />
-              <Circle
-                cx="70" cy="70" r="56"
-                stroke={readinessStatus.prog}
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={`${(readinessPercentage / 100) * 351.9} 351.9`}
-                strokeLinecap="round"
-                rotation="-90"
-                originX="70"
-                originY="70"
-              />
-            </Svg>
-            <View style={s2.gaugeCenter}>
-              <Text style={[s2.gaugeNumber, { color: readinessPercentage > 0 ? readinessStatus.prog : '#b8c0b0' }]}>
-                {readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}
-              </Text>
-              <Text style={s2.gaugeLabel}>READY</Text>
+          <View style={styles.heroCopy}>
+            <View style={styles.liveRow}>
+              <View style={[styles.liveDot, { backgroundColor: status.color }]} />
+              <Text style={[styles.liveText, { color: status.color }]}>[ READINESS STATUS: {status.label} ]</Text>
             </View>
+            <Text style={styles.heroTitle}>{status.label === 'GREEN' ? 'SYSTEMS FULLY OPERATIONAL' : 'MISSION STATE REVIEW'}</Text>
+            <Text style={styles.heroMessage}>{status.message}</Text>
           </View>
+        </View>
 
-          {/* Status info */}
-          <View style={s2.gaugeInfo}>
-            <View style={[s2.statusHeaderBadge, { borderColor: readinessStatus.prog + '88', backgroundColor: readinessStatus.prog + '22', alignSelf: 'flex-start' }]}>
-              <Text style={[s2.statusHeaderBadgeText, { color: readinessStatus.prog }]}>{readinessStatus.text}</Text>
+        {!checkIn.checkedInToday && !checkIn.isLoading ? (
+          <TouchableOpacity style={styles.callout} onPress={() => router.push('/check-in')} activeOpacity={0.82}>
+            <View>
+              <Text style={styles.calloutLabel}>DAILY CHECK-IN</Text>
+              <Text style={styles.calloutTitle}>Log sleep, soreness, stress and mood.</Text>
             </View>
-            <Text style={[styles.cardText, { marginTop: 0 }]}>{readinessStatus.msg}</Text>
-            <View style={styles.readinessDetails}>
-              <Text style={styles.detailText}>Strength: {strengthStatus}</Text>
-              <Text style={styles.detailText}>Endurance: {enduranceStatus}</Text>
-              <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Letter-grade stat grid */}
-        <View style={s2.gradeGrid}>
-          {([
-            { label: 'STRENGTH', grade: statusToGrade(strengthStatus) },
-            { label: 'CARDIO',   grade: statusToGrade(enduranceStatus) },
-            { label: 'RUCK',     grade: ruckVal !== 'N/A' ? 'B+' : '?' },
-            { label: 'RECOVERY', grade: statusToGrade(recoveryStatus) },
-          ] as const).map(({ label, grade }) => (
-            <View key={label} style={s2.gradeCell}>
-              <Text style={s2.gradeCellLabel}>{label}</Text>
-              <Text style={[s2.gradeCellValue, { color: grade === 'A' || grade === 'B+' ? '#5E7A2F' : grade === 'C' || grade === 'D' ? '#e05050' : '#B5852C' }]}>
-                {grade}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      <SentinelCard title="Mission Brief" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
-        <View style={styles.briefHeader}>
-          <View style={styles.briefTitleBlock}>
-            <Text style={missionBrief.status === 'red' ? styles.briefTitleWarn : styles.briefTitle}>{missionBrief.title}</Text>
-            <Text style={styles.cardText}>{missionBrief.summary}</Text>
-          </View>
-          <View style={missionBrief.status === 'red' ? styles.briefBadgeWarn : styles.briefBadge}>
-            <Text style={missionBrief.status === 'red' ? styles.briefBadgeTextWarn : styles.briefBadgeText}>
-              {missionBrief.status.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.briefActionBox}>
-          <Text style={styles.briefActionLabel}>Primary action</Text>
-          <Text style={styles.briefActionText}>{missionBrief.primaryAction}</Text>
-        </View>
-        <Text style={styles.briefSecondary}>{missionBrief.secondaryAction}</Text>
-        <TouchableOpacity
-          style={s2.executeBtn}
-          onPress={() => router.push('/add-log')}
-          accessibilityRole="button"
-          accessibilityLabel="Execute session"
-        >
-          <Text style={s2.executeBtnText}>[ EXECUTE SESSION ]</Text>
-        </TouchableOpacity>
-      </SentinelCard>
-
-      <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
-
-      <TouchableOpacity
-        style={styles.reportToggle}
-        onPress={() => setShowFullReport((v) => !v)}
-        accessibilityRole="button"
-        accessibilityLabel={showFullReport ? 'Collapse full report' : 'View full report'}
-      >
-        <Text style={styles.reportToggleText}>
-          {showFullReport ? '▲  COLLAPSE REPORT' : '▼  VIEW FULL REPORT'}
-        </Text>
-      </TouchableOpacity>
-
-      {showFullReport && <>
-
-      <SentinelCard title="Recovery Debt" variant={recoveryDebt.status === 'red' ? 'warning' : 'default'}>
-        <View style={styles.recoveryDebtRow}>
-          <View>
-            <Text style={recoveryDebt.status === 'red' ? styles.recoveryDebtScoreWarn : styles.recoveryDebtScore}>
-              {recoveryDebt.status === 'no-data' ? '--' : `${recoveryDebt.score}%`}
-            </Text>
-            <Text style={styles.cardText}>{recoveryDebt.message}</Text>
-          </View>
-          <View style={recoveryDebt.status === 'red' ? styles.recoveryDebtBadgeWarn : styles.recoveryDebtBadge}>
-            <Text style={recoveryDebt.status === 'red' ? styles.recoveryDebtBadgeTextWarn : styles.recoveryDebtBadgeText}>
-              {recoveryDebt.label}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.recoveryDebtAction}>{recoveryDebt.action}</Text>
-      </SentinelCard>
-
-      <SentinelCard title="Injury Watch" variant={injuryWatch.status === 'high' ? 'warning' : 'default'}>
-        <View style={styles.injuryHeader}>
-          <View>
-            <Text style={injuryWatch.status === 'high' ? styles.injuryScoreWarn : styles.injuryScore}>
-              {injuryWatch.status === 'no-data' ? '--' : `${injuryWatch.score}%`}
-            </Text>
-            <Text style={styles.cardText}>{injuryWatch.message}</Text>
-          </View>
-          <View style={injuryWatch.status === 'high' ? styles.injuryBadgeWarn : styles.injuryBadge}>
-            <Text style={injuryWatch.status === 'high' ? styles.injuryBadgeTextWarn : styles.injuryBadgeText}>
-              {injuryWatch.label}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.injuryAction}>{injuryWatch.action}</Text>
-      </SentinelCard>
-
-      <SentinelCard title="Training Balance" variant={trainingBalance.status === 'overload' ? 'warning' : 'default'}>
-        <View style={styles.balanceHeader}>
-          <View>
-            <Text style={trainingBalance.status === 'overload' ? styles.balanceScoreWarn : styles.balanceScore}>
-              {trainingBalance.status === 'no-data' ? '--' : `${trainingBalance.score}%`}
-            </Text>
-            <Text style={styles.cardText}>{trainingBalance.message}</Text>
-          </View>
-          <View style={trainingBalance.status === 'overload' ? styles.balanceBadgeWarn : styles.balanceBadge}>
-            <Text style={trainingBalance.status === 'overload' ? styles.balanceBadgeTextWarn : styles.balanceBadgeText}>
-              {trainingBalance.label}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.balanceFocus}>{trainingBalance.nextFocus}</Text>
-      </SentinelCard>
-
-      <SentinelCard title="Readiness Forecast" variant={forecast.status === 'red' ? 'warning' : forecast.status === 'green' ? 'success' : 'default'}>
-        <View style={styles.forecastHeader}>
-          <Text style={forecast.status === 'red' ? styles.forecastTitleWarn : styles.forecastTitle}>{forecast.label}</Text>
-          <Text style={styles.cardText}>{forecast.summary}</Text>
-        </View>
-        <View style={styles.forecastRow}>
-          {forecast.days.map((day) => (
-            <View key={day.day} style={styles.forecastDay}>
-              <Text style={styles.forecastDayLabel}>{day.day.slice(0, 3)}</Text>
-              <View style={
-                day.status === 'red' ? styles.forecastDotRed
-                : day.status === 'amber' ? styles.forecastDotAmber
-                : styles.forecastDotGreen
-              } />
-            </View>
-          ))}
-        </View>
-      </SentinelCard>
-
-      <SentinelCard title="Plan Adherence" variant={adherence.status === 'off-track' ? 'warning' : 'default'}>
-        <View style={styles.adherenceHeader}>
-          <View>
-            <Text style={adherence.status === 'off-track' ? styles.adherenceScoreWarn : styles.adherenceScore}>
-              {adherence.status === 'no-data' ? '--' : `${adherence.score}%`}
-            </Text>
-            <Text style={styles.cardText}>{adherence.message}</Text>
-          </View>
-          <View style={adherence.status === 'off-track' ? styles.adherenceBadgeWarn : styles.adherenceBadge}>
-            <Text style={adherence.status === 'off-track' ? styles.adherenceBadgeTextWarn : styles.adherenceBadgeText}>
-              {adherence.label}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.adherenceAction}>{adherence.nextAction}</Text>
-        {adherence.missing.length > 0 ? (
-          <Text style={styles.adherenceMissing}>Missing: {adherence.missing.join(', ')}</Text>
-        ) : null}
-      </SentinelCard>
-
-      <SentinelCard title="Training Insights">
-        {topInsights.map((insight) => (
-          <View key={insight.title} style={
-            insight.severity === 'warning' ? styles.insightItemWarn
-            : insight.severity === 'good' ? styles.insightItemGood
-            : styles.insightItem
-          }>
-            <Text style={insight.severity === 'warning' ? styles.insightTitleWarn : styles.insightTitle}>{insight.title}</Text>
-            <Text style={styles.insightText}>{insight.message}</Text>
-          </View>
-        ))}
-      </SentinelCard>
-
-      <SentinelCard title="Milestones">
-        <View style={styles.milestoneHeader}>
-          <View>
-            <Text style={styles.milestoneCount}>{earnedMilestones.length} / {milestones.length}</Text>
-            <Text style={styles.cardText}>Milestones earned</Text>
-          </View>
-          {nextMilestone ? (
-            <View style={styles.milestoneNext}>
-              <Text style={styles.milestoneNextLabel}>NEXT</Text>
-              <Text style={styles.milestoneNextTitle}>{nextMilestone.title}</Text>
-            </View>
-          ) : null}
-        </View>
-        <View style={styles.milestoneRow}>
-          {topMilestones.map((milestone) => (
-            <View key={milestone.id} style={milestone.earned ? styles.milestonePillEarned : styles.milestonePill}>
-              <Text style={milestone.earned ? styles.milestonePillTextEarned : styles.milestonePillText}>
-                {milestone.title}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </SentinelCard>
-
-      <SentinelCard title="Performance Snapshot">
-        <View style={styles.performanceGrid}>
-          <View style={styles.performanceItem}>
-            <Text style={styles.performanceValue}>{performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'}</Text>
-            <Text style={styles.performanceLabel}>Best Ruck</Text>
-          </View>
-          <View style={styles.performanceItem}>
-            <Text style={styles.performanceValue}>{performance.bestRunDistanceKm > 0 ? `${performance.bestRunDistanceKm} km` : '--'}</Text>
-            <Text style={styles.performanceLabel}>Best Run</Text>
-          </View>
-          <View style={styles.performanceItem}>
-            <Text style={styles.performanceValue}>{performance.longestSessionMinutes > 0 ? `${performance.longestSessionMinutes}m` : '--'}</Text>
-            <Text style={styles.performanceLabel}>Longest</Text>
-          </View>
-          <View style={styles.performanceItem}>
-            <Text style={styles.performanceValue}>{performance.consistencyLabel}</Text>
-            <Text style={styles.performanceLabel}>Consistency</Text>
-          </View>
-        </View>
-        <Text style={styles.cardText}>{performance.highlight}</Text>
-      </SentinelCard>
-
-      <SentinelCard title="Goal Tracking">
-        <View style={styles.goalHeader}>
-          <View style={styles.goalStat}>
-            <Text style={styles.goalNumber}>{goalSummary.active}</Text>
-            <Text style={styles.goalLabel}>Active Goals</Text>
-          </View>
-          <View style={styles.goalStat}>
-            <Text style={styles.goalNumberComplete}>{goalSummary.complete}</Text>
-            <Text style={styles.goalLabel}>Complete</Text>
-          </View>
-          <View style={styles.goalStat}>
-            <Text style={styles.goalNumber}>{goalSummary.averageProgress > 0 ? `${goalSummary.averageProgress}%` : '--'}</Text>
-            <Text style={styles.goalLabel}>Measured</Text>
-          </View>
-          <TouchableOpacity style={styles.goalButton} onPress={navigateToGoals}>
-            <Text style={styles.goalButtonText}>Manage</Text>
+            <Text style={styles.bracketAction}>[ LOG NOW ]</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.goalTrack}>
-          <View style={[styles.goalFill, { width: `${goalSummary.averageProgress}%` }]} />
-        </View>
-        <Text style={styles.cardText}>{goalSummary.message}</Text>
-        <View style={goalAction.status === 'warning' ? styles.goalActionWarn : styles.goalAction}>
-          <Text style={goalAction.status === 'warning' ? styles.goalActionTitleWarn : styles.goalActionTitle}>{goalAction.title}</Text>
-          <Text style={styles.goalActionText}>{goalAction.action}</Text>
-        </View>
-      </SentinelCard>
-
-      <SentinelCard title="Readiness Trend">
-        <View style={styles.chartContainer}>
-          {trendChartData.length > 0 ? (
-            trendChartData.map((data) => (
-                <View key={data.id} style={styles.barColumn}>
-                  <Text style={styles.barScore}>{data.score}</Text>
-                  <View style={styles.barBackground}>
-                    <View style={[styles.barFill, { height: data.heightPercentage, backgroundColor: data.barColor }]} />
-                  </View>
-                  <Text style={styles.barLabel}>{data.dateLabel}</Text>
-                </View>
-            ))
-          ) : (
-            <Text style={styles.cardText}>No readiness data available.</Text>
-          )}
-        </View>
-      </SentinelCard>
-
-      </>}
-
-      <View style={styles.grid}>
-        <MissionStat label="Ruck" value={ruckVal} status={ruckVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
-        <MissionStat label="Strength" value={strengthVal} status={strengthVal !== 'N/A' ? 'Force output' : 'Awaiting data'} />
-        <MissionStat label="Cardio" value={cardioVal} status={cardioVal !== 'N/A' ? 'Aerobic base' : 'Awaiting data'} />
-        <MissionStat label="Recovery" value={recoveryVal} status={recoveryVal !== 'N/A' ? 'Latest session' : 'Awaiting data'} />
-      </View>
-
-      <View style={weekLoadStatus.isWarn ? styles.loadCardWarn : styles.loadCard}>
-        <View style={styles.loadHeader}>
-          <View>
-            <Text style={styles.loadKicker}>{"THIS WEEK'S LOAD"}</Text>
-            <Text style={weekLoadStatus.isWarn ? styles.loadCountWarn : styles.loadCount}>
-              {thisWeek.total} / {WEEKLY_TARGET} sessions
-            </Text>
-          </View>
-          <View style={weekLoadStatus.isWarn ? styles.loadBadgeWarn : styles.loadBadge}>
-            <Text style={weekLoadStatus.isWarn ? styles.loadBadgeTextWarn : styles.loadBadgeText}>
-              {weekLoadStatus.label}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.loadTrack}>
-          <View style={[
-            styles.loadFill,
-            {
-              width: `${weekProgress * 100}%`,
-              backgroundColor: weekLoadStatus.isWarn ? '#ffaa44' : thisWeek.total >= WEEKLY_TARGET ? '#5E7A2F' : '#B5852C',
-            },
-          ]} />
-        </View>
-
-        <SparkLine data={weeklyLoadData} width={240} height={28} color="#B5852C" />
-
-        {thisWeek.total > 0 ? (
-          <View style={styles.pillRow}>
-            {thisWeek.ruck > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Ruck').bg, borderColor: getCategoryPalette('Ruck').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Ruck').color }]}>Ruck {thisWeek.ruck}</Text></View>}
-            {thisWeek.strength > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Strength').bg, borderColor: getCategoryPalette('Strength').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Strength').color }]}>Strength {thisWeek.strength}</Text></View>}
-            {thisWeek.run > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Run').bg, borderColor: getCategoryPalette('Run').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Run').color }]}>Run {thisWeek.run}</Text></View>}
-            {thisWeek.mobility > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Mobility').bg, borderColor: getCategoryPalette('Mobility').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Mobility').color }]}>Mobility {thisWeek.mobility}</Text></View>}
-            {thisWeek.test > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Test').bg, borderColor: getCategoryPalette('Test').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Test').color }]}>Test {thisWeek.test}</Text></View>}
-            {thisWeek.recovery > 0 && <View style={[styles.pill, { backgroundColor: getCategoryPalette('Recovery').bg, borderColor: getCategoryPalette('Recovery').border }]}><Text style={[styles.pillText, { color: getCategoryPalette('Recovery').color }]}>Recovery {thisWeek.recovery}</Text></View>}
-          </View>
-        ) : (
-          <Text style={styles.loadNoData}>No sessions logged this week. Aim for {WEEKLY_TARGET} sessions.</Text>
-        )}
-
-        {thisWeek.fatigueWatch > 0 ? (
-          <Text style={styles.loadWarnText}>
-            {thisWeek.fatigueWatch} fatigue watch {thisWeek.fatigueWatch === 1 ? 'session' : 'sessions'} this week. Consider a recovery day.
-          </Text>
-        ) : thisWeek.averageReadiness !== '0.0' ? (
-          <Text style={styles.loadSubText}>
-            Avg readiness {thisWeek.averageReadiness}/10 · {trend.label} trend
-          </Text>
-        ) : null}
-      </View>
-
-      <View style={styles.connectSection}>
-        <Text style={styles.connectKicker}>CONNECT</Text>
-        <View style={styles.connectRow}>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToStrava}
-            accessibilityRole="button"
-            accessibilityLabel="Open Strava integration"
-          >
-            <View style={styles.connectPillDot} />
-            <Text style={styles.connectPillText}>Strava</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToAtak}
-            accessibilityRole="button"
-            accessibilityLabel="Open ATAK integration"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotAtak]} />
-            <Text style={styles.connectPillText}>ATAK</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToGpx}
-            accessibilityRole="button"
-            accessibilityLabel="Open GPX Files"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotGpx]} />
-            <Text style={styles.connectPillText}>GPX Files</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={() => router.push('/check-in')}
-            accessibilityRole="button"
-            accessibilityLabel="Log today's check-in"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotCheckin]} />
-            <Text style={styles.connectPillText}>Check-in</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToOfflineMap}
-            accessibilityRole="button"
-            accessibilityLabel="Open offline map tile cache"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotOffline]} />
-            <Text style={styles.connectPillText}>Offline Maps</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={navigateToNotifications}
-            accessibilityRole="button"
-            accessibilityLabel="Open notification settings"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotAlerts]} />
-            <Text style={styles.connectPillText}>Alerts</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={() => router.push('/progress')}
-            accessibilityRole="button"
-            accessibilityLabel="View progress charts"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotProgress]} />
-            <Text style={styles.connectPillText}>Progress</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.connectPill}
-            onPress={() => router.push('/body-comp')}
-            accessibilityRole="button"
-            accessibilityLabel="Open body composition tracker"
-          >
-            <View style={[styles.connectPillDot, styles.connectPillDotBodyComp]} />
-            <Text style={styles.connectPillText}>Body Comp</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Mission Alerts</Text>
-          <Text style={styles.sectionTag}>WATCH</Text>
-        </View>
-
-        {readinessPercentage > 0 && readinessPercentage < 60 ? (
-          <AlertCard
-            type="alert"
-            title="Recovery requires attention"
-            description="Keep the next session controlled if sleep, soreness or resting fatigue worsens."
-          />
         ) : null}
 
-        {trend.status === 'warning' ? (
-          <AlertCard
-            type="alert"
-            title="Readiness dropping"
-            description="Readiness has fallen between your last two sessions. Reduce load and prioritise recovery before adding intensity."
-          />
-        ) : null}
+        <View style={styles.metricGrid}>
+          <MetricTile label="STRENGTH" value={grade(strengthSessions * 18)} />
+          <MetricTile label="CARDIO" value={grade(runSessions * 20)} />
+          <MetricTile label="RUCK (S)" value={latestRuck ? grade(readinessPercentage, 'B+') : '--'} active />
+          <MetricTile label="RECOVERY" value={grade(100 - recoveryDebt.score, 'B')} />
+        </View>
 
-        {thisWeek.fatigueWatch >= 2 ? (
-          <AlertCard
-            type="alert"
-            title="Fatigue watch this week"
-            description={`${thisWeek.fatigueWatch} sessions this week logged with readiness of 5 or below. Consider a rest day or recovery session.`}
-          />
-        ) : null}
+        <View style={styles.panel}>
+          <SectionLabel status={thisWeek.fatigueWatch > 0 ? 'MONITOR' : 'LOW RISK'}>[ WEEKLY LOAD RISK ]</SectionLabel>
+          <View style={styles.barRow}>
+            {loadBars.map((value, index) => (
+              <View key={`week-load-${index}`} style={styles.barTrack}>
+                <View
+                  style={[
+                    styles.barFill,
+                    {
+                      height: `${Math.min(100, Math.max(8, value * 20))}%`,
+                      backgroundColor: index === loadBars.length - 1 ? DS.goldSoft : 'rgba(181,133,44,0.45)',
+                    },
+                  ]}
+                />
+              </View>
+            ))}
+          </View>
+          <View style={styles.dayRow}>
+            {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day) => (
+              <Text key={day} style={styles.dayText}>{day}</Text>
+            ))}
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${loadProgress * 100}%` }]} />
+          </View>
+        </View>
 
-        {latestRuck && getReadinessNumber(latestRuck.readiness) >= 7 && readinessPercentage >= 70 ? (
-          <AlertCard
-            type="info"
-            title="Ruck progression available"
-            description="Readiness is solid. Increase distance or load only if the previous ruck was completed without pain."
-          />
-        ) : null}
+        <View style={styles.missionPanel}>
+          <Text style={styles.cornerTag}>NEXT SESSION</Text>
+          <Text style={styles.panelEyebrow}>MISSION BRIEFING</Text>
+          <Text style={styles.missionTitle}>{missionBrief.title}</Text>
+          <Text style={styles.missionText}>{missionBrief.primaryAction}</Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/(tabs)/training')} activeOpacity={0.84}>
+            <MaterialCommunityIcons name="play" size={18} color="#281900" />
+            <Text style={styles.primaryButtonText}>EXECUTE SESSION</Text>
+          </TouchableOpacity>
+        </View>
 
-        {trend.status === 'good' && thisWeek.fatigueWatch === 0 && thisWeek.total >= 3 ? (
-          <AlertCard
-            type="info"
-            title="Ready to progress"
-            description="Readiness is improving and no fatigue flags this week. You can consider adding load or an extra session."
-          />
-        ) : null}
+        <View style={styles.alertPanel}>
+          <Ionicons name="information-circle" size={22} color={DS.success} />
+          <View style={styles.alertCopy}>
+            <Text style={styles.alertLabel}>SYSTEM ALERT</Text>
+            <Text style={styles.alertText}>
+              {trend.status === 'warning'
+                ? `Readiness trend ${trend.label}. Latest ${trend.latest}/10 requires attention.`
+                : balance.nextFocus || 'Optimal recovery window detected.'}
+            </Text>
+          </View>
+        </View>
 
-        {readinessPercentage === 0 && logs.length === 0 ? (
-          <AlertCard
-            type="info"
-            title="No training data"
-            description="Log your first session to start tracking readiness, load and recovery trends."
-          />
-        ) : null}
-      </View>
-    </ScrollView>
-
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push('/add-log')}
-        accessibilityRole="button"
-        accessibilityLabel="Log a training session"
-      >
-        <Text style={styles.fabText}>＋  LOG SESSION</Text>
-      </TouchableOpacity>
+        <View style={styles.quickGrid}>
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/ruck')}>
+            <Ionicons name="map-outline" size={18} color={DS.goldSoft} />
+            <Text style={styles.quickText}>RUCK HUD</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/add-log')}>
+            <Ionicons name="add-circle-outline" size={18} color={DS.goldSoft} />
+            <Text style={styles.quickText}>LOG ENTRY</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/tests')}>
+            <Ionicons name="shield-outline" size={18} color={DS.goldSoft} />
+            <Text style={styles.quickText}>TESTS</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#050e09', position: 'relative' },
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    left: 20,
-    right: 20,
-    backgroundColor: '#B5852C',
-    borderRadius: 4,
-    paddingVertical: 16,
-    alignItems: 'center',
-    shadowColor: '#B5852C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  fabText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  content: { padding: 20, gap: 18, paddingBottom: 110, maxWidth: 1100, width: '100%', alignSelf: 'center' },
-  header: { gap: 8 },
-  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 3.5, textTransform: 'uppercase' },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: -0.5 },
-  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  subtitle: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
-  readinessRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' },
-  metric: { color: '#FFFFFF', fontSize: 56, fontWeight: '900', marginTop: 8 },
-  cardText: { color: '#b8c0b0', marginTop: 4, lineHeight: 20 },
-  statusBadge: { backgroundColor: 'rgba(94,122,47,0.15)', borderColor: 'rgba(94,122,47,0.4)', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
-  statusBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
-  progressTrack: { height: 10, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 999, marginTop: 20, overflow: 'hidden' },
-  progressFill: { width: '82%', height: '100%', backgroundColor: '#5E7A2F', borderRadius: 999 },
-  readinessDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
-  detailText: { color: '#FFFFFF', backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, fontSize: 12, fontWeight: '700' },
-  briefHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  briefTitleBlock: { flex: 1 },
-  briefTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  briefTitleWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900' },
-  briefBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
-  briefBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  briefBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  briefBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  briefActionBox: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 4, marginTop: 10 },
-  briefActionLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  briefActionText: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800' },
-  briefSecondary: { color: '#b8c0b0', fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  performanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  performanceItem: { width: '47%', backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 3 },
-  performanceValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  performanceLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  recoveryDebtRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  recoveryDebtScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  recoveryDebtScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  recoveryDebtBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
-  recoveryDebtBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  recoveryDebtBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  recoveryDebtBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  recoveryDebtAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
-  injuryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  injuryScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  injuryScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  injuryBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
-  injuryBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  injuryBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  injuryBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  injuryAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
-  balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  balanceScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  balanceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  balanceBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
-  balanceBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  balanceBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  balanceBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  balanceFocus: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
-  forecastHeader: { gap: 3 },
-  forecastTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  forecastTitleWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900' },
-  forecastRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, marginTop: 8 },
-  forecastDay: { alignItems: 'center', gap: 6, flex: 1 },
-  forecastDayLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '900' },
-  forecastDotGreen: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#5E7A2F' },
-  forecastDotAmber: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffaa44' },
-  forecastDotRed: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#e05050' },
-  adherenceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  adherenceScore: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  adherenceScoreWarn: { color: '#ffaa44', fontSize: 34, fontWeight: '900' },
-  adherenceBadge: { backgroundColor: '#141810', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 12, paddingVertical: 8 },
-  adherenceBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', paddingHorizontal: 12, paddingVertical: 8 },
-  adherenceBadgeText: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  adherenceBadgeTextWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  adherenceAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800', marginTop: 8 },
-  adherenceMissing: { color: '#b8c0b0', fontSize: 12, lineHeight: 18, fontWeight: '800' },
-  insightItem: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 4 },
-  insightItemGood: { backgroundColor: 'rgba(94,122,47,0.08)', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(94,122,47,0.25)', padding: 12, gap: 4 },
-  insightItemWarn: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,170,68,0.25)', padding: 12, gap: 4 },
-  insightTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  insightTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
-  insightText: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
-  milestoneCount: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
-  milestoneNext: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 10, maxWidth: '48%' },
-  milestoneNextLabel: { color: '#B5852C', fontSize: 10, fontWeight: '900' },
-  milestoneNextTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', marginTop: 2 },
-  milestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  milestonePill: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.18)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
-  milestonePillEarned: { backgroundColor: 'rgba(181,133,44,0.12)', borderWidth: 1, borderColor: 'rgba(181,133,44,0.35)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
-  milestonePillText: { color: '#b8c0b0', fontSize: 11, fontWeight: '900' },
-  milestonePillTextEarned: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  goalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  goalStat: { flex: 1 },
-  goalNumber: { color: '#FFFFFF', fontSize: 26, fontWeight: '900' },
-  goalNumberComplete: { color: '#5E7A2F', fontSize: 26, fontWeight: '900' },
-  goalLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '800', marginTop: 2 },
-  goalButton: { backgroundColor: '#B5852C', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 },
-  goalButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  goalTrack: { height: 8, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 999, overflow: 'hidden', marginTop: 12 },
-  goalFill: { height: '100%', backgroundColor: '#B5852C', borderRadius: 999 },
-  goalAction: { backgroundColor: '#080c05', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 12, gap: 4, marginTop: 12 },
-  goalActionWarn: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,170,68,0.25)', padding: 12, gap: 4, marginTop: 12 },
-  goalActionTitle: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
-  goalActionTitleWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
-  goalActionText: { color: '#FFFFFF', fontSize: 12, lineHeight: 18, fontWeight: '700' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  section: { marginTop: 8, gap: 12 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
-  sectionTag: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, borderWidth: 1, borderColor: 'rgba(181,133,44,0.35)', paddingHorizontal: 9, paddingVertical: 4, borderRadius: 3 },
-  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 140, marginTop: 4 },
-  barColumn: { alignItems: 'center', width: 40 },
-  barScore: { color: '#b8c0b0', fontSize: 11, fontWeight: '800', marginBottom: 6 },
-  barBackground: { width: 24, height: 100, backgroundColor: '#080c05', borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
-  barFill: { width: '100%', borderRadius: 4 },
-  barLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800', marginTop: 8 },
-
-  reportToggle: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.25)',
-    backgroundColor: 'rgba(181,133,44,0.07)',
-  },
-  reportToggleText: {
-    color: '#B5852C',
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-  },
-  loadCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderTopWidth: 2, borderColor: 'rgba(181,133,44,0.15)', borderTopColor: '#B5852C', gap: 12 },
-  loadCardWarn: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 16, borderWidth: 1, borderTopWidth: 2, borderColor: 'rgba(255,170,68,0.3)', borderTopColor: '#ffaa44', gap: 12 },
-  loadHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  loadKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  loadCount: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  loadCountWarn: { color: '#ffaa44', fontSize: 24, fontWeight: '900', marginTop: 4 },
-  loadBadge: { backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
-  loadBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
-  loadBadgeText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  loadBadgeTextWarn: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
-  loadTrack: { height: 8, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 999, overflow: 'hidden' },
-  loadFill: { height: '100%', borderRadius: 999 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: { backgroundColor: 'rgba(181,133,44,0.1)', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6 },
-  pillText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  loadNoData: { color: '#4a5a44', fontSize: 13, fontWeight: '800' },
-  loadSubText: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
-  loadWarnText: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
-
-  // Connections section
-  connectSection: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderTopWidth: 2,
-    borderColor: 'rgba(181,133,44,0.15)',
-    borderTopColor: '#B5852C',
-    padding: 16,
-    gap: 12,
-  },
-  connectKicker: {
-    color: '#B5852C',
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  connectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  connectPill: {
+  screen: { flex: 1, backgroundColor: DS.bgPrimary },
+  content: { width: '100%', maxWidth: 820, alignSelf: 'center', padding: 10, paddingBottom: 108, gap: 12 },
+  topBar: {
+    height: 54,
+    borderBottomWidth: 1,
+    borderBottomColor: DS.border,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#141810',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    justifyContent: 'space-between',
   },
-  connectPillDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#B5852C',
-  },
-  connectPillDotAtak: { backgroundColor: '#1A74D4' },
-  connectPillDotGpx: { backgroundColor: '#5E7A2F' },
-  connectPillDotCheckin: { backgroundColor: '#B5852C' },
-  connectPillDotOffline: { backgroundColor: '#4ECDC4' },
-  connectPillDotAlerts: { backgroundColor: '#ffaa44' },
-  connectPillDotProgress: { backgroundColor: '#1A74D4' },
-  connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
-  connectPillText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
-});
-
-// ── Stitch-derived additions ──────────────────────────────────────────
-const s2 = StyleSheet.create({
-  headerTopRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statusHeaderBadge:  { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  statusHeaderBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
-
-  readinessCard: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderTopWidth: 2,
-    borderTopColor: '#B5852C',
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
+  brand: { color: DS.goldSoft, fontSize: 22, lineHeight: 26, fontWeight: '900', letterSpacing: -0.5 },
+  topStatus: { color: DS.goldSoft, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  hero: {
+    backgroundColor: DS.bgCard,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
-    padding: 16,
+    borderColor: DS.border,
+    borderRadius: 4,
+    padding: 18,
+    minHeight: 220,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+  },
+  gridOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 1,
+    borderColor: 'rgba(63,71,39,0.18)',
+    opacity: 0.4,
+  },
+  readinessRing: {
+    width: 148,
+    height: 148,
+    borderRadius: 74,
+    borderWidth: 12,
+    borderColor: DS.goldSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DS.bgPrimary,
+  },
+  readinessScore: { color: DS.goldSoft, fontSize: 34, fontWeight: '900', letterSpacing: -1 },
+  readinessLabel: { color: DS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 1.8 },
+  heroCopy: { flex: 1, gap: 8 },
+  liveRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  liveDot: { width: 8, height: 8, borderRadius: 4 },
+  liveText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  heroTitle: { color: DS.goldSoft, fontSize: 28, lineHeight: 32, fontWeight: '900', letterSpacing: -1 },
+  heroMessage: { color: DS.textSecondary, fontSize: 13, lineHeight: 18, fontWeight: '600' },
+  callout: {
+    backgroundColor: DS.bgCardAlt,
+    borderLeftWidth: 4,
+    borderLeftColor: DS.gold,
+    borderWidth: 1,
+    borderColor: DS.border,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 12,
   },
-  readinessCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-
-  gaugeRow:   { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  gaugeWrap:  { width: 140, height: 140, alignItems: 'center', justifyContent: 'center' },
-  gaugeCenter:{ position: 'absolute', alignItems: 'center' },
-  gaugeNumber:{ fontSize: 30, fontWeight: '900', lineHeight: 34 },
-  gaugeLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginTop: 2 },
-  gaugeInfo:  { flex: 1, gap: 8 },
-
-  gradeGrid: { flexDirection: 'row', gap: 8 },
-  gradeCell: {
-    flex: 1,
-    backgroundColor: '#111d15',
+  calloutLabel: { color: DS.goldSoft, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  calloutTitle: { color: DS.textPrimary, fontSize: 13, lineHeight: 18, fontWeight: '800', marginTop: 2 },
+  bracketAction: { color: DS.goldSoft, fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  metricTile: {
+    flexGrow: 1,
+    flexBasis: '23%',
+    minWidth: 86,
+    backgroundColor: DS.bgCard,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
-    borderRadius: 4,
+    borderColor: DS.border,
+    borderRadius: 2,
     padding: 10,
     alignItems: 'center',
     gap: 4,
   },
-  gradeCellLabel: { color: '#b8c0b0', fontSize: 9, fontWeight: '900', letterSpacing: 1.2 },
-  gradeCellValue: { fontSize: 22, fontWeight: '900' },
-
-  executeBtn: {
+  metricTileActive: {
+    flexGrow: 1,
+    flexBasis: '23%',
+    minWidth: 86,
+    backgroundColor: DS.bgCard,
     borderWidth: 1,
-    borderColor: '#B5852C',
-    borderRadius: 4,
-    paddingVertical: 14,
+    borderColor: DS.gold,
+    borderRadius: 2,
+    padding: 10,
     alignItems: 'center',
-    marginTop: 4,
-    backgroundColor: 'rgba(181,133,44,0.07)',
+    gap: 4,
   },
-  executeBtnText: { color: '#B5852C', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-
-
-  // Check-in banners
-  checkInBanner: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.4)',
-    borderTopWidth: 2,
-    borderTopColor: '#B5852C',
-    padding: 16,
+  metricTileLabel: { color: DS.textSecondary, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  metricTileLabelActive: { color: DS.goldSoft, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  metricTileValue: { color: DS.goldSoft, fontSize: 24, fontWeight: '900' },
+  panel: { backgroundColor: DS.bgCard, borderWidth: 1, borderColor: DS.border, borderRadius: 4, padding: 12, gap: 12 },
+  sectionLabelRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: DS.border,
+    paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
   },
-  checkInDoneBanner: {
-    backgroundColor: '#0c1008',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(94,122,47,0.4)',
-    borderTopWidth: 2,
-    borderTopColor: '#5E7A2F',
-    padding: 16,
+  sectionLabel: { color: DS.goldSoft, fontSize: 11, fontWeight: '900', letterSpacing: 1.6 },
+  sectionStatus: { color: DS.success, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  barRow: { height: 112, flexDirection: 'row', alignItems: 'flex-end', gap: 4, paddingHorizontal: 4 },
+  barTrack: { flex: 1, height: '100%', backgroundColor: 'rgba(63,71,39,0.32)', justifyContent: 'flex-end' },
+  barFill: { width: '100%' },
+  dayRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  dayText: { color: DS.textSecondary, fontSize: 10, fontWeight: '800' },
+  progressTrack: { height: 6, backgroundColor: 'rgba(63,71,39,0.55)', overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: DS.goldSoft },
+  missionPanel: { backgroundColor: DS.bgCard, borderWidth: 1, borderColor: DS.gold, borderRadius: 4, padding: 14, gap: 10 },
+  cornerTag: {
+    alignSelf: 'flex-end',
+    backgroundColor: DS.goldSoft,
+    color: '#281900',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  panelEyebrow: { color: DS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 1.7 },
+  missionTitle: { color: DS.goldSoft, fontSize: 24, lineHeight: 28, fontWeight: '900', letterSpacing: -0.4 },
+  missionText: { color: DS.textSecondary, fontSize: 14, lineHeight: 20 },
+  primaryButton: {
+    minHeight: 48,
+    backgroundColor: DS.goldSoft,
+    borderRadius: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+  },
+  primaryButtonText: { color: '#281900', fontSize: 12, fontWeight: '900', letterSpacing: 1.4 },
+  alertPanel: {
+    backgroundColor: DS.bgCardAlt,
+    borderLeftWidth: 4,
+    borderLeftColor: DS.success,
+    borderRadius: 2,
+    padding: 12,
+    flexDirection: 'row',
     gap: 12,
+    alignItems: 'center',
   },
-  checkInBannerLeft: { flex: 1, gap: 2 },
-  checkInBannerKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.6 },
-  checkInBannerTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
-  checkInBannerSub: { color: '#b8c0b0', fontSize: 12, marginTop: 2 },
-  checkInBannerCta: { color: '#B5852C', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
-  checkInDoneCta: { color: '#5E7A2F', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
-
-  // Maps hero card
-  mapsHero: {
-    backgroundColor: '#B5852C',
-    borderRadius: 6,
-    padding: 20,
-    gap: 16,
-    shadowColor: '#B5852C',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+  alertCopy: { flex: 1 },
+  alertLabel: { color: DS.success, fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  alertText: { color: DS.textPrimary, fontSize: 13, lineHeight: 18, fontWeight: '800' },
+  quickGrid: { flexDirection: 'row', gap: 8 },
+  quickAction: {
+    flex: 1,
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: DS.border,
+    backgroundColor: DS.bgCard,
+    borderRadius: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
-  mapsHeroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  mapsHeroKicker: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  mapsHeroTitle: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', marginTop: 2 },
-  mapsHeroBadge: { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
-  mapsHeroBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  mapsHeroStats: { flexDirection: 'row', alignItems: 'center' },
-  mapsHeroStat: { flex: 1, alignItems: 'center', gap: 3 },
-  mapsHeroStatValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  mapsHeroStatLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
-  mapsHeroStatDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,255,255,0.25)' },
-  mapsHeroCta: { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-  mapsHeroCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  quickText: { color: DS.goldSoft, fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
 });
