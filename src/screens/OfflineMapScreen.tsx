@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RuckMapView } from '@/src/components/ruck/RuckMapView';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -200,6 +201,25 @@ export default function OfflineMapScreen() {
         )}
       </View>
 
+      {/* Map preview */}
+      <View style={om2.previewCard}>
+        <Text style={om2.previewKicker}>[ REGION PREVIEW ]</Text>
+        <View style={om2.mapWrap}>
+          <RuckMapView
+            routePoints={[]}
+            currentPosition={position
+              ? { latitude: position.latitude, longitude: position.longitude, altitude: null, accuracy: null, timestamp: 0 }
+              : null}
+            layer={layer}
+            zoom={12}
+            interactive={false}
+            showGpsStatus={false}
+            fullHeight
+          />
+        </View>
+        <Text style={om2.previewSub}>{radius} km radius · {layer.toUpperCase()} tiles</Text>
+      </View>
+
       <View style={styles.card}>
         <Text style={styles.cardLabel}>REGION SIZE</Text>
         <View style={styles.pillRow}>
@@ -398,6 +418,10 @@ const om2 = StyleSheet.create({
   kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 },
   mapBadge: { borderWidth: 1, borderColor: 'rgba(94,122,47,0.5)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
   mapBadgeText: { color: '#5E7A2F', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  previewCard: { backgroundColor: '#0c1008', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.2)', overflow: 'hidden', gap: 0 },
+  previewKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.6, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 8 },
+  mapWrap: { height: 240, width: '100%' },
+  previewSub: { color: '#b8c0b0', fontSize: 11, fontWeight: '700', paddingHorizontal: 14, paddingTop: 8, paddingBottom: 12 },
   routeDataCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 14 },
   routeDataKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   routeDataRow: { flexDirection: 'row', alignItems: 'center' },
