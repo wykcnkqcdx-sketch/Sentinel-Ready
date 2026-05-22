@@ -121,22 +121,29 @@ export default function RecoveryScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>RECOVERY CENTER</Text>
+      <Text style={styles.kicker}>[ RECOVERY CENTER ]</Text>
       <Text style={styles.title}>Recovery Center</Text>
       <View style={styles.headerRule} />
-      <Text style={styles.subtitle}>
-        Fatigue, readiness trend and recovery habits reviewed from your training logs.
-      </Text>
 
-      <View style={mainCardStyle}>
-        <View style={styles.scoreHeader}>
-          <View>
-            <Text style={styles.cardKicker}>RECOVERY SCORE</Text>
-            <Text style={scoreStyle}>{recoveryScore > 0 ? `${recoveryScore}%` : '--'}</Text>
+      <View style={rs.heroCard}>
+        <Text style={rs.heroKicker}>[ RECOVERY: SCORE ]</Text>
+        <View style={rs.heroScoreRow}>
+          <Text style={[rs.heroScore, { color: isHighFatigue ? '#e05050' : isModerate ? '#ffaa44' : recoveryScore > 0 ? '#B5852C' : '#b8c0b0' }]}>
+            {recoveryScore > 0 ? `${recoveryScore}` : '--'}
+          </Text>
+          <View style={rs.heroRight}>
+            <View style={[rs.fatigueBadge, { borderColor: isHighFatigue ? '#e05050' : isModerate ? 'rgba(255,170,68,0.5)' : 'rgba(94,122,47,0.5)' }]}>
+              <Text style={[rs.fatigueBadgeText, { color: isHighFatigue ? '#e05050' : isModerate ? '#ffaa44' : '#5E7A2F' }]}>
+                {isHighFatigue ? '[ ⚡ FATIGUE WARNING: RED ]' : isModerate ? '[ ⚡ FATIGUE WARNING: AMBER ]' : recoveryScore > 0 ? '[ ⚡ SYSTEMS OPTIMAL ]' : '[ NO DATA ]'}
+              </Text>
+            </View>
+            <Text style={rs.heroCapacity}>
+              CAPACITY: {isHighFatigue ? 'CRITICAL' : isModerate ? 'REDUCED' : recoveryScore > 0 ? 'NOMINAL' : 'UNKNOWN'}
+            </Text>
           </View>
-          <View style={badgeStyle}>
-            <Text style={badgeTextStyle}>{scoreLabel}</Text>
-          </View>
+        </View>
+        <View style={rs.heroProgressTrack}>
+          <View style={[rs.heroProgressFill, { width: `${recoveryScore}%` as unknown as number, backgroundColor: isHighFatigue ? '#e05050' : isModerate ? '#ffaa44' : '#B5852C' }]} />
         </View>
         <Text style={styles.scoreMessage}>{scoreMessage}</Text>
       </View>
@@ -377,4 +384,17 @@ const styles = StyleSheet.create({
   targetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#1a2c20' },
   targetLabel: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
   targetValue: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
+});
+
+const rs = StyleSheet.create({
+  heroCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 10 },
+  heroKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  heroScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  heroScore: { fontSize: 56, fontWeight: '900', lineHeight: 60 },
+  heroRight: { flex: 1, gap: 6 },
+  fatigueBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' },
+  fatigueBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
+  heroCapacity: { color: '#b8c0b0', fontSize: 11, fontWeight: '900', letterSpacing: 0.8 },
+  heroProgressTrack: { height: 3, backgroundColor: 'rgba(181,133,44,0.15)', borderRadius: 2, overflow: 'hidden' },
+  heroProgressFill: { height: 3, borderRadius: 2 },
 });

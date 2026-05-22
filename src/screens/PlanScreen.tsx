@@ -119,26 +119,57 @@ export default function PlanScreen() {
     });
   }, [router]);
 
+  const todayName = useMemo(() => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return dayNames[new Date().getDay()];
+  }, []);
+
+  const currentDayOfWeek = useMemo(() => {
+    const day = new Date().getDay();
+    return day === 0 ? 7 : day;
+  }, []);
+
+  const weekDayDate = useCallback((dayIndex: number) => {
+    const now = new Date();
+    const jsDay = now.getDay();
+    const diff = jsDay === 0 ? -6 : 1 - jsDay;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff + dayIndex);
+    return monday.getDate().toString();
+  }, []);
+
+  const upcomingDays = useMemo(() => {
+    const todayIndex = days.findIndex((d) => d.day === todayName);
+    const startIndex = todayIndex >= 0 ? todayIndex : 0;
+    return days.slice(startIndex).filter((d) => !d.isRest).slice(0, 3);
+  }, [days, todayName]);
+
   if (isLoading) return <View style={styles.screen} />;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.planHeader}>
-        <View style={styles.planHeaderLeft}>
-          <Text style={styles.kicker}>MISSION PLANNING</Text>
-          <Text style={styles.title}>7-Day Mission Plan</Text>
+      <View style={ps.headerRow}>
+        <View style={ps.headerLeft}>
+          <Text style={styles.kicker}>[ MISSION PLANNING ]</Text>
+          <Text style={styles.title}>Training Directive</Text>
           <View style={styles.headerRule} />
         </View>
-        <TouchableOpacity
-          style={styles.editPlanButton}
-          onPress={() => router.push('/plan-builder')}
-        >
-          <Text style={styles.editPlanButtonText}>Edit Plan</Text>
+        <View style={[ps.statusBadge, { borderColor: planTypeColor }]}>
+          <Text style={[ps.statusBadgeText, { color: planTypeColor }]}>
+            {planType === 'recovery' ? '[ STATUS: AMBER ]' : planType === 'progressive' ? '[ STATUS: GREEN ]' : '[ STATUS: ACTIVE ]'}
+          </Text>
+        </View>
+      </View>
+      <View style={ps.pillEditRow}>
+        <View style={[styles.planModePill, hasCustomPlan ? styles.planModePillAmber : styles.planModePillMuted]}>
+          <Text style={[styles.planModePillText, hasCustomPlan ? styles.planModePillTextAmber : styles.planModePillTextMuted]}>
+            {hasCustomPlan ? 'CUSTOM PLAN' : 'AUTO PLAN'}
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.editPlanButton} onPress={() => router.push('/plan-builder')}>
+          <Text style={styles.editPlanButtonText}>[ EDIT PLAN ]</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.subtitle}>
-        {"Generated from your readiness, fatigue watch and this week's training split."}
-      </Text>
       <View style={styles.planModePillRow}>
         <View
           style={[
@@ -154,6 +185,31 @@ export default function PlanScreen() {
           >
             {hasCustomPlan ? 'CUSTOM PLAN' : 'AUTO PLAN'}
           </Text>
+        </View>
+      </View>
+
+      <View style={ps.cycleCard}>
+        <Text style={ps.cycleKicker}>[ TRAINING CYCLE ]</Text>
+        <View style={ps.cyclePhaseRow}>
+          <Text style={[ps.cyclePhaseName, { color: planTypeColor }]}>
+            {planType === 'recovery' ? 'RECOVERY PROTOCOL' : planType === 'progressive' ? 'PROGRESSIVE LOAD' : 'STRUCTURAL BASE'}
+          </Text>
+          <Text style={ps.cyclePhaseTag}>PHASE II</Text>
+        </View>
+        <View style={ps.cycleDayRow}>
+          <Text style={ps.cycleDayLabel}>DAY</Text>
+          <Text style={[ps.cycleDayNum, { color: planTypeColor }]}>{currentDayOfWeek}</Text>
+          <Text style={ps.cycleDaySlash}>/</Text>
+          <Text style={ps.cycleDayTotal}>7</Text>
+        </View>
+        <View style={ps.cycleProgressTrack}>
+          <View style={[ps.cycleProgressFill, { width: `${(currentDayOfWeek / 7) * 100}%` as unknown as number, backgroundColor: planTypeColor }]} />
+        </View>
+        <View style={ps.focusChipRow}>
+          {(planType === 'recovery' ? ['MOBILITY', 'SLEEP', 'NUTRITION'] : planType === 'progressive' ? ['STRENGTH', 'RUCK', 'CARDIO'] : ['STRENGTH', 'ENDURANCE', 'BALANCE']
+          ).map((chip) => (
+            <View key={chip} style={ps.focusChip}><Text style={ps.focusChipText}>{chip}</Text></View>
+          ))}
         </View>
       </View>
 
@@ -186,6 +242,42 @@ export default function PlanScreen() {
           </View>
         </View>
       </View>
+
+      <View style={ps.tempoCard}>
+        <Text style={ps.tempoKicker}>[ OPERATIONAL TEMPO ]</Text>
+        <View style={ps.tempoRow}>
+          {days.map((d, i) => {
+            const letter = ['M','T','W','T','F','S','S'][i];
+            const isToday = d.day === todayName;
+            const dotColor = d.isRest ? null : d.intensity === 'High' ? '#B5852C' : d.intensity === 'Moderate' ? '#ffaa44' : '#5E7A2F';
+            return (
+              <View key={d.day} style={[ps.tempoDay, isToday ? ps.tempoDayToday : null]}>
+                <Text style={[ps.tempoDayLetter, isToday ? { color: '#B5852C' } : null]}>{letter}</Text>
+                <Text style={[ps.tempoDayNum, isToday ? { color: '#B5852C' } : null]}>{weekDayDate(i)}</Text>
+                {dotColor ? <View style={[ps.tempoDot, { backgroundColor: dotColor }]} /> : <View style={ps.tempoDotEmpty} />}
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
+      {upcomingDays.length > 0 ? (
+        <View style={ps.upcomingCard}>
+          <Text style={ps.upcomingKicker}>[ UPCOMING OPS ]</Text>
+          {upcomingDays.map((d) => (
+            <TouchableOpacity key={d.day} style={ps.upcomingRow} onPress={() => logPlannedSession(d)}>
+              <View style={ps.upcomingLeft}>
+                <Text style={ps.upcomingDayTag}>{d.day.slice(0, 3).toUpperCase()}</Text>
+                <View style={ps.upcomingInfo}>
+                  <Text style={ps.upcomingTitle}>{d.focus}</Text>
+                  <Text style={ps.upcomingSub}>{d.session}</Text>
+                </View>
+              </View>
+              <Text style={ps.upcomingChevron}>›</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : null}
 
       <View style={commandCardStyle}>
         <View style={styles.commandHeader}>
@@ -343,4 +435,45 @@ const styles = StyleSheet.create({
   logButtonRest: { backgroundColor: '#102016', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
   logButtonText: { color: '#080c05', fontSize: 12, fontWeight: '900' },
   logButtonTextRest: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
+});
+
+const ps = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerLeft: { flex: 1 },
+  statusBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, marginTop: 6 },
+  statusBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  pillEditRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  cycleCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 10 },
+  cycleKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  cyclePhaseRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  cyclePhaseName: { fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  cyclePhaseTag: { color: '#b8c0b0', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  cycleDayRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  cycleDayLabel: { color: '#b8c0b0', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  cycleDayNum: { fontSize: 32, fontWeight: '900' },
+  cycleDaySlash: { color: '#4a5e4a', fontSize: 20, fontWeight: '700', marginHorizontal: 2 },
+  cycleDayTotal: { color: '#4a5e4a', fontSize: 20, fontWeight: '900' },
+  cycleProgressTrack: { height: 3, backgroundColor: 'rgba(181,133,44,0.15)', borderRadius: 2, overflow: 'hidden' },
+  cycleProgressFill: { height: 3, borderRadius: 2 },
+  focusChipRow: { flexDirection: 'row', gap: 8 },
+  focusChip: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  focusChipText: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  tempoCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
+  tempoKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  tempoRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  tempoDay: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 8, borderRadius: 4 },
+  tempoDayToday: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.5)', backgroundColor: 'rgba(181,133,44,0.06)' },
+  tempoDayLetter: { color: '#b8c0b0', fontSize: 11, fontWeight: '900' },
+  tempoDayNum: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  tempoDot: { width: 6, height: 6, borderRadius: 3 },
+  tempoDotEmpty: { width: 6, height: 6 },
+  upcomingCard: { backgroundColor: '#0c1008', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', overflow: 'hidden' },
+  upcomingKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4, padding: 14, paddingBottom: 10 },
+  upcomingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#131d14' },
+  upcomingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  upcomingDayTag: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 1, width: 30 },
+  upcomingInfo: { flex: 1, gap: 2 },
+  upcomingTitle: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
+  upcomingSub: { color: '#b8c0b0', fontSize: 12 },
+  upcomingChevron: { color: '#B5852C', fontSize: 22, fontWeight: '300' },
 });
