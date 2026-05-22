@@ -425,8 +425,17 @@ export default function RuckScreen() {
     <View style={styles.screen}>
       {/* Header row */}
       <View style={styles.headerBlock}>
-        <Text style={styles.kicker}>LOAD CARRIAGE</Text>
-        <Text style={styles.title}>Ruck Performance</Text>
+        <View style={rs2.headerRow}>
+          <View>
+            <Text style={styles.kicker}>[ RUCK MISSION HUD ]</Text>
+            <Text style={styles.title}>Load Carriage</Text>
+          </View>
+          <View style={[rs2.conditionBadge, { borderColor: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
+            <Text style={[rs2.conditionText, { color: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
+              {readinessGood ? '[ CONDITION: GREEN ]' : '[ CONDITION: AMBER ]'}
+            </Text>
+          </View>
+        </View>
       </View>
 
       {/* Tab pills */}
@@ -438,7 +447,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'stats' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'stats' && styles.tabPillTextActive]}>
-            Stats
+            [ STATS ]
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -448,7 +457,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'track' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'track' && styles.tabPillTextActive]}>
-            Track
+            [ TRACK ]
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -458,7 +467,7 @@ export default function RuckScreen() {
           accessibilityState={{ selected: activeTab === 'routes' }}
         >
           <Text style={[styles.tabPillText, activeTab === 'routes' && styles.tabPillTextActive]}>
-            Routes
+            [ ROUTES ]
           </Text>
         </TouchableOpacity>
       </View>
@@ -600,6 +609,22 @@ export default function RuckScreen() {
                 </View>
               </View>
 
+              {latestMetrics && latestMetrics.pace > 0 && bestPace !== Infinity ? (
+                <View style={rs2.paceBarWrap}>
+                  <View style={rs2.paceBarRow}>
+                    <Text style={rs2.paceBarLabel}>PACE vs PB</Text>
+                    <Text style={rs2.paceBarValue}>
+                      {latestMetrics.pace <= bestPace ? 'PB MATCHED' : `+${Math.round((latestMetrics.pace - bestPace) * 60)}s/km`}
+                    </Text>
+                  </View>
+                  <View style={rs2.paceBarTrack}>
+                    <View style={[rs2.paceBarFill, {
+                      width: `${Math.max(5, Math.min(100, (bestPace / latestMetrics.pace) * 100))}%` as unknown as number,
+                      backgroundColor: latestMetrics.pace <= bestPace * 1.05 ? '#5E7A2F' : latestMetrics.pace <= bestPace * 1.15 ? '#B5852C' : '#ffaa44',
+                    }]} />
+                  </View>
+                </View>
+              ) : null}
               {latest.ruck ? (
                 <TouchableOpacity
                   style={styles.reviewButton}
@@ -607,15 +632,27 @@ export default function RuckScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Open latest ruck review"
                 >
-                  <Text style={styles.reviewButtonText}>Open Review</Text>
+                  <Text style={styles.reviewButtonText}>[ OPEN REVIEW ]</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
           ) : null}
 
-          <View style={readinessGood ? styles.nextCard : styles.nextCardWarn}>
-            <Text style={styles.nextKicker}>NEXT SESSION</Text>
+          <View style={rs2.fieldCommandCard}>
+            <View style={rs2.fieldCommandHeader}>
+              <Text style={rs2.fieldCommandKicker}>[ FIELD COMMAND ]</Text>
+              <View style={[rs2.conditionBadge, { borderColor: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
+                <Text style={[rs2.conditionText, { color: readinessGood ? '#5E7A2F' : '#ffaa44' }]}>
+                  {readinessGood ? 'GO' : 'CAUTION'}
+                </Text>
+              </View>
+            </View>
             <Text style={styles.nextText}>{nextSessionAdvice}</Text>
+            {recentFatigue > 0 ? (
+              <Text style={rs2.physiologicalWarning}>
+                ⚡ PHYSIOLOGICAL LOAD: {recentFatigue} fatigue-watch session{recentFatigue > 1 ? 's' : ''} in last 5
+              </Text>
+            ) : null}
           </View>
 
           <View style={styles.sectionHeader}>
@@ -800,4 +837,20 @@ const styles = StyleSheet.create({
   fieldCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
   fieldLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   fieldText: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
+});
+
+const rs2 = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  conditionBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  conditionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  fieldCommandCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(181,133,44,0.2)', borderLeftColor: '#B5852C', gap: 10 },
+  fieldCommandHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  fieldCommandKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  physiologicalWarning: { color: '#ffaa44', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
+  paceBarWrap: { gap: 6 },
+  paceBarRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  paceBarLabel: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  paceBarValue: { color: '#b8c0b0', fontSize: 10, fontWeight: '900' },
+  paceBarTrack: { height: 3, backgroundColor: 'rgba(181,133,44,0.15)', borderRadius: 2, overflow: 'hidden' },
+  paceBarFill: { height: 3, borderRadius: 2 },
 });

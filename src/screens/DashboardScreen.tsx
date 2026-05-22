@@ -20,6 +20,7 @@ import { useCheckIn } from '@/src/hooks/useCheckIn';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { DimensionValue, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Circle, Svg } from 'react-native-svg';
 
 const WEEKLY_TARGET = 4;
 
@@ -56,6 +57,19 @@ function getRecoveryStatus(recentLogs: ReturnType<typeof useTraining>['logs']) {
   if (fatigue >= 3) return 'Poor';
   if (fatigue >= 1) return 'Moderate';
   return 'Good';
+}
+
+function statusToGrade(status: string): string {
+  switch (status) {
+    case 'Improving': return 'A';
+    case 'Stable':    return 'B+';
+    case 'Baseline':  return 'B';
+    case 'Dropping':  return 'C';
+    case 'Good':      return 'A';
+    case 'Moderate':  return 'B';
+    case 'Poor':      return 'D';
+    default:          return '?';
+  }
 }
 
 export default function DashboardScreen() {
@@ -204,7 +218,12 @@ export default function DashboardScreen() {
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.kicker}>SENTINEL READY</Text>
+        <View style={s2.headerTopRow}>
+          <Text style={styles.kicker}>SENTINEL READY</Text>
+          <View style={[s2.statusHeaderBadge, { borderColor: readinessStatus.prog + '88', backgroundColor: readinessStatus.prog + '22' }]}>
+            <Text style={[s2.statusHeaderBadgeText, { color: readinessStatus.prog }]}>[ STATUS: {readinessStatus.text} ]</Text>
+          </View>
+        </View>
         <Text style={styles.title}>Operational Fitness Dashboard</Text>
         <View style={styles.headerRule} />
         <Text style={styles.subtitle}>
@@ -215,96 +234,137 @@ export default function DashboardScreen() {
       {/* DAILY CHECK-IN PROMPT */}
       {!checkIn.checkedInToday && !checkIn.isLoading && (
         <TouchableOpacity
-          style={styles.checkInBanner}
+          style={s2.checkInBanner}
           onPress={() => { router.push('/check-in'); }}
           accessibilityRole="button"
           accessibilityLabel="Log today's check-in"
         >
-          <View style={styles.checkInBannerLeft}>
-            <Text style={styles.checkInBannerKicker}>DAILY CHECK-IN</Text>
-            <Text style={styles.checkInBannerTitle}>Log Your Readiness</Text>
-            <Text style={styles.checkInBannerSub}>Sleep · Soreness · Stress · Mood</Text>
+          <View style={s2.checkInBannerLeft}>
+            <Text style={s2.checkInBannerKicker}>DAILY CHECK-IN</Text>
+            <Text style={s2.checkInBannerTitle}>Log Your Readiness</Text>
+            <Text style={s2.checkInBannerSub}>Sleep · Soreness · Stress · Mood</Text>
           </View>
-          <Text style={styles.checkInBannerCta}>[ LOG NOW ]</Text>
+          <Text style={s2.checkInBannerCta}>[ LOG NOW ]</Text>
         </TouchableOpacity>
       )}
 
       {/* CHECK-IN SCORE BANNER (if checked in today) */}
       {checkIn.checkedInToday && checkIn.score !== null && (
         <TouchableOpacity
-          style={styles.checkInDoneBanner}
+          style={s2.checkInDoneBanner}
           onPress={() => { router.push('/check-in'); }}
           accessibilityRole="button"
           accessibilityLabel="View or edit today's check-in"
         >
-          <View style={styles.checkInBannerLeft}>
-            <Text style={styles.checkInBannerKicker}>TODAY'S CHECK-IN</Text>
-            <Text style={styles.checkInBannerTitle}>Readiness Score: {checkIn.score}%</Text>
+          <View style={s2.checkInBannerLeft}>
+            <Text style={s2.checkInBannerKicker}>TODAY'S CHECK-IN</Text>
+            <Text style={s2.checkInBannerTitle}>Readiness Score: {checkIn.score}%</Text>
           </View>
-          <Text style={styles.checkInDoneCta}>[ EDIT ]</Text>
+          <Text style={s2.checkInDoneCta}>[ EDIT ]</Text>
         </TouchableOpacity>
       )}
 
       {/* MAPS HERO CARD */}
       <TouchableOpacity
-        style={styles.mapsHero}
+        style={s2.mapsHero}
         onPress={navigateToRuck}
         accessibilityRole="button"
         accessibilityLabel="Open Maps and Ruck tracking"
         activeOpacity={0.85}
       >
-        <View style={styles.mapsHeroTop}>
+        <View style={s2.mapsHeroTop}>
           <View>
-            <Text style={styles.mapsHeroKicker}>MAPS & RUCK</Text>
-            <Text style={styles.mapsHeroTitle}>Live Ruck Tracking</Text>
+            <Text style={s2.mapsHeroKicker}>MAPS & RUCK</Text>
+            <Text style={s2.mapsHeroTitle}>Live Ruck Tracking</Text>
           </View>
-          <View style={styles.mapsHeroBadge}>
-            <Text style={styles.mapsHeroBadgeText}>GPS</Text>
-          </View>
-        </View>
-        <View style={styles.mapsHeroStats}>
-          <View style={styles.mapsHeroStat}>
-            <Text style={styles.mapsHeroStatValue}>{latestRuck ? ruckVal : '--'}</Text>
-            <Text style={styles.mapsHeroStatLabel}>LAST RUCK</Text>
-          </View>
-          <View style={styles.mapsHeroStatDivider} />
-          <View style={styles.mapsHeroStat}>
-            <Text style={styles.mapsHeroStatValue}>{performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'}</Text>
-            <Text style={styles.mapsHeroStatLabel}>BEST DISTANCE</Text>
-          </View>
-          <View style={styles.mapsHeroStatDivider} />
-          <View style={styles.mapsHeroStat}>
-            <Text style={styles.mapsHeroStatValue}>{thisWeek.ruck > 0 ? `${thisWeek.ruck}` : '0'}</Text>
-            <Text style={styles.mapsHeroStatLabel}>THIS WEEK</Text>
+          <View style={s2.mapsHeroBadge}>
+            <Text style={s2.mapsHeroBadgeText}>GPS</Text>
           </View>
         </View>
-        <View style={styles.mapsHeroCta}>
-          <Text style={styles.mapsHeroCtaText}>[ START RUCK ]</Text>
+        <View style={s2.mapsHeroStats}>
+          <View style={s2.mapsHeroStat}>
+            <Text style={s2.mapsHeroStatValue}>{latestRuck ? ruckVal : '--'}</Text>
+            <Text style={s2.mapsHeroStatLabel}>LAST RUCK</Text>
+          </View>
+          <View style={s2.mapsHeroStatDivider} />
+          <View style={s2.mapsHeroStat}>
+            <Text style={s2.mapsHeroStatValue}>{performance.bestRuckDistanceKm > 0 ? `${performance.bestRuckDistanceKm} km` : '--'}</Text>
+            <Text style={s2.mapsHeroStatLabel}>BEST DISTANCE</Text>
+          </View>
+          <View style={s2.mapsHeroStatDivider} />
+          <View style={s2.mapsHeroStat}>
+            <Text style={s2.mapsHeroStatValue}>{thisWeek.ruck > 0 ? `${thisWeek.ruck}` : '0'}</Text>
+            <Text style={s2.mapsHeroStatLabel}>THIS WEEK</Text>
+          </View>
+        </View>
+        <View style={s2.mapsHeroCta}>
+          <Text style={s2.mapsHeroCtaText}>[ START RUCK ]</Text>
         </View>
       </TouchableOpacity>
 
-      <SentinelCard title="Readiness Status" variant="success">
-        <View style={styles.readinessRow}>
-          <View>
-            <Text style={styles.metric}>{readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}</Text>
-            <Text style={styles.cardText}>{readinessStatus.msg}</Text>
+      {/* ── READINESS HERO ── */}
+      <View style={s2.readinessCard}>
+        <View style={s2.readinessCardHeader}>
+          <Text style={styles.kicker}>READINESS STATUS</Text>
+        </View>
+        <View style={{ height: 1, backgroundColor: '#B5852C', opacity: 0.55 }} />
+
+        <View style={s2.gaugeRow}>
+          {/* Circular SVG gauge */}
+          <View style={s2.gaugeWrap}>
+            <Svg width={140} height={140} viewBox="0 0 140 140">
+              <Circle cx="70" cy="70" r="56" stroke="rgba(181,133,44,0.18)" strokeWidth="8" fill="none" />
+              <Circle
+                cx="70" cy="70" r="56"
+                stroke={readinessStatus.prog}
+                strokeWidth="8"
+                fill="none"
+                strokeDasharray={`${(readinessPercentage / 100) * 351.9} 351.9`}
+                strokeLinecap="round"
+                rotation="-90"
+                originX="70"
+                originY="70"
+              />
+            </Svg>
+            <View style={s2.gaugeCenter}>
+              <Text style={[s2.gaugeNumber, { color: readinessPercentage > 0 ? readinessStatus.prog : '#b8c0b0' }]}>
+                {readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}
+              </Text>
+              <Text style={s2.gaugeLabel}>READY</Text>
+            </View>
           </View>
 
-          <View style={[styles.statusBadge, { backgroundColor: readinessStatus.bg }]}>
-            <Text style={[styles.statusBadgeText, { color: readinessStatus.textCol }]}>{readinessStatus.text}</Text>
+          {/* Status info */}
+          <View style={s2.gaugeInfo}>
+            <View style={[s2.statusHeaderBadge, { borderColor: readinessStatus.prog + '88', backgroundColor: readinessStatus.prog + '22', alignSelf: 'flex-start' }]}>
+              <Text style={[s2.statusHeaderBadgeText, { color: readinessStatus.prog }]}>{readinessStatus.text}</Text>
+            </View>
+            <Text style={[styles.cardText, { marginTop: 0 }]}>{readinessStatus.msg}</Text>
+            <View style={styles.readinessDetails}>
+              <Text style={styles.detailText}>Strength: {strengthStatus}</Text>
+              <Text style={styles.detailText}>Endurance: {enduranceStatus}</Text>
+              <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${readinessPercentage}%`, backgroundColor: readinessStatus.prog }]} />
+        {/* Letter-grade stat grid */}
+        <View style={s2.gradeGrid}>
+          {([
+            { label: 'STRENGTH', grade: statusToGrade(strengthStatus) },
+            { label: 'CARDIO',   grade: statusToGrade(enduranceStatus) },
+            { label: 'RUCK',     grade: ruckVal !== 'N/A' ? 'B+' : '?' },
+            { label: 'RECOVERY', grade: statusToGrade(recoveryStatus) },
+          ] as const).map(({ label, grade }) => (
+            <View key={label} style={s2.gradeCell}>
+              <Text style={s2.gradeCellLabel}>{label}</Text>
+              <Text style={[s2.gradeCellValue, { color: grade === 'A' || grade === 'B+' ? '#5E7A2F' : grade === 'C' || grade === 'D' ? '#e05050' : '#B5852C' }]}>
+                {grade}
+              </Text>
+            </View>
+          ))}
         </View>
-
-        <View style={styles.readinessDetails}>
-          <Text style={styles.detailText}>Strength: {strengthStatus}</Text>
-          <Text style={styles.detailText}>Endurance: {enduranceStatus}</Text>
-          <Text style={styles.detailText}>Recovery: {recoveryStatus}</Text>
-        </View>
-      </SentinelCard>
+      </View>
 
       <SentinelCard title="Mission Brief" variant={missionBrief.status === 'red' ? 'warning' : missionBrief.status === 'green' ? 'success' : 'default'}>
         <View style={styles.briefHeader}>
@@ -323,6 +383,14 @@ export default function DashboardScreen() {
           <Text style={styles.briefActionText}>{missionBrief.primaryAction}</Text>
         </View>
         <Text style={styles.briefSecondary}>{missionBrief.secondaryAction}</Text>
+        <TouchableOpacity
+          style={s2.executeBtn}
+          onPress={() => router.push('/add-log')}
+          accessibilityRole="button"
+          accessibilityLabel="Execute session"
+        >
+          <Text style={s2.executeBtnText}>[ EXECUTE SESSION ]</Text>
+        </TouchableOpacity>
       </SentinelCard>
 
       <WeeklyLoadRiskCard risk={weeklyLoadRisk} />
@@ -955,6 +1023,58 @@ const styles = StyleSheet.create({
   connectPillDotProgress: { backgroundColor: '#1A74D4' },
   connectPillDotBodyComp: { backgroundColor: '#a78bfa' },
   connectPillText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+});
+
+// ── Stitch-derived additions ──────────────────────────────────────────
+const s2 = StyleSheet.create({
+  headerTopRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusHeaderBadge:  { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  statusHeaderBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+
+  readinessCard: {
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
+    borderTopWidth: 2,
+    borderTopColor: '#B5852C',
+    borderWidth: 1,
+    borderColor: 'rgba(181,133,44,0.12)',
+    padding: 16,
+    gap: 12,
+  },
+  readinessCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+
+  gaugeRow:   { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  gaugeWrap:  { width: 140, height: 140, alignItems: 'center', justifyContent: 'center' },
+  gaugeCenter:{ position: 'absolute', alignItems: 'center' },
+  gaugeNumber:{ fontSize: 30, fontWeight: '900', lineHeight: 34 },
+  gaugeLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginTop: 2 },
+  gaugeInfo:  { flex: 1, gap: 8 },
+
+  gradeGrid: { flexDirection: 'row', gap: 8 },
+  gradeCell: {
+    flex: 1,
+    backgroundColor: '#111d15',
+    borderWidth: 1,
+    borderColor: 'rgba(181,133,44,0.12)',
+    borderRadius: 4,
+    padding: 10,
+    alignItems: 'center',
+    gap: 4,
+  },
+  gradeCellLabel: { color: '#b8c0b0', fontSize: 9, fontWeight: '900', letterSpacing: 1.2 },
+  gradeCellValue: { fontSize: 22, fontWeight: '900' },
+
+  executeBtn: {
+    borderWidth: 1,
+    borderColor: '#B5852C',
+    borderRadius: 4,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 4,
+    backgroundColor: 'rgba(181,133,44,0.07)',
+  },
+  executeBtnText: { color: '#B5852C', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+
 
   // Check-in banners
   checkInBanner: {

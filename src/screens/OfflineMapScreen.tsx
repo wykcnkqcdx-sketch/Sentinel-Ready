@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
@@ -55,6 +56,7 @@ function estimateTileCount(center: Position, radiusKm: number): number {
 }
 
 export default function OfflineMapScreen() {
+  const router = useRouter();
   const [radius, setRadius] = useState<Radius>(10);
   const [layer, setLayer] = useState<MapLayerKey>('street');
   const [downloading, setDownloading] = useState(false);
@@ -175,8 +177,15 @@ export default function OfflineMapScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.kicker}>OFFLINE MAPS</Text>
-        <Text style={styles.title}>Cache Tiles</Text>
+        <View style={om2.headerRow}>
+          <View>
+            <Text style={om2.kicker}>[ TACTICAL ROUTE EXPLORER ]</Text>
+            <Text style={styles.title}>Offline Maps</Text>
+          </View>
+          <View style={om2.mapBadge}>
+            <Text style={om2.mapBadgeText}>[ MAP READY ]</Text>
+          </View>
+        </View>
         <Text style={styles.subtitle}>Download map tiles for use without signal</Text>
       </View>
 
@@ -247,7 +256,7 @@ export default function OfflineMapScreen() {
 
       {!downloading && (
         <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
-          <Text style={styles.downloadButtonText}>Download Region</Text>
+          <Text style={styles.downloadButtonText}>[ DOWNLOAD REGION ]</Text>
         </TouchableOpacity>
       )}
 
@@ -269,9 +278,32 @@ export default function OfflineMapScreen() {
             <Text style={styles.statsLabel}>on disk</Text>
           </View>
           <TouchableOpacity style={styles.clearButton} onPress={handleClearCache}>
-            <Text style={styles.clearButtonText}>Clear Cache</Text>
+            <Text style={styles.clearButtonText}>[ CLEAR ]</Text>
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={om2.routeDataCard}>
+        <Text style={om2.routeDataKicker}>[ ROUTE DATA ]</Text>
+        <View style={om2.routeDataRow}>
+          <View style={om2.routeDataStat}>
+            <Text style={om2.routeDataValue}>{radius} km</Text>
+            <Text style={om2.routeDataLabel}>Region</Text>
+          </View>
+          <View style={om2.routeDataDivider} />
+          <View style={om2.routeDataStat}>
+            <Text style={om2.routeDataValue}>{layer.toUpperCase()}</Text>
+            <Text style={om2.routeDataLabel}>Layer</Text>
+          </View>
+          <View style={om2.routeDataDivider} />
+          <View style={om2.routeDataStat}>
+            <Text style={om2.routeDataValue}>{stats.tileCount > 0 ? '✓' : '—'}</Text>
+            <Text style={om2.routeDataLabel}>Cached</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={om2.startRuckBtn} onPress={() => router.push('/ruck')}>
+          <Text style={om2.startRuckBtnText}>[ START RUCK ]</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -359,4 +391,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   clearButtonText: { color: '#e05050', fontSize: 13, fontWeight: '800' },
+});
+
+const om2 = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 },
+  mapBadge: { borderWidth: 1, borderColor: 'rgba(94,122,47,0.5)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  mapBadgeText: { color: '#5E7A2F', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  routeDataCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 14 },
+  routeDataKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  routeDataRow: { flexDirection: 'row', alignItems: 'center' },
+  routeDataStat: { flex: 1, alignItems: 'center', gap: 4 },
+  routeDataValue: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  routeDataLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  routeDataDivider: { width: 1, height: 36, backgroundColor: 'rgba(181,133,44,0.12)' },
+  startRuckBtn: { backgroundColor: '#B5852C', borderRadius: 4, paddingVertical: 14, alignItems: 'center' },
+  startRuckBtnText: { color: '#080c05', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 });

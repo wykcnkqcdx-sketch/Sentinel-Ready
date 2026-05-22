@@ -55,8 +55,23 @@ const TrainingLogCard = memo(function TrainingLogCard({
 
   const cardBorderTopColor = fatigueWatch ? '#ffaa44' : catPalette.color;
 
+  // Left-border colour by category (task requirement)
+  const leftBorderColor: Record<string, string> = {
+    Ruck: '#B5852C',
+    Strength: '#5E7A2F',
+    Run: '#4A8FA8',
+    Recovery: '#4a5a44',
+    Mobility: '#4a5a44',
+  };
+  const cardLeftBorder = leftBorderColor[log.category] ?? '#B5852C';
+
+  // Score badge derived from readiness (0-10 → display as delta)
+  const readinessNum = Number(log.readiness) || 0;
+  const scoreDelta = readinessNum > 0 ? `+${readinessNum.toFixed(1)} SCORE` : null;
+  const scoreColor = readinessNum >= 6 ? '#5E7A2F' : readinessNum > 0 ? '#e05050' : '#4a5a44';
+
   return (
-    <View style={[styles.card, { borderTopColor: cardBorderTopColor }]}>
+    <View style={[styles.card, { borderTopColor: cardBorderTopColor, borderLeftColor: cardLeftBorder, borderLeftWidth: 3 }]}>
 
       {/* ── HEADER: category + readiness badge ── */}
       <View style={styles.header}>
@@ -67,9 +82,14 @@ const TrainingLogCard = memo(function TrainingLogCard({
           </Text>
         </View>
 
-        <View style={[styles.readinessBadge, tierStyle.badge]}>
-          <Text style={[styles.readinessScore, tierStyle.text]}>{log.readiness}/10</Text>
-          <Text style={[styles.readinessTierLabel, tierStyle.text]}>{tierStyle.label}</Text>
+        <View style={styles.headerRight}>
+          {scoreDelta ? (
+            <Text style={[styles.scoreBadge, { color: scoreColor }]}>{scoreDelta}</Text>
+          ) : null}
+          <View style={[styles.readinessBadge, tierStyle.badge]}>
+            <Text style={[styles.readinessScore, tierStyle.text]}>{log.readiness}/10</Text>
+            <Text style={[styles.readinessTierLabel, tierStyle.text]}>{tierStyle.label}</Text>
+          </View>
         </View>
       </View>
 
@@ -210,6 +230,8 @@ const styles = StyleSheet.create({
 
   // Header
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  scoreBadge: { fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
   categoryTag: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   categoryDot: { width: 8, height: 8, borderRadius: 2 },
   categoryLabel: { fontSize: 11, fontWeight: '900', letterSpacing: 1.6 },

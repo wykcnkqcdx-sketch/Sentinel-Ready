@@ -159,12 +159,13 @@ export default function TestsScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>SENTINEL READY</Text>
-      <Text style={styles.title}>Fitness Test Centre</Text>
+      <View style={ts.headerRow}>
+        <Text style={styles.kicker}>[ MISSION: TESTS ]</Text>
+        <View style={[ts.statusBadge, { borderColor: readinessStatus.color + '88', backgroundColor: readinessStatus.color + '22' }]}>
+          <Text style={[ts.statusBadgeText, { color: readinessStatus.color }]}>[ STATUS: {readinessStatus.label} ]</Text>
+        </View>
+      </View>
       <View style={styles.headerRule} />
-      <Text style={styles.subtitle}>
-        Track test results, monitor readiness for assessment and review performance history by test type.
-      </Text>
 
       {daysUntilTest !== null ? (
         <View style={daysUntilTest <= 14 ? styles.countdownCardUrgent : styles.countdownCard}>
@@ -224,6 +225,28 @@ export default function TestsScreen() {
           </Text>
         </View>
       ) : null}
+
+      <View style={ts.benchmarkCard}>
+        <Text style={ts.benchmarkKicker}>[ BENCHMARK: STATUS ]</Text>
+        <View style={ts.benchmarkRow}>
+          <View style={ts.benchmarkLeft}>
+            <Text style={ts.benchmarkLabel}>OVERALL READINESS</Text>
+            <Text style={[ts.benchmarkBigNum, { color: readinessStatus.color }]}>
+              {readinessPercentage > 0 ? `${readinessPercentage}%` : '--'}
+            </Text>
+            <Text style={ts.benchmarkSub}>LAST ASSESSMENT: {testLogs[0]?.date ?? 'N/A'}</Text>
+          </View>
+          <View style={ts.benchmarkRight}>
+            <Text style={ts.benchmarkLabel}>TESTS LOGGED</Text>
+            <Text style={ts.benchmarkStat}>{testLogs.length}</Text>
+            <Text style={ts.benchmarkLabel}>SINCE LAST</Text>
+            <Text style={ts.benchmarkStat}>{daysSinceLast !== null ? `${daysSinceLast}d` : '--'}</Text>
+          </View>
+        </View>
+        <View style={ts.benchmarkProgressTrack}>
+          <View style={[ts.benchmarkProgressFill, { width: `${Math.min(readinessPercentage, 100)}%` as any, backgroundColor: readinessStatus.color }]} />
+        </View>
+      </View>
 
       <View style={styles.dfiftSnapshotCard}>
         <View style={styles.dfiftSnapshotHeader}>
@@ -485,4 +508,32 @@ const styles = StyleSheet.create({
   guidanceCard: { backgroundColor: '#111a10', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.2)', gap: 6 },
   guidanceTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
   guidanceText: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
+});
+
+// ── Stitch TestsScreen additions ──────────────────────────────────────
+const ts = StyleSheet.create({
+  headerRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusBadge:     { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  statusBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+
+  benchmarkCard: {
+    backgroundColor: '#0c1008',
+    borderRadius: 6,
+    borderTopWidth: 2,
+    borderTopColor: '#B5852C',
+    borderWidth: 1,
+    borderColor: 'rgba(181,133,44,0.12)',
+    padding: 16,
+    gap: 12,
+  },
+  benchmarkKicker:       { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  benchmarkRow:          { flexDirection: 'row', justifyContent: 'space-between', gap: 16 },
+  benchmarkLeft:         { flex: 1, gap: 3 },
+  benchmarkRight:        { alignItems: 'flex-end', gap: 3 },
+  benchmarkLabel:        { color: '#b8c0b0', fontSize: 9, fontWeight: '900', letterSpacing: 1.2 },
+  benchmarkBigNum:       { fontSize: 36, fontWeight: '900', lineHeight: 40 },
+  benchmarkStat:         { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
+  benchmarkSub:          { color: '#b8c0b0', fontSize: 10, fontWeight: '700' },
+  benchmarkProgressTrack:{ height: 4, backgroundColor: 'rgba(181,133,44,0.12)', borderRadius: 2, overflow: 'hidden' },
+  benchmarkProgressFill: { height: '100%', borderRadius: 2 },
 });
