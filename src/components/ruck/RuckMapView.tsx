@@ -5,6 +5,11 @@ import type { MapLayerKey, MapTile, MapViewport } from '../../utils/mapTiles';
 import type { TrackPoint } from '../../types/map';
 import type { MapOverlay } from '../../utils/fieldMapping';
 import { getResolvedTileUri } from '../../services/tileCache';
+import { formatCoordinate } from '../../utils/coordinates';
+import { bearingBetween, distanceBetween } from '../../utils/mapUtils';
+import { CompassOverlay } from './CompassOverlay';
+import type { WaypointMarker } from '../../services/waypointService';
+import { waypointColor, waypointSymbol } from '../../services/waypointService';
 
 let Svg: React.ComponentType<any> | null = null;
 let Polyline: React.ComponentType<any> | null = null;
@@ -79,7 +84,13 @@ export interface RuckMapViewProps {
   fullHeight?: boolean;
   showGpsStatus?: boolean;
   interactive?: boolean;
+  heading?: number | null;
+  waypoints?: WaypointMarker[];
+  onDropWaypoint?: (latitude: number, longitude: number) => void;
+  measureMode?: boolean;
 }
+
+type MeasurePoint = { latitude: number; longitude: number };
 
 export function RuckMapView({
   routePoints,
@@ -90,12 +101,18 @@ export function RuckMapView({
   fullHeight = false,
   showGpsStatus = true,
   interactive = true,
+  heading = null,
+  waypoints = [],
+  onDropWaypoint,
+  measureMode = false,
 }: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
   const [mapZoom, setMapZoom] = useState(clampZoom(zoom));
   const [mapCenter, setMapCenter] = useState<TrackPoint | null>(null);
   const [isFollowing, setIsFollowing] = useState(true);
+  const [measureA, setMeasureA] = useState<MeasurePoint | null>(null);
+  const [measureB, setMeasureB] = useState<MeasurePoint | null>(null);
   const panStartRef = useRef<{ x: number; y: number; center: TrackPoint } | null>(null);
 
   const liveCenter: TrackPoint =
@@ -112,12 +129,15 @@ export function RuckMapView({
     }
   }, [isFollowing, liveCenter]);
 
+  const tapStartRef = useRef<{ x: number; y: number } | null>(null);
+
   const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => interactive,
     onMoveShouldSetPanResponder: (_, gesture) =>
       interactive && (Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3),
-    onPanResponderGrant: () => {
+    onPanResponderGrant: (e) => {
       panStartRef.current = { x: 0, y: 0, center };
+      tapStartRef.current = { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
     },
     onPanResponderMove: (_, gesture) => {
       const start = panStartRef.current;
@@ -128,13 +148,20 @@ export function RuckMapView({
       setIsFollowing(false);
       setMapCenter(toTrackPoint(next.latitude, next.longitude));
     },
-    onPanResponderRelease: () => {
+    onPanResponderRelease: (_, gesture) => {
+      // Treat as tap if movement was minimal
+      if (Math.abs(gesture.dx) < 6 && Math.abs(gesture.dy) < 6 && tapStartRef.current) {
+        handleMapTap(tapStartRef.current.x, tapStartRef.current.y);
+      }
       panStartRef.current = null;
+      tapStartRef.current = null;
     },
     onPanResponderTerminate: () => {
       panStartRef.current = null;
+      tapStartRef.current = null;
     },
-  }), [center, interactive, mapZoom, viewport.height, viewport.width]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [center, interactive, mapZoom, viewport.height, viewport.width, measureMode, measureA, measureB, onDropWaypoint]);
 
   const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
   const uriMap = useResolvedTileUris(tiles);
@@ -148,6 +175,49 @@ export function RuckMapView({
     : null;
 
   const polylinePoints = projectedPoints.map((p) => `${p.x},${p.y}`).join(' ');
+
+  const mgrsLabel = useMemo(
+    () => formatCoordinate(center.latitude, center.longitude, 'mgrs'),
+    [center.latitude, center.longitude],
+  );
+
+  // Measure: range & bearing between two tapped points
+  const measureResult = useMemo(() => {
+    if (!measureA || !measureB) return null;
+    const a: TrackPoint = { ...measureA, altitude: null, accuracy: null, timestamp: 0 };
+    const b: TrackPoint = { ...measureB, altitude: null, accuracy: null, timestamp: 0 };
+    return {
+      distanceKm: distanceBetween(a, b),
+      bearing: bearingBetween(a, b),
+    };
+  }, [measureA, measureB]);
+
+  function handleMapTap(screenX: number, screenY: number) {
+    const pixel = latLonToWorldPixel(center.latitude, center.longitude, mapZoom);
+    const tappedLat = worldPixelToLatLon(
+      pixel.x + screenX - viewport.width / 2,
+      pixel.y + screenY - viewport.height / 2,
+      mapZoom,
+    );
+
+    if (measureMode) {
+      if (!measureA) {
+        setMeasureA(tappedLat);
+        setMeasureB(null);
+      } else if (!measureB) {
+        setMeasureB(tappedLat);
+      } else {
+        // Reset on third tap
+        setMeasureA(tappedLat);
+        setMeasureB(null);
+      }
+      return;
+    }
+
+    if (onDropWaypoint) {
+      onDropWaypoint(tappedLat.latitude, tappedLat.longitude);
+    }
+  }
 
   function handleLayout(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
@@ -300,6 +370,48 @@ export function RuckMapView({
               )}
             </React.Fragment>
           ))}
+
+          {/* Waypoints */}
+          {Circle && waypoints.map((wp) => {
+            const pts = getMercatorRoutePoints(
+              [{ latitude: wp.latitude, longitude: wp.longitude, altitude: null, accuracy: null, timestamp: 0 }],
+              center, viewport, mapZoom,
+            );
+            if (pts.length < 1) return null;
+            const color = waypointColor(wp.type);
+            return (
+              <React.Fragment key={wp.id}>
+                <Circle cx={pts[0].x} cy={pts[0].y} r={10} fill={color} fillOpacity={0.85} stroke="#ffffff" strokeWidth={1.5} />
+              </React.Fragment>
+            );
+          })}
+
+          {/* Measure mode: line between points + markers */}
+          {measureMode && Circle && Polyline && (() => {
+            const ptA = measureA ? getMercatorRoutePoints(
+              [{ latitude: measureA.latitude, longitude: measureA.longitude, altitude: null, accuracy: null, timestamp: 0 }],
+              center, viewport, mapZoom,
+            )[0] : null;
+            const ptB = measureB ? getMercatorRoutePoints(
+              [{ latitude: measureB.latitude, longitude: measureB.longitude, altitude: null, accuracy: null, timestamp: 0 }],
+              center, viewport, mapZoom,
+            )[0] : null;
+            return (
+              <>
+                {ptA && <Circle cx={ptA.x} cy={ptA.y} r={8} fill="#B5852C" stroke="#ffffff" strokeWidth={2} />}
+                {ptB && <Circle cx={ptB.x} cy={ptB.y} r={8} fill="#ffaa44" stroke="#ffffff" strokeWidth={2} />}
+                {ptA && ptB && (
+                  <Polyline
+                    points={`${ptA.x},${ptA.y} ${ptB.x},${ptB.y}`}
+                    fill="none"
+                    stroke="#ffaa44"
+                    strokeWidth={2}
+                    strokeDasharray="8,4"
+                  />
+                )}
+              </>
+            );
+          })()}
         </Svg>
       )}
 
@@ -310,16 +422,45 @@ export function RuckMapView({
       </View>
 
       <View style={styles.topHud} pointerEvents="none">
-        <Text style={styles.hudTitle}>RUCK MAP</Text>
+        <Text style={styles.hudTitle}>{measureMode ? '[ MEASURE MODE ]' : 'RUCK MAP'}</Text>
         <Text style={styles.hudText}>
           {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}  Z{Math.round(mapZoom)}
         </Text>
+        <Text style={styles.hudMgrs}>{mgrsLabel}</Text>
       </View>
 
       <View style={styles.scaleWrap} pointerEvents="none">
         <View style={styles.scaleBar} />
         <Text style={styles.scaleText}>FIELD GRID</Text>
       </View>
+
+      {heading != null && (
+        <View style={styles.compassWrap} pointerEvents="none">
+          <CompassOverlay heading={heading} />
+        </View>
+      )}
+
+      {measureMode && measureResult && (
+        <View style={styles.measureBanner} pointerEvents="none">
+          <Text style={styles.measureText}>
+            {measureResult.distanceKm < 1
+              ? `${Math.round(measureResult.distanceKm * 1000)} m`
+              : `${measureResult.distanceKm.toFixed(2)} km`}
+            {'  '}
+            {Math.round(measureResult.bearing)}°
+          </Text>
+        </View>
+      )}
+      {measureMode && !measureA && (
+        <View style={styles.measureBanner} pointerEvents="none">
+          <Text style={styles.measureText}>Tap to set point A</Text>
+        </View>
+      )}
+      {measureMode && measureA && !measureB && (
+        <View style={styles.measureBanner} pointerEvents="none">
+          <Text style={styles.measureText}>Tap to set point B</Text>
+        </View>
+      )}
 
       {interactive ? (
         <>
@@ -466,6 +607,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginTop: 2,
   },
+  hudMgrs: {
+    color: 'rgba(145,230,163,0.8)',
+    fontSize: 9,
+    fontWeight: '700',
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
   scaleWrap: {
     position: 'absolute',
     left: 14,
@@ -569,5 +717,28 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '900',
+  },
+  compassWrap: {
+    position: 'absolute',
+    bottom: 14,
+    right: 130,
+  },
+  measureBanner: {
+    position: 'absolute',
+    bottom: 14,
+    left: '50%',
+    transform: [{ translateX: -70 }],
+    backgroundColor: 'rgba(3,10,7,0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,170,68,0.4)',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  measureText: {
+    color: '#ffaa44',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
 });

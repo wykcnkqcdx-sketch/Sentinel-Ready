@@ -73,7 +73,8 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   const showMissionSetup = !isFinished && tracking.trackingState === 'idle' && displayMode === 'mission';
   const showMissionProgress = !isFinished && tracking.trackingState !== 'idle' && displayMode === 'mission';
   const showMapTools = !isFinished && displayMode === 'map';
-  const mapInteractive = !isFinished && displayMode === 'map';
+  const isMeasureMode = !isFinished && displayMode === 'measure';
+  const mapInteractive = !isFinished && (displayMode === 'map' || displayMode === 'measure');
 
   return (
     <View style={styles.container}>
@@ -85,6 +86,8 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         fullHeight
         interactive={mapInteractive}
         showGpsStatus={mapInteractive}
+        heading={tracking.currentHeading}
+        measureMode={isMeasureMode}
       />
 
       <View style={StyleSheet.absoluteFill} pointerEvents="none">

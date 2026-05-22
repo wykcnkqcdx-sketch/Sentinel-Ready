@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export type RuckDisplayMode = 'simple' | 'mission' | 'map';
+export type RuckDisplayMode = 'simple' | 'mission' | 'map' | 'measure';
 
 const OPTIONS: { key: RuckDisplayMode; label: string }[] = [
   { key: 'simple', label: 'Simple' },
   { key: 'mission', label: 'Mission' },
   { key: 'map', label: 'Map' },
+  { key: 'measure', label: 'Measure' },
 ];
 
 export function RuckDisplayModeToggle({

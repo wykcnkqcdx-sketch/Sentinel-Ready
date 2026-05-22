@@ -24,6 +24,7 @@ export interface RuckTrackingState {
   distanceKm: number;
   elapsedSeconds: number;
   currentPosition: TrackPoint | null;
+  currentHeading: number | null;
   gpsQualityWarning: string | null;
   activeLayer: MapLayerKey;
   sessionResult: SessionResult | null;
@@ -82,6 +83,7 @@ export function useRuckTracking(): RuckTrackingState {
   const [rejectedPointCount, setRejectedPointCount] = useState(INITIAL_STATE.rejectedPointCount);
   const [averageAccuracyMeters, setAverageAccuracyMeters] = useState<number | null>(INITIAL_STATE.averageAccuracyMeters);
   const [routeConfidence, setRouteConfidence] = useState<'High' | 'Medium' | 'Low'>(INITIAL_STATE.routeConfidence);
+  const [currentHeading, setCurrentHeading] = useState<number | null>(null);
 
   const locationSubRef = useRef<LocationSubscription | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -198,6 +200,9 @@ export function useRuckTracking(): RuckTrackingState {
     if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
+          if (position.coords.heading != null && Number.isFinite(position.coords.heading)) {
+            setCurrentHeading(position.coords.heading);
+          }
           handleLocationUpdate({
             coords: {
               latitude: position.coords.latitude,
@@ -230,7 +235,12 @@ export function useRuckTracking(): RuckTrackingState {
         timeInterval: 2000,
         distanceInterval: 2,
       },
-      handleLocationUpdate,
+      (location) => {
+        if (location.coords.heading != null && Number.isFinite(location.coords.heading)) {
+          setCurrentHeading(location.coords.heading);
+        }
+        handleLocationUpdate(location);
+      },
     );
   }, [handleLocationUpdate]);
 
@@ -377,6 +387,7 @@ export function useRuckTracking(): RuckTrackingState {
     setRejectedPointCount(INITIAL_STATE.rejectedPointCount);
     setAverageAccuracyMeters(INITIAL_STATE.averageAccuracyMeters);
     setRouteConfidence(INITIAL_STATE.routeConfidence);
+    setCurrentHeading(null);
   }, [removeLocationSubscription, stopTimer]);
 
   return {
@@ -385,6 +396,7 @@ export function useRuckTracking(): RuckTrackingState {
     distanceKm,
     elapsedSeconds,
     currentPosition,
+    currentHeading,
     gpsQualityWarning,
     activeLayer,
     sessionResult,
