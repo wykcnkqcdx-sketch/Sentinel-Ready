@@ -157,12 +157,15 @@ export default function VaultScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerRow}>
+        <View style={vlt.headerRow}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
-            <Text style={styles.backBtnText}>← BACK</Text>
+            <Text style={styles.backBtnText}>[ ← BACK ]</Text>
           </TouchableOpacity>
+          <View style={vlt.vaultBadge}>
+            <Text style={vlt.vaultBadgeText}>[ CLASSIFIED ]</Text>
+          </View>
         </View>
-        <Text style={styles.kicker}>{'// KNOWLEDGE VAULT //'}</Text>
+        <Text style={vlt.kicker}>[ KNOWLEDGE VAULT ]</Text>
         <Text style={styles.title}>INTEL STORE</Text>
         <View style={styles.headerDivider} />
       </View>
@@ -213,7 +216,7 @@ export default function VaultScreen() {
       {/* FAB */}
       {!editor && (
         <TouchableOpacity style={styles.fab} onPress={openNew} accessibilityRole="button" accessibilityLabel="Add new vault entry">
-          <Text style={styles.fabText}>+ NEW ENTRY</Text>
+          <Text style={styles.fabText}>[ + NEW ENTRY ]</Text>
         </TouchableOpacity>
       )}
 
@@ -280,6 +283,13 @@ export default function VaultScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const vlt = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  vaultBadge: { borderWidth: 1, borderColor: 'rgba(224,80,80,0.4)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  vaultBadgeText: { color: '#e05050', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+});
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: T.bgDark },

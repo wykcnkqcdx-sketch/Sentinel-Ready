@@ -73,13 +73,13 @@ export default function WeeklyBriefScreen() {
         <View style={styles.header}>
           <View style={styles.headerBtns}>
             <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
-              <Text style={styles.backBtnText}>← BACK</Text>
+              <Text style={styles.backBtnText}>[ ← BACK ]</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.shareBtn} onPress={handleShare} accessibilityRole="button" accessibilityLabel="Share weekly brief">
-              <Text style={styles.shareBtnText}>SHARE</Text>
+              <Text style={styles.shareBtnText}>[ SHARE ]</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
+          <Text style={wb.kicker}>[ OPERATIONS CENTRE ]</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>WEEKLY BRIEF</Text>
             <View style={styles.weekRefBadge}>
@@ -162,6 +162,10 @@ export default function WeeklyBriefScreen() {
     </View>
   );
 }
+
+const wb = StyleSheet.create({
+  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+});
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: T.bgDark },

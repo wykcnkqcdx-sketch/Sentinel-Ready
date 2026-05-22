@@ -1,6 +1,7 @@
 import SparkLine from '@/src/components/charts/SparkLine';
 import { deleteBodyCompEntry, loadBodyCompEntries, saveBodyCompEntry } from '@/src/services/bodyCompService';
 import { useUser } from '@/src/screens/UserContext';
+import { useRouter } from 'expo-router';
 import type { BodyCompEntry } from '@/src/types/bodyComp';
 import {
   calculateBmi,
@@ -23,7 +24,10 @@ import {
   View,
 } from 'react-native';
 
+
+
 export default function BodyCompScreen() {
+  const router = useRouter();
   const { gender, heightCm, updateProfile } = useUser();
 
   const [entries, setEntries] = useState<BodyCompEntry[]>([]);
@@ -102,8 +106,16 @@ export default function BodyCompScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* SECTION 1 — Header */}
       <View style={styles.header}>
-        <Text style={styles.kicker}>BODY COMPOSITION</Text>
-        <Text style={styles.title}>Composition Tracker</Text>
+        <View style={bc.headerRow}>
+          <TouchableOpacity style={bc.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+            <Text style={bc.backBtnText}>[ ← BACK ]</Text>
+          </TouchableOpacity>
+          <View style={bc.physBadge}>
+            <Text style={bc.physBadgeText}>[ PHYSIO METRICS ]</Text>
+          </View>
+        </View>
+        <Text style={bc.kicker}>[ BODY COMPOSITION ]</Text>
+        <Text style={styles.title}>COMPOSITION TRACKER</Text>
       </View>
 
       {/* Height prompt */}
@@ -227,7 +239,7 @@ export default function BodyCompScreen() {
         />
 
         <TouchableOpacity style={styles.logBtn} onPress={handleLogEntry}>
-          <Text style={styles.logBtnText}>LOG ENTRY</Text>
+          <Text style={styles.logBtnText}>[ LOG ENTRY ]</Text>
         </TouchableOpacity>
 
         {successMsg ? (
@@ -373,11 +385,11 @@ const styles = StyleSheet.create({
   },
   logBtn: {
     backgroundColor: '#B5852C',
-    borderRadius: 6,
-    paddingVertical: 16,
+    borderRadius: 4,
+    paddingVertical: 14,
     alignItems: 'center',
   },
-  logBtnText: { color: '#080c05', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  logBtnText: { color: '#080c05', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   successMsg: { color: '#B5852C', fontSize: 13, fontWeight: '900', textAlign: 'center' },
   bandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bandDot: { width: 12, height: 12, borderRadius: 6 },
@@ -409,4 +421,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   deleteBtnText: { color: '#ff6b6b', fontSize: 14, fontWeight: '900' },
+});
+
+const bc = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  backBtnText: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 2.5 },
+  physBadge: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  physBadgeText: { color: '#B5852C', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });

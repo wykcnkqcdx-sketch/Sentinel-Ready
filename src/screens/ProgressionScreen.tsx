@@ -103,10 +103,15 @@ export default function ProgressionScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
-            <Text style={styles.backBtnText}>← BACK</Text>
-          </TouchableOpacity>
-          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
+          <View style={pgn.headerRow}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+              <Text style={styles.backBtnText}>[ ← BACK ]</Text>
+            </TouchableOpacity>
+            <View style={pgn.dataBadge}>
+              <Text style={pgn.dataBadgeText}>[ PERFORMANCE DATA ]</Text>
+            </View>
+          </View>
+          <Text style={pgn.kicker}>[ OPERATIONS CENTRE ]</Text>
           <Text style={styles.title}>PROGRESSION</Text>
           <View style={styles.divider} />
         </View>
@@ -198,6 +203,13 @@ export default function ProgressionScreen() {
     </View>
   );
 }
+
+const pgn = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  dataBadge: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  dataBadgeText: { color: '#B5852C', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+});
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: T.bgDark },

@@ -94,10 +94,15 @@ export default function CalendarScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
-            <Text style={styles.backBtnText}>← BACK</Text>
-          </TouchableOpacity>
-          <Text style={styles.kicker}>{'// OPERATIONS CENTRE //'}</Text>
+          <View style={cal.headerRow}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+              <Text style={styles.backBtnText}>[ ← BACK ]</Text>
+            </TouchableOpacity>
+            <View style={cal.calBadge}>
+              <Text style={cal.calBadgeText}>[ OPS LOG ]</Text>
+            </View>
+          </View>
+          <Text style={cal.kicker}>[ OPERATIONS CENTRE ]</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>OPS CALENDAR</Text>
             <View style={styles.countBadge}>
@@ -205,6 +210,13 @@ export default function CalendarScreen() {
     </View>
   );
 }
+
+const cal = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  calBadge: { borderWidth: 1, borderColor: 'rgba(94,122,47,0.5)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  calBadgeText: { color: '#5E7A2F', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+});
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: T.bgDark },

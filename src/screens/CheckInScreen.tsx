@@ -217,8 +217,16 @@ export default function CheckInScreen() {
     <ScrollView style={s.screen} contentContainerStyle={s.content}>
 
       {/* Header */}
-      <Text style={s.kicker}>DAILY CHECK-IN</Text>
-      <Text style={s.title}>How are you today?</Text>
+      <View style={ci.headerRow}>
+        <TouchableOpacity style={ci.backBtn} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back">
+          <Text style={ci.backBtnText}>[ ← BACK ]</Text>
+        </TouchableOpacity>
+        <View style={ci.statusBadge}>
+          <Text style={ci.statusBadgeText}>[ READINESS CHECK ]</Text>
+        </View>
+      </View>
+      <Text style={ci.kicker}>[ DAILY CHECK-IN ]</Text>
+      <Text style={s.title}>HOW ARE YOU TODAY?</Text>
       <Text style={s.subtitle}>{formatDate(today)}</Text>
 
       {alreadyLoggedToday && (
@@ -350,7 +358,7 @@ export default function CheckInScreen() {
         accessibilityLabel="Save check-in"
         accessibilityState={{ disabled: saving }}
       >
-        <Text style={s.saveBtnText}>{saving ? 'Saving...' : 'SAVE CHECK-IN'}</Text>
+        <Text style={s.saveBtnText}>{saving ? 'Saving...' : '[ SAVE CHECK-IN ]'}</Text>
       </TouchableOpacity>
 
     </ScrollView>
@@ -425,12 +433,21 @@ const s = StyleSheet.create({
   pillTextActive: { color: '#FFFFFF' },
 
   saveBtn: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
-    borderRadius: 6,
-    padding: 18,
+    backgroundColor: '#B5852C',
+    borderRadius: 4,
+    padding: 16,
     alignItems: 'center',
     marginTop: 6,
   },
   saveBtnDisabled: { backgroundColor: '#1a3a22', opacity: 0.6 },
-  saveBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  saveBtnText: { color: '#080c05', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
+});
+
+const ci = StyleSheet.create({
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  backBtnText: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 2.5, marginTop: 6 },
+  statusBadge: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  statusBadgeText: { color: '#B5852C', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });
