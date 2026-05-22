@@ -44,3 +44,6 @@ Web node_modules\react-leaflet\lib\index.js ▓▓▓▓▓▓▓▓▓▓▓▓
 Web node_modules\leaflet\dist\leaflet-src.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
 Web Bundled 5347ms node_modules\leaflet\dist\leaflet-src.js (1 module)
 Web Bundled 7585ms node_modules\react-leaflet\lib\index.js (47 modules)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 63ms node_modules\expo-router\node\render.js (1 module)
+Web Bundled 1224ms node_modules\expo-router\entry.js (1 module)
