@@ -7,9 +7,11 @@ export const DS = {
   bgPrimary: '#050e09',      // Deepest tactical dark green/black
   bgCard: '#0c1008',         // Standard card/surface background
   bgCardAlt: '#141810',      // Elevated or alternating card background
+  bgSurface: '#0b1510',      // Legacy surface color
   
   // Borders
   border: 'rgba(181,133,44,0.12)', // Subtle gold/olive border for standard separation
+  borderSolid: '#3F4727',    // Legacy solid border color
   borderHighlight: 'rgba(181,133,44,0.3)', // Stronger border for active/focused elements
 
   // Accents
@@ -26,12 +28,19 @@ export const DS = {
   warning: '#ffaa44',        // Amber warning (Fatigue, Monitor)
   danger: '#e05050',         // Critical red (Fail, Stop)
   
-  // (Optional) Standardized layout properties to add over time
+  // Standardized layout properties
   spacing: {
+    xs: 4,
     sm: 8,
     md: 12,
     lg: 16,
     xl: 24,
+    xxl: 32,
   },
   borderRadius: 4,
+  radius: {
+    sm: 2,
+    md: 4,
+    lg: 8,
+  },
 };

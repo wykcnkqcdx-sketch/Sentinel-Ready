@@ -11,6 +11,7 @@ import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { parseGeoJsonOverlay, parseKmlOverlay, extractKmlFromKmz } from '@/src/utils/fieldMapping';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
+import { DS } from '@/constants/theme';
 
 
 
@@ -329,7 +330,7 @@ export default function RuckScreen() {
       const asset = result.assets[0];
       const name = asset.name ?? 'overlay';
       const lowerName = name.toLowerCase();
-      const OVERLAY_COLOURS = ['#e05050','#4ECDC4','#FFE66D','#A8E6CF','#FF8B94','#B5EAD7'];
+      const OVERLAY_COLOURS = [DS.danger,'#4ECDC4','#FFE66D','#A8E6CF','#FF8B94','#B5EAD7'];
       const color = OVERLAY_COLOURS[overlays.length % OVERLAY_COLOURS.length];
 
       let overlay: MapOverlay;
@@ -719,90 +720,90 @@ export default function RuckScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#050e09' },
+  screen: { flex: 1, backgroundColor: DS.bgPrimary },
   content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
-  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
-  title: { color: '#F4BD5F', fontSize: 28, fontWeight: '900', letterSpacing: -0.8 },
-  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
+  kicker: { color: DS.goldSoft, fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  title: { color: DS.goldSoft, fontSize: 28, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: DS.textSecondary, fontSize: 14, lineHeight: 20 },
 
   headerBlock: { paddingHorizontal: 10, paddingTop: 12, paddingBottom: 8, gap: 4, maxWidth: 820, width: '100%', alignSelf: 'center' },
   ruckBrandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  ruckStatus: { color: '#21e371', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
-  tabRow: { flexDirection: 'row', backgroundColor: '#111d15', borderRadius: 2, padding: 3, marginHorizontal: 10, marginBottom: 12, borderWidth: 1, borderColor: '#3F4727', maxWidth: 820, width: '95%', alignSelf: 'center' },
+  ruckStatus: { color: DS.success, fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  tabRow: { flexDirection: 'row', backgroundColor: DS.bgSurface, borderRadius: 2, padding: 3, marginHorizontal: 10, marginBottom: 12, borderWidth: 1, borderColor: DS.borderSolid, maxWidth: 820, width: '95%', alignSelf: 'center' },
   tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 2, borderWidth: 1, borderColor: 'transparent' },
-  tabPillActive: { backgroundColor: '#18221c', borderColor: '#B5852C' },
-  tabPillText: { color: '#d3c4b1', fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
-  tabPillTextActive: { color: '#F4BD5F' },
+  tabPillActive: { backgroundColor: DS.bgCardAlt, borderColor: DS.gold },
+  tabPillText: { color: DS.textSecondary, fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  tabPillTextActive: { color: DS.goldSoft },
 
-  volumeCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 12 },
+  volumeCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 18, borderWidth: 1, borderColor: DS.borderHighlight, gap: 12 },
   volumeRow: { flexDirection: 'row', alignItems: 'center' },
   volumeStat: { flex: 1, alignItems: 'center', gap: 4 },
-  volumeNumber: { color: '#ffffff', fontSize: 24, fontWeight: '900' },
-  volumeLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '900', textTransform: 'uppercase', textAlign: 'center' },
-  volumeDivider: { width: 1, height: 40, backgroundColor: 'rgba(181,133,44,0.12)' },
-  weekRow: { borderTopWidth: 1, borderTopColor: 'rgba(181,133,44,0.12)', paddingTop: 10 },
-  weekText: { color: '#B5852C', fontSize: 12, fontWeight: '900', textAlign: 'center' },
+  volumeNumber: { color: DS.textPrimary, fontSize: 24, fontWeight: '900' },
+  volumeLabel: { color: DS.textSecondary, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', textAlign: 'center' },
+  volumeDivider: { width: 1, height: 40, backgroundColor: DS.border },
+  weekRow: { borderTopWidth: 1, borderTopColor: DS.border, paddingTop: 10 },
+  weekText: { color: DS.gold, fontSize: 12, fontWeight: '900', textAlign: 'center' },
 
   pbRow: { flexDirection: 'row', gap: 10 },
-  pbCard: { flex: 1, backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 4 },
-  pbKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  pbValue: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
-  pbValueGood: { color: '#B5852C', fontSize: 20, fontWeight: '900' },
-  pbValueWarn: { color: '#ffaa44', fontSize: 20, fontWeight: '900' },
-  pbDeltaGood: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  pbDeltaWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  pbDeltaNeutral: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
+  pbCard: { flex: 1, backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 4 },
+  pbKicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  pbValue: { color: DS.textPrimary, fontSize: 20, fontWeight: '900' },
+  pbValueGood: { color: DS.gold, fontSize: 20, fontWeight: '900' },
+  pbValueWarn: { color: DS.warning, fontSize: 20, fontWeight: '900' },
+  pbDeltaGood: { color: DS.gold, fontSize: 11, fontWeight: '900' },
+  pbDeltaWarn: { color: DS.warning, fontSize: 11, fontWeight: '900' },
+  pbDeltaNeutral: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
 
-  latestCard: { backgroundColor: '#141810', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 14 },
+  latestCard: { backgroundColor: DS.bgCardAlt, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderHighlight, gap: 14 },
   latestHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  latestKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  latestKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   latestStats: { flexDirection: 'row', gap: 8 },
   latestStat: { flex: 1, gap: 3 },
-  latestStatNumber: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  latestStatLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800' },
-  deltaGood: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
-  deltaWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
-  reviewButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#B5852C', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  reviewButtonText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
+  latestStatNumber: { color: DS.textPrimary, fontSize: 16, fontWeight: '900' },
+  latestStatLabel: { color: DS.textSecondary, fontSize: 10, fontWeight: '800' },
+  deltaGood: { color: DS.gold, fontSize: 11, fontWeight: '900' },
+  deltaWarn: { color: DS.warning, fontSize: 11, fontWeight: '900' },
+  reviewButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: DS.gold, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  reviewButtonText: { color: DS.gold, fontSize: 12, fontWeight: '900' },
 
-  readinessBadge: { backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  readinessBadge: { backgroundColor: DS.bgCardAlt, borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   readinessBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  readinessText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  readinessTextWarn: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
+  readinessText: { color: DS.gold, fontSize: 12, fontWeight: '900' },
+  readinessTextWarn: { color: DS.warning, fontSize: 12, fontWeight: '900' },
 
-  nextCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
+  nextCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 6 },
   nextCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 6 },
-  nextKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  nextText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
+  nextKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  nextText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 
-  emptyCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 8 },
-  emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  emptyText: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
-  emptyHint: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
+  emptyCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 18, borderWidth: 1, borderColor: DS.border, gap: 8 },
+  emptyTitle: { color: DS.textPrimary, fontSize: 18, fontWeight: '900' },
+  emptyText: { color: DS.textSecondary, fontSize: 14, lineHeight: 21 },
+  emptyHint: { color: DS.gold, fontSize: 12, fontWeight: '900' },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
-  sectionTag: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#274b32', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  sectionTitle: { color: DS.textPrimary, fontSize: 22, fontWeight: '900' },
+  sectionTag: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: DS.borderSolid, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
 
-  sessionCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
+  sessionCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 12 },
   sessionCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 12 },
   sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   sessionHeaderLeft: { gap: 3 },
-  sessionDate: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
-  sessionType: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  sessionDate: { color: DS.textSecondary, fontSize: 12, fontWeight: '800' },
+  sessionType: { color: DS.textPrimary, fontSize: 15, fontWeight: '900' },
   sessionStats: { flexDirection: 'row', alignItems: 'center' },
   sessionStat: { flex: 1, alignItems: 'center', gap: 3 },
-  sessionStatNumber: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  sessionStatLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800' },
-  sessionStatDivider: { width: 1, height: 32, backgroundColor: 'rgba(181,133,44,0.12)' },
-  sessionNotes: { color: '#b8c0b0', fontSize: 12, lineHeight: 18 },
+  sessionStatNumber: { color: DS.textPrimary, fontSize: 16, fontWeight: '900' },
+  sessionStatLabel: { color: DS.textSecondary, fontSize: 10, fontWeight: '800' },
+  sessionStatDivider: { width: 1, height: 32, backgroundColor: DS.border },
+  sessionNotes: { color: DS.textSecondary, fontSize: 12, lineHeight: 18 },
 
-  builderCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
-  builderTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  builderDetail: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  builderText: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
+  builderCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 6 },
+  builderTitle: { color: DS.textPrimary, fontSize: 16, fontWeight: '900' },
+  builderDetail: { color: DS.gold, fontSize: 12, fontWeight: '900' },
+  builderText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 
-  fieldCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
-  fieldLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  fieldText: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
+  fieldCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 6 },
+  fieldLabel: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  fieldText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 });
