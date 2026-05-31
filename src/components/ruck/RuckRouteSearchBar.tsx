@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface RuckRouteSearchBarProps {
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(12,16,8,0.96)',
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     borderRadius: 4,
     paddingHorizontal: 10,
     height: 44,
@@ -58,13 +59,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchIconText: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 14,
     fontWeight: '900',
   },
   input: {
     flex: 1,
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 1.5,
@@ -73,13 +74,13 @@ const styles = StyleSheet.create({
   },
   savedButton: {
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.35)',
+    borderColor: DS.borderHighlight,
     borderRadius: 3,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   savedButtonText: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.4,

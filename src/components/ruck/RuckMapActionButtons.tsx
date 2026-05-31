@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface RuckMapActionButtonsProps {
@@ -70,36 +71,36 @@ const styles = StyleSheet.create({
     height: 46,
     backgroundColor: 'rgba(5,14,9,0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
   },
   buttonIcon: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 14,
     lineHeight: 16,
   },
   buttonLabel: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 6,
     fontWeight: '900',
     letterSpacing: 0.8,
   },
   createButton: {
-    borderColor: '#B5852C',
+    borderColor: DS.gold,
     backgroundColor: '#163d22',
     marginTop: 6,
   },
   createIcon: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 18,
     fontWeight: '900',
     lineHeight: 20,
   },
   createLabel: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 6,
     fontWeight: '900',
     letterSpacing: 0.8,

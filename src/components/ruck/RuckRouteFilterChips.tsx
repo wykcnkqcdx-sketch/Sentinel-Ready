@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import type { RuckFilter } from '@/src/utils/ruckRouteUtils';
 import { ROUTE_FILTERS } from '@/src/utils/ruckRouteUtils';
@@ -48,23 +49,23 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.15)',
+    borderColor: DS.border,
     borderRadius: 3,
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: 'rgba(12,16,8,0.92)',
   },
   chipActive: {
-    backgroundColor: '#141810',
-    borderColor: '#B5852C',
+    backgroundColor: DS.bgCardAlt,
+    borderColor: DS.gold,
   },
   chipText: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.2,
   },
   chipTextActive: {
-    color: '#B5852C',
+    color: DS.gold,
   },
 });

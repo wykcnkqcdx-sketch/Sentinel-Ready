@@ -469,7 +469,7 @@ export default function RuckScreen() {
 
       {/* Routes tab */}
       {activeTab === 'routes' ? (
-        <RuckRouteExplorer />
+        <RuckRouteExplorer onNavigateToTrack={() => setActiveTab('track')} />
       ) : activeTab === 'stats' ? (
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
           <Text style={styles.subtitle}>
