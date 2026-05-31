@@ -89,13 +89,13 @@ export default function TrainingScreen() {
   const isRecovery = planType === 'recovery';
   const isProgressive = planType === 'progressive';
 
-  const heroBorderColor = isRecovery ? 'rgba(255,170,68,0.3)' : isProgressive ? 'rgba(181,133,44,0.3)' : '#2d6b3f';
-  const heroBgColor = isRecovery ? '#1a0f0b' : '#102016';
-  const focusLabelColor = isRecovery ? '#ffaa44' : '#B5852C';
+  const heroBorderColor = isRecovery ? DS.borderWarn : isProgressive ? DS.borderHighlight : '#2d6b3f';
+  const heroBgColor = isRecovery ? DS.bgHeroRecovery : DS.bgHeroActive;
+  const focusLabelColor = isRecovery ? DS.warning : DS.gold;
   const badgeText = isRecovery ? 'DELOAD' : isProgressive ? 'PROGRESSIVE' : 'ON TRACK';
-  const badgeBg = isRecovery ? 'rgba(212,160,26,0.1)' : isProgressive ? '#141810' : '#0b2a14';
-  const badgeBorder = isRecovery ? 'rgba(255,170,68,0.3)' : isProgressive ? 'rgba(181,133,44,0.3)' : '#58d77a';
-  const badgeTextColor = isRecovery ? '#ffaa44' : '#B5852C';
+  const badgeBg = isRecovery ? DS.bgWarn : isProgressive ? DS.bgCardAlt : '#0b2a14';
+  const badgeBorder = isRecovery ? DS.borderWarn : isProgressive ? DS.borderHighlight : '#58d77a';
+  const badgeTextColor = isRecovery ? DS.warning : DS.gold;
 
   if (isLoading) return <View style={styles.screen} />;
 
@@ -233,13 +233,13 @@ const styles = StyleSheet.create({
   heroSession: { color: DS.textSecondary, fontSize: 14, lineHeight: 21 },
   heroIntensity: { fontSize: 12, fontWeight: '900' },
   heroButton: { backgroundColor: DS.gold, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
-  heroButtonRest: { backgroundColor: '#102016', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4, borderWidth: 1, borderColor: DS.border },
+  heroButtonRest: { backgroundColor: DS.bgHeroActive, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4, borderWidth: 1, borderColor: DS.border },
   heroButtonText: { color: DS.bgPrimary, fontSize: 12, fontWeight: '900' },
   heroButtonTextRest: { color: DS.textSecondary, fontSize: 12, fontWeight: '900' },
   detailBox: { backgroundColor: DS.bgPrimary, borderRadius: 6, borderWidth: 1, borderColor: DS.border, padding: 12, gap: 5, marginTop: 4 },
   detailLine: { color: DS.textPrimary, fontSize: 12, lineHeight: 18, fontWeight: '700' },
   briefCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 7 },
-  briefCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 7 },
+  briefCardWarn: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn, gap: 7 },
   briefStatus: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
   briefStatusWarn: { color: DS.warning, fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
   briefTitle: { color: DS.textPrimary, fontSize: 20, fontWeight: '900' },
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   briefButton: { backgroundColor: DS.gold, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
   briefButtonWarn: { backgroundColor: '#ffaa44', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start', marginTop: 4 },
   briefButtonText: { color: DS.bgPrimary, fontSize: 12, fontWeight: '900' },
-  briefButtonTextWarn: { color: 'rgba(212,160,26,0.1)', fontSize: 12, fontWeight: '900' },
+  briefButtonTextWarn: { color: DS.bgPrimary, fontSize: 12, fontWeight: '900' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: { width: '47%', backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 4 },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   statLabel: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
 
   rationaleCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 6 },
-  rationaleCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 6 },
+  rationaleCardWarn: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.borderWarn, gap: 6 },
   rationaleKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   rationaleText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 
@@ -269,9 +269,9 @@ const styles = StyleSheet.create({
   sectionPill: { color: DS.gold, borderWidth: 1, borderColor: DS.borderSolid, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 
   weekList: { backgroundColor: DS.bgCard, borderRadius: 6, borderWidth: 1, borderColor: DS.border, overflow: 'hidden' },
-  miniRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#162218' },
-  miniRowToday: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#162218', backgroundColor: DS.bgCardAlt },
-  miniRowRest: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#0e1710', backgroundColor: '#080f0a' },
+  miniRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: DS.rowDivider },
+  miniRowToday: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: DS.rowDivider, backgroundColor: DS.bgCardAlt },
+  miniRowRest: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: DS.rowDividerRest, backgroundColor: DS.bgPrimary },
   miniLeft: { flexDirection: 'row', gap: 14, alignItems: 'center' },
   miniDay: { color: DS.textPrimary, fontSize: 13, fontWeight: '900', width: 32 },
   miniDayToday: { color: DS.gold, fontSize: 13, fontWeight: '900', width: 32 },

@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
   headerBlock: { paddingHorizontal: 10, paddingTop: 12, paddingBottom: 8, gap: 4, maxWidth: 820, width: '100%', alignSelf: 'center' },
   ruckBrandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   ruckStatus: { color: DS.success, fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
-  tabRow: { flexDirection: 'row', backgroundColor: DS.bgSurface, borderRadius: 2, padding: 3, marginHorizontal: 10, marginBottom: 12, borderWidth: 1, borderColor: DS.borderSolid, maxWidth: 820, width: '95%', alignSelf: 'center' },
+  tabRow: { flexDirection: 'row', backgroundColor: DS.bgCard, borderRadius: 2, padding: 3, marginHorizontal: 10, marginBottom: 12, borderWidth: 1, borderColor: DS.borderSolid, maxWidth: 820, width: '95%', alignSelf: 'center' },
   tabPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 2, borderWidth: 1, borderColor: 'transparent' },
   tabPillActive: { backgroundColor: DS.bgCardAlt, borderColor: DS.gold },
   tabPillText: { color: DS.textSecondary, fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
@@ -767,12 +767,12 @@ const styles = StyleSheet.create({
   reviewButtonText: { color: DS.gold, fontSize: 12, fontWeight: '900' },
 
   readinessBadge: { backgroundColor: DS.bgCardAlt, borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  readinessBadgeWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  readinessBadgeWarn: { backgroundColor: DS.bgWarn, borderWidth: 1, borderColor: DS.borderWarn, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   readinessText: { color: DS.gold, fontSize: 12, fontWeight: '900' },
   readinessTextWarn: { color: DS.warning, fontSize: 12, fontWeight: '900' },
 
   nextCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 6 },
-  nextCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 6 },
+  nextCardWarn: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.borderWarn, gap: 6 },
   nextKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   nextText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
   sectionTag: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: DS.borderSolid, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
 
   sessionCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 12 },
-  sessionCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 12 },
+  sessionCardWarn: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn, gap: 12 },
   sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   sessionHeaderLeft: { gap: 3 },
   sessionDate: { color: DS.textSecondary, fontSize: 12, fontWeight: '800' },

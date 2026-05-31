@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import ReadinessHistoryCard from '@/src/components/recovery/ReadinessHistoryCard';
 import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
@@ -101,6 +102,13 @@ export default function RecoveryScreen() {
   const isModerate = recoveryScore >= 50 && recoveryScore < 75;
   const isPrime = recoveryScore >= 75;
 
+  const scoreColor = isHighFatigue ? DS.danger : isModerate ? DS.warning : recoveryScore > 0 ? DS.gold : DS.textSecondary;
+  const scoreLabel = isHighFatigue ? '[ ⚡ FATIGUE WARNING: RED ]' : isModerate ? '[ ⚡ FATIGUE WARNING: AMBER ]' : recoveryScore > 0 ? '[ ⚡ SYSTEMS OPTIMAL ]' : '[ NO DATA ]';
+  const scoreLabelColor = isHighFatigue ? DS.danger : isModerate ? DS.warning : '#5E7A2F';
+  const badgeBorderColor = isHighFatigue ? DS.danger : isModerate ? 'rgba(255,170,68,0.5)' : 'rgba(94,122,47,0.5)';
+  const progressColor = isHighFatigue ? DS.danger : isModerate ? DS.warning : DS.gold;
+  const capacityLabel = isHighFatigue ? 'CRITICAL' : isModerate ? 'REDUCED' : recoveryScore > 0 ? 'NOMINAL' : 'UNKNOWN';
+
   const scoreMessage = isPrime
     ? 'Readiness is strong. You are ready for high-intensity or heavy load.'
     : isModerate
@@ -122,22 +130,22 @@ export default function RecoveryScreen() {
       <View style={rs.heroCard}>
         <Text style={rs.heroKicker}>[ RECOVERY: SCORE ]</Text>
         <View style={rs.heroScoreRow}>
-          <Text style={[rs.heroScore, { color: isHighFatigue ? '#e05050' : isModerate ? '#ffaa44' : recoveryScore > 0 ? '#B5852C' : '#b8c0b0' }]}>
+          <Text style={[rs.heroScore, { color: scoreColor }]}>
             {recoveryScore > 0 ? `${recoveryScore}` : '--'}
           </Text>
           <View style={rs.heroRight}>
-            <View style={[rs.fatigueBadge, { borderColor: isHighFatigue ? '#e05050' : isModerate ? 'rgba(255,170,68,0.5)' : 'rgba(94,122,47,0.5)' }]}>
-              <Text style={[rs.fatigueBadgeText, { color: isHighFatigue ? '#e05050' : isModerate ? '#ffaa44' : '#5E7A2F' }]}>
-                {isHighFatigue ? '[ ⚡ FATIGUE WARNING: RED ]' : isModerate ? '[ ⚡ FATIGUE WARNING: AMBER ]' : recoveryScore > 0 ? '[ ⚡ SYSTEMS OPTIMAL ]' : '[ NO DATA ]'}
+            <View style={[rs.fatigueBadge, { borderColor: badgeBorderColor }]}>
+              <Text style={[rs.fatigueBadgeText, { color: scoreLabelColor }]}>
+                {scoreLabel}
               </Text>
             </View>
             <Text style={rs.heroCapacity}>
-              CAPACITY: {isHighFatigue ? 'CRITICAL' : isModerate ? 'REDUCED' : recoveryScore > 0 ? 'NOMINAL' : 'UNKNOWN'}
+              CAPACITY: {capacityLabel}
             </Text>
           </View>
         </View>
         <View style={rs.heroProgressTrack}>
-          <View style={[rs.heroProgressFill, { width: `${recoveryScore}%` as unknown as number, backgroundColor: isHighFatigue ? '#e05050' : isModerate ? '#ffaa44' : '#B5852C' }]} />
+          <View style={[rs.heroProgressFill, { width: `${recoveryScore}%` as unknown as number, backgroundColor: progressColor }]} />
         </View>
         <Text style={styles.scoreMessage}>{scoreMessage}</Text>
       </View>
@@ -310,85 +318,85 @@ export default function RecoveryScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#050e09' },
+  screen: { flex: 1, backgroundColor: DS.bgPrimary },
   content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
-  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
-  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
-  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
+  kicker: { color: DS.goldSoft, fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  headerRule: { height: 1, backgroundColor: DS.gold, opacity: 0.55, marginVertical: 2 },
+  title: { color: DS.goldSoft, fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: DS.textSecondary, fontSize: 14, lineHeight: 20 },
 
   mainCard: { backgroundColor: '#102016', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: '#2d6b3f', gap: 10 },
   mainCardModerate: { backgroundColor: '#1a1a0d', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(26,116,212,0.25)', gap: 10 },
-  mainCardWarning: { backgroundColor: '#1a0f0b', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 10 },
+  mainCardWarning: { backgroundColor: '#1a0f0b', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: DS.borderWarn, gap: 10 },
   scoreHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  cardKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  score: { color: '#ffffff', fontSize: 58, fontWeight: '900', marginTop: 4 },
-  scoreWarning: { color: '#ffaa44', fontSize: 58, fontWeight: '900', marginTop: 4 },
-  badge: { backgroundColor: 'rgba(94,122,47,0.15)', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  badgeModerate: { backgroundColor: '#2a2410', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  badgeWarning: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  badgeNeutral: { backgroundColor: '#0c1008', borderWidth: 1, borderColor: '#3a3a3a', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  badgeText: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  badgeTextModerate: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
-  badgeTextWarning: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
-  badgeTextNeutral: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
-  scoreMessage: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
-  debtCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
+  cardKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  score: { color: DS.textPrimary, fontSize: 58, fontWeight: '900', marginTop: 4 },
+  scoreWarning: { color: DS.warning, fontSize: 58, fontWeight: '900', marginTop: 4 },
+  badge: { backgroundColor: 'rgba(94,122,47,0.15)', borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeModerate: { backgroundColor: '#2a2410', borderWidth: 1, borderColor: DS.borderWarn, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeWarning: { backgroundColor: DS.bgWarn, borderWidth: 1, borderColor: DS.borderWarn, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeNeutral: { backgroundColor: DS.bgCard, borderWidth: 1, borderColor: '#3a3a3a', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  badgeText: { color: DS.gold, fontSize: 12, fontWeight: '900' },
+  badgeTextModerate: { color: DS.warning, fontSize: 12, fontWeight: '900' },
+  badgeTextWarning: { color: DS.warning, fontSize: 12, fontWeight: '900' },
+  badgeTextNeutral: { color: DS.textSecondary, fontSize: 12, fontWeight: '900' },
+  scoreMessage: { color: DS.textSecondary, fontSize: 14, lineHeight: 21 },
+  debtCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderHighlight, gap: 10 },
   debtCardAmber: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: '#5a4a20', gap: 10 },
-  debtCardRed: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 10 },
+  debtCardRed: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn, gap: 10 },
   debtHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  debtScore: { color: '#ffffff', fontSize: 38, fontWeight: '900', marginTop: 3 },
-  debtScoreRed: { color: '#ffaa44', fontSize: 38, fontWeight: '900', marginTop: 3 },
-  debtAction: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  debtScore: { color: DS.textPrimary, fontSize: 38, fontWeight: '900', marginTop: 3 },
+  debtScoreRed: { color: DS.warning, fontSize: 38, fontWeight: '900', marginTop: 3 },
+  debtAction: { color: DS.textPrimary, fontSize: 13, lineHeight: 20, fontWeight: '800' },
   debtFactorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  debtFactor: { backgroundColor: '#080c05', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 10, paddingVertical: 6 },
-  debtFactorText: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
+  debtFactor: { backgroundColor: DS.bgPrimary, borderRadius: 999, borderWidth: 1, borderColor: DS.border, paddingHorizontal: 10, paddingVertical: 6 },
+  debtFactorText: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  statCard: { width: '47%', backgroundColor: '#0c1008', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 4 },
-  statKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
-  statNumber: { color: '#ffffff', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  statNumberWarn: { color: '#ffaa44', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  statNumberGood: { color: '#B5852C', fontSize: 22, fontWeight: '900', marginTop: 4 },
-  statLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
+  statCard: { width: '47%', backgroundColor: DS.bgCard, borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.border, gap: 4 },
+  statKicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  statNumber: { color: DS.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statNumberWarn: { color: DS.warning, fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statNumberGood: { color: DS.gold, fontSize: 22, fontWeight: '900', marginTop: 4 },
+  statLabel: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
 
-  fatigueCard: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 10 },
-  fatigueKicker: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  fatigueTitle: { color: '#ffaa44', fontSize: 15, fontWeight: '900' },
-  fatigueRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#5a3a1f' },
+  fatigueCard: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn, gap: 10 },
+  fatigueKicker: { color: DS.warning, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  fatigueTitle: { color: DS.warning, fontSize: 15, fontWeight: '900' },
+  fatigueRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: DS.bgWarn, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#5a3a1f' },
   fatigueMeta: { gap: 3 },
-  fatigueCategory: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
-  fatigueDate: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
-  fatigueBadge: { backgroundColor: '#3a1a0d', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  fatigueBadgeText: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
+  fatigueCategory: { color: DS.textPrimary, fontSize: 13, fontWeight: '900' },
+  fatigueDate: { color: DS.textSecondary, fontSize: 12, fontWeight: '800' },
+  fatigueBadge: { backgroundColor: '#3a1a0d', borderWidth: 1, borderColor: DS.borderWarn, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  fatigueBadgeText: { color: DS.warning, fontSize: 13, fontWeight: '900' },
 
-  alertCard: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 6 },
-  alertTitle: { color: '#ffaa44', fontSize: 14, fontWeight: '900' },
-  alertText: { color: '#b8c0b0', fontSize: 13, lineHeight: 19 },
+  alertCard: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.borderWarn, gap: 6 },
+  alertTitle: { color: DS.warning, fontSize: 14, fontWeight: '900' },
+  alertText: { color: DS.textSecondary, fontSize: 13, lineHeight: 19 },
 
   protocolCard: { backgroundColor: 'rgba(26,116,212,0.08)', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(26,116,212,0.25)', gap: 10 },
-  protocolKicker: { color: '#ffaa44', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  protocolTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  protocolKicker: { color: DS.warning, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  protocolTitle: { color: DS.textPrimary, fontSize: 18, fontWeight: '900' },
   protocolRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  protocolNumber: { color: '#ffaa44', fontSize: 14, fontWeight: '900', width: 18 },
-  protocolText: { color: '#FFFFFF', fontSize: 14, lineHeight: 21, flex: 1 },
+  protocolNumber: { color: DS.warning, fontSize: 14, fontWeight: '900', width: 18 },
+  protocolText: { color: DS.textPrimary, fontSize: 14, lineHeight: 21, flex: 1 },
 
-  targetsCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 10 },
-  targetsTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  targetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#1a2c20' },
-  targetLabel: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
-  targetValue: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
+  targetsCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 10 },
+  targetsTitle: { color: DS.textPrimary, fontSize: 16, fontWeight: '900' },
+  targetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: DS.rowDivider },
+  targetLabel: { color: DS.textSecondary, fontSize: 13, fontWeight: '800' },
+  targetValue: { color: DS.gold, fontSize: 13, fontWeight: '900' },
 });
 
 const rs = StyleSheet.create({
-  heroCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 10 },
-  heroKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  heroCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderHighlight, gap: 10 },
+  heroKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   heroScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   heroScore: { fontSize: 56, fontWeight: '900', lineHeight: 60 },
   heroRight: { flex: 1, gap: 6 },
   fatigueBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' },
   fatigueBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
-  heroCapacity: { color: '#b8c0b0', fontSize: 11, fontWeight: '900', letterSpacing: 0.8 },
-  heroProgressTrack: { height: 3, backgroundColor: 'rgba(181,133,44,0.15)', borderRadius: 2, overflow: 'hidden' },
+  heroCapacity: { color: DS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 0.8 },
+  heroProgressTrack: { height: 3, backgroundColor: DS.border, borderRadius: 2, overflow: 'hidden' },
   heroProgressFill: { height: 3, borderRadius: 2 },
 });

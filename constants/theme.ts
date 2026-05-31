@@ -21,12 +21,12 @@ export const DS = {
   goldSoft: '#F4BD5F',       // Bright/soft gold (headers, highlights, active states)
   
   // Typography Colors
-  textPrimary: '#FFFFFF',    // Main readable text
+  textPrimary: '#dae5dc',    // Main readable text (warm off-white, easy on OLED)
   textSecondary: '#b8c0b0',  // Muted/secondary text (descriptions, sub-labels)
-  textMuted: '#4a5e4a',      // Heavily muted text (inactive, disabled)
+  textMuted: '#7a8a7a',      // Muted text (inactive, disabled)
   
   // Status Indicators
-  success: '#91e6a3',        // Tactical green (Systems Operational, Pass)
+  success: '#21e371',        // Tactical green (Systems Operational, Pass)
   warning: '#ffaa44',        // Amber warning (Fatigue, Monitor)
   danger: '#e05050',         // Critical red (Fail, Stop)
   info: '#1A74D4',
@@ -46,13 +46,24 @@ export const DS = {
     xl: 24,
     xxl: 32,
   },
-  borderRadius: 4,
   radius: {
     sm: 2,
     md: 4,
     lg: 8,
   },
-};
+
+  // Hero card state backgrounds
+  bgHeroActive: '#102016',
+  bgHeroRecovery: '#1a0f0b',
+
+  // Warning state surfaces (amber fatigue/alert cards)
+  bgWarn: 'rgba(212,160,26,0.1)',
+  borderWarn: 'rgba(255,170,68,0.3)',
+
+  // Row dividers (week list, target list separators)
+  rowDivider: '#162218',
+  rowDividerRest: '#0e1710',
+} as const;
 
 export const CATEGORY_PALETTE: Record<string, { color: string; bg: string; border: string }> = {
   Ruck: { color: '#5E7A2F', bg: 'rgba(94,122,47,0.12)', border: 'rgba(94,122,47,0.4)' },
