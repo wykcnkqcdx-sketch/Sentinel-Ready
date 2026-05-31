@@ -270,20 +270,19 @@ export function useRuckTracking(): RuckTrackingState {
   }, []);
 
   const startRecording = useCallback(async () => {
-    let canUseGps = true;
-
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      canUseGps = status === 'granted';
-    } catch (error) {
-      canUseGps = false;
-      console.warn('Ruck tracking: failed to request location permission', error);
-    }
-
-    if (!canUseGps && Platform.OS !== 'web') {
-      setGpsQualityWarning('Location permission denied');
-      Alert.alert('Location Required', 'Allow location access to start GPS ruck tracking.');
-      return;
+    // On native, request permission upfront and bail if denied.
+    // On web the browser handles permission through watchPosition itself.
+    if (Platform.OS !== 'web') {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setGpsQualityWarning('Location permission denied');
+          Alert.alert('Location Required', 'Allow location access to start GPS ruck tracking.');
+          return;
+        }
+      } catch (error) {
+        console.warn('Ruck tracking: failed to request location permission', error);
+      }
     }
 
     removeLocationSubscription();
@@ -293,15 +292,6 @@ export function useRuckTracking(): RuckTrackingState {
     setTrackingState('recording');
     startTimer();
 
-    if (!canUseGps) {
-      setGpsQualityWarning('GPS unavailable on this web address');
-      Alert.alert(
-        'GPS Unavailable',
-        'The ruck timer has started, but browser GPS usually requires HTTPS or localhost. Use Expo Go for full GPS tracking.'
-      );
-      return;
-    }
-
     try {
       const sub = await watchPosition();
       locationSubRef.current = sub;
@@ -309,7 +299,6 @@ export function useRuckTracking(): RuckTrackingState {
     } catch (error) {
       console.warn('Ruck tracking: failed to start location updates', error);
       setGpsQualityWarning('Location updates unavailable');
-      Alert.alert('GPS Unavailable', 'The ruck timer is running, but location updates could not start.');
     }
   }, [removeLocationSubscription, resetLiveSession, startTimer, watchPosition]);
 
