@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -64,13 +65,13 @@ const scaleStyles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(181,133,44,0.12)',
+    backgroundColor: DS.border,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
   },
-  pipActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
-  pipText: { color: '#b8c0b0', fontSize: 13, fontWeight: '900' },
-  pipTextActive: { color: '#FFFFFF' },
+  pipActive: { backgroundColor: DS.borderHighlight, borderColor: DS.borderHighlight },
+  pipText: { color: DS.textSecondary, fontSize: 13, fontWeight: '900' },
+  pipTextActive: { color: DS.textPrimary },
 });
 
 // ---------------------------------------------------------------------------
@@ -113,7 +114,7 @@ function StarRating({
 const starStyles = StyleSheet.create({
   star: { flex: 1, alignItems: 'center' },
   starText: { fontSize: 26, color: '#2a4a33' },
-  starActive: { color: '#B5852C' },
+  starActive: { color: DS.gold },
   label: { color: '#7db88a', fontSize: 12 },
 });
 
@@ -311,8 +312,8 @@ export default function CheckInScreen() {
           <Switch
             value={hasPain}
             onValueChange={setHasPain}
-            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={hasPain ? '#B5852C' : '#b8c0b0'}
+            trackColor={{ false: DS.border, true: DS.borderHighlight }}
+            thumbColor={hasPain ? DS.gold : DS.textSecondary}
           />
         </View>
 
@@ -341,8 +342,8 @@ export default function CheckInScreen() {
               <Switch
                 value={limitsTraining}
                 onValueChange={setLimitsTraining}
-                trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
-                thumbColor={limitsTraining ? '#B5852C' : '#b8c0b0'}
+                trackColor={{ false: DS.border, true: DS.borderHighlight }}
+                thumbColor={limitsTraining ? DS.gold : DS.textSecondary}
               />
             </View>
           </>
@@ -373,35 +374,35 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 14 },
+  kicker: { color: DS.gold, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: DS.textPrimary, fontSize: 30, fontWeight: '900' },
+  subtitle: { color: DS.textSecondary, fontSize: 14 },
 
   amberBanner: {
-    backgroundColor: 'rgba(212,160,26,0.1)',
+    backgroundColor: DS.bgWarn,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,170,68,0.3)',
+    borderColor: DS.borderWarn,
     padding: 12,
   },
-  amberBannerText: { color: '#ffaa44', fontSize: 13, fontWeight: '800' },
+  amberBannerText: { color: DS.warning, fontSize: 13, fontWeight: '800' },
 
   card: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 16,
     gap: 10,
   },
   sectionLabel: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
     marginBottom: 2,
   },
-  fieldLabel: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  fieldLabel: { color: DS.textPrimary, fontSize: 14, fontWeight: '800' },
 
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
@@ -410,30 +411,30 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(181,133,44,0.12)',
+    backgroundColor: DS.border,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnText: { color: '#B5852C', fontSize: 18, fontWeight: '900', lineHeight: 22 },
-  stepValue: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', minWidth: 36, textAlign: 'center' },
+  stepBtnText: { color: DS.gold, fontSize: 18, fontWeight: '900', lineHeight: 22 },
+  stepValue: { color: DS.textPrimary, fontSize: 18, fontWeight: '900', minWidth: 36, textAlign: 'center' },
 
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    backgroundColor: 'rgba(181,133,44,0.12)',
+    backgroundColor: DS.border,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
   },
-  pillActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
-  pillText: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
-  pillTextActive: { color: '#FFFFFF' },
+  pillActive: { backgroundColor: DS.borderHighlight, borderColor: DS.borderHighlight },
+  pillText: { color: DS.textSecondary, fontSize: 12, fontWeight: '900' },
+  pillTextActive: { color: DS.textPrimary },
 
   saveBtn: {
-    backgroundColor: '#B5852C',
+    backgroundColor: DS.gold,
     borderRadius: 4,
     padding: 16,
     alignItems: 'center',
@@ -445,9 +446,9 @@ const s = StyleSheet.create({
 
 const ci = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
-  backBtnText: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 2.5, marginTop: 6 },
-  statusBadge: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  statusBadgeText: { color: '#B5852C', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  backBtn: { alignSelf: 'flex-start', borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 4, paddingHorizontal: 12, paddingVertical: 7 },
+  backBtnText: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  kicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 2.5, marginTop: 6 },
+  statusBadge: { borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  statusBadgeText: { color: DS.gold, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });

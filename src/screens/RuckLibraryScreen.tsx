@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { getReadinessNumber } from '@/src/utils/trainingLogUtils';
@@ -43,7 +44,7 @@ function fmtDate(d: string): string {
 
 function SessionRow({ entry }: { entry: RuckEntry }) {
   const paceColor = entry.paceSecondsPerKm > 0 ? '#3fc8e4' : T.textHintDark;
-  const rColor = entry.readiness >= 7 ? '#91e6a3' : entry.readiness >= 5 ? '#ffaa44' : '#e05050';
+  const rColor = entry.readiness >= 7 ? '#91e6a3' : entry.readiness >= 5 ? DS.warning : DS.danger;
   return (
     <View style={styles.sessionRow}>
       <Text style={styles.sessionDate}>{fmtDate(entry.date)}</Text>
@@ -56,7 +57,7 @@ function SessionRow({ entry }: { entry: RuckEntry }) {
 }
 
 function GroupCard({ group, expanded, onToggle }: { group: RuckGroup; expanded: boolean; onToggle: () => void }) {
-  const trendColor = group.improving ? '#91e6a3' : '#ffaa44';
+  const trendColor = group.improving ? '#91e6a3' : DS.warning;
   return (
     <View style={styles.groupCard}>
       <TouchableOpacity style={styles.groupHeader} onPress={onToggle} accessibilityRole="button" accessibilityLabel={`${group.name}, ${group.entries.length} sessions`} activeOpacity={0.75}>

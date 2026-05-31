@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
@@ -72,8 +73,8 @@ export default function OperatorProfileScreen() {
 
   if (isLoading) return <View style={styles.screen} />;
 
-  const streakColor = profile.currentStreak >= 4 ? '#91e6a3' : profile.currentStreak >= 2 ? '#ffaa44' : T.textSubtle;
-  const readinessColor = profile.avgReadiness >= 7 ? '#91e6a3' : profile.avgReadiness >= 5 ? '#ffaa44' : '#e05050';
+  const streakColor = profile.currentStreak >= 4 ? '#91e6a3' : profile.currentStreak >= 2 ? DS.warning : T.textSubtle;
+  const readinessColor = profile.avgReadiness >= 7 ? '#91e6a3' : profile.avgReadiness >= 5 ? DS.warning : DS.danger;
 
   return (
     <View style={styles.screen}>

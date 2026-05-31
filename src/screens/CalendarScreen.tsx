@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { CATEGORY_COLORS } from '@/src/utils/adaptivePlanUtils';
@@ -134,7 +135,7 @@ export default function CalendarScreen() {
         <View style={styles.grid}>
           {calMonth.weeks.map((week, wi) => {
             const loadPct = Math.min(week.totalSessions / MAX_LOAD, 1);
-            const loadColor = loadPct >= 0.8 ? '#e05050' : loadPct >= 0.5 ? '#ffaa44' : T.textAccent;
+            const loadColor = loadPct >= 0.8 ? DS.danger : loadPct >= 0.5 ? DS.warning : T.textAccent;
             return (
               <View key={wi}>
                 <View style={styles.weekRow}>
@@ -213,7 +214,7 @@ export default function CalendarScreen() {
 
 const cal = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  kicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   calBadge: { borderWidth: 1, borderColor: 'rgba(94,122,47,0.5)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
   calBadgeText: { color: '#5E7A2F', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });

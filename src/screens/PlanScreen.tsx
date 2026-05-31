@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
 import { loadCustomPlan } from '@/src/services/customPlanService';
@@ -18,10 +19,10 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function intensityColor(intensity: DayPlan['intensity'], planType: string) {
-  if (intensity === 'Rest' || intensity === 'Low') return '#b8c0b0';
-  if (planType === 'recovery') return '#b8c0b0';
-  if (intensity === 'High') return '#ffaa44';
-  return '#B5852C';
+  if (intensity === 'Rest' || intensity === 'Low') return DS.textSecondary;
+  if (planType === 'recovery') return DS.textSecondary;
+  if (intensity === 'High') return DS.warning;
+  return DS.gold;
 }
 
 const DayCard = memo(function DayCard({
@@ -94,9 +95,9 @@ export default function PlanScreen() {
     : 'Standard Week';
 
   const planTypeColor =
-    planType === 'recovery' ? '#ffaa44'
-    : planType === 'progressive' ? '#B5852C'
-    : '#ffffff';
+    planType === 'recovery' ? DS.warning
+    : planType === 'progressive' ? DS.gold
+    : DS.textPrimary;
 
   const commandCardStyle =
     planType === 'recovery' ? styles.commandCardWarning
@@ -249,11 +250,11 @@ export default function PlanScreen() {
           {days.map((d, i) => {
             const letter = ['M','T','W','T','F','S','S'][i];
             const isToday = d.day === todayName;
-            const dotColor = d.isRest ? null : d.intensity === 'High' ? '#B5852C' : d.intensity === 'Moderate' ? '#ffaa44' : '#5E7A2F';
+            const dotColor = d.isRest ? null : d.intensity === 'High' ? DS.gold : d.intensity === 'Moderate' ? DS.warning : '#5E7A2F';
             return (
               <View key={d.day} style={[ps.tempoDay, isToday ? ps.tempoDayToday : null]}>
-                <Text style={[ps.tempoDayLetter, isToday ? { color: '#B5852C' } : null]}>{letter}</Text>
-                <Text style={[ps.tempoDayNum, isToday ? { color: '#B5852C' } : null]}>{weekDayDate(i)}</Text>
+                <Text style={[ps.tempoDayLetter, isToday ? { color: DS.gold } : null]}>{letter}</Text>
+                <Text style={[ps.tempoDayNum, isToday ? { color: DS.gold } : null]}>{weekDayDate(i)}</Text>
                 {dotColor ? <View style={[ps.tempoDot, { backgroundColor: dotColor }]} /> : <View style={ps.tempoDotEmpty} />}
               </View>
             );
@@ -358,19 +359,19 @@ export default function PlanScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#050e09' },
+  screen: { flex: 1, backgroundColor: DS.bgPrimary },
   content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   planHeaderLeft: { flex: 1 },
   editPlanButton: {
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     borderRadius: 2,
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginTop: 4,
   },
-  editPlanButtonText: { color: '#B5852C', fontSize: 12, fontWeight: '700' },
+  editPlanButtonText: { color: DS.gold, fontSize: 12, fontWeight: '700' },
   planModePillRow: { flexDirection: 'row' },
   planModePill: {
     borderRadius: 999,
@@ -382,59 +383,59 @@ const styles = StyleSheet.create({
   planModePillMuted: { borderColor: '#2a3328', backgroundColor: '#0e1812' },
   planModePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   planModePillTextAmber: { color: '#FFB86B' },
-  planModePillTextMuted: { color: '#b8c0b0' },
-  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
-  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
-  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
+  planModePillTextMuted: { color: DS.textSecondary },
+  kicker: { color: DS.goldSoft, fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  headerRule: { height: 1, backgroundColor: DS.gold, opacity: 0.55, marginVertical: 2 },
+  title: { color: DS.goldSoft, fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: DS.textSecondary, fontSize: 14, lineHeight: 20 },
 
-  thisWeekCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
-  cardKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  thisWeekCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 12 },
+  cardKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   thisWeekRow: { flexDirection: 'row', gap: 4 },
   thisWeekStat: { flex: 1, gap: 4 },
-  thisWeekNumber: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  thisWeekNumberWarn: { color: '#ffaa44', fontSize: 18, fontWeight: '900' },
-  thisWeekNumberGood: { color: '#B5852C', fontSize: 18, fontWeight: '900' },
-  thisWeekLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800' },
+  thisWeekNumber: { color: DS.textPrimary, fontSize: 18, fontWeight: '900' },
+  thisWeekNumberWarn: { color: DS.warning, fontSize: 18, fontWeight: '900' },
+  thisWeekNumberGood: { color: DS.gold, fontSize: 18, fontWeight: '900' },
+  thisWeekLabel: { color: DS.textSecondary, fontSize: 10, fontWeight: '800' },
 
-  commandCard: { backgroundColor: '#102016', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: '#2d6b3f', gap: 8 },
-  commandCardGood: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 8 },
-  commandCardWarning: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 8 },
+  commandCard: { backgroundColor: DS.bgHeroActive, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: '#2d6b3f', gap: 8 },
+  commandCardGood: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderHighlight, gap: 8 },
+  commandCardWarning: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn, gap: 8 },
   commandHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  commandKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  commandKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   planTypeLabel: { fontSize: 13, fontWeight: '900' },
-  commandText: { color: '#c4cec0', fontSize: 14, lineHeight: 21 },
-  balanceCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 8 },
-  balanceCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 8 },
-  balanceLabel: { color: '#B5852C', fontSize: 13, fontWeight: '900' },
-  balanceLabelWarn: { color: '#ffaa44', fontSize: 13, fontWeight: '900' },
-  balanceFocus: { color: '#FFFFFF', fontSize: 13, lineHeight: 20, fontWeight: '900' },
-  forecastList: { backgroundColor: '#080c05', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', overflow: 'hidden' },
-  forecastItem: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: '#162218' },
-  forecastDay: { color: '#B5852C', fontSize: 12, fontWeight: '900', width: 34 },
-  forecastFocus: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', flex: 1 },
-  forecastStatusGreen: { color: '#B5852C', fontSize: 10, fontWeight: '900' },
-  forecastStatusAmber: { color: '#ffaa44', fontSize: 10, fontWeight: '900' },
-  forecastStatusRed: { color: '#ffaa44', fontSize: 10, fontWeight: '900' },
+  commandText: { color: DS.textSecondary, fontSize: 14, lineHeight: 21 },
+  balanceCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 8 },
+  balanceCardWarn: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn, gap: 8 },
+  balanceLabel: { color: DS.gold, fontSize: 13, fontWeight: '900' },
+  balanceLabelWarn: { color: DS.warning, fontSize: 13, fontWeight: '900' },
+  balanceFocus: { color: DS.textPrimary, fontSize: 13, lineHeight: 20, fontWeight: '900' },
+  forecastList: { backgroundColor: '#080c05', borderRadius: 12, borderWidth: 1, borderColor: DS.border, overflow: 'hidden' },
+  forecastItem: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: DS.rowDivider },
+  forecastDay: { color: DS.gold, fontSize: 12, fontWeight: '900', width: 34 },
+  forecastFocus: { color: DS.textPrimary, fontSize: 12, fontWeight: '800', flex: 1 },
+  forecastStatusGreen: { color: DS.gold, fontSize: 10, fontWeight: '900' },
+  forecastStatusAmber: { color: DS.warning, fontSize: 10, fontWeight: '900' },
+  forecastStatusRed: { color: DS.warning, fontSize: 10, fontWeight: '900' },
   adherencePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  adherencePill: { backgroundColor: '#080c05', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', paddingHorizontal: 10, paddingVertical: 6 },
-  adherencePillText: { color: '#b8c0b0', fontSize: 11, fontWeight: '900' },
+  adherencePill: { backgroundColor: '#080c05', borderRadius: 999, borderWidth: 1, borderColor: DS.border, paddingHorizontal: 10, paddingVertical: 6 },
+  adherencePillText: { color: DS.textSecondary, fontSize: 11, fontWeight: '900' },
 
-  dayCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 6 },
+  dayCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 6 },
   dayCardRest: { backgroundColor: '#080f0a', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: '#161f18', gap: 6 },
   dayHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  day: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
+  day: { color: DS.textPrimary, fontSize: 18, fontWeight: '900' },
   dayRest: { color: '#4a5e4a', fontSize: 18, fontWeight: '900' },
   intensity: { fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  focus: { color: '#B5852C', fontSize: 14, fontWeight: '900' },
+  focus: { color: DS.gold, fontSize: 14, fontWeight: '900' },
   focusRest: { color: '#4a5e4a', fontSize: 14, fontWeight: '900' },
-  session: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
-  detailGrid: { backgroundColor: '#080c05', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', padding: 10, gap: 4, marginTop: 4 },
-  detailText: { color: '#b8c0b0', fontSize: 12, lineHeight: 17, fontWeight: '700' },
-  logButton: { backgroundColor: '#B5852C', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6 },
-  logButtonRest: { backgroundColor: '#102016', borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
+  session: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
+  detailGrid: { backgroundColor: '#080c05', borderRadius: 12, borderWidth: 1, borderColor: DS.border, padding: 10, gap: 4, marginTop: 4 },
+  detailText: { color: DS.textSecondary, fontSize: 12, lineHeight: 17, fontWeight: '700' },
+  logButton: { backgroundColor: DS.gold, borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6 },
+  logButtonRest: { backgroundColor: DS.bgHeroActive, borderRadius: 12, paddingVertical: 11, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: DS.border },
   logButtonText: { color: '#080c05', fontSize: 12, fontWeight: '900' },
-  logButtonTextRest: { color: '#b8c0b0', fontSize: 12, fontWeight: '900' },
+  logButtonTextRest: { color: DS.textSecondary, fontSize: 12, fontWeight: '900' },
 });
 
 const ps = StyleSheet.create({
@@ -443,37 +444,37 @@ const ps = StyleSheet.create({
   statusBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, marginTop: 6 },
   statusBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
   pillEditRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  cycleCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 10 },
-  cycleKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  cycleCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 10 },
+  cycleKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   cyclePhaseRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   cyclePhaseName: { fontSize: 22, fontWeight: '900', letterSpacing: 1 },
-  cyclePhaseTag: { color: '#b8c0b0', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  cyclePhaseTag: { color: DS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   cycleDayRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  cycleDayLabel: { color: '#b8c0b0', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  cycleDayLabel: { color: DS.textSecondary, fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   cycleDayNum: { fontSize: 32, fontWeight: '900' },
   cycleDaySlash: { color: '#4a5e4a', fontSize: 20, fontWeight: '700', marginHorizontal: 2 },
   cycleDayTotal: { color: '#4a5e4a', fontSize: 20, fontWeight: '900' },
-  cycleProgressTrack: { height: 3, backgroundColor: 'rgba(181,133,44,0.15)', borderRadius: 2, overflow: 'hidden' },
+  cycleProgressTrack: { height: 3, backgroundColor: DS.border, borderRadius: 2, overflow: 'hidden' },
   cycleProgressFill: { height: 3, borderRadius: 2 },
   focusChipRow: { flexDirection: 'row', gap: 8 },
-  focusChip: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  focusChipText: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  tempoCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
-  tempoKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  focusChip: { borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  focusChipText: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  tempoCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 12 },
+  tempoKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   tempoRow: { flexDirection: 'row', justifyContent: 'space-between' },
   tempoDay: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 8, borderRadius: 4 },
   tempoDayToday: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.5)', backgroundColor: 'rgba(181,133,44,0.06)' },
-  tempoDayLetter: { color: '#b8c0b0', fontSize: 11, fontWeight: '900' },
-  tempoDayNum: { color: '#ffffff', fontSize: 13, fontWeight: '900' },
+  tempoDayLetter: { color: DS.textSecondary, fontSize: 11, fontWeight: '900' },
+  tempoDayNum: { color: DS.textPrimary, fontSize: 13, fontWeight: '900' },
   tempoDot: { width: 6, height: 6, borderRadius: 3 },
   tempoDotEmpty: { width: 6, height: 6 },
-  upcomingCard: { backgroundColor: '#0c1008', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', overflow: 'hidden' },
-  upcomingKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4, padding: 14, paddingBottom: 10 },
+  upcomingCard: { backgroundColor: DS.bgCard, borderRadius: 6, borderWidth: 1, borderColor: DS.border, overflow: 'hidden' },
+  upcomingKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4, padding: 14, paddingBottom: 10 },
   upcomingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#131d14' },
   upcomingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  upcomingDayTag: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 1, width: 30 },
+  upcomingDayTag: { color: DS.gold, fontSize: 12, fontWeight: '900', letterSpacing: 1, width: 30 },
   upcomingInfo: { flex: 1, gap: 2 },
-  upcomingTitle: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
-  upcomingSub: { color: '#b8c0b0', fontSize: 12 },
-  upcomingChevron: { color: '#B5852C', fontSize: 22, fontWeight: '300' },
+  upcomingTitle: { color: DS.textPrimary, fontSize: 14, fontWeight: '900' },
+  upcomingSub: { color: DS.textSecondary, fontSize: 12 },
+  upcomingChevron: { color: DS.gold, fontSize: 22, fontWeight: '300' },
 });

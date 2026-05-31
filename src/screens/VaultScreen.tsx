@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import {
   addVaultEntry,
@@ -286,9 +287,9 @@ export default function VaultScreen() {
 
 const vlt = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  kicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   vaultBadge: { borderWidth: 1, borderColor: 'rgba(224,80,80,0.4)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  vaultBadgeText: { color: '#e05050', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  vaultBadgeText: { color: DS.danger, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });
 
 const styles = StyleSheet.create({
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   actionBtn: { borderWidth: 1, borderColor: T.borderDim, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 8 },
   actionBtnText: { color: T.textAccent, fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   actionBtnDanger: { borderColor: '#3d1414' },
-  actionBtnTextDanger: { color: '#e05050' },
+  actionBtnTextDanger: { color: DS.danger },
   fab: { position: 'absolute', bottom: 20, left: 16, right: 16, backgroundColor: T.textAccent, borderRadius: 4, paddingVertical: 15, alignItems: 'center' },
   fabText: { color: T.bgDark, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   editorOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(5,14,9,0.97)', borderTopWidth: 1, borderTopColor: T.borderDim },

@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { useTraining } from '@/src/screens/TrainingContext';
 import {
   StravaActivity,
@@ -297,27 +298,27 @@ const styles = StyleSheet.create({
   // Header
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
   backButton: { padding: 8 },
-  backChevron: { color: '#B5852C', fontSize: 24, fontWeight: '900' },
+  backChevron: { color: DS.gold, fontSize: 24, fontWeight: '900' },
   headerText: { gap: 2 },
-  kicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
+  kicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  title: { color: DS.textPrimary, fontSize: 28, fontWeight: '900' },
 
   // Error
   errorBanner: {
-    backgroundColor: 'rgba(212,160,26,0.1)',
+    backgroundColor: DS.bgWarn,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,170,68,0.3)',
+    borderColor: DS.borderWarn,
     padding: 14,
   },
-  errorText: { color: '#ffaa44', fontSize: 13, fontWeight: '800', lineHeight: 20 },
+  errorText: { color: DS.warning, fontSize: 13, fontWeight: '800', lineHeight: 20 },
 
   // Connect card
   connectCard: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 20,
     gap: 14,
   },
@@ -326,17 +327,17 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#B5852C',
+    backgroundColor: DS.gold,
   },
-  connectHeading: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  connectHeading: { color: DS.textPrimary, fontSize: 22, fontWeight: '900' },
   connectSubtext: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 14,
     lineHeight: 22,
     fontWeight: '600',
   },
   connectButton: {
-    backgroundColor: '#B5852C',
+    backgroundColor: DS.gold,
     borderRadius: 6,
     paddingVertical: 16,
     alignItems: 'center',
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
   },
   connectButtonDisabled: { opacity: 0.6 },
   connectButtonText: {
-    color: '#ffffff',
+    color: DS.textPrimary,
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 1.5,
@@ -368,10 +369,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#141810',
+    backgroundColor: DS.bgCardAlt,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     paddingHorizontal: 14,
     paddingVertical: 8,
     flexShrink: 1,
@@ -380,50 +381,50 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#B5852C',
+    backgroundColor: DS.gold,
   },
-  athleteText: { color: '#B5852C', fontSize: 13, fontWeight: '800' },
+  athleteText: { color: DS.gold, fontSize: 13, fontWeight: '800' },
   refreshButton: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  refreshText: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
+  refreshText: { color: DS.textSecondary, fontSize: 13, fontWeight: '800' },
 
   // Loading
   loadingBox: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 20,
     alignItems: 'center',
   },
-  loadingText: { color: '#b8c0b0', fontSize: 14, fontWeight: '700' },
+  loadingText: { color: DS.textSecondary, fontSize: 14, fontWeight: '700' },
 
   // Activity list
   activityList: { gap: 10 },
 
   // Empty
   emptyBox: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 20,
     alignItems: 'center',
   },
-  emptyText: { color: '#b8c0b0', fontSize: 14, fontWeight: '700' },
+  emptyText: { color: DS.textSecondary, fontSize: 14, fontWeight: '700' },
 
   // Activity card
   activityCard: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 14,
   },
   activityMain: {
@@ -433,33 +434,33 @@ const styles = StyleSheet.create({
   },
   activityInfo: { flex: 1, gap: 5 },
   activityName: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 15,
     fontWeight: '900',
   },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activityDate: { color: '#b8c0b0', fontSize: 12, fontWeight: '700' },
+  activityDate: { color: DS.textSecondary, fontSize: 12, fontWeight: '700' },
   typeChip: {
     backgroundColor: '#080c05',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  typeChipText: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
+  typeChipText: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
   activityStats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 4,
   },
-  statText: { color: '#b8c0b0', fontSize: 12, fontWeight: '700' },
+  statText: { color: DS.textSecondary, fontSize: 12, fontWeight: '700' },
   statDot: { color: '#3d5240', fontSize: 12 },
 
   // Import button
   importButton: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
+    backgroundColor: DS.borderHighlight,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -467,7 +468,7 @@ const styles = StyleSheet.create({
     minWidth: 76,
   },
   importButtonText: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1,
@@ -476,7 +477,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#080c05',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     paddingHorizontal: 10,
     paddingVertical: 10,
     alignItems: 'center',

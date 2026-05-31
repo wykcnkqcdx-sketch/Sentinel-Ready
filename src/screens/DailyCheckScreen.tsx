@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { useRouter } from 'expo-router';
@@ -299,9 +300,9 @@ const styles = StyleSheet.create({
 
   sorenessGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   sorenessChip: { borderRadius: 4, borderWidth: 1, borderColor: T.borderDim, paddingHorizontal: 12, paddingVertical: 7 },
-  sorenessChipActive: { borderColor: '#e05050' + '88', backgroundColor: '#e05050' + '15' },
+  sorenessChipActive: { borderColor: DS.danger + '88', backgroundColor: DS.danger + '15' },
   sorenessChipText: { color: T.textHintDark, fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
-  sorenessChipTextActive: { color: '#e05050' },
+  sorenessChipTextActive: { color: DS.danger },
 
   notesInput: { backgroundColor: T.bgPanelAlt, borderWidth: 1, borderColor: T.borderDim, borderRadius: 4, padding: 12, color: T.textSubtle, fontSize: 13, fontWeight: '600', minHeight: 72, textAlignVertical: 'top' },
 

@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import BarChart from '@/src/components/charts/BarChart';
 import SparkLine from '@/src/components/charts/SparkLine';
 import { useTraining } from '@/src/screens/TrainingContext';
@@ -188,11 +189,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, gap: 20, paddingBottom: 50 },
   pageHeader: { gap: 6 },
-  kicker: { color: '#b8c0b0', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
+  kicker: { color: DS.textSecondary, fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  title: { color: DS.textPrimary, fontSize: 28, fontWeight: '900' },
   section: { gap: 10 },
   sectionHeader: {
-    color: '#B5852C',
+    color: DS.gold,
     fontWeight: '900',
     fontSize: 11,
     letterSpacing: 1,
@@ -202,30 +203,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#001829',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     padding: 14,
     gap: 12,
   },
   sparkRows: { gap: 8 },
   sparkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  sparkLabel: { color: '#b8c0b0', fontSize: 11, fontWeight: '700', width: 64 },
+  sparkLabel: { color: DS.textSecondary, fontSize: 11, fontWeight: '700', width: 64 },
   testGrid: { gap: 10 },
   testCard: {
     backgroundColor: '#001829',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     padding: 14,
     gap: 6,
   },
   testCardLabel: {
-    color: '#B5852C',
+    color: DS.gold,
     fontWeight: '900',
     fontSize: 11,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
-  testScore: { color: '#ffffff', fontSize: 32, fontWeight: '900' },
-  testUnit: { color: '#b8c0b0', fontSize: 14, fontWeight: '700' },
+  testScore: { color: DS.textPrimary, fontSize: 32, fontWeight: '900' },
+  testUnit: { color: DS.textSecondary, fontSize: 14, fontWeight: '700' },
   emptyText: { color: '#4a5a44', fontSize: 13, fontWeight: '700' },
 });

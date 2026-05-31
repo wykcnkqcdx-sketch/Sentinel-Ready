@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import { useTraining } from '@/src/screens/TrainingContext';
 import { buildWeeklyBrief, type BriefLine, type BriefTone } from '@/src/utils/weeklyBriefUtils';
@@ -164,7 +165,7 @@ export default function WeeklyBriefScreen() {
 }
 
 const wb = StyleSheet.create({
-  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  kicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 });
 
 const styles = StyleSheet.create({
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
 
   bulletRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#172c20' },
   bulletGood: { color: '#91e6a3', fontSize: 11, fontWeight: '900', marginTop: 1 },
-  bulletWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900', marginTop: 1 },
+  bulletWarn: { color: DS.warning, fontSize: 11, fontWeight: '900', marginTop: 1 },
   bulletText: { flex: 1, color: T.textSubtle, fontSize: 13, lineHeight: 19, fontWeight: '600' },
 
   directiveBox: { backgroundColor: '#08100c', borderRadius: 4, borderWidth: 1, borderColor: '#1e3826', borderLeftWidth: 3, borderLeftColor: T.textAccent, padding: 14, gap: 6 },

@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -89,15 +90,15 @@ const ts = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 6,
-    backgroundColor: 'rgba(181,133,44,0.12)',
+    backgroundColor: DS.border,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnText: { color: '#B5852C', fontSize: 18, fontWeight: '900', lineHeight: 22 },
-  value: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', minWidth: 32, textAlign: 'center' },
-  colon: { color: '#b8c0b0', fontSize: 22, fontWeight: '900' },
+  btnText: { color: DS.gold, fontSize: 18, fontWeight: '900', lineHeight: 22 },
+  value: { color: DS.textPrimary, fontSize: 22, fontWeight: '900', minWidth: 32, textAlign: 'center' },
+  colon: { color: DS.textSecondary, fontSize: 22, fontWeight: '900' },
 });
 
 // ---------------------------------------------------------------------------
@@ -154,9 +155,9 @@ export default function NotificationsScreen() {
   }
 
   const permDotColor =
-    permStatus === 'granted' ? '#B5852C'
+    permStatus === 'granted' ? DS.gold
     : permStatus === 'denied' ? '#ff6b6b'
-    : '#ffaa44';
+    : DS.warning;
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={s.content}>
@@ -192,8 +193,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.checkInEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, checkInEnabled: v })}
-            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={prefs.checkInEnabled ? '#B5852C' : '#b8c0b0'}
+            trackColor={{ false: DS.border, true: DS.borderHighlight }}
+            thumbColor={prefs.checkInEnabled ? DS.gold : DS.textSecondary}
           />
         </View>
         {prefs.checkInEnabled && (
@@ -217,8 +218,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.preSessionEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, preSessionEnabled: v })}
-            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={prefs.preSessionEnabled ? '#B5852C' : '#b8c0b0'}
+            trackColor={{ false: DS.border, true: DS.borderHighlight }}
+            thumbColor={prefs.preSessionEnabled ? DS.gold : DS.textSecondary}
           />
         </View>
         {prefs.preSessionEnabled && (
@@ -242,8 +243,8 @@ export default function NotificationsScreen() {
           <Switch
             value={prefs.restNudgeEnabled}
             onValueChange={(v) => updatePrefs({ ...prefs, restNudgeEnabled: v })}
-            trackColor={{ false: 'rgba(181,133,44,0.12)', true: 'rgba(181,133,44,0.3)' }}
-            thumbColor={prefs.restNudgeEnabled ? '#B5852C' : '#b8c0b0'}
+            trackColor={{ false: DS.border, true: DS.borderHighlight }}
+            thumbColor={prefs.restNudgeEnabled ? DS.gold : DS.textSecondary}
           />
         </View>
         <Text style={s.detailText}>
@@ -284,52 +285,52 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#080c05' },
   content: { padding: 20, gap: 14, paddingBottom: 120 },
 
-  kicker: { color: '#B5852C', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 14 },
+  kicker: { color: DS.gold, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: DS.textPrimary, fontSize: 30, fontWeight: '900' },
+  subtitle: { color: DS.textSecondary, fontSize: 14 },
 
   card: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 16,
     gap: 10,
   },
   sectionLabel: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
     marginBottom: 2,
   },
-  fieldLabel: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
-  detailText: { color: '#b8c0b0', fontSize: 13, lineHeight: 19 },
+  fieldLabel: { color: DS.textPrimary, fontSize: 14, fontWeight: '800' },
+  detailText: { color: DS.textSecondary, fontSize: 13, lineHeight: 19 },
 
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
   permRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  permStatus: { color: '#b8c0b0', fontWeight: '700' },
+  permStatus: { color: DS.textSecondary, fontWeight: '700' },
 
   grantBtn: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
+    backgroundColor: DS.borderHighlight,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 18,
     alignSelf: 'flex-start',
   },
-  grantBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
+  grantBtnText: { color: DS.textPrimary, fontSize: 13, fontWeight: '900' },
 
   testBtn: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
+    backgroundColor: DS.borderHighlight,
     borderRadius: 6,
     padding: 18,
     alignItems: 'center',
     marginTop: 6,
   },
   testBtnDisabled: { backgroundColor: '#1a3a22', opacity: 0.5 },
-  testBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
+  testBtnText: { color: DS.textPrimary, fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
 
   cancelBtn: {
     borderRadius: 6,

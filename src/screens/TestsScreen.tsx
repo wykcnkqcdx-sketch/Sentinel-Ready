@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import dfiftJson from '@/src/data/standards/dfift-standards.json';
 import { calculateReadinessPercentage, TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { useUser } from '@/src/screens/UserContext';
@@ -142,15 +143,15 @@ export default function TestsScreen() {
 
   const readinessStatus = useMemo(() => {
     if (readinessPercentage === 0) {
-      return { label: 'NO DATA', color: '#b8c0b0', message: 'Log sessions with readiness scores to determine your testing readiness.', cardStyle: styles.heroCard };
+      return { label: 'NO DATA', color: DS.textSecondary, message: 'Log sessions with readiness scores to determine your testing readiness.', cardStyle: styles.heroCard };
     }
     if (readinessPercentage < 60) {
-      return { label: 'RED', color: '#ffaa44', message: 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.', cardStyle: styles.heroCardWarn };
+      return { label: 'RED', color: DS.warning, message: 'Fatigue is high. Testing today will not yield accurate results. Prioritise recovery first.', cardStyle: styles.heroCardWarn };
     }
     if (readinessPercentage < 80) {
-      return { label: 'AMBER', color: '#ffaa44', message: 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.', cardStyle: styles.heroCardAmber };
+      return { label: 'AMBER', color: DS.warning, message: 'Moderate readiness. Proceed with caution. Do not attempt max-effort testing today.', cardStyle: styles.heroCardAmber };
     }
-    return { label: 'GREEN', color: '#B5852C', message: 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.', cardStyle: styles.heroCardGood };
+    return { label: 'GREEN', color: DS.gold, message: 'Fit to test. Keep warm-up controlled and avoid unnecessary fatigue before assessment.', cardStyle: styles.heroCardGood };
   }, [readinessPercentage]);
 
   const navigateToProfile = useCallback(() => router.push('/profile'), [router]);
@@ -390,99 +391,99 @@ export default function TestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#050e09' },
+  screen: { flex: 1, backgroundColor: DS.bgPrimary },
   content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
-  kicker: { color: '#F4BD5F', fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
-  headerRule: { height: 1, backgroundColor: '#B5852C', opacity: 0.55, marginVertical: 2 },
-  title: { color: '#F4BD5F', fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
-  subtitle: { color: '#d3c4b1', fontSize: 14, lineHeight: 20 },
+  kicker: { color: DS.goldSoft, fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
+  headerRule: { height: 1, backgroundColor: DS.gold, opacity: 0.55, marginVertical: 2 },
+  title: { color: DS.goldSoft, fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
+  subtitle: { color: DS.textSecondary, fontSize: 14, lineHeight: 20 },
 
-  heroCard: { backgroundColor: '#0c1008', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
-  heroCardGood: { backgroundColor: '#0c1008', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
+  heroCard: { backgroundColor: DS.bgCard, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#2d6b3b', gap: 10 },
+  heroCardGood: { backgroundColor: DS.bgCard, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: DS.borderHighlight, gap: 10 },
   heroCardAmber: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: '#5a4a20', gap: 10 },
-  heroCardWarn: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 20, padding: 18, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 10 },
+  heroCardWarn: { backgroundColor: DS.bgWarn, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: DS.borderWarn, gap: 10 },
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 },
   heroLeft: { flex: 1, gap: 6 },
-  heroLabel: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  heroLabel: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   heroScore: { fontSize: 36, fontWeight: '900' },
   heroMessage: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
   heroStats: { gap: 12, alignItems: 'flex-end' },
   heroStat: { alignItems: 'center' },
-  heroStatNumber: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
-  heroStatLabel: { color: '#b8c0b0', fontSize: 10, fontWeight: '800' },
-  trendRow: { borderTopWidth: 1, borderTopColor: 'rgba(181,133,44,0.12)', paddingTop: 10 },
-  trendTextGood: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  trendTextWarn: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
+  heroStatNumber: { color: DS.textPrimary, fontSize: 22, fontWeight: '900' },
+  heroStatLabel: { color: DS.textSecondary, fontSize: 10, fontWeight: '800' },
+  trendRow: { borderTopWidth: 1, borderTopColor: DS.border, paddingTop: 10 },
+  trendTextGood: { color: DS.gold, fontSize: 12, fontWeight: '900' },
+  trendTextWarn: { color: DS.warning, fontSize: 12, fontWeight: '900' },
 
-  alertCard: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', gap: 6 },
-  alertTitle: { color: '#ffaa44', fontSize: 14, fontWeight: '900' },
-  alertText: { color: '#b8c0b0', fontSize: 13, lineHeight: 19 },
-  dfiftSnapshotCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', gap: 10 },
+  alertCard: { backgroundColor: 'rgba(255,170,68,0.06)', borderRadius: 6, padding: 14, borderWidth: 1, borderColor: DS.borderWarn, gap: 6 },
+  alertTitle: { color: DS.warning, fontSize: 14, fontWeight: '900' },
+  alertText: { color: DS.textSecondary, fontSize: 13, lineHeight: 19 },
+  dfiftSnapshotCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderHighlight, gap: 10 },
   dfiftSnapshotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  dfiftSnapshotKicker: { color: '#B5852C', fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
-  dfiftSnapshotScore: { color: '#ffffff', fontSize: 26, fontWeight: '900', marginTop: 3 },
-  dfiftSnapshotBadge: { backgroundColor: 'rgba(212,160,26,0.1)', borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  dfiftSnapshotBadgeGood: { backgroundColor: '#141810', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  dfiftSnapshotBadgeText: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
-  dfiftSnapshotBadgeTextGood: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  dfiftSnapshotWeak: { color: '#ffaa44', fontSize: 13, fontWeight: '900', lineHeight: 19 },
-  dfiftSnapshotText: { color: '#c4cec0', fontSize: 13, lineHeight: 20 },
+  dfiftSnapshotKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
+  dfiftSnapshotScore: { color: DS.textPrimary, fontSize: 26, fontWeight: '900', marginTop: 3 },
+  dfiftSnapshotBadge: { backgroundColor: DS.bgWarn, borderWidth: 1, borderColor: DS.borderWarn, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  dfiftSnapshotBadgeGood: { backgroundColor: DS.bgCardAlt, borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  dfiftSnapshotBadgeText: { color: DS.warning, fontSize: 12, fontWeight: '900' },
+  dfiftSnapshotBadgeTextGood: { color: DS.gold, fontSize: 12, fontWeight: '900' },
+  dfiftSnapshotWeak: { color: DS.warning, fontSize: 13, fontWeight: '900', lineHeight: 19 },
+  dfiftSnapshotText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900' },
+  sectionTitle: { color: DS.textPrimary, fontSize: 22, fontWeight: '900' },
   sectionTag: { color: '#9ee8a5', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderColor: '#264c32', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
 
-  emptyCard: { backgroundColor: '#0e1812', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 8 },
-  emptyTitle: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  emptyText: { color: '#b8c0b0', fontSize: 14, lineHeight: 21 },
+  emptyCard: { backgroundColor: '#0e1812', borderRadius: 6, padding: 18, borderWidth: 1, borderColor: DS.border, gap: 8 },
+  emptyTitle: { color: DS.textPrimary, fontSize: 18, fontWeight: '900' },
+  emptyText: { color: DS.textSecondary, fontSize: 14, lineHeight: 21 },
 
-  testTypeCard: { backgroundColor: '#0e1812', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)', gap: 12 },
+  testTypeCard: { backgroundColor: '#0e1812', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border, gap: 12 },
   testTypeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   testTypeLeft: { flex: 1, gap: 3 },
-  testTypeName: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
-  testTypeCount: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
+  testTypeName: { color: DS.textPrimary, fontSize: 18, fontWeight: '900' },
+  testTypeCount: { color: DS.textSecondary, fontSize: 12, fontWeight: '800' },
   testTypeRight: { alignItems: 'flex-end', gap: 4 },
-  testTypeReadiness: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
-  deltaGood: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
-  deltaWarn: { color: '#ffaa44', fontSize: 12, fontWeight: '900' },
+  testTypeReadiness: { color: DS.textPrimary, fontSize: 20, fontWeight: '900' },
+  deltaGood: { color: DS.gold, fontSize: 12, fontWeight: '900' },
+  deltaWarn: { color: DS.warning, fontSize: 12, fontWeight: '900' },
 
   testResultRow: { flexDirection: 'row', gap: 10 },
   testResultBox: { flex: 1, backgroundColor: '#080c05', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#1e2e22', gap: 4 },
-  testResultLabel: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
-  testResultValue: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
-  testResultValueDim: { color: '#b8c0b0', fontSize: 15, fontWeight: '800' },
-  testResultDate: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
-  testNote: { color: '#c4cec0', fontSize: 13, lineHeight: 19 },
+  testResultLabel: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  testResultValue: { color: DS.textPrimary, fontSize: 15, fontWeight: '900' },
+  testResultValueDim: { color: DS.textSecondary, fontSize: 15, fontWeight: '800' },
+  testResultDate: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
+  testNote: { color: DS.textSecondary, fontSize: 13, lineHeight: 19 },
 
-  countdownCard: { backgroundColor: '#0c1008', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.12)' },
-  countdownCardUrgent: { backgroundColor: 'rgba(212,160,26,0.1)', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(255,170,68,0.3)' },
+  countdownCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.border },
+  countdownCardUrgent: { backgroundColor: DS.bgWarn, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: DS.borderWarn },
   countdownRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  countdownKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 3 },
-  countdownDate: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  countdownKicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 3 },
+  countdownDate: { color: DS.textPrimary, fontSize: 15, fontWeight: '900' },
   countdownDaysBox: { alignItems: 'flex-end' },
-  countdownNum: { color: '#ffffff', fontSize: 32, fontWeight: '900' },
-  countdownNumUrgent: { color: '#ffaa44', fontSize: 32, fontWeight: '900' },
-  countdownUnit: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
+  countdownNum: { color: DS.textPrimary, fontSize: 32, fontWeight: '900' },
+  countdownNumUrgent: { color: DS.warning, fontSize: 32, fontWeight: '900' },
+  countdownUnit: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
 
   dfiftCard: { backgroundColor: '#0e1410', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: '#2a3d2c', gap: 0 },
   dfiftHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  dfiftKicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
-  dfiftProfileLink: { color: '#B5852C', fontSize: 12, fontWeight: '900' },
+  dfiftKicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  dfiftProfileLink: { color: DS.gold, fontSize: 12, fontWeight: '900' },
   dfiftRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingVertical: 12 },
   dfiftRowLeft: { flex: 1, gap: 3 },
-  dfiftLabel: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
-  dfiftStandard: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
+  dfiftLabel: { color: DS.textPrimary, fontSize: 14, fontWeight: '900' },
+  dfiftStandard: { color: DS.textSecondary, fontSize: 12, fontWeight: '800' },
   dfiftRowRight: { alignItems: 'flex-end', gap: 4 },
-  dfiftResult: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
-  dfiftBadgePass: { backgroundColor: '#0d2a14', borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  dfiftBadgeTextPass: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
+  dfiftResult: { color: DS.textPrimary, fontSize: 14, fontWeight: '900' },
+  dfiftBadgePass: { backgroundColor: '#0d2a14', borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  dfiftBadgeTextPass: { color: DS.gold, fontSize: 11, fontWeight: '900' },
   dfiftBadgeFail: { backgroundColor: '#2a1008', borderWidth: 1, borderColor: '#7a3a1f', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  dfiftBadgeTextFail: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
+  dfiftBadgeTextFail: { color: DS.warning, fontSize: 11, fontWeight: '900' },
   dfiftNoData: { color: '#4a5e4a', fontSize: 14, fontWeight: '900' },
   dfiftDivider: { height: 1, backgroundColor: '#1a2c1e' },
   dfiftFootnote: { color: '#4a5e4a', fontSize: 11, lineHeight: 16, marginTop: 12 },
 
   guidanceCard: { backgroundColor: '#111a10', borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.2)', gap: 6 },
-  guidanceTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  guidanceTitle: { color: DS.textPrimary, fontSize: 15, fontWeight: '900' },
   guidanceText: { color: '#c6d0c2', fontSize: 13, lineHeight: 20 },
 });

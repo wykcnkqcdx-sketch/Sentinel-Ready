@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -41,7 +42,7 @@ const TEAM_COLOURS: Record<string, string> = {
 };
 
 function teamColour(team: string): string {
-  return TEAM_COLOURS[team] ?? '#B5852C';
+  return TEAM_COLOURS[team] ?? DS.gold;
 }
 
 // -- Stale check ---------------------------------------------------------------
@@ -58,8 +59,8 @@ function isStale(staleIso: string): boolean {
 // -- Status dot colour ---------------------------------------------------------
 
 function dotColour(status: FTSStatus): string {
-  if (status === 'connected') return '#B5852C';
-  if (status === 'connecting') return '#ffaa44';
+  if (status === 'connected') return DS.gold;
+  if (status === 'connecting') return DS.warning;
   if (status === 'error') return '#F44336';
   return '#4a5e4a';
 }
@@ -520,33 +521,33 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   backText: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 14,
     fontWeight: '900',
   },
   kicker: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 2.5,
   },
   title: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 30,
     fontWeight: '900',
   },
 
   // Card base
   card: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     gap: 10,
   },
   cardKicker: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -564,25 +565,25 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 15,
     fontWeight: '800',
   },
 
   // Config display
   configLine: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 13,
     fontWeight: '700',
   },
   configValue: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontWeight: '900',
   },
   editBtn: {
-    backgroundColor: '#141810',
+    backgroundColor: DS.bgCardAlt,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   editBtnText: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 13,
     fontWeight: '900',
   },
@@ -600,7 +601,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   formLabel: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 12,
     fontWeight: '900',
   },
@@ -608,8 +609,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#080c05',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
-    color: '#ffffff',
+    borderColor: DS.border,
+    color: DS.textPrimary,
     fontSize: 15,
     fontWeight: '800',
     paddingHorizontal: 14,
@@ -622,15 +623,15 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: '#141810',
+    backgroundColor: DS.bgCardAlt,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
   saveBtnText: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 14,
     fontWeight: '900',
   },
@@ -644,7 +645,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtnText: {
-    color: '#ffaa44',
+    color: DS.warning,
     fontSize: 14,
     fontWeight: '900',
   },
@@ -659,7 +660,7 @@ const styles = StyleSheet.create({
     width: '47%',
     backgroundColor: '#080c05',
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     borderRadius: 6,
     padding: 16,
     alignItems: 'center',
@@ -671,19 +672,19 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   actionBtnTitle: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0.8,
     textAlign: 'center',
   },
   actionBtnSub: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 11,
     fontWeight: '700',
   },
   pingOk: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 20,
     fontWeight: '900',
   },
@@ -700,15 +701,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   countBadge: {
-    backgroundColor: '#141810',
+    backgroundColor: DS.bgCardAlt,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   countBadgeText: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 12,
     fontWeight: '900',
   },
@@ -718,7 +719,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#080c05',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     padding: 12,
     gap: 4,
   },
@@ -729,7 +730,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   cotCallsign: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 14,
     fontWeight: '900',
   },
@@ -744,7 +745,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   staleChip: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 999,
@@ -757,28 +758,28 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   cotCoords: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 12,
     fontWeight: '700',
   },
 
   // Info card
   infoCard: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     gap: 8,
   },
   infoTitle: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   infoText: {
-    color: '#b8c0b0',
+    color: DS.textSecondary,
     fontSize: 13,
     lineHeight: 20,
     fontWeight: '700',

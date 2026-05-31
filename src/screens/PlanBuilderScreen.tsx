@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import {
   clearCustomPlan,
   emptyPlan,
@@ -261,15 +262,15 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 12,
   },
-  headerTitle: { color: '#B5852C', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  headerTitle: { color: DS.gold, fontSize: 18, fontWeight: '900', letterSpacing: 2 },
   ghostButton: {
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  ghostButtonText: { color: '#b8c0b0', fontSize: 13, fontWeight: '700' },
+  ghostButtonText: { color: DS.textSecondary, fontSize: 13, fontWeight: '700' },
   content: { padding: 20, paddingBottom: 120, gap: 12 },
 
   dayCard: {
@@ -277,10 +278,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     gap: 10,
   },
-  dayLabel: { color: '#B5852C', fontSize: 13, fontWeight: '700', letterSpacing: 1.5 },
+  dayLabel: { color: DS.gold, fontSize: 13, fontWeight: '700', letterSpacing: 1.5 },
 
   sessionRow: {
     flexDirection: 'row',
@@ -291,35 +292,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#080c05',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  categoryChipText: { color: '#B5852C', fontSize: 12, fontWeight: '700' },
-  sessionDuration: { color: '#b8c0b0', fontSize: 12, fontWeight: '700', flex: 1 },
+  categoryChipText: { color: DS.gold, fontSize: 12, fontWeight: '700' },
+  sessionDuration: { color: DS.textSecondary, fontSize: 12, fontWeight: '700', flex: 1 },
   deleteButton: { padding: 4 },
-  deleteButtonText: { color: '#b8c0b0', fontSize: 14, fontWeight: '700' },
+  deleteButtonText: { color: DS.textSecondary, fontSize: 14, fontWeight: '700' },
 
   addSessionButton: {
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     borderRadius: 10,
     paddingVertical: 9,
     alignItems: 'center',
   },
-  addSessionText: { color: '#B5852C', fontSize: 13, fontWeight: '700' },
+  addSessionText: { color: DS.gold, fontSize: 13, fontWeight: '700' },
 
   inlineForm: { gap: 10 },
   categoryPills: { gap: 6, flexDirection: 'row' },
   categoryPill: {
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  categoryPillActive: { backgroundColor: '#B5852C', borderColor: '#B5852C' },
-  categoryPillText: { color: '#b8c0b0', fontSize: 12, fontWeight: '700' },
+  categoryPillActive: { backgroundColor: DS.gold, borderColor: DS.gold },
+  categoryPillText: { color: DS.textSecondary, fontSize: 12, fontWeight: '700' },
   categoryPillTextActive: { color: '#080c05', fontSize: 12, fontWeight: '700' },
 
   stepper: {
@@ -329,20 +330,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepperButton: {
-    backgroundColor: '#141810',
+    backgroundColor: DS.bgCardAlt,
     borderRadius: 8,
     width: 36,
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepperButtonText: { color: '#B5852C', fontSize: 20, fontWeight: '700' },
+  stepperButtonText: { color: DS.gold, fontSize: 20, fontWeight: '700' },
   stepperValue: { color: '#f4f7f0', fontSize: 16, fontWeight: '700', minWidth: 70, textAlign: 'center' },
 
   formActions: { flexDirection: 'row', gap: 10 },
   addButton: {
     flex: 1,
-    backgroundColor: '#B5852C',
+    backgroundColor: DS.gold,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
@@ -351,15 +352,15 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#141810',
+    borderColor: DS.bgCardAlt,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
-  cancelButtonText: { color: '#b8c0b0', fontSize: 13, fontWeight: '700' },
+  cancelButtonText: { color: DS.textSecondary, fontSize: 13, fontWeight: '700' },
 
   saveButton: {
-    backgroundColor: '#B5852C',
+    backgroundColor: DS.gold,
     borderRadius: 6,
     paddingVertical: 16,
     alignItems: 'center',

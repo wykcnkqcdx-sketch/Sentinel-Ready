@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import {
   Alert,
@@ -330,60 +331,60 @@ export default function GpxScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#080c05' },
   headerBlock: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8, gap: 4 },
-  kicker: { color: '#b8c0b0', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
-  subtitle: { color: '#b8c0b0', fontSize: 15, lineHeight: 22 },
+  kicker: { color: DS.textSecondary, fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  title: { color: DS.textPrimary, fontSize: 32, fontWeight: '900' },
+  subtitle: { color: DS.textSecondary, fontSize: 15, lineHeight: 22 },
 
   // Tabs
   tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 4 },
   tabPill: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     paddingHorizontal: 18,
     paddingVertical: 9,
   },
-  tabPillActive: { backgroundColor: 'rgba(181,133,44,0.3)', borderColor: 'rgba(181,133,44,0.3)' },
-  tabPillText: { color: '#b8c0b0', fontSize: 13, fontWeight: '800' },
-  tabPillTextActive: { color: '#FFFFFF', fontWeight: '900' },
+  tabPillActive: { backgroundColor: DS.borderHighlight, borderColor: DS.borderHighlight },
+  tabPillText: { color: DS.textSecondary, fontSize: 13, fontWeight: '800' },
+  tabPillTextActive: { color: DS.textPrimary, fontWeight: '900' },
 
   // Scroll content
   content: { padding: 20, paddingBottom: 100, gap: 14 },
 
   // Log card (export tab)
   logCard: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
   logInfo: { flex: 1, gap: 3 },
-  logDate: { color: '#b8c0b0', fontSize: 12, fontWeight: '800' },
-  logType: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  logPoints: { color: '#b8c0b0', fontSize: 12 },
+  logDate: { color: DS.textSecondary, fontSize: 12, fontWeight: '800' },
+  logType: { color: DS.textPrimary, fontSize: 14, fontWeight: '900' },
+  logPoints: { color: DS.textSecondary, fontSize: 12 },
   exportBtn: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
+    backgroundColor: DS.borderHighlight,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
-  exportBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  exportBtnDisabled: { backgroundColor: 'rgba(181,133,44,0.12)' },
+  exportBtnText: { color: DS.textPrimary, fontSize: 12, fontWeight: '900' },
+  exportBtnDisabled: { backgroundColor: DS.border },
 
   // Pick button (import tab)
   pickBtn: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
+    backgroundColor: DS.borderHighlight,
     borderRadius: 6,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
   },
   pickBtnText: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 1,
@@ -391,15 +392,15 @@ const styles = StyleSheet.create({
 
   // Preview card
   previewCard: {
-    backgroundColor: '#141810',
+    backgroundColor: DS.bgCardAlt,
     borderRadius: 6,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.3)',
+    borderColor: DS.borderHighlight,
     gap: 10,
   },
   previewKicker: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -409,49 +410,49 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  previewLabel: { color: '#b8c0b0', fontSize: 13 },
-  previewValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  previewLabel: { color: DS.textSecondary, fontSize: 13 },
+  previewValue: { color: DS.textPrimary, fontSize: 13, fontWeight: '800' },
   importBtn: {
-    backgroundColor: 'rgba(181,133,44,0.3)',
+    backgroundColor: DS.borderHighlight,
     borderRadius: 6,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
   },
   importBtnText: {
-    color: '#FFFFFF',
+    color: DS.textPrimary,
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  clearLink: { color: '#b8c0b0', fontSize: 12, textAlign: 'center', marginTop: 4 },
+  clearLink: { color: DS.textSecondary, fontSize: 12, textAlign: 'center', marginTop: 4 },
 
   // Info card
   infoCard: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     gap: 6,
   },
   infoTitle: {
-    color: '#B5852C',
+    color: DS.gold,
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  infoText: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
+  infoText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 
   // Empty card
   emptyCard: {
-    backgroundColor: '#0c1008',
+    backgroundColor: DS.bgCard,
     borderRadius: 6,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(181,133,44,0.12)',
+    borderColor: DS.border,
     gap: 8,
   },
-  emptyTitle: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  emptyText: { color: '#b8c0b0', fontSize: 13, lineHeight: 20 },
+  emptyTitle: { color: DS.textPrimary, fontSize: 16, fontWeight: '900' },
+  emptyText: { color: DS.textSecondary, fontSize: 13, lineHeight: 20 },
 });

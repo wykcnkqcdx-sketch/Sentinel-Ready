@@ -1,3 +1,4 @@
+import { DS } from '@/constants/theme';
 import { tokens as T } from '@/src/theme/tokens';
 import BarChart from '@/src/components/charts/BarChart';
 import SparkLine from '@/src/components/charts/SparkLine';
@@ -96,7 +97,7 @@ export default function ProgressionScreen() {
 
   if (isLoading) return <View style={styles.screen} />;
 
-  const readinessColor = readinessData.trend === 'up' ? '#91e6a3' : readinessData.trend === 'down' ? '#e05050' : '#ffaa44';
+  const readinessColor = readinessData.trend === 'up' ? '#91e6a3' : readinessData.trend === 'down' ? DS.danger : DS.warning;
 
   return (
     <View style={styles.screen}>
@@ -206,9 +207,9 @@ export default function ProgressionScreen() {
 
 const pgn = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  kicker: { color: '#B5852C', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  dataBadge: { borderWidth: 1, borderColor: 'rgba(181,133,44,0.3)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  dataBadgeText: { color: '#B5852C', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  kicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  dataBadge: { borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  dataBadgeText: { color: DS.gold, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });
 
 const styles = StyleSheet.create({
