@@ -465,6 +465,16 @@ export default function ATAKScreen() {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => router.push('/salute-log')}
+            accessibilityRole="button"
+            accessibilityLabel="Open SALUTE report log"
+          >
+            <Text style={styles.actionBtnTitle}>SALUTE LOG</Text>
+            <Text style={styles.actionBtnSub}>field reports</Text>
+          </TouchableOpacity>
+
         </View>
       </View>
 
