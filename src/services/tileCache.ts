@@ -1,9 +1,11 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import { Platform } from 'react-native';
 import type { MapLayerKey } from '../utils/mapTiles';
 import { getTileUrl } from '../utils/mapTiles';
 
 const TILE_DIR = (FileSystem.cacheDirectory ?? '') + 'maptiles/';
 export const MAX_CACHE_BYTES = 500 * 1024 * 1024; // 500 MB
+const HAS_NATIVE_FILE_CACHE = Platform.OS !== 'web' && Boolean(FileSystem.cacheDirectory);
 
 export function latLonToTileXY(lat: number, lon: number, zoom: number): { x: number; y: number } {
   const tileCount = Math.pow(2, zoom);
@@ -90,6 +92,7 @@ function localPath(layer: MapLayerKey, zoom: number, x: number, y: number): stri
 }
 
 async function ensureDir(path: string): Promise<void> {
+  if (!HAS_NATIVE_FILE_CACHE) return;
   const info = await FileSystem.getInfoAsync(path);
   if (!info.exists) {
     await FileSystem.makeDirectoryAsync(path, { intermediates: true });
@@ -102,6 +105,10 @@ export async function getResolvedTileUri(
   x: number,
   y: number,
 ): Promise<string> {
+  if (!HAS_NATIVE_FILE_CACHE) {
+    return getTileUrl(layer, zoom, x, y);
+  }
+
   const path = localPath(layer, zoom, x, y);
   const info = await FileSystem.getInfoAsync(path);
   if (info.exists) {
@@ -117,6 +124,11 @@ export async function downloadTileList(
   signal?: AbortSignal,
   isPaused?: () => boolean,
 ): Promise<{ downloaded: number; skipped: number; failed: number }> {
+  if (!HAS_NATIVE_FILE_CACHE) {
+    onProgress(allTiles.length, allTiles.length);
+    return { downloaded: 0, skipped: 0, failed: allTiles.length };
+  }
+
   let downloaded = 0;
   let skipped = 0;
   let failed = 0;
@@ -183,6 +195,8 @@ export async function downloadRoute(
 }
 
 export async function getCacheStats(): Promise<{ tileCount: number; totalBytes: number }> {
+  if (!HAS_NATIVE_FILE_CACHE) return { tileCount: 0, totalBytes: 0 };
+
   const rootInfo = await FileSystem.getInfoAsync(TILE_DIR);
   if (!rootInfo.exists) return { tileCount: 0, totalBytes: 0 };
 
@@ -221,10 +235,13 @@ export async function getCacheStats(): Promise<{ tileCount: number; totalBytes: 
 }
 
 export async function clearTileCache(): Promise<void> {
+  if (!HAS_NATIVE_FILE_CACHE) return;
   await FileSystem.deleteAsync(TILE_DIR, { idempotent: true });
 }
 
 export async function pruneCacheToSize(targetBytes: number): Promise<void> {
+  if (!HAS_NATIVE_FILE_CACHE) return;
+
   const rootInfo = await FileSystem.getInfoAsync(TILE_DIR);
   if (!rootInfo.exists) return;
 

@@ -1,5 +1,4 @@
 import type { TrackPoint } from '@/src/types/map';
-import { tilesForBounds } from '@/src/services/tileCache';
 
 export type MapBounds = {
   minLat: number;
@@ -51,8 +50,29 @@ export function getBoundsOutline(bounds: MapBounds): TrackPoint[] {
   ];
 }
 
+function latLonToTileXY(lat: number, lon: number, zoom: number): { x: number; y: number } {
+  const tileCount = Math.pow(2, zoom);
+  const x = Math.floor(((lon + 180) / 360) * tileCount);
+  const latRad = (lat * Math.PI) / 180;
+  const y = Math.floor(
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * tileCount,
+  );
+  return { x, y };
+}
+
+export function countTilesForBounds(bounds: MapBounds, zoom: number): number {
+  const topLeft = latLonToTileXY(bounds.maxLat, bounds.minLon, zoom);
+  const bottomRight = latLonToTileXY(bounds.minLat, bounds.maxLon, zoom);
+  const tileCount = Math.pow(2, zoom);
+  const minX = Math.max(0, topLeft.x);
+  const maxX = Math.min(tileCount - 1, bottomRight.x);
+  const minY = Math.max(0, topLeft.y);
+  const maxY = Math.min(tileCount - 1, bottomRight.y);
+  return Math.max(0, maxX - minX + 1) * Math.max(0, maxY - minY + 1);
+}
+
 export function estimateTileCountForBounds(bounds: MapBounds, zoomLevels: number[]): number {
-  return zoomLevels.reduce((sum, zoom) => sum + tilesForBounds(bounds, zoom).length, 0);
+  return zoomLevels.reduce((sum, zoom) => sum + countTilesForBounds(bounds, zoom), 0);
 }
 
 export function formatBounds(bounds: MapBounds) {

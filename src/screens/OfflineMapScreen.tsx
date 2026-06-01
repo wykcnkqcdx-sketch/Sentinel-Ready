@@ -10,6 +10,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import {
   clearTileCache,
@@ -34,6 +35,7 @@ const LAST_POSITION_KEY = 'sentinel_last_position';
 const DUBLIN = { latitude: 53.3498, longitude: -6.2603 };
 const ZOOM_LEVELS = [13, 14, 15];
 const BYTES_PER_TILE_ESTIMATE = 15 * 1024; // 15 KB
+const OFFLINE_DOWNLOADS_AVAILABLE = Platform.OS !== 'web';
 
 type Radius = 5 | 10 | 20;
 type LayerOption = { key: MapLayerKey; label: string };
@@ -105,6 +107,11 @@ export default function OfflineMapScreen() {
   const regionMode = selectedBounds ? 'Selected box' : `${radius} km radius`;
 
   const handleDownload = useCallback(async () => {
+    if (!OFFLINE_DOWNLOADS_AVAILABLE) {
+      setStatusMsg('Offline tile downloads are available in the native app. Web preview can plan and estimate regions only.');
+      return;
+    }
+
     const estimatedBytes = estimatedTiles * BYTES_PER_TILE_ESTIMATE;
     if (stats.totalBytes + estimatedBytes > MAX_CACHE_BYTES) {
       Alert.alert(
@@ -204,10 +211,10 @@ export default function OfflineMapScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>LOCATION</Text>
+        <Text style={styles.cardLabel}>{selectedBounds ? 'SELECTED BOUNDS' : 'LOCATION'}</Text>
         {position ? (
           <Text style={styles.cardValue}>
-            {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)}
+            {selectedBounds ? formatBounds(selectedBounds) : `${position.latitude.toFixed(4)}, ${position.longitude.toFixed(4)}`}
           </Text>
         ) : (
           <Text style={styles.cardValueMuted}>Location unavailable</Text>
@@ -219,22 +226,48 @@ export default function OfflineMapScreen() {
         <Text style={om2.previewKicker}>[ REGION PREVIEW ]</Text>
         <View style={om2.mapWrap}>
           <RuckMapView
-            routePoints={[]}
-            currentPosition={position
-              ? { latitude: position.latitude, longitude: position.longitude, altitude: null, accuracy: null, timestamp: 0 }
-              : null}
+            routePoints={previewOutline}
+            currentPosition={selectedBounds ? toTrackPoint(previewCenter) : position ? toTrackPoint(position) : null}
             layer={layer}
             zoom={12}
-            interactive={false}
+            interactive={!downloading}
             showGpsStatus={false}
             fullHeight
+            onDropWaypoint={downloading ? undefined : handleRegionTap}
           />
         </View>
-        <Text style={om2.previewSub}>{radius} km radius · {layer.toUpperCase()} tiles</Text>
+        <Text style={om2.previewSub}>
+          {regionMode} - {selectionCorners.length < 2 ? 'Tap two map corners to draw a box' : 'Box locked for download'} - {layer.toUpperCase()} tiles
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <View style={om2.selectionHeader}>
+          <View style={styles.selectionCopy}>
+            <Text style={styles.cardLabel}>REGION SELECTION</Text>
+            <Text style={styles.cardValue}>
+              {selectionCorners.length === 0
+                ? 'Tap map for corner A'
+                : selectionCorners.length === 1
+                  ? 'Tap map for corner B'
+                  : 'Bounding box ready'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[om2.clearSelectionButton, selectionCorners.length === 0 && styles.disabledButton]}
+            onPress={() => setSelectionCorners([])}
+            disabled={selectionCorners.length === 0}
+            accessibilityRole="button"
+            accessibilityLabel="Clear selected offline map region"
+          >
+            <Text style={om2.clearSelectionText}>CLEAR BOX</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardLabel}>REGION SIZE</Text>
+        <Text style={styles.helperText}>Used when no bounding box is selected.</Text>
         <View style={styles.pillRow}>
           {([5, 10, 20] as Radius[]).map((r) => (
             <TouchableOpacity
@@ -272,6 +305,14 @@ export default function OfflineMapScreen() {
         </Text>
       </View>
 
+      {!OFFLINE_DOWNLOADS_AVAILABLE ? (
+        <View style={styles.statusCard}>
+          <Text style={styles.statusText}>
+            Web preview supports region planning. Tile files are cached only in the native app.
+          </Text>
+        </View>
+      ) : null}
+
       {downloading && (
         <View style={styles.card}>
           <Text style={styles.cardLabel}>DOWNLOADING</Text>
@@ -288,8 +329,13 @@ export default function OfflineMapScreen() {
       )}
 
       {!downloading && (
-        <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
-          <Text style={styles.downloadButtonText}>[ DOWNLOAD REGION ]</Text>
+        <TouchableOpacity
+          style={[styles.downloadButton, !OFFLINE_DOWNLOADS_AVAILABLE && styles.downloadButtonDisabled]}
+          onPress={handleDownload}
+        >
+          <Text style={styles.downloadButtonText}>
+            {OFFLINE_DOWNLOADS_AVAILABLE ? '[ DOWNLOAD REGION ]' : '[ NATIVE DOWNLOAD ONLY ]'}
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -320,7 +366,7 @@ export default function OfflineMapScreen() {
         <Text style={om2.routeDataKicker}>[ ROUTE DATA ]</Text>
         <View style={om2.routeDataRow}>
           <View style={om2.routeDataStat}>
-            <Text style={om2.routeDataValue}>{radius} km</Text>
+            <Text style={om2.routeDataValue}>{selectedBounds ? 'BOX' : `${radius} km`}</Text>
             <Text style={om2.routeDataLabel}>Region</Text>
           </View>
           <View style={om2.routeDataDivider} />
@@ -360,6 +406,9 @@ const styles = StyleSheet.create({
   cardLabel: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   cardValue: { color: DS.textPrimary, fontSize: 15, fontWeight: '700' },
   cardValueMuted: { color: '#6f7d70', fontSize: 15, fontWeight: '700' },
+  helperText: { color: DS.textSecondary, fontSize: 12, fontWeight: '700', lineHeight: 18 },
+  selectionCopy: { flex: 1, gap: 4 },
+  disabledButton: { opacity: 0.45 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     borderWidth: 1,
@@ -403,6 +452,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
+  downloadButtonDisabled: { opacity: 0.58 },
   downloadButtonText: { color: '#080c05', fontSize: 15, fontWeight: '900' },
   statusCard: {
     backgroundColor: DS.bgCardAlt,
@@ -435,6 +485,9 @@ const om2 = StyleSheet.create({
   previewKicker: { color: DS.gold, fontSize: 10, fontWeight: '900', letterSpacing: 1.6, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 8 },
   mapWrap: { height: 240, width: '100%' },
   previewSub: { color: DS.textSecondary, fontSize: 11, fontWeight: '700', paddingHorizontal: 14, paddingTop: 8, paddingBottom: 12 },
+  selectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  clearSelectionButton: { borderWidth: 1, borderColor: DS.borderHighlight, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  clearSelectionText: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   routeDataCard: { backgroundColor: DS.bgCard, borderRadius: 6, padding: 16, borderWidth: 1, borderColor: 'rgba(181,133,44,0.22)', gap: 14 },
   routeDataKicker: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.4 },
   routeDataRow: { flexDirection: 'row', alignItems: 'center' },
