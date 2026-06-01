@@ -10,8 +10,9 @@ import {
   getReadinessNumber,
   isFatigueWatch,
 } from '@/src/utils/trainingLogUtils';
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function daysSince(dateStr: string): number {
   const then = new Date(dateStr + 'T00:00:00').getTime();
@@ -77,6 +78,7 @@ function getProtocol(score: number) {
 export default function RecoveryScreen() {
   const { logs, isLoading } = useTraining();
   const { injuryNotes } = useUser();
+  const router = useRouter();
 
   const recentSorted = useMemo(
     () => [...logs].sort((a, b) => {
@@ -199,6 +201,14 @@ export default function RecoveryScreen() {
         </View>
         <Text style={styles.scoreMessage}>{injuryWatch.message}</Text>
         <Text style={styles.debtAction}>{injuryWatch.action}</Text>
+        <TouchableOpacity
+          style={styles.injuryLogButton}
+          onPress={() => router.push('/injury-log')}
+          accessibilityRole="button"
+          accessibilityLabel="Open injury log"
+        >
+          <Text style={styles.injuryLogButtonText}>OPEN INJURY LOG</Text>
+        </TouchableOpacity>
         <View style={styles.debtFactorRow}>
           {injuryWatch.flags.slice(0, 4).map((flag) => (
             <View key={flag} style={styles.debtFactor}>
@@ -348,6 +358,8 @@ const styles = StyleSheet.create({
   debtScore: { color: DS.textPrimary, fontSize: 38, fontWeight: '900', marginTop: 3 },
   debtScoreRed: { color: DS.warning, fontSize: 38, fontWeight: '900', marginTop: 3 },
   debtAction: { color: DS.textPrimary, fontSize: 13, lineHeight: 20, fontWeight: '800' },
+  injuryLogButton: { minHeight: 44, borderRadius: 6, backgroundColor: DS.gold, alignItems: 'center', justifyContent: 'center' },
+  injuryLogButtonText: { color: DS.bgPrimary, fontSize: 12, fontWeight: '900', letterSpacing: 1.2 },
   debtFactorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   debtFactor: { backgroundColor: DS.bgPrimary, borderRadius: 999, borderWidth: 1, borderColor: DS.border, paddingHorizontal: 10, paddingVertical: 6 },
   debtFactorText: { color: DS.textSecondary, fontSize: 11, fontWeight: '800' },
