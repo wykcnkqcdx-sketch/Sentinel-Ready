@@ -1,16 +1,52 @@
 import React, { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import type { TrackPoint } from '@/src/types/map';
+import { distanceBetween } from '@/src/utils/mapUtils';
+import type { PlannedRuckRoute } from '@/src/utils/ruckRouteUtils';
 import { buildLiveRuckSafetyAlerts } from '@/src/utils/ruckSafety';
 import type { RuckMissionDraft } from './MissionSetupPanel';
 import { formatDuration, getNumberInput, progressPercent } from './ruckPanelUtils';
 
+function distanceToRouteMeters(point: TrackPoint, routePoints: TrackPoint[]): number | null {
+  if (routePoints.length === 0) return null;
+  if (routePoints.length === 1) return distanceBetween(point, routePoints[0]) * 1000;
+
+  const metersPerLat = 111320;
+  const metersPerLon = 111320 * Math.cos(point.latitude * Math.PI / 180);
+  const px = 0;
+  const py = 0;
+  let best = Infinity;
+
+  for (let i = 1; i < routePoints.length; i += 1) {
+    const a = routePoints[i - 1];
+    const b = routePoints[i];
+    const ax = (a.longitude - point.longitude) * metersPerLon;
+    const ay = (a.latitude - point.latitude) * metersPerLat;
+    const bx = (b.longitude - point.longitude) * metersPerLon;
+    const by = (b.latitude - point.latitude) * metersPerLat;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const lengthSq = dx * dx + dy * dy;
+    const t = lengthSq > 0 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSq)) : 0;
+    const closestX = ax + dx * t;
+    const closestY = ay + dy * t;
+    best = Math.min(best, Math.hypot(px - closestX, py - closestY));
+  }
+
+  return Number.isFinite(best) ? best : null;
+}
+
 export const MissionProgressPanel = memo(function MissionProgressPanel({
   draft,
+  plannedRoute,
+  currentPosition,
   distanceKm,
   elapsedSeconds,
   gpsQualityWarning,
 }: {
   draft: RuckMissionDraft;
+  plannedRoute: PlannedRuckRoute | null;
+  currentPosition: TrackPoint | null;
   distanceKm: number;
   elapsedSeconds: number;
   gpsQualityWarning: string | null;
@@ -51,6 +87,16 @@ export const MissionProgressPanel = memo(function MissionProgressPanel({
     packWeightKg: packWeight,
     gpsQualityWarning,
   }).slice(0, 2);
+  const routeDistanceMeters = currentPosition && plannedRoute
+    ? distanceToRouteMeters(currentPosition, plannedRoute.points)
+    : null;
+  const isOffRoute = routeDistanceMeters != null && routeDistanceMeters > 80;
+  const nextPlannedIndex = plannedRoute && plannedRoute.points.length > 1
+    ? Math.min(
+        plannedRoute.points.length - 1,
+        Math.max(1, Math.ceil((distanceKm / Math.max(plannedRoute.distanceKm, 0.1)) * (plannedRoute.points.length - 1))),
+      )
+    : null;
 
   return (
     <View style={styles.progressPanel} pointerEvents="none">
@@ -78,6 +124,21 @@ export const MissionProgressPanel = memo(function MissionProgressPanel({
         Next checkpoint {nextCheckpoint > 0 ? `${nextCheckpoint.toFixed(1)} km` : '--'}
         {paceDelta !== 0 ? ` · ${paceDelta > 0 ? '+' : ''}${Math.abs(paceDelta).toFixed(1)} min/km target` : ''}
       </Text>
+      {plannedRoute ? (
+        <View style={styles.planRow}>
+          <Text style={styles.progressLabel}>PLAN</Text>
+          <View style={[styles.routeBadge, isOffRoute ? styles.routeBadgeWarn : styles.routeBadgeGood]}>
+            <Text style={styles.routeBadgeText}>
+              {routeDistanceMeters == null ? 'PLANNED' : isOffRoute ? 'OFF ROUTE' : 'ON ROUTE'}
+            </Text>
+          </View>
+          <Text style={styles.routeMeta} numberOfLines={1}>
+            {plannedRoute.name}
+            {nextPlannedIndex != null ? ` - CP ${nextPlannedIndex}/${plannedRoute.points.length - 1}` : ''}
+            {routeDistanceMeters != null ? ` - ${Math.round(routeDistanceMeters)} m` : ''}
+          </Text>
+        </View>
+      ) : null}
       <Text style={projectedDelta > 0 ? styles.progressWarn : styles.progressGood}>
         Projected finish {projectedFinishMinutes > 0 ? formatDuration(Math.round(projectedFinishMinutes)) : '--'}
         {projectedDelta !== 0 ? ` · ${projectedDelta > 0 ? '+' : ''}${Math.round(projectedDelta)} min` : ''}
@@ -138,6 +199,12 @@ const styles = StyleSheet.create({
   progressFillWarn: { height: '100%', backgroundColor: '#ffaa44' },
   progressValue: { width: 34, color: '#ffffff', fontSize: 10, fontWeight: '900', textAlign: 'right' },
   progressHint: { color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
+  planRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  routeBadge: { borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  routeBadgeGood: { backgroundColor: '#B5852C' },
+  routeBadgeWarn: { backgroundColor: '#ffaa44' },
+  routeBadgeText: { color: '#080c05', fontSize: 10, fontWeight: '900' },
+  routeMeta: { flex: 1, color: '#b8c0b0', fontSize: 11, fontWeight: '800' },
   progressGood: { color: '#B5852C', fontSize: 11, fontWeight: '900' },
   progressWarn: { color: '#ffaa44', fontSize: 11, fontWeight: '900' },
   riskRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

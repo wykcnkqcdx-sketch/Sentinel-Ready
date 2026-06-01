@@ -1,25 +1,28 @@
 import { DS } from '@/constants/theme';
 import { useCallback, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import type { RuckFilter, RuckRoute } from '@/src/utils/ruckRouteUtils';
-import { filterRoutes, MOCK_ROUTES, searchRoutes } from '@/src/utils/ruckRouteUtils';
+import type { PlannedRuckRoute, RuckFilter, RuckRoute } from '@/src/utils/ruckRouteUtils';
+import { filterRoutes, MOCK_ROUTES, searchRoutes, toPlannedRuckRoute } from '@/src/utils/ruckRouteUtils';
 import type { MapLayerKey } from '@/src/utils/mapTiles';
 import { RuckMapView } from './RuckMapView';
 import { RuckMapActionButtons } from './RuckMapActionButtons';
 import { RuckRouteCard } from './RuckRouteCard';
 import { RuckRouteFilterChips } from './RuckRouteFilterChips';
+import { RuckRoutePlanner } from './RuckRoutePlanner';
 import { RuckRouteSearchBar } from './RuckRouteSearchBar';
 
 const DEFAULT_LAYER: MapLayerKey = 'topo';
 
 interface RuckRouteExplorerProps {
   onNavigateToTrack?: () => void;
+  onStartRoute?: (route: PlannedRuckRoute) => void;
 }
 
-export function RuckRouteExplorer({ onNavigateToTrack }: RuckRouteExplorerProps) {
+export function RuckRouteExplorer({ onNavigateToTrack, onStartRoute }: RuckRouteExplorerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<RuckFilter>('All Routes');
   const [routeIndex, setRouteIndex] = useState(0);
+  const [isPlanning, setIsPlanning] = useState(false);
 
   const visibleRoutes = filterRoutes(searchRoutes(MOCK_ROUTES, searchQuery), activeFilter);
   const safeIndex = Math.min(routeIndex, Math.max(0, visibleRoutes.length - 1));
@@ -34,12 +37,22 @@ export function RuckRouteExplorer({ onNavigateToTrack }: RuckRouteExplorerProps)
   };
 
   const handleStartRuck = useCallback((route: RuckRoute) => {
+    onStartRoute?.(toPlannedRuckRoute(route));
     if (onNavigateToTrack) {
       onNavigateToTrack();
     } else {
       Alert.alert('START RUCK', `Switch to the Mission tab to begin GPS tracking on ${route.name}.`);
     }
-  }, [onNavigateToTrack]);
+  }, [onNavigateToTrack, onStartRoute]);
+
+  const handleStartPlan = useCallback((route: PlannedRuckRoute) => {
+    onStartRoute?.(route);
+    if (onNavigateToTrack) {
+      onNavigateToTrack();
+    } else {
+      Alert.alert('START RUCK', `Switch to the Mission tab to begin GPS tracking on ${route.name}.`);
+    }
+  }, [onNavigateToTrack, onStartRoute]);
 
   const handleFilterChange = useCallback((filter: RuckFilter) => {
     setActiveFilter(filter);
@@ -53,6 +66,15 @@ export function RuckRouteExplorer({ onNavigateToTrack }: RuckRouteExplorerProps)
 
   const handlePrev = safeIndex > 0 ? () => setRouteIndex(safeIndex - 1) : undefined;
   const handleNext = safeIndex < visibleRoutes.length - 1 ? () => setRouteIndex(safeIndex + 1) : undefined;
+
+  if (isPlanning) {
+    return (
+      <RuckRoutePlanner
+        onCancel={() => setIsPlanning(false)}
+        onStartPlan={handleStartPlan}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -82,7 +104,7 @@ export function RuckRouteExplorer({ onNavigateToTrack }: RuckRouteExplorerProps)
         onLayers={() => Alert.alert('LAYERS', 'Map layer selection coming soon.')}
         onLocate={() => Alert.alert('LOCATE', 'Centering on current position.')}
         onTerrain={() => Alert.alert('3D TERRAIN', '3D terrain view coming soon.')}
-        onCreateRoute={() => Alert.alert('CREATE ROUTE', 'Route creation coming soon.')}
+        onCreateRoute={() => setIsPlanning(true)}
       />
 
       <RuckRouteCard

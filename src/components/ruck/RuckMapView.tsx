@@ -77,6 +77,7 @@ function useResolvedTileUris(tiles: MapTile[]): Map<string, string> {
 
 export interface RuckMapViewProps {
   routePoints: TrackPoint[];
+  plannedRoutePoints?: TrackPoint[];
   currentPosition: TrackPoint | null;
   layer: MapLayerKey;
   zoom?: number;
@@ -94,6 +95,7 @@ type MeasurePoint = { latitude: number; longitude: number };
 
 export function RuckMapView({
   routePoints,
+  plannedRoutePoints = [],
   currentPosition,
   layer,
   zoom = 15,
@@ -166,6 +168,10 @@ export function RuckMapView({
   const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
   const uriMap = useResolvedTileUris(tiles);
 
+  const projectedPlannedPoints = Svg && Polyline && plannedRoutePoints.length >= 2
+    ? getMercatorRoutePoints(plannedRoutePoints, center, viewport, mapZoom)
+    : [];
+
   const projectedPoints = Svg && Polyline && routePoints.length >= 2
     ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
     : [];
@@ -175,6 +181,7 @@ export function RuckMapView({
     : null;
 
   const polylinePoints = projectedPoints.map((p) => `${p.x},${p.y}`).join(' ');
+  const plannedPolylinePoints = projectedPlannedPoints.map((p) => `${p.x},${p.y}`).join(' ');
 
   const mgrsLabel = useMemo(
     () => formatCoordinate(center.latitude, center.longitude, 'mgrs'),
@@ -265,6 +272,30 @@ export function RuckMapView({
 
       {Svg && (Polyline || Circle) && (
         <Svg width={viewport.width} height={viewport.height} style={StyleSheet.absoluteFill}>
+          {Polyline && projectedPlannedPoints.length >= 2 && (
+            <>
+              <Polyline
+                points={plannedPolylinePoints}
+                fill="none"
+                stroke="#0F1115"
+                strokeWidth={7}
+                strokeOpacity={0.85}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="10,7"
+              />
+              <Polyline
+                points={plannedPolylinePoints}
+                fill="none"
+                stroke="#FFB08A"
+                strokeWidth={4}
+                strokeOpacity={0.95}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="10,7"
+              />
+            </>
+          )}
           {Polyline && projectedPoints.length >= 2 && (
             <>
               <Polyline
@@ -302,6 +333,26 @@ export function RuckMapView({
               cx={projectedCurrent.x}
               cy={projectedCurrent.y}
               r={9}
+              fill="#FC4C02"
+              stroke="#0F1115"
+              strokeWidth={3}
+            />
+          )}
+          {Circle && projectedPlannedPoints.length >= 1 && (
+            <Circle
+              cx={projectedPlannedPoints[0].x}
+              cy={projectedPlannedPoints[0].y}
+              r={7}
+              fill="#35C759"
+              stroke="#0F1115"
+              strokeWidth={3}
+            />
+          )}
+          {Circle && projectedPlannedPoints.length >= 2 && (
+            <Circle
+              cx={projectedPlannedPoints[projectedPlannedPoints.length - 1].x}
+              cy={projectedPlannedPoints[projectedPlannedPoints.length - 1].y}
+              r={7}
               fill="#FC4C02"
               stroke="#0F1115"
               strokeWidth={3}

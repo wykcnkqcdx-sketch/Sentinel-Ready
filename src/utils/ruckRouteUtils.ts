@@ -34,6 +34,11 @@ export interface RuckRoute {
   description?: string;
 }
 
+export type PlannedRuckRoute = RuckRoute & {
+  checkpointCount: number;
+  createdAt: string;
+};
+
 function tp(lat: number, lon: number): TrackPoint {
   return { latitude: lat, longitude: lon, altitude: null, accuracy: null, timestamp: 0 };
 }
@@ -227,6 +232,62 @@ export function formatEstimatedTime(minutes: number): string {
   if (hrs > 0 && mins > 0) return `${hrs}h ${mins}m`;
   if (hrs > 0) return `${hrs}h`;
   return `${mins}m`;
+}
+
+export function calculateRouteDistanceKm(points: TrackPoint[]): number {
+  if (points.length < 2) return 0;
+  let total = 0;
+  for (let i = 1; i < points.length; i += 1) {
+    const prev = points[i - 1];
+    const next = points[i];
+    const p = 0.017453292519943295; // Math.PI / 180
+    const c = Math.cos;
+    const haversine =
+      0.5 -
+      c((next.latitude - prev.latitude) * p) / 2 +
+      (c(prev.latitude * p) * c(next.latitude * p) * (1 - c((next.longitude - prev.longitude) * p))) / 2;
+    total += 12742 * Math.asin(Math.sqrt(haversine));
+  }
+  return total;
+}
+
+export function estimateRouteMinutes(distanceKm: number, paceMinutesPerKm = 12): number {
+  if (distanceKm <= 0) return 0;
+  return Math.max(1, Math.round(distanceKm * paceMinutesPerKm));
+}
+
+export function toPlannedRuckRoute(route: RuckRoute): PlannedRuckRoute {
+  return {
+    ...route,
+    checkpointCount: Math.max(0, route.points.length - 2),
+    createdAt: new Date().toISOString(),
+  };
+}
+
+export function buildPlannedRouteFromPoints(points: TrackPoint[], name = 'Custom Route'): PlannedRuckRoute {
+  const distanceKm = calculateRouteDistanceKm(points);
+  const estimatedMinutes = estimateRouteMinutes(distanceKm);
+  const startPoint = {
+    latitude: points[0]?.latitude ?? 53.3498,
+    longitude: points[0]?.longitude ?? -6.2603,
+  };
+  return {
+    id: `planned-${Date.now()}`,
+    name,
+    difficulty: distanceKm >= 15 ? 'Hard' : distanceKm >= 10 ? 'Moderate' : 'Steady',
+    distanceKm,
+    elevationGainMeters: 0,
+    estimatedMinutes,
+    surface: 'Mixed',
+    ruckRisk: distanceKm >= 15 ? 'Medium' : 'Low',
+    loadSuitability: '10-25 kg',
+    maxLoadKg: 25,
+    points,
+    startPoint,
+    description: 'User-planned route built from map checkpoints.',
+    checkpointCount: Math.max(0, points.length - 2),
+    createdAt: new Date().toISOString(),
+  };
 }
 
 export function filterRoutes(routes: RuckRoute[], filter: RuckFilter): RuckRoute[] {

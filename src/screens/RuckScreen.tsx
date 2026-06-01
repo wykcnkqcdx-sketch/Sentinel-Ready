@@ -11,6 +11,7 @@ import { TrainingLog, useTraining } from '@/src/screens/TrainingContext';
 import { buildReadinessTrend, isFatigueWatch } from '@/src/utils/trainingLogUtils';
 import { parseGeoJsonOverlay, parseKmlOverlay, extractKmlFromKmz } from '@/src/utils/fieldMapping';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
+import type { PlannedRuckRoute } from '@/src/utils/ruckRouteUtils';
 import { DS } from '@/constants/theme';
 
 
@@ -225,6 +226,7 @@ export default function RuckScreen() {
   const [activeTab, setActiveTab] = useState<'stats' | 'track' | 'routes'>('track');
   const [saveDraft, setSaveDraft] = useState<RuckSaveDraft>(DEFAULT_RUCK_SAVE_DRAFT);
   const [missionDraft, setMissionDraft] = useState<RuckMissionDraft>(DEFAULT_RUCK_MISSION_DRAFT);
+  const [plannedRoute, setPlannedRoute] = useState<PlannedRuckRoute | null>(null);
   const tracking = useRuckTracking();
   const { logs, isLoading, addLog } = useTraining();
   const [overlays, setOverlays] = useState<MapOverlay[]>([]);
@@ -297,14 +299,17 @@ export default function RuckScreen() {
           targetDistanceKm,
           targetMinutes,
           checkpointIntervalKm,
+          plannedRouteName: plannedRoute?.name,
+          plannedRoutePoints: plannedRoute?.points,
         },
       },
     });
     tracking.resetSession();
+    setPlannedRoute(null);
     setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT);
     setActiveTab('stats');
     router.push({ pathname: '/ruck-review/[id]', params: { id: String(savedLog.id) } });
-  }, [tracking, saveDraft, missionDraft, addLog, router]);
+  }, [tracking, saveDraft, missionDraft, plannedRoute, addLog, router]);
 
   const handleDiscardDraft = useCallback(() => setSaveDraft(DEFAULT_RUCK_SAVE_DRAFT), []);
   const handleMissionDraftChange = useCallback((draft: RuckMissionDraft) => {
@@ -313,6 +318,21 @@ export default function RuckScreen() {
     AsyncStorage.setItem(RUCK_MISSION_STORAGE_KEY, JSON.stringify(draft)).catch((error) =>
       console.error('Failed to save ruck mission defaults', error)
     );
+  }, []);
+  const handleStartPlannedRoute = useCallback((route: PlannedRuckRoute) => {
+    const draft = {
+      targetDistanceKm: route.distanceKm.toFixed(1),
+      targetMinutes: String(route.estimatedMinutes),
+      packWeightKg: String(Math.min(route.maxLoadKg, 15)),
+      checkpointIntervalKm: '1',
+    };
+    setPlannedRoute(route);
+    setMissionDraft(draft);
+    setSaveDraft((prev) => ({ ...prev, packWeightKg: draft.packWeightKg }));
+    AsyncStorage.setItem(RUCK_MISSION_STORAGE_KEY, JSON.stringify(draft)).catch((error) =>
+      console.error('Failed to save ruck mission defaults', error)
+    );
+    setActiveTab('track');
   }, []);
   const handleReviewRuck = useCallback((id: number) => {
     router.push({ pathname: '/ruck-review/[id]', params: { id: String(id) } });
@@ -469,7 +489,10 @@ export default function RuckScreen() {
 
       {/* Routes tab */}
       {activeTab === 'routes' ? (
-        <RuckRouteExplorer onNavigateToTrack={() => setActiveTab('track')} />
+        <RuckRouteExplorer
+          onNavigateToTrack={() => setActiveTab('track')}
+          onStartRoute={handleStartPlannedRoute}
+        />
       ) : activeTab === 'stats' ? (
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
           <Text style={styles.subtitle}>
@@ -706,6 +729,7 @@ export default function RuckScreen() {
           loadingOverlay={loadingOverlay}
           missionDraft={missionDraft}
           saveDraft={saveDraft}
+          plannedRoute={plannedRoute}
           onMissionDraftChange={handleMissionDraftChange}
           onSaveDraftChange={setSaveDraft}
           onImportOverlay={handleImportOverlay}

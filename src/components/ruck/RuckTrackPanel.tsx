@@ -20,7 +20,8 @@ import {
 import { getNumberInput } from '@/src/components/ruck/ruckPanelUtils';
 import { useRuckTracking } from '@/src/hooks/useRuckTracking';
 import type { MapOverlay } from '@/src/utils/fieldMapping';
-import React, { memo, useState } from 'react';
+import type { PlannedRuckRoute } from '@/src/utils/ruckRouteUtils';
+import React, { memo, useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -41,6 +42,7 @@ export type RuckTrackPanelProps = {
   loadingOverlay: boolean;
   missionDraft: RuckMissionDraft;
   saveDraft: RuckSaveDraft;
+  plannedRoute: PlannedRuckRoute | null;
   onMissionDraftChange: (draft: RuckMissionDraft) => void;
   onSaveDraftChange: (draft: RuckSaveDraft) => void;
   onImportOverlay: () => void;
@@ -56,6 +58,7 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   loadingOverlay,
   missionDraft,
   saveDraft,
+  plannedRoute,
   onMissionDraftChange,
   onSaveDraftChange,
   onImportOverlay,
@@ -76,10 +79,17 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
   const isMeasureMode = !isFinished && displayMode === 'measure';
   const mapInteractive = !isFinished && (displayMode === 'map' || displayMode === 'measure');
 
+  useEffect(() => {
+    if (plannedRoute && tracking.trackingState === 'idle') {
+      setDisplayMode('mission');
+    }
+  }, [plannedRoute, tracking.trackingState]);
+
   return (
     <View style={styles.container}>
       <RuckMapView
         routePoints={tracking.routePoints}
+        plannedRoutePoints={plannedRoute?.points ?? []}
         currentPosition={tracking.currentPosition}
         layer={tracking.activeLayer}
         overlays={showMapTools ? overlays : []}
@@ -133,6 +143,8 @@ export const RuckTrackPanel = memo(function RuckTrackPanel({
         <View style={styles.missionWrapper}>
           <MissionProgressPanel
             draft={missionDraft}
+            plannedRoute={plannedRoute}
+            currentPosition={tracking.currentPosition}
             distanceKm={tracking.distanceKm}
             elapsedSeconds={tracking.elapsedSeconds}
             gpsQualityWarning={tracking.gpsQualityWarning}

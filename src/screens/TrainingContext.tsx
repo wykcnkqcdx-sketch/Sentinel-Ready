@@ -41,6 +41,8 @@ export type TrainingLog = {
       targetDistanceKm: number;
       targetMinutes: number;
       checkpointIntervalKm: number;
+      plannedRouteName?: string;
+      plannedRoutePoints?: TrackPoint[];
     };
   };
 };
