@@ -17,9 +17,18 @@ import {
   enforceCacheLimit,
   getCacheStats,
   MAX_CACHE_BYTES,
-  tilesForBounds,
 } from '../services/tileCache';
+import type { TrackPoint } from '../types/map';
 import type { MapLayerKey } from '../utils/mapTiles';
+import {
+  buildBoundsFromCorners,
+  buildRadiusBounds,
+  estimateTileCountForBounds,
+  formatBounds,
+  getBoundsCenter,
+  getBoundsOutline,
+  type RegionPoint,
+} from '../utils/offlineRegionUtils';
 
 const LAST_POSITION_KEY = 'sentinel_last_position';
 const DUBLIN = { latitude: 53.3498, longitude: -6.2603 };
@@ -41,20 +50,8 @@ interface Position {
   longitude: number;
 }
 
-function buildBounds(center: Position, radiusKm: number) {
-  const latDelta = radiusKm / 111;
-  const lonDelta = radiusKm / (111 * Math.cos((center.latitude * Math.PI) / 180));
-  return {
-    minLat: center.latitude - latDelta,
-    maxLat: center.latitude + latDelta,
-    minLon: center.longitude - lonDelta,
-    maxLon: center.longitude + lonDelta,
-  };
-}
-
-function estimateTileCount(center: Position, radiusKm: number): number {
-  const bounds = buildBounds(center, radiusKm);
-  return ZOOM_LEVELS.reduce((sum, z) => sum + tilesForBounds(bounds, z).length, 0);
+function toTrackPoint(point: RegionPoint): TrackPoint {
+  return { latitude: point.latitude, longitude: point.longitude, altitude: null, accuracy: null, timestamp: 0 };
 }
 
 export default function OfflineMapScreen() {
@@ -67,6 +64,7 @@ export default function OfflineMapScreen() {
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
   const [position, setPosition] = useState<Position | null>(null);
+  const [selectionCorners, setSelectionCorners] = useState<RegionPoint[]>([]);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -94,8 +92,17 @@ export default function OfflineMapScreen() {
   }
 
   const center = position ?? DUBLIN;
-  const estimatedTiles = useMemo(() => estimateTileCount(center, radius), [center, radius]);
+  const selectedBounds = useMemo(() => (
+    selectionCorners.length >= 2
+      ? buildBoundsFromCorners(selectionCorners[0], selectionCorners[1])
+      : null
+  ), [selectionCorners]);
+  const downloadBounds = useMemo(() => selectedBounds ?? buildRadiusBounds(center, radius), [center, radius, selectedBounds]);
+  const previewCenter = useMemo(() => getBoundsCenter(downloadBounds), [downloadBounds]);
+  const previewOutline = useMemo(() => getBoundsOutline(downloadBounds), [downloadBounds]);
+  const estimatedTiles = useMemo(() => estimateTileCountForBounds(downloadBounds, ZOOM_LEVELS), [downloadBounds]);
   const estimatedMB = ((estimatedTiles * BYTES_PER_TILE_ESTIMATE) / (1024 * 1024)).toFixed(1);
+  const regionMode = selectedBounds ? 'Selected box' : `${radius} km radius`;
 
   const handleDownload = useCallback(async () => {
     const estimatedBytes = estimatedTiles * BYTES_PER_TILE_ESTIMATE;
@@ -113,11 +120,9 @@ export default function OfflineMapScreen() {
     setStatusMsg('');
     setProgress({ downloaded: 0, total: 0 });
 
-    const bounds = buildBounds(center, radius);
-
     try {
       const result = await downloadRegion(
-        bounds,
+        downloadBounds,
         ZOOM_LEVELS,
         layer,
         (dl, total) => {
@@ -145,7 +150,14 @@ export default function OfflineMapScreen() {
         setAbortController(null);
       }
     }
-  }, [center, radius, layer, stats.totalBytes, estimatedTiles]);
+  }, [downloadBounds, layer, stats.totalBytes, estimatedTiles]);
+
+  const handleRegionTap = useCallback((latitude: number, longitude: number) => {
+    setSelectionCorners((prev) => {
+      if (prev.length >= 2) return [{ latitude, longitude }];
+      return [...prev, { latitude, longitude }];
+    });
+  }, []);
 
   const handleCancel = useCallback(() => {
     abortController?.abort();
