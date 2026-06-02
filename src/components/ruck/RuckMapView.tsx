@@ -165,7 +165,10 @@ export function RuckMapView({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [center, interactive, mapZoom, viewport.height, viewport.width, measureMode, measureA, measureB, onDropWaypoint]);
 
-  const tiles = buildVisibleTiles(center, viewport, layer, mapZoom);
+  const tiles = useMemo(
+    () => buildVisibleTiles(center, viewport, layer, mapZoom),
+    [center, viewport, layer, mapZoom],
+  );
   const uriMap = useResolvedTileUris(tiles);
 
   const projectedPlannedPoints = Svg && Polyline && plannedRoutePoints.length >= 2
