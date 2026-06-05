@@ -29,6 +29,19 @@ function parseFirstNumber(str: string): number | null {
   return match ? Number(match[1]) : null;
 }
 
+function parseNumberBeforeUnit(str: string, unitPattern: string): number | null {
+  const match = str.toLowerCase().match(new RegExp(`(\\d+(\\.\\d+)?)\\s*${unitPattern}`));
+  return match ? Number(match[1]) : null;
+}
+
+function parseReps(str: string): number | null {
+  return parseNumberBeforeUnit(str, 'reps?|press-ups?|push-ups?|sit-ups?') ?? parseFirstNumber(str);
+}
+
+function parseMillimeters(str: string): number | null {
+  return parseNumberBeforeUnit(str, 'mm|millimetres?|millimeters?') ?? parseFirstNumber(str);
+}
+
 function parseRunSeconds(duration: string): number | null {
   const mmss = duration.match(/(\d{1,2}):(\d{2})/);
   if (mmss) return Number(mmss[1]) * 60 + Number(mmss[2]);
@@ -39,28 +52,46 @@ function parseRunSeconds(duration: string): number | null {
   return null;
 }
 
-function findLatest(testLogs: TrainingLog[], ...keywords: string[]) {
-  return testLogs.find((log) => keywords.some((keyword) => log.type.toLowerCase().includes(keyword))) ?? null;
+function includesAny(str: string, ...keywords: string[]) {
+  const lower = str.toLowerCase();
+  return keywords.some((keyword) => lower.includes(keyword));
+}
+
+function has2Point4KmEvidence(log: TrainingLog) {
+  const type = log.type.toLowerCase();
+  const distanceLoad = log.distanceLoad.toLowerCase();
+
+  return (
+    /2[.\s-]*4\s*(km|kilomet(?:er|re)s?)/.test(type) ||
+    /2[.\s-]*4\s*(km|kilomet(?:er|re)s?)/.test(distanceLoad)
+  );
+}
+
+function findLatest(testLogs: TrainingLog[], predicate: (log: TrainingLog) => boolean) {
+  return testLogs.find(predicate) ?? null;
 }
 
 export function buildDfiftSnapshot(logs: TrainingLog[], standards: DfiftStandards, gender: Gender): DfiftSnapshot {
   const testLogs = [...logs.filter((log) => log.category === 'Test')]
     .sort((a, b) => getDateValue(b.date) - getDateValue(a.date) || b.id - a.id);
 
-  const pushLog = findLatest(testLogs, 'push');
-  const sitLog = findLatest(testLogs, 'sit');
-  const runLog = findLatest(testLogs, '2.4', 'run');
-  const skinfoldLog = findLatest(testLogs, 'skin', 'fold');
+  const pushLog = findLatest(testLogs, (log) => includesAny(log.type, 'push', 'press-up', 'press up'));
+  const sitLog = findLatest(testLogs, (log) => includesAny(log.type, 'sit'));
+  const runLog = findLatest(
+    testLogs,
+    (log) => includesAny(log.type, '2.4', 'run') && has2Point4KmEvidence(log)
+  );
+  const skinfoldLog = findLatest(testLogs, (log) => includesAny(log.type, 'skin', 'fold'));
 
   const pushLimit = gender === 'F' ? standards.events.pushUps.female : standards.events.pushUps.male;
   const sitLimit = gender === 'F' ? standards.events.sitUps.female : standards.events.sitUps.male;
   const runLimit = gender === 'F' ? standards.events.run.femaleMaxSeconds : standards.events.run.maleMaxSeconds;
   const skinfoldLimit = gender === 'F' ? standards.events.skinfold.femaleMaxMm : standards.events.skinfold.maleMaxMm;
 
-  const pushReps = pushLog ? parseFirstNumber(pushLog.distanceLoad) : null;
-  const sitReps = sitLog ? parseFirstNumber(sitLog.distanceLoad) : null;
+  const pushReps = pushLog ? parseReps(pushLog.distanceLoad) : null;
+  const sitReps = sitLog ? parseReps(sitLog.distanceLoad) : null;
   const runSeconds = runLog ? parseRunSeconds(runLog.duration) : null;
-  const skinfoldMm = skinfoldLog ? parseFirstNumber(skinfoldLog.distanceLoad) : null;
+  const skinfoldMm = skinfoldLog ? parseMillimeters(skinfoldLog.distanceLoad) : null;
 
   const rows: DfiftEventStatus[] = [
     {

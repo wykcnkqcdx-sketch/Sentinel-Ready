@@ -146,10 +146,12 @@ export default function StravaScreen() {
       const t = await exchangeStravaCode(code);
       await saveStravaTokens(t);
       setTokens(t);
-      loadActivities(t);
-    } catch {
+      await loadActivities(t);
+    } catch (err) {
       setError(
-        'Connection failed. Check your Strava credentials in src/services/strava.ts.',
+        err instanceof Error
+          ? err.message
+          : 'Connection failed. Check your Strava connection settings.',
       );
     } finally {
       setSyncing(false);
@@ -220,8 +222,8 @@ export default function StravaScreen() {
             </Text>
           </TouchableOpacity>
           <Text style={styles.credentialNote}>
-            Credentials: add your Client ID and Client Secret to{'\n'}
-            src/services/strava.ts
+            Configure EXPO_PUBLIC_STRAVA_CLIENT_ID and{'\n'}
+            EXPO_PUBLIC_STRAVA_TOKEN_PROXY_URL
           </Text>
         </View>
       ) : (

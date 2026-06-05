@@ -204,6 +204,10 @@ const TrainingLogForm = memo(function TrainingLogForm({
   }, [date, type, duration, distanceLoad, readiness]);
 
   const saveLogConfirmed = useCallback(async () => {
+    if (saving) {
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -221,9 +225,13 @@ const TrainingLogForm = memo(function TrainingLogForm({
     } finally {
       setSaving(false);
     }
-  }, [onSubmit, date, category, type, duration, distanceLoad, readiness, notes, saveErrorTitle, saveErrorMessage]);
+  }, [saving, onSubmit, date, category, type, duration, distanceLoad, readiness, notes, saveErrorTitle, saveErrorMessage]);
 
   const saveLog = useCallback(async () => {
+    if (saving) {
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -245,7 +253,7 @@ const TrainingLogForm = memo(function TrainingLogForm({
     }
 
     await saveLogConfirmed();
-  }, [validateForm, completionScore, notesWarning, saveLogConfirmed]);
+  }, [saving, validateForm, completionScore, notesWarning, saveLogConfirmed]);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

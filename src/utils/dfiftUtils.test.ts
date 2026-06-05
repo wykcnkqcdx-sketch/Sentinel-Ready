@@ -84,4 +84,24 @@ describe('buildDfiftSnapshot', () => {
     const runRow = snapshot.rows.find((r) => r.key === 'run');
     expect(runRow?.result).toBeNull();
   });
+
+  it('does not treat a generic test run as the 2.4km event', () => {
+    const snapshot = buildDfiftSnapshot([
+      makeLog({ id: 1, type: 'Tempo Run', duration: '10:00', distanceLoad: '3 km' }),
+    ], standards, 'M');
+
+    const runRow = snapshot.rows.find((r) => r.key === 'run');
+    expect(runRow?.result).toBeNull();
+    expect(runRow?.pass).toBeNull();
+  });
+
+  it('prefers explicit rep units over earlier load numbers', () => {
+    const snapshot = buildDfiftSnapshot([
+      makeLog({ id: 1, type: 'Push-ups', distanceLoad: '10 kg vest / 24 reps' }),
+    ], standards, 'M');
+
+    const pushRow = snapshot.rows.find((r) => r.key === 'pushUps');
+    expect(pushRow?.result).toBe('24 reps');
+    expect(pushRow?.pass).toBe(true);
+  });
 });

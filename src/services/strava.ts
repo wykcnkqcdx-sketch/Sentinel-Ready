@@ -3,10 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { TrainingLog } from '@/src/screens/TrainingContext';
 
 // ---------------------------------------------------------------------------
-// Constants — fill in your Strava API credentials here before testing
+// Constants
 // ---------------------------------------------------------------------------
-const STRAVA_CLIENT_ID = 'YOUR_STRAVA_CLIENT_ID';
-const STRAVA_CLIENT_SECRET = 'YOUR_STRAVA_CLIENT_SECRET';
+const STRAVA_CLIENT_ID = process.env.EXPO_PUBLIC_STRAVA_CLIENT_ID ?? '';
+const STRAVA_TOKEN_PROXY_URL = (process.env.EXPO_PUBLIC_STRAVA_TOKEN_PROXY_URL ?? '').replace(/\/$/, '');
 const REDIRECT_SCHEME = 'sentinel-ready';
 const REDIRECT_URI = `${REDIRECT_SCHEME}://strava-auth`;
 const STORAGE_KEY = 'sentinel_strava_tokens';
@@ -47,6 +47,62 @@ export type StravaActivity = {
   manual: boolean;
 };
 
+type StravaTokenProxyResponse = {
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  athleteId?: number;
+  athleteName?: string;
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  athlete?: {
+    id?: number;
+    firstname?: string;
+    lastname?: string;
+  };
+};
+
+function assertStravaClientReady() {
+  if (!STRAVA_CLIENT_ID) {
+    throw new Error('Missing EXPO_PUBLIC_STRAVA_CLIENT_ID.');
+  }
+}
+
+function assertTokenProxyReady() {
+  if (!STRAVA_TOKEN_PROXY_URL) {
+    throw new Error('Missing EXPO_PUBLIC_STRAVA_TOKEN_PROXY_URL.');
+  }
+}
+
+function parseTokenProxyResponse(data: StravaTokenProxyResponse, existing?: StravaTokens): StravaTokens {
+  const accessToken = data.accessToken ?? data.access_token;
+  const refreshToken = data.refreshToken ?? data.refresh_token;
+  const expiresAt = data.expiresAt ?? data.expires_at;
+  const athleteId = data.athleteId ?? data.athlete?.id ?? existing?.athleteId;
+  const athleteName =
+    data.athleteName ??
+    ([data.athlete?.firstname, data.athlete?.lastname].filter(Boolean).join(' ').trim() || existing?.athleteName);
+
+  if (
+    typeof accessToken !== 'string' ||
+    typeof refreshToken !== 'string' ||
+    typeof expiresAt !== 'number' ||
+    typeof athleteId !== 'number' ||
+    typeof athleteName !== 'string'
+  ) {
+    throw new Error('Strava token proxy returned an invalid response.');
+  }
+
+  return {
+    accessToken,
+    refreshToken,
+    expiresAt,
+    athleteId,
+    athleteName,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Token storage
 // ---------------------------------------------------------------------------
@@ -83,6 +139,8 @@ export async function clearStravaTokens(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export async function authorizeStrava(): Promise<string | null> {
+  assertStravaClientReady();
+
   const url =
     `https://www.strava.com/oauth/mobile/authorize` +
     `?client_id=${STRAVA_CLIENT_ID}` +
@@ -108,30 +166,23 @@ export async function authorizeStrava(): Promise<string | null> {
 // ---------------------------------------------------------------------------
 
 export async function exchangeStravaCode(code: string): Promise<StravaTokens> {
-  const res = await fetch('https://www.strava.com/oauth/token', {
+  assertTokenProxyReady();
+
+  const res = await fetch(`${STRAVA_TOKEN_PROXY_URL}/exchange`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      client_id: STRAVA_CLIENT_ID,
-      client_secret: STRAVA_CLIENT_SECRET,
       code,
-      grant_type: 'authorization_code',
+      redirectUri: REDIRECT_URI,
     }),
   });
 
   if (!res.ok) {
-    throw new Error(`Strava token exchange failed: ${res.status}`);
+    throw new Error(`Strava token proxy exchange failed: ${res.status}`);
   }
 
   const data = await res.json();
-
-  return {
-    accessToken: data.access_token as string,
-    refreshToken: data.refresh_token as string,
-    expiresAt: data.expires_at as number,
-    athleteId: data.athlete.id as number,
-    athleteName: `${data.athlete.firstname} ${data.athlete.lastname}`.trim(),
-  };
+  return parseTokenProxyResponse(data);
 }
 
 // ---------------------------------------------------------------------------
@@ -144,29 +195,22 @@ export async function refreshStravaTokenIfNeeded(
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (tokens.expiresAt - nowSeconds > REFRESH_BUFFER_SECONDS) return tokens;
 
-  const res = await fetch('https://www.strava.com/oauth/token', {
+  assertTokenProxyReady();
+
+  const res = await fetch(`${STRAVA_TOKEN_PROXY_URL}/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      client_id: STRAVA_CLIENT_ID,
-      client_secret: STRAVA_CLIENT_SECRET,
-      refresh_token: tokens.refreshToken,
-      grant_type: 'refresh_token',
+      refreshToken: tokens.refreshToken,
     }),
   });
 
   if (!res.ok) {
-    throw new Error(`Strava token refresh failed: ${res.status}`);
+    throw new Error(`Strava token proxy refresh failed: ${res.status}`);
   }
 
   const data = await res.json();
-
-  return {
-    ...tokens,
-    accessToken: data.access_token as string,
-    refreshToken: data.refresh_token as string,
-    expiresAt: data.expires_at as number,
-  };
+  return parseTokenProxyResponse(data, tokens);
 }
 
 // ---------------------------------------------------------------------------
