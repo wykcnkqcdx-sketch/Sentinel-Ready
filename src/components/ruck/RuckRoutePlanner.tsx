@@ -1,8 +1,9 @@
 import { DS } from '@/constants/theme';
 import { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { TrackPoint } from '@/src/types/map';
 import type { MapLayerKey } from '@/src/utils/mapTiles';
+import { formatCoordinate, parseCoordinate } from '@/src/utils/coordinates';
 import {
   buildPlannedRouteFromPoints,
   calculateRouteDistanceKm,
@@ -14,6 +15,7 @@ import {
 import { RuckMapView } from './RuckMapView';
 
 const DEFAULT_LAYER: MapLayerKey = 'topo';
+type PlannerMode = 'tap' | 'draw' | 'coord';
 
 function makePoint(latitude: number, longitude: number): TrackPoint {
   return { latitude, longitude, altitude: null, accuracy: null, timestamp: Date.now() };
@@ -29,6 +31,9 @@ export function RuckRoutePlanner({
   const [points, setPoints] = useState<TrackPoint[]>([]);
   const [routeName, setRouteName] = useState('Field Route');
   const [paceMinutesPerKm, setPaceMinutesPerKm] = useState('12');
+  const [mode, setMode] = useState<PlannerMode>('tap');
+  const [coordinateInput, setCoordinateInput] = useState('');
+  const [coordinateError, setCoordinateError] = useState('');
 
   const distanceKm = useMemo(() => calculateRouteDistanceKm(points), [points]);
   const estimatedMinutes = useMemo(() => {
@@ -38,6 +43,18 @@ export function RuckRoutePlanner({
 
   function handleDropWaypoint(latitude: number, longitude: number) {
     setPoints((prev) => [...prev, makePoint(latitude, longitude)]);
+  }
+
+  function handleAddCoordinate() {
+    const parsed = parseCoordinate(coordinateInput);
+    if (!parsed) {
+      setCoordinateError('Enter lat/long, DMS, UTM, or MGRS grid reference.');
+      return;
+    }
+
+    setCoordinateError('');
+    setPoints((prev) => [...prev, makePoint(parsed.latitude, parsed.longitude)]);
+    setCoordinateInput('');
   }
 
   function handleUndo() {
@@ -56,19 +73,27 @@ export function RuckRoutePlanner({
   }
 
   const checkpointCount = Math.max(0, points.length - 2);
+  const latestPoint = points[points.length - 1] ?? null;
+  const modeHint =
+    mode === 'draw'
+      ? 'Drag on the map to sketch the route line.'
+      : mode === 'coord'
+        ? 'Enter a grid reference or lat/long, then add it to the route.'
+        : 'Tap map locations to place start, checkpoints, and finish.';
 
   return (
     <View style={styles.container}>
       <RuckMapView
         routePoints={[]}
         plannedRoutePoints={points}
-        currentPosition={points[points.length - 1] ?? null}
+        currentPosition={mode === 'draw' ? null : latestPoint}
         layer={DEFAULT_LAYER}
         zoom={14}
         fullHeight
         interactive
         showGpsStatus={false}
-        onDropWaypoint={handleDropWaypoint}
+        onDropWaypoint={mode === 'coord' ? undefined : handleDropWaypoint}
+        routeDrawMode={mode === 'draw'}
       />
 
       <View style={styles.topPanel} pointerEvents="box-none">
@@ -82,11 +107,59 @@ export function RuckRoutePlanner({
         </TouchableOpacity>
         <View style={styles.instructionCard}>
           <Text style={styles.kicker}>PLAN ROUTE</Text>
-          <Text style={styles.instructionText}>Tap the map to place start, checkpoints, and finish.</Text>
+          <Text style={styles.instructionText}>{modeHint}</Text>
         </View>
       </View>
 
       <View style={styles.sheet}>
+        <View style={styles.modeRow}>
+          {(['tap', 'draw', 'coord'] as PlannerMode[]).map((item) => (
+            <TouchableOpacity
+              key={item}
+              style={[styles.modeButton, mode === item && styles.modeButtonActive]}
+              onPress={() => {
+                setMode(item);
+                setCoordinateError('');
+              }}
+              accessibilityRole="button"
+              accessibilityState={{ selected: mode === item }}
+            >
+              <Text style={[styles.modeButtonText, mode === item && styles.modeButtonTextActive]}>
+                {item === 'tap' ? 'TAP' : item === 'draw' ? 'DRAW' : 'GRID'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {mode === 'coord' ? (
+          <View style={styles.coordinateBlock}>
+            <Text style={styles.label}>GRID / LAT LONG</Text>
+            <View style={styles.coordinateRow}>
+              <TextInput
+                style={styles.coordinateInput}
+                value={coordinateInput}
+                onChangeText={(text) => {
+                  setCoordinateInput(text);
+                  if (coordinateError) setCoordinateError('');
+                }}
+                placeholder="53.34980, -6.26030 or 29U PV 12345 67890"
+                placeholderTextColor={DS.textMuted}
+                autoCapitalize="characters"
+              />
+              <TouchableOpacity
+                style={[styles.addPointButton, coordinateInput.trim().length === 0 && styles.buttonDisabled]}
+                onPress={handleAddCoordinate}
+                disabled={coordinateInput.trim().length === 0}
+                accessibilityRole="button"
+                accessibilityLabel="Add coordinate to route"
+              >
+                <Text style={styles.addPointButtonText}>ADD</Text>
+              </TouchableOpacity>
+            </View>
+            {coordinateError ? <Text style={styles.errorText}>{coordinateError}</Text> : null}
+          </View>
+        ) : null}
+
         <View style={styles.headerRow}>
           <View style={styles.nameBlock}>
             <Text style={styles.label}>ROUTE NAME</Text>
@@ -157,6 +230,28 @@ export function RuckRoutePlanner({
             <Text style={styles.startButtonText}>START MISSION</Text>
           </TouchableOpacity>
         </View>
+
+        {latestPoint ? (
+          <View style={styles.latestPointRow}>
+            <Text style={styles.latestPointLabel}>LAST POINT</Text>
+            <Text style={styles.latestPointValue} numberOfLines={1}>
+              {formatCoordinate(latestPoint.latitude, latestPoint.longitude, 'latlon')}
+            </Text>
+          </View>
+        ) : null}
+
+        {points.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pointRail}>
+            {points.map((point, index) => (
+              <View key={`${point.latitude}-${point.longitude}-${index}`} style={styles.pointChip}>
+                <Text style={styles.pointChipIndex}>{index === 0 ? 'START' : index === points.length - 1 ? 'FINISH' : `CP ${index}`}</Text>
+                <Text style={styles.pointChipText}>
+                  {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        ) : null}
       </View>
     </View>
   );
@@ -208,6 +303,49 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 12,
   },
+  modeRow: { flexDirection: 'row', gap: 8 },
+  modeButton: {
+    flex: 1,
+    minHeight: 38,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: DS.border,
+    backgroundColor: DS.bgCard,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modeButtonActive: {
+    backgroundColor: DS.gold,
+    borderColor: DS.gold,
+  },
+  modeButtonText: { color: DS.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 1.1 },
+  modeButtonTextActive: { color: DS.bgPrimary },
+  coordinateBlock: { gap: 5 },
+  coordinateRow: { flexDirection: 'row', gap: 8 },
+  coordinateInput: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: DS.border,
+    backgroundColor: DS.bgPrimary,
+    color: DS.textPrimary,
+    fontSize: 13,
+    fontWeight: '800',
+    paddingHorizontal: 10,
+  },
+  addPointButton: {
+    minHeight: 42,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: DS.gold,
+    backgroundColor: DS.bgCard,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addPointButtonText: { color: DS.gold, fontSize: 11, fontWeight: '900', letterSpacing: 1.1 },
+  errorText: { color: DS.warning, fontSize: 11, fontWeight: '800' },
   headerRow: { flexDirection: 'row', gap: 10 },
   nameBlock: { flex: 1, gap: 5 },
   paceBlock: { width: 82, gap: 5 },
@@ -270,4 +408,28 @@ const styles = StyleSheet.create({
   },
   startButtonText: { color: DS.bgPrimary, fontSize: 12, fontWeight: '900', letterSpacing: 1.2 },
   buttonDisabled: { opacity: 0.45 },
+  latestPointRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: DS.border,
+    paddingTop: 9,
+  },
+  latestPointLabel: { color: DS.textSecondary, fontSize: 9, fontWeight: '900', letterSpacing: 1.2 },
+  latestPointValue: { flex: 1, color: DS.gold, fontSize: 11, fontWeight: '900', textAlign: 'right' },
+  pointRail: { gap: 8, paddingRight: 4 },
+  pointChip: {
+    minWidth: 118,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: DS.border,
+    backgroundColor: DS.bgPrimary,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    gap: 2,
+  },
+  pointChipIndex: { color: DS.gold, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  pointChipText: { color: DS.textSecondary, fontSize: 10, fontWeight: '800' },
 });

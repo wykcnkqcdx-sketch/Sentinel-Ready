@@ -89,6 +89,7 @@ export interface RuckMapViewProps {
   waypoints?: WaypointMarker[];
   onDropWaypoint?: (latitude: number, longitude: number) => void;
   measureMode?: boolean;
+  routeDrawMode?: boolean;
 }
 
 type MeasurePoint = { latitude: number; longitude: number };
@@ -107,6 +108,7 @@ export function RuckMapView({
   waypoints = [],
   onDropWaypoint,
   measureMode = false,
+  routeDrawMode = false,
 }: RuckMapViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [viewport, setViewport] = useState<MapViewport>({ width: windowWidth, height: MAP_HEIGHT });
@@ -116,6 +118,7 @@ export function RuckMapView({
   const [measureA, setMeasureA] = useState<MeasurePoint | null>(null);
   const [measureB, setMeasureB] = useState<MeasurePoint | null>(null);
   const panStartRef = useRef<{ x: number; y: number; center: TrackPoint } | null>(null);
+  const drawLastRef = useRef<{ x: number; y: number } | null>(null);
 
   const liveCenter: TrackPoint =
     currentPosition ?? (routePoints.length > 0 ? routePoints[routePoints.length - 1] : DUBLIN);
@@ -136,12 +139,32 @@ export function RuckMapView({
   const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => interactive,
     onMoveShouldSetPanResponder: (_, gesture) =>
-      interactive && (Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3),
+      interactive && (routeDrawMode || Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3),
     onPanResponderGrant: (e) => {
       panStartRef.current = { x: 0, y: 0, center };
       tapStartRef.current = { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
+      drawLastRef.current = { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
+
+      if (routeDrawMode && onDropWaypoint) {
+        const point = screenToLatLon(e.nativeEvent.locationX, e.nativeEvent.locationY);
+        onDropWaypoint(point.latitude, point.longitude);
+      }
     },
-    onPanResponderMove: (_, gesture) => {
+    onPanResponderMove: (e, gesture) => {
+      if (routeDrawMode && onDropWaypoint) {
+        const last = drawLastRef.current;
+        const x = e.nativeEvent.locationX;
+        const y = e.nativeEvent.locationY;
+        const movedEnough = !last || Math.hypot(x - last.x, y - last.y) >= 14;
+
+        if (movedEnough) {
+          const point = screenToLatLon(x, y);
+          onDropWaypoint(point.latitude, point.longitude);
+          drawLastRef.current = { x, y };
+        }
+        return;
+      }
+
       const start = panStartRef.current;
       if (!start || viewport.width <= 0 || viewport.height <= 0) return;
 
@@ -152,18 +175,20 @@ export function RuckMapView({
     },
     onPanResponderRelease: (_, gesture) => {
       // Treat as tap if movement was minimal
-      if (Math.abs(gesture.dx) < 6 && Math.abs(gesture.dy) < 6 && tapStartRef.current) {
+      if (!routeDrawMode && Math.abs(gesture.dx) < 6 && Math.abs(gesture.dy) < 6 && tapStartRef.current) {
         handleMapTap(tapStartRef.current.x, tapStartRef.current.y);
       }
       panStartRef.current = null;
       tapStartRef.current = null;
+      drawLastRef.current = null;
     },
     onPanResponderTerminate: () => {
       panStartRef.current = null;
       tapStartRef.current = null;
+      drawLastRef.current = null;
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [center, interactive, mapZoom, viewport.height, viewport.width, measureMode, measureA, measureB, onDropWaypoint]);
+  }), [center, interactive, mapZoom, viewport.height, viewport.width, measureMode, measureA, measureB, onDropWaypoint, routeDrawMode]);
 
   const tiles = useMemo(
     () => buildVisibleTiles(center, viewport, layer, mapZoom),
@@ -202,13 +227,17 @@ export function RuckMapView({
     };
   }, [measureA, measureB]);
 
-  function handleMapTap(screenX: number, screenY: number) {
+  function screenToLatLon(screenX: number, screenY: number) {
     const pixel = latLonToWorldPixel(center.latitude, center.longitude, mapZoom);
-    const tappedLat = worldPixelToLatLon(
+    return worldPixelToLatLon(
       pixel.x + screenX - viewport.width / 2,
       pixel.y + screenY - viewport.height / 2,
       mapZoom,
     );
+  }
+
+  function handleMapTap(screenX: number, screenY: number) {
+    const tappedLat = screenToLatLon(screenX, screenY);
 
     if (measureMode) {
       if (!measureA) {
@@ -476,7 +505,9 @@ export function RuckMapView({
       </View>
 
       <View style={styles.topHud} pointerEvents="none">
-        <Text style={styles.hudTitle}>{measureMode ? '[ MEASURE MODE ]' : 'RUCK MAP'}</Text>
+        <Text style={styles.hudTitle}>
+          {routeDrawMode ? '[ DRAW ROUTE ]' : measureMode ? '[ MEASURE MODE ]' : 'RUCK MAP'}
+        </Text>
         <Text style={styles.hudText}>
           {formatCoord(center.latitude, 'N', 'S')}  {formatCoord(center.longitude, 'E', 'W')}  Z{Math.round(mapZoom)}
         </Text>
