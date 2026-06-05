@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
 import type { TrainingLog } from '@/src/screens/TrainingContext';
 import type { DfiftStandards } from '@/src/types/dfift';
+import { describe, expect, it } from 'vitest';
 import { buildDfiftSnapshot } from './dfiftUtils';
 
 const standards: DfiftStandards = {
