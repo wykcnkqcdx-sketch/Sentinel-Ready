@@ -206,20 +206,32 @@ export function RuckMapView({
   );
   const uriMap = useResolvedTileUris(tiles);
 
-  const projectedPlannedPoints = Svg && Polyline && plannedRoutePoints.length >= 2
-    ? getMercatorRoutePoints(plannedRoutePoints, center, viewport, mapZoom)
-    : [];
+  const projectedPlannedPoints = useMemo(
+    () => Svg && Polyline && plannedRoutePoints.length >= 2
+      ? getMercatorRoutePoints(plannedRoutePoints, center, viewport, mapZoom)
+      : [],
+    [plannedRoutePoints, center, viewport, mapZoom],
+  );
 
-  const projectedPoints = Svg && Polyline && routePoints.length >= 2
-    ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
-    : [];
+  const projectedPoints = useMemo(
+    () => Svg && Polyline && routePoints.length >= 2
+      ? getMercatorRoutePoints(routePoints, center, viewport, mapZoom)
+      : [],
+    [routePoints, center, viewport, mapZoom],
+  );
 
   const projectedCurrent = Svg && Circle && currentPosition
     ? getMercatorRoutePoints([currentPosition], center, viewport, mapZoom)[0]
     : null;
 
-  const polylinePoints = projectedPoints.map((p) => `${p.x},${p.y}`).join(' ');
-  const plannedPolylinePoints = projectedPlannedPoints.map((p) => `${p.x},${p.y}`).join(' ');
+  const polylinePoints = useMemo(
+    () => projectedPoints.map((p) => `${p.x},${p.y}`).join(' '),
+    [projectedPoints],
+  );
+  const plannedPolylinePoints = useMemo(
+    () => projectedPlannedPoints.map((p) => `${p.x},${p.y}`).join(' '),
+    [projectedPlannedPoints],
+  );
 
   const mgrsLabel = useMemo(
     () => formatCoordinate(center.latitude, center.longitude, 'mgrs'),

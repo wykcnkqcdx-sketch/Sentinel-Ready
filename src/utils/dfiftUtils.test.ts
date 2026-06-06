@@ -85,6 +85,20 @@ describe('buildDfiftSnapshot', () => {
     expect(runRow?.result).toBeNull();
   });
 
+  it('enforces the female push-up boundary (5 fails, 6 passes)', () => {
+    const fail = buildDfiftSnapshot([
+      makeLog({ id: 1, type: 'Push-ups', distanceLoad: '5 reps' }),
+    ], standards, 'F');
+    const pass = buildDfiftSnapshot([
+      makeLog({ id: 1, type: 'Push-ups', distanceLoad: '6 reps' }),
+    ], standards, 'F');
+
+    const failRow = fail.rows.find((r) => r.key === 'pushUps');
+    const passRow = pass.rows.find((r) => r.key === 'pushUps');
+    expect(failRow?.pass).toBe(false);
+    expect(passRow?.pass).toBe(true);
+  });
+
   it('does not treat a generic test run as the 2.4km event', () => {
     const snapshot = buildDfiftSnapshot([
       makeLog({ id: 1, type: 'Tempo Run', duration: '10:00', distanceLoad: '3 km' }),

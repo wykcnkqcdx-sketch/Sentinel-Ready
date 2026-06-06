@@ -33,6 +33,7 @@ export function getDateValue(date: string) {
 
   const time = Date.parse(date + 'T00:00:00');
   const value = Number.isNaN(time) ? 0 : time;
+  if (dateCache.size >= 500) dateCache.clear();
   dateCache.set(date, value);
   return value;
 }

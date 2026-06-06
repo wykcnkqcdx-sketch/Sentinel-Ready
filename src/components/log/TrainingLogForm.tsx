@@ -228,31 +228,35 @@ const TrainingLogForm = memo(function TrainingLogForm({
   }, [saving, onSubmit, date, category, type, duration, distanceLoad, readiness, notes, saveErrorTitle, saveErrorMessage]);
 
   const saveLog = useCallback(async () => {
-    if (saving) {
-      return;
+    try {
+      if (saving) {
+        return;
+      }
+
+      if (!validateForm()) {
+        return;
+      }
+
+      if (completionScore < 80 || notesWarning) {
+        Alert.alert(
+          'Save Quality Warning',
+          'This log is missing useful detail or the notes are weak. Save anyway?',
+          [
+            { text: 'Go Back', style: 'cancel' },
+            {
+              text: 'Save Anyway',
+              onPress: () => saveLogConfirmed(),
+            },
+          ]
+        );
+
+        return;
+      }
+
+      await saveLogConfirmed();
+    } catch {
+      Alert.alert('Save Failed', 'An unexpected error occurred. Please try again.');
     }
-
-    if (!validateForm()) {
-      return;
-    }
-
-    if (completionScore < 80 || notesWarning) {
-      Alert.alert(
-        'Save Quality Warning',
-        'This log is missing useful detail or the notes are weak. Save anyway?',
-        [
-          { text: 'Go Back', style: 'cancel' },
-          {
-            text: 'Save Anyway',
-            onPress: () => saveLogConfirmed(),
-          },
-        ]
-      );
-
-      return;
-    }
-
-    await saveLogConfirmed();
   }, [saving, validateForm, completionScore, notesWarning, saveLogConfirmed]);
 
   return (

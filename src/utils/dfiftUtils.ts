@@ -83,6 +83,10 @@ export function buildDfiftSnapshot(logs: TrainingLog[], standards: DfiftStandard
   );
   const skinfoldLog = findLatest(testLogs, (log) => includesAny(log.type, 'skin', 'fold'));
 
+  if (gender !== 'F' && gender !== 'M') {
+    console.warn(`buildDfiftSnapshot: unexpected gender value "${String(gender)}" — falling back to male standards`);
+  }
+
   const pushLimit = gender === 'F' ? standards.events.pushUps.female : standards.events.pushUps.male;
   const sitLimit = gender === 'F' ? standards.events.sitUps.female : standards.events.sitUps.male;
   const runLimit = gender === 'F' ? standards.events.run.femaleMaxSeconds : standards.events.run.maleMaxSeconds;

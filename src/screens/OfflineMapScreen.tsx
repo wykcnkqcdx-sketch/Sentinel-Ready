@@ -104,7 +104,7 @@ export default function OfflineMapScreen() {
     }
   }
 
-  const center = position ?? DUBLIN;
+  const center = useMemo(() => position ?? DUBLIN, [position]);
   const selectedBounds = useMemo(() => (
     selectionCorners.length >= 2
       ? buildBoundsFromCorners(selectionCorners[0], selectionCorners[1])

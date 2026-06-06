@@ -73,6 +73,9 @@ function assertTokenProxyReady() {
   if (!STRAVA_TOKEN_PROXY_URL) {
     throw new Error('Missing EXPO_PUBLIC_STRAVA_TOKEN_PROXY_URL.');
   }
+  if (!STRAVA_TOKEN_PROXY_URL.startsWith('https://')) {
+    throw new Error('EXPO_PUBLIC_STRAVA_TOKEN_PROXY_URL must use HTTPS.');
+  }
 }
 
 function parseTokenProxyResponse(data: StravaTokenProxyResponse, existing?: StravaTokens): StravaTokens {
@@ -154,6 +157,7 @@ export async function authorizeStrava(): Promise<string | null> {
   if (result.type !== 'success') return null;
 
   try {
+    if (!result.url.startsWith(REDIRECT_URI)) return null;
     const parsed = new URL(result.url);
     return parsed.searchParams.get('code');
   } catch {
