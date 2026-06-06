@@ -84,7 +84,18 @@ export default function OfflineMapScreen() {
     setStats(statsResult);
     if (positionResult) {
       try {
-        setPosition(JSON.parse(positionResult));
+        const parsed = JSON.parse(positionResult);
+        const { latitude, longitude } = parsed ?? {};
+        if (
+          typeof latitude === 'number' && isFinite(latitude) &&
+          typeof longitude === 'number' && isFinite(longitude) &&
+          latitude >= -90 && latitude <= 90 &&
+          longitude >= -180 && longitude <= 180
+        ) {
+          setPosition(parsed);
+        } else {
+          setPosition(DUBLIN);
+        }
       } catch {
         setPosition(DUBLIN);
       }

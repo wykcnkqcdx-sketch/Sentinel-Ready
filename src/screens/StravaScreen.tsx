@@ -112,6 +112,8 @@ export default function StravaScreen() {
         setTokens(t);
         loadActivities(t);
       }
+    }).catch(() => {
+      setError('Failed to load saved tokens. Please reconnect Strava.');
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -159,10 +161,14 @@ export default function StravaScreen() {
   }, [loadActivities]);
 
   const handleDisconnect = useCallback(async () => {
-    await clearStravaTokens();
-    setTokens(null);
-    setActivities([]);
-    setImportedIds(new Set());
+    try {
+      await clearStravaTokens();
+      setTokens(null);
+      setActivities([]);
+      setImportedIds(new Set());
+    } catch {
+      setError('Failed to disconnect. Please try again.');
+    }
   }, []);
 
   const handleImport = useCallback((activity: StravaActivity) => {

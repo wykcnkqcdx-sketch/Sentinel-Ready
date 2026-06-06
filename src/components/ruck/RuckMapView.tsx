@@ -134,6 +134,12 @@ export function RuckMapView({
     }
   }, [isFollowing, liveCenter]);
 
+  useEffect(() => {
+    if (routeDrawMode) {
+      setIsFollowing(false);
+    }
+  }, [routeDrawMode]);
+
   const tapStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const panResponder = useMemo(() => PanResponder.create({
@@ -183,6 +189,10 @@ export function RuckMapView({
       drawLastRef.current = null;
     },
     onPanResponderTerminate: () => {
+      if (routeDrawMode && drawLastRef.current && onDropWaypoint) {
+        const point = screenToLatLon(drawLastRef.current.x, drawLastRef.current.y);
+        onDropWaypoint(point.latitude, point.longitude);
+      }
       panStartRef.current = null;
       tapStartRef.current = null;
       drawLastRef.current = null;
