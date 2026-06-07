@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export type RuckDisplayMode = 'simple' | 'mission' | 'map' | 'measure';
 
@@ -18,35 +18,44 @@ export function RuckDisplayModeToggle({
   onChange: (mode: RuckDisplayMode) => void;
 }) {
   return (
-    <View style={styles.container}>
-      {OPTIONS.map((option) => {
-        const active = option.key === mode;
-        return (
-          <TouchableOpacity
-            key={option.key}
-            style={[styles.button, active && styles.buttonActive]}
-            onPress={() => onChange(option.key)}
-            accessibilityRole="button"
-            accessibilityLabel={`${option.label} ruck display mode`}
-            accessibilityState={{ selected: active }}
-          >
-            <Text style={[styles.label, active && styles.labelActive]}>{option.label}</Text>
-          </TouchableOpacity>
-        );
-      })}
+    <View style={styles.wrapper}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
+        {OPTIONS.map((option) => {
+          const active = option.key === mode;
+          return (
+            <TouchableOpacity
+              key={option.key}
+              style={[styles.button, active && styles.buttonActive]}
+              onPress={() => onChange(option.key)}
+              accessibilityRole="button"
+              accessibilityLabel={`${option.label} ruck display mode`}
+              accessibilityState={{ selected: active }}
+            >
+              <Text style={[styles.label, active && styles.labelActive]}>{option.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    gap: 4,
+  wrapper: {
     backgroundColor: 'rgba(7,17,12,0.9)',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(181,133,44,0.12)',
     padding: 4,
+    maxWidth: '100%',
+  },
+  container: {
+    flexDirection: 'row',
+    gap: 4,
   },
   button: {
     paddingHorizontal: 10,

@@ -171,24 +171,6 @@ export default function PlanScreen() {
           <Text style={styles.editPlanButtonText}>[ EDIT PLAN ]</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.planModePillRow}>
-        <View
-          style={[
-            styles.planModePill,
-            hasCustomPlan ? styles.planModePillAmber : styles.planModePillMuted,
-          ]}
-        >
-          <Text
-            style={[
-              styles.planModePillText,
-              hasCustomPlan ? styles.planModePillTextAmber : styles.planModePillTextMuted,
-            ]}
-          >
-            {hasCustomPlan ? 'CUSTOM PLAN' : 'AUTO PLAN'}
-          </Text>
-        </View>
-      </View>
-
       <View style={ps.cycleCard}>
         <Text style={ps.cycleKicker}>[ TRAINING CYCLE ]</Text>
         <View style={ps.cyclePhaseRow}>

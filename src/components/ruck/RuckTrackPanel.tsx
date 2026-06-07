@@ -224,6 +224,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
+    left: 160,
   },
   metricsWrapper: {
     position: 'absolute',

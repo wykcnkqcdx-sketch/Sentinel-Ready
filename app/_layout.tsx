@@ -52,6 +52,9 @@ export default function RootLayout() {
               headerShown: false,
               contentStyle: {
                 backgroundColor: '#080c05',
+                maxWidth: 800,
+                width: '100%',
+                alignSelf: 'center',
               },
             }}
           >

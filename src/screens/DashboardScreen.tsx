@@ -99,7 +99,7 @@ export default function DashboardScreen() {
           <View style={styles.heroCopy}>
             <View style={styles.liveRow}>
               <View style={[styles.liveDot, { backgroundColor: status.color }]} />
-              <Text style={[styles.liveText, { color: status.color }]}>[ READINESS STATUS: {status.label} ]</Text>
+              <Text style={[styles.liveText, { color: status.color }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>[ READINESS STATUS: {status.label} ]</Text>
             </View>
             <Text style={styles.heroTitle}>{status.label === 'GREEN' ? 'SYSTEMS FULLY OPERATIONAL' : 'MISSION STATE REVIEW'}</Text>
             <Text style={styles.heroMessage}>{status.message}</Text>
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   metricTile: {
     flexGrow: 1,
-    flexBasis: '23%',
+    flexBasis: '48%',
     minWidth: 86,
     backgroundColor: DS.bgCard,
     borderWidth: 1,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   metricTileActive: {
     flexGrow: 1,
-    flexBasis: '23%',
+    flexBasis: '48%',
     minWidth: 86,
     backgroundColor: DS.bgCard,
     borderWidth: 1,

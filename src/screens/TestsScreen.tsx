@@ -392,7 +392,7 @@ export default function TestsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: DS.bgPrimary },
-  content: { padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  content: { flexGrow: 1, padding: 10, paddingBottom: 120, gap: 12, maxWidth: 820, width: '100%', alignSelf: 'center' },
   kicker: { color: DS.goldSoft, fontSize: 11, fontWeight: '900', letterSpacing: 2.2 },
   headerRule: { height: 1, backgroundColor: DS.gold, opacity: 0.55, marginVertical: 2 },
   title: { color: DS.goldSoft, fontSize: 30, fontWeight: '900', letterSpacing: -0.8 },
